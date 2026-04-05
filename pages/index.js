@@ -5,7 +5,6 @@ export default function StouttPropertyManagementWebsite() {
     { href: "/founder", label: "Founder" }, 
     { href: "#about", label: "About" },
     { href: "#coverage", label: "Coverage" },
-    { href: "#founder", label: "Founder" },
     { href: "#contact", label: "Contact" },
   ];
 
