@@ -140,7 +140,7 @@ export default function ServicesPage() {
             Property Management, Rebuilt From Experience.
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-            After managing 82 associations and over $500 million in assets,
+            After managing 82 associations and over $500 million in assets over 18 years,
             we’ve seen exactly what works — and what doesn’t. Stoutt Property
             Management combines decades of experience with intelligent systems,
             proactive leadership, and a design-driven mindset to deliver a
