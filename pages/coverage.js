@@ -1,15 +1,38 @@
 export default function Coverage() {
   return (
-    <main className="px-6 py-20 max-w-6xl mx-auto">
-<nav className="flex gap-6 p-6">
-  <a href="/">Home</a>
-  <a href="/services">Services</a>
-  <a href="/why-switch">Why Switch</a>
-  <a href="/collections">Collections</a>
-  <a href="/coverage">Coverage</a>
-  <a href="/founder">Founder</a>
-  <a href="/contact">Contact</a>
-</nav>
+    <div className="min-h-screen bg-slate-950 text-white">
+
+      {/* HEADER */}
+     <header className="border-b border-white/10 bg-slate-950/95 backdrop-blur">
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+    
+    <div>
+      <div className="text-xs uppercase tracking-[0.35em] text-cyan-300">
+        Florida Property Management
+      </div>
+      <div className="text-2xl font-semibold tracking-tight">
+        Stoutt Property Management
+      </div>
+    </div>
+
+    <nav className="hidden gap-8 text-sm text-slate-300 md:flex">
+      <a href="/" className="hover:text-white">Home</a>
+      <a href="/services" className="hover:text-white">Services</a>
+      <a href="/founder" className="hover:text-white">Founder</a>
+      <a href="/coverage" className="hover:text-white">Coverage</a>
+      <a href="/contact" className="hover:text-white">Contact</a>
+    </nav>
+
+    <a
+      href="/contact"
+      className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950"
+    >
+      Request a Proposal
+    </a>
+
+  </div>
+</header>
+<main className="px-6 py-20 max-w-6xl mx-auto">
       {/* HERO */}
       <section className="mb-20 text-center">
         <h1 className="text-4xl md:text-5xl font-semibold mb-6">
