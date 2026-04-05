@@ -6,7 +6,6 @@ export default function StouttPropertyManagementWebsite() {
     { href: "/collections", label: "Collections" },
     { href: "/coverage", label: "Coverage" },
     { href: "#about", label: "About" },
-    { href: "#coverage", label: "Coverage" },
     { href: "#contact", label: "Contact" },
   ];
 
