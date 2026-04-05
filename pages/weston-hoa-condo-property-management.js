@@ -128,8 +128,8 @@ export default function WestonPage() {
     Pompano Beach
   </a>
 
-          </div>
-        </section>
+  </div>
+  </section>
 
         <section className="text-center">
           <h2 className="mb-4 text-2xl font-semibold">
