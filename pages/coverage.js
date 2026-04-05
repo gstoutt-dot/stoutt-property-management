@@ -1,12 +1,14 @@
 export default function Coverage() {
   return (
     <main className="px-6 py-20 max-w-6xl mx-auto">
-<nav className="flex gap-6">
-  {navLinks.map((link) => (
-    <a key={link.href} href={link.href}>
-      {link.label}
-    </a>
-  ))}
+<nav className="flex gap-6 p-6">
+  <a href="/">Home</a>
+  <a href="/services">Services</a>
+  <a href="/why-switch">Why Switch</a>
+  <a href="/collections">Collections</a>
+  <a href="/coverage">Coverage</a>
+  <a href="/founder">Founder</a>
+  <a href="/contact">Contact</a>
 </nav>
       {/* HERO */}
       <section className="mb-20 text-center">
