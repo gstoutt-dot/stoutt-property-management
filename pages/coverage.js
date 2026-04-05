@@ -1,7 +1,13 @@
 export default function Coverage() {
   return (
     <main className="px-6 py-20 max-w-6xl mx-auto">
-
+<nav className="flex gap-6">
+  {navLinks.map((link) => (
+    <a key={link.href} href={link.href}>
+      {link.label}
+    </a>
+  ))}
+</nav>
       {/* HERO */}
       <section className="mb-20 text-center">
         <h1 className="text-4xl md:text-5xl font-semibold mb-6">
