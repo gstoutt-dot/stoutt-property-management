@@ -127,7 +127,6 @@ export default function WestonPage() {
   >
     Pompano Beach
   </a>
-
   </div>
   </section>
 
