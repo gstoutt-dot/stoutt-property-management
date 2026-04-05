@@ -10,7 +10,7 @@ export default function WestonPage() {
             <div className="text-2xl font-semibold tracking-tight">
               Stoutt Property Management
             </div> 
-        
+          </div>
 
           <nav className="hidden gap-8 text-sm text-slate-300 md:flex">
             <a href="/" className="hover:text-white">Home</a>
