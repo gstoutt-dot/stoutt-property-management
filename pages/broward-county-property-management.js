@@ -98,17 +98,31 @@ export default function BrowardCounty() {
             Communities We Serve in Broward County
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-4 text-gray-400">
-            <p>Weston</p>
-            <p>Miramar</p>
-            <p>Pompano Beach</p>
-            <p>Coconut Creek</p>
-            <p>Tamarac</p>
-            <p>Fort Lauderdale</p>
-            <p>Hollywood</p>
-            <p>Coral Springs</p>
-            <p>Plantation</p>
-          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+  <a href="/weston-hoa-condo-property-management" className="rounded-2xl border border-white/10 p-5 hover:border-white/30">
+    Weston
+  </a>
+
+  <a href="/miramar-hoa-condo-property-management" className="rounded-2xl border border-white/10 p-5 hover:border-white/30">
+    Miramar
+  </a>
+
+  <a href="/pompano-beach-condo-property-management" className="rounded-2xl border border-white/10 p-5 hover:border-white/30">
+    Pompano Beach
+  </a>
+
+  <a href="/coconut-creek-hoa-condo-property-management" className="rounded-2xl border border-white/10 p-5 hover:border-white/30">
+    Coconut Creek
+  </a>
+
+  <a href="/tamarac-hoa-condo-property-management" className="rounded-2xl border border-white/10 p-5 hover:border-white/30">
+    Tamarac
+  </a>
+
+  <div className="rounded-2xl border border-white/10 p-5 text-slate-500">
+    Additional Broward communities coming soon
+  </div>
+</div>
         </section>
 
         {/* FINAL CTA */}
