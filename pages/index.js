@@ -3,6 +3,7 @@ export default function StouttPropertyManagementWebsite() {
     { href: "/services", label: "Services" },
     { href: "/why-switch", label: "Why Switch" },
     { href: "/founder", label: "Founder" }, 
+    { href: "/collections", label: "Collections" },
     { href: "#about", label: "About" },
     { href: "#coverage", label: "Coverage" },
     { href: "#contact", label: "Contact" },
