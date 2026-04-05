@@ -2,7 +2,7 @@ export default function StouttPropertyManagementWebsite() {
   const navLinks = [
     { href: "/services", label: "Services" },
     { href: "/why-switch", label: "Why Switch" },
-    { href: "/founder", label: "Founder" },
+    { href: "/founder", label: "Founder" }, 
     { href: "#about", label: "About" },
     { href: "#coverage", label: "Coverage" },
     { href: "#founder", label: "Founder" },
