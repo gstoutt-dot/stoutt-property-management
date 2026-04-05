@@ -148,6 +148,7 @@ export default function Coverage() {
         </a>
       </section>
 
-    </main>
-  );
+   </main>
+</div>
+);
 }
