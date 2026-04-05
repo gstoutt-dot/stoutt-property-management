@@ -9,7 +9,7 @@ export default function WestonPage() {
             </div>
             <div className="text-2xl font-semibold tracking-tight">
               Stoutt Property Management
-            </div> 
+            </div>
           </div>
 
           <nav className="hidden gap-8 text-sm text-slate-300 md:flex">
@@ -106,30 +106,28 @@ export default function WestonPage() {
           </h2>
 
           <div className="grid gap-4 md:grid-cols-3">
+            <a
+              href="/broward-county-property-management"
+              className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
+            >
+              Broward County
+            </a>
 
-  <a
-    href="/broward-county-property-management"
-    className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
-  >
-    Broward County
-  </a>
+            <a
+              href="/miramar-hoa-condo-property-management"
+              className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
+            >
+              Miramar
+            </a>
 
-  <a
-    href="/miramar-hoa-condo-property-management"
-    className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
-  >
-    Miramar
-  </a>
-
-  <a
-    href="/pompano-beach-condo-property-management"
-    className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
-  >
-    Pompano Beach
-  </a>
-  
-  </div>
-  </section>
+            <a
+              href="/pompano-beach-condo-property-management"
+              className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
+            >
+              Pompano Beach
+            </a>
+          </div>
+        </section>
 
         <section className="text-center">
           <h2 className="mb-4 text-2xl font-semibold">
