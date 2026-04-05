@@ -106,20 +106,29 @@ export default function WestonPage() {
           </h2>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <a
-              href="/broward-county-property-management"
-              className="rounded-2xl border border-white/10 p-5 hover:border-white/30"
-            >
-              Broward County
-            </a>
 
-            <div className="rounded-2xl border border-white/10 p-5 text-slate-400">
-              Miramar
-            </div>
+  <a
+    href="/broward-county-property-management"
+    className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
+  >
+    Broward County
+  </a>
 
-            <div className="rounded-2xl border border-white/10 p-5 text-slate-400">
-              Pompano Beach
-            </div>
+  <a
+    href="/miramar-hoa-condo-property-management"
+    className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
+  >
+    Miramar
+  </a>
+
+  <a
+    href="/pompano-beach-condo-property-management"
+    className="rounded-2xl border border-white/10 p-5 hover:border-white/30 transition"
+  >
+    Pompano Beach
+  </a>
+
+</div>
           </div>
         </section>
 
