@@ -45,7 +45,7 @@ export default function StouttPropertyManagementWebsite() {
   const stats = [
     { value: "82", label: "Associations Managed" },
     { value: "$500M+", label: "Assets Overseen" },
-    { value: "18 Years", label: "Operating Stoutt Property Management" },
+    { value: "18 Years", label: "Operating Sundance Property Management" },
     { value: "40+ Years", label: "Total Industry Experience" },
   ];
 
@@ -77,9 +77,9 @@ export default function StouttPropertyManagementWebsite() {
     },
     {
       period: "18 Years",
-      title: "Building Stoutt Property Management",
+      title: "Building Sundance Property Management",
       text:
-        "Glenn built Stoutt Property Management into one of the largest privately owned property management firms in South Florida, overseeing 82 associations and more than $500 million in managed assets.",
+        "Glenn built Sundance Property Management into one of the largest privately owned property management firms in South Florida from 1991-2010, overseeing 82 associations and more than $500 million in managed assets.",
     },
     {
       period: "Hurricane Andrew Era",
@@ -144,7 +144,7 @@ export default function StouttPropertyManagementWebsite() {
           Redefining Property Management Through Experience, Intelligent Systems and being Proactive.
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-slate-300">
-          Stoutt Property Management delivers next-generation condominium and HOA management across South Florida — combining decades of experience with AI-powered efficiency, proactive leadership, and a design-driven approach to community living.
+          Stoutt Property Management delivers next-generation condominium and HOA management across South Florida — combining 2 decades of experience with AI-powered efficiency, proactive leadership, and a design-driven approach to community living.
         </p>
         <div className="mt-8 flex gap-4">
           <a href="#contact" className="rounded-full bg-white px-6 py-3 text-slate-950 font-semibold">
@@ -225,7 +225,7 @@ export default function StouttPropertyManagementWebsite() {
           {[
             "Instant response to homeowner inquiries",
             "Automated work order tracking and escalation",
-            "Document-based AI answering governing questions",
+            "Document-based AI answering governing documents questions",
             "Operational visibility for boards in real time",
           ].map((item) => (
             <div key={item} className="border border-white/10 p-4 rounded-lg">{item}</div>
@@ -327,7 +327,7 @@ export default function StouttPropertyManagementWebsite() {
               <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">Founder</div>
               <h2 className="mt-4 text-4xl font-semibold tracking-tight">The experience behind Stoutt.</h2>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                Glenn Stoutt III brings more than four decades of leadership across design, development, operations, mentorship, and property management. Over 18 years, he built Stoutt Property Management into one of the largest privately owned property management firms in South Florida, overseeing 82 associations and more than $500 million in assets.
+                Glenn Stoutt III brings more than four decades of leadership across design, development, operations, mentorship, and property management. Over 18 years, he built Sundance Property Management into one of the largest privately owned property management firms in South Florida, overseeing 82 associations and more than $500 million in assets.
               </p>
               <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-300">
                 His background is unusually broad: landscape architecture, large-scale community development, hurricane restoration leadership, nonprofit operations, coaching, mentorship, and association management. That depth gives Stoutt a perspective few firms can match.
