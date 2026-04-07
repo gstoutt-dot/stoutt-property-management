@@ -134,7 +134,7 @@ export default function StouttPropertyManagementWebsite() {
             ))}
           </nav>
           <a href="/proposal" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950">
-            Request a Proposal
+            Request a Proposal NOW
           </a>
         </div>
       </header>
