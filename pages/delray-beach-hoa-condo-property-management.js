@@ -21,7 +21,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
           </nav>
 
           <a
-            href="/contact"
+            href="/proposal"
             className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:scale-[1.03]"
           >
             Request a Proposal
