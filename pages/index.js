@@ -6,7 +6,7 @@ export default function StouttPropertyManagementWebsite() {
     { href: "/collections", label: "Collections" },
     { href: "/coverage", label: "Coverage" },
     { href: "#about", label: "About" },
-    { href: "#contact", label: "Contact" },
+    { href: "/proposal", label: "Proposal" },
   ];
 
   const currentYear = new Date().getFullYear();
@@ -133,7 +133,7 @@ export default function StouttPropertyManagementWebsite() {
               </a>
             ))}
           </nav>
-          <a href="#contact" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950">
+          <a href="/proposal" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950">
             Request a Proposal
           </a>
         </div>
@@ -147,7 +147,7 @@ export default function StouttPropertyManagementWebsite() {
           Stoutt Property Management delivers next-generation condominium and HOA management across South Florida — combining 2 decades of experience with AI-powered efficiency, proactive leadership, and a design-driven approach to community living.
         </p>
         <div className="mt-8 flex gap-4">
-          <a href="#contact" className="rounded-full bg-white px-6 py-3 text-slate-950 font-semibold">
+          <a href="/proposal" className="rounded-full bg-white px-6 py-3 text-slate-950 font-semibold">
             Schedule a Call
           </a>
           <a href="#services" className="rounded-full border border-white/20 px-6 py-3">
@@ -339,7 +339,7 @@ export default function StouttPropertyManagementWebsite() {
                 Since 2003, Glenn has also played a key leadership role in the Keeping Dreams Alive Foundation, helping serve at-risk youth and communities across the United States. Supported in part by Stoutt Property Management, the foundation has provided funding, mentorship, education, and resources to more than 20,000 students and student-athletes — completely free of charge — reinforcing a lifelong commitment to giving back and building future leaders.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
-                <a href="#contact" className="rounded-full bg-white px-6 py-3 text-slate-950 font-semibold">
+                <a href="/proposal" className="rounded-full bg-white px-6 py-3 text-slate-950 font-semibold">
                   Work With Stoutt
                 </a>
                 <a href="#why" className="rounded-full border border-white/20 px-6 py-3 font-semibold text-white">
