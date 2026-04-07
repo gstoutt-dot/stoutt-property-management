@@ -63,23 +63,33 @@ export default function Coverage() {
             </a>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 opacity-75">
-            <h2 className="mb-4 text-xl font-medium">Miami-Dade County</h2>
-            <p className="mb-6 leading-7 text-slate-400">
-              Structured, responsive management for communities requiring visibility,
-              organization, and execution.
-            </p>
-            <span className="text-sm text-slate-500">Coming Soon</span>
-          </div>
+          <div className="group rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/40 hover:bg-white/[0.05]">
+  <h2 className="mb-4 text-xl font-medium">Miami-Dade County</h2>
+  <p className="mb-6 leading-7 text-slate-400">
+    Structured, responsive management for communities requiring visibility,
+    organization, and execution.
+  </p>
+  <a
+    href="/miami-dade-county-property-management"
+    className="inline-flex items-center text-sm font-medium text-cyan-300 transition group-hover:text-cyan-200"
+  >
+    Explore Miami-Dade County →
+  </a>
+</div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 opacity-75">
-            <h2 className="mb-4 text-xl font-medium">Palm Beach County</h2>
-            <p className="mb-6 leading-7 text-slate-400">
-              Supporting associations with consistent oversight, financial stability,
-              and proactive planning.
-            </p>
-            <span className="text-sm text-slate-500">Coming Soon</span>
-          </div>
+          <div className="group rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/40 hover:bg-white/[0.05]">
+  <h2 className="mb-4 text-xl font-medium">Palm Beach County</h2>
+  <p className="mb-6 leading-7 text-slate-400">
+    Supporting associations with consistent oversight, financial stability,
+    and proactive planning.
+  </p>
+  <a
+    href="/palm-beach-county-property-management"
+    className="inline-flex items-center text-sm font-medium text-cyan-300 transition group-hover:text-cyan-200"
+  >
+    Explore Palm Beach County →
+  </a>
+</div>
         </section>
 
         {/* BROWARD CITIES */}
