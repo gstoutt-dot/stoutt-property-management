@@ -134,7 +134,7 @@ export default function StouttPropertyManagementWebsite() {
             ))}
           </nav>
           <a href="/proposal" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950">
-            Request a Proposal NOW
+            GO TO PROPOSAL PAGE
           </a>
         </div>
       </header>
@@ -395,7 +395,7 @@ export default function StouttPropertyManagementWebsite() {
 
       <section id="contact" className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
         <div className="rounded-[2rem] border border-white/10 bg-gradient-to-r from-cyan-400/10 via-slate-900 to-slate-900 p-8 lg:p-10">
-          <h2 className="text-4xl font-semibold">Request a Proposal NOW</h2>
+          <h2 className="text-4xl font-semibold">GO TO PROPOSAL PAGE</h2>
           <p className="mt-4 text-slate-300 max-w-2xl">
             Tell us about your community and we’ll prepare a tailored management proposal designed to improve operations, communication, and financial performance.
           </p>
