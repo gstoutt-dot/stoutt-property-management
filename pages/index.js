@@ -6,7 +6,7 @@ export default function StouttPropertyManagementWebsite() {
     { href: "/collections", label: "Collections" },
     { href: "/coverage", label: "Coverage" },
     { href: "#about", label: "About" },
-    { href="/proposal", label: "Proposal" },
+    { href= "/proposal", label: "Proposal" },
   ];
 
   const currentYear = new Date().getFullYear();
