@@ -45,59 +45,21 @@ export default function Proposal() {
 
         {/* FORM */}
         <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-10">
+  <form
+    action="https://formspree.io/f/mvwvygwp"
+    method="POST"
+    className="space-y-6"
+  >
+    {/* inputs */}
 
-          <form
-            https://formspree.io/f/mwvwywgp
-            method="POST"
-            className="space-y-6"
-          >
-
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              required
-              className="w-full p-4 rounded-lg bg-black border border-white/10"
-            />
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              required
-              className="w-full p-4 rounded-lg bg-black border border-white/10"
-            />
-
-            <input
-              type="text"
-              name="association"
-              placeholder="Association Name"
-              className="w-full p-4 rounded-lg bg-black border border-white/10"
-            />
-
-            <input
-              type="text"
-              name="units"
-              placeholder="Number of Units"
-              className="w-full p-4 rounded-lg bg-black border border-white/10"
-            />
-
-            <textarea
-              name="issues"
-              placeholder="What challenges are you currently experiencing?"
-              rows="5"
-              className="w-full p-4 rounded-lg bg-black border border-white/10"
-            />
-
-            <button
-              type="submit"
-              className="w-full rounded-full bg-white py-4 text-black font-semibold hover:scale-[1.02] transition"
-            >
-              Request Proposal
-            </button>
-
-          </form>
-        </section>
+    <button
+      type="submit"
+      className="w-full rounded-full bg-white py-4 text-black font-semibold hover:scale-[1.02] transition"
+    >
+      Request Proposal
+    </button>
+  </form>
+</section>
 
       </main>
     </div>
