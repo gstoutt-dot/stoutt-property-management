@@ -46,7 +46,7 @@ export default function Proposal() {
         {/* FORM */}
         <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-10">
   <form
-  action=https://formspree.io/f/mwvwywgp
+  action="https://formspree.io/f/mwvwywgp"
   method="POST"
   className="space-y-6"
 >
