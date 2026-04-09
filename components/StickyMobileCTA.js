@@ -4,7 +4,7 @@ export default function StickyMobileCTA() {
       <div className="mx-auto flex max-w-7xl gap-3">
         <a
           href="/proposal"
-          className="flex-1 inline-flex items-center justify-center rounded-full bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+          className="flex-1 inline-flex items-center justify-center rounded-full bg-yellow-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
         >
           Request a Proposal
         </a>
