@@ -58,7 +58,7 @@ export default function ServicesPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),transparent_38%),linear-gradient(180deg,#020617_0%,#020617_48%,#08111f_100%)]" />
           <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
             <div className="max-w-4xl">
-              <div className="inline-flex rounded-full border border-[#D4AF37]/30 bg-[rgba(212,175,55,0.12)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]>
+              <div className="inline-flex rounded-full border border-[#D4AF37] bg-[rgba(212,175,55,0.12)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]>
                 Services
               </div>
 
