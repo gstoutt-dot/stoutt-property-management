@@ -1,5 +1,5 @@
 import SiteHeader from "../components/SiteHeader";
-
+import StickyMobileCTA from "../components/StickyMobileCTA";
 export default function CollectionsPage() {
   const strengths = [
     "Disciplined follow-up and communication",
@@ -183,6 +183,7 @@ export default function CollectionsPage() {
           </div>
         </section>
       </main>
+      <StickyMobileCTA /> 
     </div>
   );
 }
