@@ -1,5 +1,5 @@
 import SiteHeader from "../components/SiteHeader";
-
+import StickyMobileCTA from "../components/StickyMobileCTA";
 export default function ServicesPage() {
   const services = [
     {
@@ -50,7 +50,7 @@ export default function ServicesPage() {
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 pb-24 text-white lg:pb-0">
       <SiteHeader />
 
       <main>
@@ -189,7 +189,9 @@ export default function ServicesPage() {
             </div>
           </div>
         </section>
-      </main>
+            </main>
+
+      <StickyMobileCTA />
     </div>
   );
 }
