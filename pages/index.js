@@ -203,7 +203,7 @@ export default function StouttPropertyManagementHomepage() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur"
+                    className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]"
                   >
                     <div className="text-2xl font-semibold text-white sm:text-3xl">
                       {item.value}
@@ -300,7 +300,7 @@ export default function StouttPropertyManagementHomepage() {
               {reasons.map((reason) => (
                 <div
                   key={reason}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-5"
+                  className="rounded-3xl border border-white/10 bg-white/5 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]"
                 >
                   <div className="mb-3 h-2.5 w-2.5 rounded-full bg-yellow-400" />
                   <p className="text-sm leading-7 text-white/75">{reason}</p>
