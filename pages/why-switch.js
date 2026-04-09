@@ -1,194 +1,181 @@
+import SiteHeader from "../components/SiteHeader";
+
 export default function WhySwitchPage() {
-  const frustrations = [
-    "Slow response times and unresolved homeowner concerns",
-    "Missed inspections and poor follow-through on property issues",
-    "High manager turnover and lack of consistency",
-    "Weak collections processes that hurt cash flow",
-    "Little real relationship-building with board members",
-    "Outdated systems that delay answers and decisions",
+  const problems = [
+    "Slow response times that frustrate boards and residents",
+    "Missed inspections and inconsistent follow-through",
+    "Weak collections processes and unresolved delinquencies",
+    "High staff turnover and lack of continuity",
+    "Little to no real relationship with the board",
+    "Reactive management instead of proactive leadership",
   ];
 
-  const stouttDifference = [
-    "Proactive site presence instead of reactive oversight",
-    "AI-enhanced systems that improve speed and consistency",
-    "Stable leadership with real operational experience",
-    "Board education and partnership, not just administration",
-    "Structured collections processes with accountability built in",
-    "A design-driven perspective that sees communities as living environments",
+  const solutions = [
+    "Faster, more accountable response systems",
+    "Consistent operational follow-through",
+    "Stronger collections coordination and visibility",
+    "Stable, leadership-driven management approach",
+    "Hands-on board relationships",
+    "Proactive systems that prevent issues early",
   ];
+
+  const primaryBtn =
+    "inline-flex items-center justify-center rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300";
+
+  const secondaryBtn =
+    "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/10 bg-slate-950/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <div>
-            <div className="text-xs uppercase tracking-[0.35em] text-cyan-300">
-              Florida Property Management
-            </div>
-            <div className="text-2xl font-semibold tracking-tight">
-              Stoutt Property Management
+      <SiteHeader />
+
+      <main>
+        {/* HERO */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.15),transparent_38%),linear-gradient(180deg,#020617_0%,#020617_48%,#08111f_100%)]" />
+          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+            <div className="max-w-4xl">
+              <div className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
+                Why communities switch
+              </div>
+
+              <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
+                Boards don’t switch management companies lightly.
+              </h1>
+
+              <p className="mt-6 text-lg leading-8 text-white/70 sm:text-xl">
+                Most communities only consider a change after repeated frustrations,
+                missed expectations, and a growing lack of confidence in how things are being handled.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <a href="/proposal" className={primaryBtn}>
+                  Request a Proposal
+                </a>
+                <a href="/services" className={secondaryBtn}>
+                  Explore Services
+                </a>
+              </div>
             </div>
           </div>
+        </section>
 
-          <nav className="hidden gap-8 text-sm text-slate-300 md:flex">
-            <a href="/" className="hover:text-white">Home</a>
-            <a href="/services" className="hover:text-white">Services</a>
-            <a href="/why-switch" className="text-white">Why Switch</a>
-            <a href="/#founder" className="hover:text-white">Founder</a>
-            <a href="/#contact" className="hover:text-white">Contact</a>
-          </nav>
+        {/* PROBLEMS */}
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+          <div className="grid gap-10 lg:grid-cols-2">
+            <div>
+              <h2 className="text-3xl font-semibold sm:text-4xl">
+                What boards are dealing with today
+              </h2>
 
-          <a
-            href="/#contact"
-            className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950"
-          >
-            Request a Proposal
-          </a>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
-        <div className="max-w-4xl">
-          <div className="mb-4 text-sm uppercase tracking-[0.3em] text-cyan-300">
-            Why Communities Switch
-          </div>
-          <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">
-            Communities don’t switch because of price. They switch because they’re tired of being let down.
-          </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-            Most boards stay with the wrong management company longer than they should. Not because everything is working — but because changing feels difficult.
-            The reality is that many communities are already paying the price through poor communication, missed issues, weak collections, and a lack of real leadership.
-          </p>
-        </div>
-      </section>
-
-      <section className="bg-white/[0.03] py-20">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
-          <div>
-            <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-              Common frustration
+              <p className="mt-5 text-base leading-8 text-white/70">
+                The decision to switch usually comes after the same issues continue
+                without improvement.
+              </p>
             </div>
-            <h2 className="mt-4 text-4xl font-semibold tracking-tight">
-              What boards are dealing with every day
-            </h2>
-            <div className="mt-8 space-y-4">
-              {frustrations.map((item) => (
+
+            <div className="grid gap-4">
+              {problems.map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 text-slate-200"
+                  className="rounded-3xl border border-red-400/20 bg-red-400/5 p-5 text-sm leading-7 text-white/75"
                 >
                   {item}
                 </div>
               ))}
             </div>
           </div>
+        </section>
 
-          <div className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-cyan-400/10 via-slate-900 to-slate-900 p-8">
-            <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-              The real cost
+        {/* SOLUTIONS */}
+        <section className="bg-slate-900/60">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div className="grid gap-10 lg:grid-cols-2">
+              <div>
+                <h2 className="text-3xl font-semibold sm:text-4xl">
+                  What changes with the right management
+                </h2>
+
+                <p className="mt-5 text-base leading-8 text-white/70">
+                  With the right structure, leadership, and systems in place, boards
+                  experience a noticeable shift in how the community operates.
+                </p>
+              </div>
+
+              <div className="grid gap-4">
+                {solutions.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-3xl border border-cyan-400/20 bg-cyan-400/5 p-5 text-sm leading-7 text-white/75"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3 className="mt-4 text-3xl font-semibold tracking-tight">
-              Poor management costs more than people think.
-            </h3>
-            <p className="mt-4 text-lg leading-8 text-slate-300">
-              The cost is not just frustration. It shows up in delayed repairs, weaker financial performance, resident dissatisfaction,
-              poor board confidence, and communities that slowly lose momentum because no one is truly leading.
+          </div>
+        </section>
+
+        {/* POSITIONING */}
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-semibold sm:text-4xl">
+              Why Stoutt Property Management is different
+            </h2>
+
+            <p className="mt-6 text-base leading-8 text-white/70">
+              We built this company around a different model — one that combines
+              experience, proactive leadership, and intelligent systems to create
+              faster responses, stronger follow-through, and better visibility for boards.
             </p>
-            <p className="mt-4 text-lg leading-8 text-slate-300">
-              When management becomes reactive, disconnected, or inconsistent, the entire property feels it.
-            </p>
           </div>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-        <div className="max-w-4xl">
-          <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-            Why Stoutt
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {[
+              "Proactive, systems-driven operations",
+              "Real-time responsiveness through smarter tools",
+              "Stronger collections coordination at no extra cost",
+              "Hands-on leadership and board relationships",
+              "Focused on long-term community stability",
+              "Built specifically for Florida HOA and condominium communities",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-sm leading-7 text-white/75"
+              >
+                {item}
+              </div>
+            ))}
           </div>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight">
-            Stoutt was built to correct what other companies normalized.
-          </h2>
-          <p className="mt-6 text-lg leading-8 text-slate-300">
-            After decades in the industry, we’ve seen what too many firms have accepted as normal: poor communication, high turnover,
-            delayed action, weak collections, and little meaningful board partnership. Stoutt Property Management was built to be the opposite.
-          </p>
-        </div>
+        </section>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {stouttDifference.map((item) => (
-            <div
-              key={item}
-              className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      </section>
+        {/* CTA */}
+        <section className="pb-16 sm:pb-20 lg:pb-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-[2rem] border border-cyan-400/20 bg-cyan-400/10 p-8 text-center sm:p-10 lg:p-14">
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-3xl font-semibold sm:text-4xl">
+                  If your board is considering a change, let’s have the right conversation.
+                </h2>
 
-      <section className="bg-white/[0.03] py-20">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1fr_0.95fr]">
-            <div>
-              <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-                Technology + leadership
+                <p className="mt-5 text-base leading-8 text-white/75">
+                  We’ll take the time to understand your community, where things are falling short,
+                  and how a more proactive, systems-driven approach can improve results.
+                </p>
               </div>
-              <h2 className="mt-4 text-4xl font-semibold tracking-tight">
-                Immediate answers. Intelligent systems. Real leadership.
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-slate-300">
-                Most companies are still relying on old processes and slow internal response. Stoutt integrates AI into daily operations so information can move faster,
-                questions can be answered sooner, and problems can begin moving toward resolution immediately.
-              </p>
-              <p className="mt-4 text-lg leading-8 text-slate-300">
-                And when technology reaches its limit, leadership takes over.
-              </p>
-            </div>
 
-            <div className="rounded-[2rem] border border-cyan-400/20 bg-cyan-400/10 p-8">
-              <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-                Stoutt advantage
+              <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <a href="/proposal" className={primaryBtn}>
+                  Request a Proposal
+                </a>
+                <a href="/contact" className={secondaryBtn}>
+                  Schedule a Conversation
+                </a>
               </div>
-              <div className="mt-4 text-3xl font-semibold tracking-tight">
-                “Whatever AI can’t solve, we can.”
-              </div>
-              <p className="mt-4 text-lg leading-8 text-slate-200">
-                Technology handles the process. We handle the relationship. That creates a stronger experience for boards,
-                faster answers for residents, and a more advanced model of property management than most communities are used to seeing.
-              </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
-        <div className="rounded-[2rem] border border-white/10 bg-gradient-to-r from-cyan-400/10 via-slate-900 to-slate-900 p-8 lg:p-10">
-          <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">
-            Next step
-          </div>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight">
-            If your community is ready for something stronger, Stoutt is built for that transition.
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
-            We combine proven leadership, intelligent systems, stronger processes, and a more proactive model designed for communities that expect more.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <a
-              href="/#contact"
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950"
-            >
-              Request a Proposal
-            </a>
-            <a
-              href="/services"
-              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white"
-            >
-              Explore Services
-            </a>
-          </div>
-        </div>
-      </section>
+        </section>
+      </main>
     </div>
   );
 }
