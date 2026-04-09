@@ -1,6 +1,5 @@
 import SiteHeader from "../components/SiteHeader";
 import StickyMobileCTA from "../components/StickyMobileCTA";
-
 export default function CollectionsPage() {
   const strengths = [
     "Disciplined follow-up and communication",
@@ -19,20 +18,21 @@ export default function CollectionsPage() {
   ];
 
   const primaryBtn =
-    "inline-flex items-center justify-center rounded-full bg-yellow-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-400";
+    "inline-flex items-center justify-center rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300";
 
   const secondaryBtn =
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-24 text-white lg:pb-0">
+    <div className="min-h-screen bg-slate-950 text-white">
       <SiteHeader />
 
       <main>
         <section className="relative overflow-hidden">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.14),transparent_38%),linear-gradient(180deg,#020617_0%,#020617_48%,#08111f_100%)]" />
+          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
             <div className="max-w-4xl">
-              <div className="inline-flex rounded-full border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-400">
+              <div className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
                 Collections
               </div>
 
@@ -75,7 +75,7 @@ export default function CollectionsPage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid gap-10 lg:grid-cols-[.95fr_1.05fr] lg:gap-14">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-400">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
                 Why collections matter
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -110,7 +110,7 @@ export default function CollectionsPage() {
         <section className="bg-slate-900/60">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_.9fr] lg:px-8 lg:py-24">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-400">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
                 Our approach
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -128,7 +128,7 @@ export default function CollectionsPage() {
               {outcomes.map((item) => (
                 <div
                   key={item}
-                  className="rounded-3xl border border-yellow-500/20 bg-yellow-500/10 p-5 text-sm leading-7 text-white/75"
+                  className="rounded-3xl border border-cyan-400/20 bg-cyan-400/5 p-5 text-sm leading-7 text-white/75"
                 >
                   {item}
                 </div>
@@ -140,7 +140,7 @@ export default function CollectionsPage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 lg:p-12">
             <div className="max-w-3xl">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-400">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
                 Positioning that matters
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -157,9 +157,9 @@ export default function CollectionsPage() {
 
         <section className="pb-16 sm:pb-20 lg:pb-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[2rem] border border-yellow-500/20 bg-yellow-500/10 p-8 text-center sm:p-10 lg:p-14">
+            <div className="rounded-[2rem] border border-cyan-400/20 bg-cyan-400/10 p-8 text-center sm:p-10 lg:p-14">
               <div className="mx-auto max-w-3xl">
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-400">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
                   Start the conversation
                 </div>
                 <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -183,8 +183,7 @@ export default function CollectionsPage() {
           </div>
         </section>
       </main>
-
-      <StickyMobileCTA />
+      <StickyMobileCTA /> 
     </div>
   );
 }
