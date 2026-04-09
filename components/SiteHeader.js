@@ -17,7 +17,7 @@ export default function SiteHeader() {
     "text-sm font-medium text-white/80 transition hover:text-white";
 
   const primaryBtn =
-    "inline-flex items-center justify-center rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300";
+    "inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300";
 
   const secondaryBtn =
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
@@ -26,11 +26,11 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <a href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10 text-sm font-bold text-cyan-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-yellow-400/30 bg-yellow-400/10 text-sm font-bold text-yellow-300">
             S
           </div>
           <div>
-            <div className="text-sm font-semibold tracking-[0.22em] text-cyan-300">
+            <div className="text-sm font-semibold tracking-[0.22em] text-yellow-300">
               STOUTT PROPERTY
             </div>
             <div className="text-sm text-white/70">Management</div>
