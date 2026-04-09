@@ -278,7 +278,7 @@ export default function ProposalPage() {
               </div>
 
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <a href="/contact" className={secondaryBtn}>
+                <a href="/proposal" className={secondaryBtn}>
                   Schedule a Conversation
                 </a>
                 <a href="/services" className={primaryBtn}>
