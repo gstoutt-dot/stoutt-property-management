@@ -381,7 +381,7 @@ export default function StouttPropertyManagementHomepage() {
                 Why it matters
               </div>
               <div className="mt-6 space-y-5">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]">
                   <div className="text-base font-semibold text-white">
                     Faster answers
                   </div>
@@ -389,7 +389,7 @@ export default function StouttPropertyManagementHomepage() {
                     Reduce frustration by responding faster and tracking requests more intelligently.
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]">
                   <div className="text-base font-semibold text-white">
                     Better accountability
                   </div>
@@ -397,7 +397,7 @@ export default function StouttPropertyManagementHomepage() {
                     Issues do not disappear into email chains. Systems create visibility and follow-up.
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]">
                   <div className="text-base font-semibold text-white">
                     Stronger leadership focus
                   </div>
