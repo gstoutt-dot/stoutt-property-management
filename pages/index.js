@@ -302,18 +302,7 @@ export default function StouttPropertyManagementHomepage() {
                   key={reason}
                   className="rounded-3xl border border-white/10 bg-white/5 p-5"
                 >
-                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-red-500/10 text-red-300">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
+                  <div className="mb-3 h-2.5 w-2.5 rounded-full bg-yellow-400" />
                   <p className="text-sm leading-7 text-white/75">{reason}</p>
                 </div>
               ))}
