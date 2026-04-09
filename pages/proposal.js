@@ -189,7 +189,7 @@ export default function ProposalPage() {
                   </div>
 
                   <form
-                    action="https://formspree.io/f/your-form-id"
+                    action="https://formspree.io/f/mwvwywgp"
                     method="POST"
                     className="space-y-5"
                   >
