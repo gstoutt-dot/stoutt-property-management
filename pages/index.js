@@ -218,7 +218,7 @@ export default function StouttPropertyManagementHomepage() {
 
             <div className="flex items-stretch">
               <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-yellow-950/30">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]"
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]">
                   <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                     Built for boards that expect more
                   </div>
