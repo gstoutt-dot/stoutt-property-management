@@ -137,7 +137,7 @@ export default function ProposalPage() {
                     <input
                       type="text"
                       name="contactName"
-                      className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition placeholder:text-white/30 focus:border-cyan-yellow/40"
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition placeholder:text-white/30 focus:border-yellow-yellow/40"
                       placeholder="Enter contact name"
                     />
                   </div>
