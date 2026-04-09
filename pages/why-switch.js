@@ -168,7 +168,7 @@ export default function WhySwitchPage() {
                 <a href="/proposal" className={primaryBtn}>
                   Request a Proposal
                 </a>
-                <a href="/contact" className={secondaryBtn}>
+                <a href="/proposal" className={secondaryBtn}>
                   Schedule a Conversation
                 </a>
               </div>
