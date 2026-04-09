@@ -167,7 +167,7 @@ export default function ServicesPage() {
               <div className="mx-auto max-w-3xl">
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-400">
   Next step
-</div>
+</div> 
                 </div>
                 <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
                   Let’s talk about what your community needs most.
