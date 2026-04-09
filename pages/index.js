@@ -53,7 +53,7 @@ export default function StouttPropertyManagementHomepage() {
   const linkClasses =
     "text-sm font-medium text-white/80 transition hover:text-white";
   const primaryBtn =
-    "inline-flex items-center justify-center rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300";
+    "inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300";
   const secondaryBtn =
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
 
@@ -62,11 +62,11 @@ export default function StouttPropertyManagementHomepage() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <a href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10 text-sm font-bold text-cyan-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-yellow-400/30 bg-yellow-400/10 text-sm font-bold text-yellow-300">
               S
             </div>
             <div>
-              <div className="text-sm font-semibold tracking-[0.22em] text-cyan-300">
+              <div className="text-sm font-semibold tracking-[0.22em] text-yellow-300">
                 STOUTT PROPERTY
               </div>
               <div className="text-sm text-white/70">Management</div>
@@ -173,7 +173,7 @@ export default function StouttPropertyManagementHomepage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.18),transparent_38%),linear-gradient(180deg,#020617_0%,#020617_48%,#08111f_100%)]" />
           <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.15fr_.85fr] lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
+              <div className="mb-5 inline-flex items-center rounded-full border border-yellow-400/25 bg-yellow-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-300">
                 Florida HOA & Condo Specialists
               </div>
 
@@ -217,9 +217,9 @@ export default function StouttPropertyManagementHomepage() {
             </div>
 
             <div className="flex items-stretch">
-              <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-cyan-950/30">
+              <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-yellow-950/30">
                 <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-6">
-                  <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                  <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                     Built for boards that expect more
                   </div>
 
@@ -231,13 +231,13 @@ export default function StouttPropertyManagementHomepage() {
                       "Hands-on board relationships, not distant management",
                     ].map((item) => (
                       <div key={item} className="flex gap-3">
-                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-300" />
+                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-yellow-300" />
                         <p className="text-sm leading-7 text-white/75">{item}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-6 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-4">
+                  <div className="mt-6 rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-4">
                     <div className="text-sm font-semibold text-cyan-200">
                       Founder-led credibility
                     </div>
@@ -248,7 +248,7 @@ export default function StouttPropertyManagementHomepage() {
                       href="https://glennstoutt.com"
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-4 inline-flex text-sm font-semibold text-cyan-300 hover:text-cyan-200"
+                      className="mt-4 inline-flex text-sm font-semibold text-yellow-300 hover:text-yellow-200"
                     >
                       Explore Founder Story →
                     </a>
@@ -280,7 +280,7 @@ export default function StouttPropertyManagementHomepage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid gap-10 lg:grid-cols-[.95fr_1.05fr] lg:gap-14">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Why communities switch management companies
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -324,7 +324,7 @@ export default function StouttPropertyManagementHomepage() {
         <section className="bg-slate-900/60">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Core services
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -358,9 +358,9 @@ export default function StouttPropertyManagementHomepage() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-          <div className="grid gap-10 rounded-[2rem] border border-cyan-400/15 bg-gradient-to-br from-cyan-400/10 via-slate-900 to-slate-950 p-8 lg:grid-cols-[1fr_.9fr] lg:p-12">
+          <div className="grid gap-10 rounded-[2rem] border border-yellow-400/15 bg-gradient-to-br from-yellow-400/10 via-slate-900 to-slate-950 p-8 lg:grid-cols-[1fr_.9fr] lg:p-12">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Intelligent systems advantage
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -388,7 +388,7 @@ export default function StouttPropertyManagementHomepage() {
             </div>
 
             <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Why it matters
               </div>
               <div className="mt-6 space-y-5">
@@ -425,7 +425,7 @@ export default function StouttPropertyManagementHomepage() {
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="grid gap-10 lg:grid-cols-[1fr_.85fr]">
               <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                   Stronger collections
                 </div>
                 <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -462,7 +462,7 @@ export default function StouttPropertyManagementHomepage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid gap-10 lg:grid-cols-[.9fr_1.1fr]">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Coverage area
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -478,7 +478,7 @@ export default function StouttPropertyManagementHomepage() {
                 <a
                   key={county}
                   href="/coverage"
-                  className="rounded-[2rem] border border-white/10 bg-white/5 p-6 transition hover:border-cyan-300/30 hover:bg-white/[0.07]"
+                  className="rounded-[2rem] border border-white/10 bg-white/5 p-6 transition hover:border-yellow-300/30 hover:bg-white/[0.07]"
                 >
                   <div className="text-lg font-semibold text-white">{county}</div>
                   <div className="mt-2 text-sm leading-7 text-white/65">
@@ -492,9 +492,9 @@ export default function StouttPropertyManagementHomepage() {
 
         <section className="pb-16 sm:pb-20 lg:pb-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[2rem] border border-cyan-400/20 bg-cyan-400/10 p-8 text-center sm:p-10 lg:p-14">
+            <div className="rounded-[2rem] border border-yellow-400/20 bg-cyan-400/10 p-8 text-center sm:p-10 lg:p-14">
               <div className="mx-auto max-w-3xl">
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                   Start the conversation
                 </div>
                 <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -521,7 +521,7 @@ export default function StouttPropertyManagementHomepage() {
       <footer className="border-t border-white/10 bg-slate-950">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
-            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
               Stoutt Property Management
             </div>
             <p className="mt-2 text-sm text-white/60">
