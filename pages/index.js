@@ -56,13 +56,13 @@ export default function HomePage() {
       <main>
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,0.12),transparent_30%),radial-gradient(circle_at_top_right,rgba(234,179,8,0.08),transparent_24%),linear-gradient(180deg,#020617_0%,#020617_52%,#061126_100%)]" />
-          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.08fr_.92fr] lg:px-8 lg:py-20">
-            <div className="max-w-[46rem]">
+          <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.15fr_.85fr] lg:px-8 lg:py-16">
+            <div className="max-w-[52rem]">
               <div className="inline-flex rounded-full border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-400">
                 Florida HOA & Condo Specialists
               </div>
 
-              <h1 className="mt-6 text-4xl font-semibold leading-[1.02] text-white sm:text-5xl lg:text-6xl xl:text-[5.25rem]">
+              <h1 className="mt-6 text-4xl font-semibold leading-[1.02] text-white sm:text-5xl lg:text-[4.25rem]">
                 Redefining property management through experience, intelligent systems,
                 and proactive leadership.
               </h1>
