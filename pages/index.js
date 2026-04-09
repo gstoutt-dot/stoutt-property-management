@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import StickyMobileCTA from "../components/StickyMobileCTA";
 export default function StouttPropertyManagementHomepage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -58,7 +58,7 @@ export default function StouttPropertyManagementHomepage() {
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 pb-24 text-white lg:pb-0">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <a href="/" className="flex items-center gap-3">
@@ -556,6 +556,7 @@ export default function StouttPropertyManagementHomepage() {
           </div>
         </div>
       </footer>
+    <StickyMobileCTA />         
     </div>
   );
 }
