@@ -1,5 +1,5 @@
 import SiteHeader from "../components/SiteHeader";
-
+import StickyMobileCTA from "../components/StickyMobileCTA";
 export default function WhySwitchPage() {
   const problems = [
     "Slow response times that frustrate boards and residents",
@@ -176,6 +176,7 @@ export default function WhySwitchPage() {
           </div>
         </section>
       </main>
+          <StickyMobileCTA />
     </div>
   );
 }
