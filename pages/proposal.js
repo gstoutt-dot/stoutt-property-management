@@ -377,7 +377,11 @@ export default function ProposalPage() {
                       name="_subject"
                       value="New Proposal Request - Stoutt Property Management"
                     />
-
+<input
+  type="hidden"
+  name="_next"
+  value="https://stouttmgmt.com/thank-you"
+/>
                     <button
                       type="submit"
                       className="w-full rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-4 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)] active:scale-[0.99]"
