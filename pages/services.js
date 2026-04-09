@@ -165,8 +165,9 @@ export default function ServicesPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-[2rem] border border-cyan-400/20 bg-cyan-400/10 p-8 text-center sm:p-10 lg:p-14">
               <div className="mx-auto max-w-3xl">
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
-                  Next step
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-400">
+  Next step
+</div>
                 </div>
                 <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
                   Let’s talk about what your community needs most.
