@@ -238,7 +238,7 @@ export default function StouttPropertyManagementHomepage() {
                   </div>
 
                   <div className="mt-6 rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-4">
-                    <div className="text-sm font-semibold text-cyan-200">
+                    <div className="text-sm font-semibold text-yellow-200">
                       Founder-led credibility
                     </div>
                     <p className="mt-2 text-sm leading-7 text-white/70">
@@ -492,7 +492,7 @@ export default function StouttPropertyManagementHomepage() {
 
         <section className="pb-16 sm:pb-20 lg:pb-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[2rem] border border-yellow-400/20 bg-cyan-400/10 p-8 text-center sm:p-10 lg:p-14">
+            <div className="rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-8 text-center sm:p-10 lg:p-14">
               <div className="mx-auto max-w-3xl">
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                   Start the conversation
