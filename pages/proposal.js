@@ -1,5 +1,5 @@
 import SiteHeader from "../components/SiteHeader";
-
+import StickyMobileCTA from "../components/StickyMobileCTA";
 export default function ProposalPage() {
   const benefits = [
     "Direct conversation about your community’s needs",
@@ -289,6 +289,7 @@ export default function ProposalPage() {
           </div>
         </section>
       </main>
+      <StickyMobileCTA />
     </div>
   );
 }
