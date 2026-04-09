@@ -78,7 +78,7 @@ export default function WhySwitchPage() {
               {problems.map((item) => (
                 <div
                   key={item}
-                  className="rounded-3xl border border-red-400/20 bg-red-400/5 p-5 text-sm leading-7 text-white/75"
+                  className="rounded-3xl border border-yellow-400/20 bg-yellow-400/5 p-5 text-sm leading-7 text-white/75"
                 >
                   {item}
                 </div>
