@@ -15,7 +15,7 @@ export default function CoveragePage() {
     "Coconut Creek",
     "Tamarac",
     "Coral Springs",
-    "Hallandale Beach",
+    "Hallandale Beach", 
   ];
 
   const primaryBtn =
