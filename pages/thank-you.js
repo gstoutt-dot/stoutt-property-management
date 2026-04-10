@@ -238,7 +238,7 @@ export default function ThankYouPage() {
 
                  <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
   <a
-    href="https://calendly.com/gstoutt-duck/30min"
+    href="href="https://calendly.com/gstoutt-duck/intro-call-hoa-condo-management"
     className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)]"
   >
     Schedule a Conversation Now
