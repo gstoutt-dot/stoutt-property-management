@@ -236,21 +236,21 @@ export default function ThankYouPage() {
                     </div>
                   </div>
 
-                  <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <a
-                      href="/"
-                      className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)] active:scale-[0.99]"
-                    >
-                      Return to Homepage
-                    </a>
+                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+  <a
+    href="https://calendly.com/YOUR-LINK"
+    className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)]"
+  >
+    Schedule a Conversation Now
+  </a>
 
-                    <a
-                      href="/services"
-                      className="rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-center text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-400/30 hover:bg-white/10"
-                    >
-                      Explore Services
-                    </a>
-                  </div>
+  <a
+    href="/"
+    className="rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-center text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-400/30 hover:bg-white/10"
+  >
+    Return to Homepage
+  </a>
+</div>
 
                   <p className="mt-6 text-center text-xs leading-6 text-white/45">
                     We appreciate the opportunity to learn more about your
