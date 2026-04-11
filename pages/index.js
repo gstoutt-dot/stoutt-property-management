@@ -7,7 +7,7 @@ export default function HomePage() {
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
     { label: "Why Switch", href: "/why-switch" },
-    { label: "Founder", href: "/http://glennstoutt.com" },
+    { label: "Founder", href: "/https://www.glennstoutt.com" },
     { label: "Coverage", href: "/coverage" },
     { label: "Proposal", href: "/proposal" },
   ];
