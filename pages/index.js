@@ -4,13 +4,13 @@ export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Why Switch", href: "/why-switch" },
-    { label: "Founder", href: "https://glennstoutt.com" },
-    { label: "Coverage", href: "/coverage" },
-    { label: "Proposal", href: "/proposal" },
-  ];
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "Why Switch", href: "/why-switch" },
+  { label: "Founder", href: "https://glennstoutt.com", external: true },
+  { label: "Coverage", href: "/coverage" },
+  { label: "Proposal", href: "/proposal" },
+];
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
