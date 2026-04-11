@@ -12,13 +12,13 @@ export default function CoveragePage() {
       name: "Miami-Dade County",
       description:
         "Strategic expansion into communities that value disciplined operations, stronger communication, and a management company built around follow-through and modern systems.",
-      href: "/coverage",
+      href: "/miami-dade-county-property-management",
     },
     {
       name: "Palm Beach County",
       description:
         "Selective growth into well-positioned communities where boards want an experienced, relationship-driven company with a more proactive operating model.",
-      href: "/coverage",
+      href: "/palm-beach-county-property-management",
     },
   ];
 
