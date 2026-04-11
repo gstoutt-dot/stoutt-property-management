@@ -4,20 +4,26 @@ export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Why Switch", href: "/why-switch" },
-  { label: "Founder", href: "https://glennstoutt.com", external: true },
-  { label: "Coverage", href: "/coverage" },
-  { label: "Proposal", href: "/proposal" },
-];
+    { label: "Home", href: "/" },
+    { label: "Services", href: "/services" },
+    { label: "Why Switch", href: "/why-switch" },
+    { label: "Founder", href: "https://glennstoutt.com", external: true },
+    { label: "Coverage", href: "/coverage" },
+    { label: "Proposal", href: "/proposal" },
+  ];
+
+  const premiumCard =
+    "rounded-[2rem] border border-yellow-400/20 bg-white/[0.04] shadow-[0_0_0_1px_rgba(234,179,8,0.06),0_0_30px_rgba(234,179,8,0.10)] backdrop-blur-xl transition-all duration-300 hover:border-yellow-400/40 hover:bg-white/[0.07] hover:shadow-[0_0_0_1px_rgba(234,179,8,0.14),0_0_40px_rgba(234,179,8,0.18)]";
+
+  const premiumButton =
+    "rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_45px_rgba(234,179,8,0.32)]";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-yellow-400/10 blur-3xl" />
         <div className="absolute right-0 top-[20%] h-[420px] w-[420px] rounded-full bg-amber-300/5 blur-3xl" />
-        <div className="absolute left-0 bottom-[10%] h-[360px] w-[360px] rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute bottom-[10%] left-0 h-[360px] w-[360px] rounded-full bg-white/5 blur-3xl" />
       </div>
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
@@ -40,20 +46,17 @@ export default function HomePage() {
 
           <nav className="hidden items-center gap-2 lg:flex">
             {navLinks.map((link) => (
-  <a
-    key={link.label}
-    href={link.href}
-    target={link.external ? "_blank" : "_self"}
-    rel={link.external ? "noopener noreferrer" : undefined}
-    className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
-  >
-    {link.label}
-  </a>
-))}
-            <a
-              href="/proposal"
-              className="ml-2 rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-            >
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.external ? "_blank" : "_self"}
+                rel={link.external ? "noopener noreferrer" : undefined}
+                className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+              >
+                {link.label}
+              </a>
+            ))}
+            <a href="/proposal" className="ml-2 rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]">
               Request a Proposal
             </a>
           </nav>
@@ -93,12 +96,21 @@ export default function HomePage() {
                 <a
                   key={link.label}
                   href={link.href}
+                  target={link.external ? "_blank" : "_self"}
+                  rel={link.external ? "noopener noreferrer" : undefined}
                   className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
                 </a>
               ))}
+              <a
+                href="/proposal"
+                className="mt-2 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
+                onClick={() => setMobileOpen(false)}
+              >
+                Request a Proposal
+              </a>
             </div>
           </div>
         )}
@@ -125,15 +137,10 @@ export default function HomePage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <a
-                  href="/proposal"
-                  className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_45px_rgba(234,179,8,0.32)]"
-                >
+                <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a
-                  href="/services"
-className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-900 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(234,179,8,0.35)]"                >
+                <a href="/services" className={premiumButton}>
                   View Services
                 </a>
               </div>
@@ -145,14 +152,11 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
                   ["20,000+", "Lives Impacted"],
                   ["24/7", "Systems-Driven Response"],
                 ].map(([value, label]) => (
-                  <div
-                    key={label}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-5 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.12)]"
-                  >
-                    <div className="text-2xl font-semibold text-white">
+                  <div key={label} className={`${premiumCard} p-5`}>
+                    <div className="text-2xl font-semibold text-yellow-300">
                       {value}
                     </div>
-                    <div className="mt-1 text-sm leading-6 text-white/60">
+                    <div className="mt-1 text-sm leading-6 text-yellow-100/90">
                       {label}
                     </div>
                   </div>
@@ -162,14 +166,16 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
 
             <div className="relative">
               <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-yellow-400/10 to-transparent blur-2xl" />
-              <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-8">
-                <div className="rounded-[1.5rem] border border-white/10 bg-slate-900/80 p-6">
+              <div
+                className={`${premiumCard} relative p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-8`}
+              >
+                <div className="rounded-[1.5rem] border border-yellow-400/15 bg-slate-900/85 p-6">
                   <div className="mb-6 flex items-center justify-between">
                     <div>
-                      <div className="text-sm font-medium text-white/60">
+                      <div className="text-sm font-medium uppercase tracking-[0.18em] text-yellow-300/85">
                         Board Confidence Dashboard
                       </div>
-                      <div className="mt-1 text-xl font-semibold text-white">
+                      <div className="mt-1 text-xl font-semibold text-yellow-200">
                         Proactive. Responsive. Systems-Driven.
                       </div>
                     </div>
@@ -185,16 +191,18 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
                     ].map((item) => (
                       <div
                         key={item}
-                        className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4"
+                        className="flex items-start gap-3 rounded-2xl border border-yellow-400/15 bg-white/[0.04] p-4 shadow-[0_0_20px_rgba(234,179,8,0.06)]"
                       >
                         <div className="mt-1 h-2.5 w-2.5 rounded-full bg-yellow-300" />
-                        <p className="text-sm leading-7 text-white/75">{item}</p>
+                        <p className="text-sm leading-7 text-yellow-100/90">
+                          {item}
+                        </p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
-                    <p className="text-sm leading-7 text-yellow-100/90">
+                  <div className="mt-6 rounded-2xl border border-yellow-400/25 bg-yellow-400/10 p-4 shadow-[0_0_24px_rgba(234,179,8,0.10)]">
+                    <p className="text-sm leading-7 text-yellow-100">
                       Built for associations that want experienced leadership,
                       better systems, and a management company that acts before
                       small issues become expensive ones.
@@ -242,12 +250,12 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
             ].map((item) => (
               <div
                 key={item.title}
-                className="rounded-3xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(234,179,8,0.15)]"
+                className={`${premiumCard} p-6 hover:-translate-y-1`}
               >
-                <h3 className="text-xl font-semibold text-white">
+                <h3 className="text-xl font-semibold text-yellow-300">
                   {item.title}
                 </h3>
-                <p className="mt-3 text-sm leading-7 text-white/65">
+                <p className="mt-3 text-sm leading-7 text-yellow-100/90">
                   {item.text}
                 </p>
               </div>
@@ -273,12 +281,12 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
             ].map((item) => (
               <div
                 key={item.title}
-                className="rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/8 to-white/4 p-7 transition-all duration-300 hover:border-yellow-400/35 hover:shadow-[0_0_30px_rgba(234,179,8,0.12)]"
+                className={`${premiumCard} bg-gradient-to-b from-white/8 to-white/[0.03] p-7`}
               >
-                <h3 className="text-2xl font-semibold text-white">
+                <h3 className="text-2xl font-semibold text-yellow-300">
                   {item.title}
                 </h3>
-                <p className="mt-4 text-base leading-8 text-white/65">
+                <p className="mt-4 text-base leading-8 text-yellow-100/90">
                   {item.text}
                 </p>
                 <a
@@ -293,7 +301,9 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
         </section>
 
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-10 lg:p-12">
+          <div
+            className={`${premiumCard} p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-10 lg:p-12`}
+          >
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div className="max-w-3xl">
                 <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300/80">
@@ -303,7 +313,7 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
                   If your community is ready for a more responsive management
                   partner, let’s talk.
                 </h2>
-                <p className="mt-5 text-base leading-8 text-white/65 sm:text-lg">
+                <p className="mt-5 text-base leading-8 text-yellow-100/90 sm:text-lg">
                   Request a proposal and start the conversation with a company
                   built for stronger service, better systems, and long-term
                   stewardship.
@@ -311,15 +321,10 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
-                <a
-                  href="/proposal"
-                  className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_45px_rgba(234,179,8,0.32)]"
-                >
+                <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a
-                  href="/proposal" 
-className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-900 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(234,179,8,0.35)]"                >
+                <a href="/proposal" className={premiumButton}>
                   Schedule a Conversation
                 </a>
               </div>
