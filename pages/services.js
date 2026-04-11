@@ -97,7 +97,6 @@ export default function ServicesPage() {
       <SiteHeader />
 
       <main>
-    <h1 style={{color: "red"}}>THIS IS THE NEW SERVICES PAGE</h1>
         {/* HERO */}
         <section className="relative overflow-hidden border-b border-white/10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.05),transparent_28%)]" />
