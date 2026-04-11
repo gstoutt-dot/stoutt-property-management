@@ -319,8 +319,7 @@ className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow
                 </a>
                 <a
                   href="/contact"
-                  className="rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-center text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-400/30 hover:bg-white/10"
-                >
+className="rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-900 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(234,179,8,0.35)]"                >
                   Schedule a Conversation
                 </a>
               </div>
