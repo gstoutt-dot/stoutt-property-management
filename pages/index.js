@@ -133,7 +133,7 @@ export default function HomePage() {
                 </a>
                 <a
                   href="/services"
-                  className="rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-center text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-400/30 hover:bg-white/10"
+                  className="rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-center text-sm font-semibold text-yellow-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-400/30 hover:bg-white/10"
                 >
                   View Services
                 </a>
