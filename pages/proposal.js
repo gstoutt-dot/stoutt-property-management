@@ -12,9 +12,40 @@ export default function ProposalPage() {
     { label: "Proposal", href: "/proposal" },
   ];
 
+  const benefits = [
+    "Experienced HOA and condominium association leadership",
+    "Proactive systems built for stronger communication and follow-through",
+    "Collections strength and operational discipline",
+    "A proposal process designed to be clear, responsive, and professional",
+  ];
+
+  const serviceOptions = [
+    "Full Service Management",
+    "Financial Management",
+    "Collections Support",
+    "Board Guidance",
+    "Operational Oversight",
+    "Proposal Review / Transition Help",
+  ];
+
+  const trustCards = [
+    {
+      title: "Professional First Impression",
+      text: "Your proposal page should feel as strong and credible as the service you intend to deliver.",
+    },
+    {
+      title: "Clear Intake Structure",
+      text: "The form captures the essential information without feeling cold, heavy, or overwhelming.",
+    },
+    {
+      title: "Built to Convert",
+      text: "This page supports trust, clarity, and momentum so interested boards actually take the next step.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="min-h-screen bg-slate-950 pb-24 text-white lg:pb-0">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-yellow-400/10 blur-3xl" />
         <div className="absolute right-0 top-[18%] h-[420px] w-[420px] rounded-full bg-amber-300/5 blur-3xl" />
         <div className="absolute left-0 bottom-[10%] h-[360px] w-[360px] rounded-full bg-white/5 blur-3xl" />
@@ -114,37 +145,34 @@ export default function ProposalPage() {
       </header>
 
       <main className="relative z-10">
-        <section className="mx-auto max-w-7xl px-5 pb-12 pt-16 sm:px-6 sm:pb-16 sm:pt-20 lg:px-8 lg:pb-20 lg:pt-24">
-          <div className="grid items-start gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:gap-14">
+        {/* HERO + FORM */}
+        <section className="mx-auto max-w-7xl px-5 pb-14 pt-16 sm:px-6 sm:pb-16 sm:pt-20 lg:px-8 lg:pb-20 lg:pt-24">
+          <div className="grid items-start gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14">
             <div className="max-w-2xl">
               <div className="mb-5 inline-flex items-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200">
                 Request a Proposal
               </div>
 
               <h1 className="text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl">
-                Start the conversation with a management company built
-                differently.
+                Start the conversation with a management company built differently.
               </h1>
 
               <p className="mt-6 max-w-xl text-base leading-8 text-white/70 sm:text-lg">
-                Tell us about your association and what you are looking for. We
-                will review your needs and follow up with a thoughtful, tailored
-                proposal.
+                Tell us about your association, your current challenges, and what
+                you are looking for in a management partner. We will review your
+                needs and follow up with a thoughtful, tailored proposal.
               </p>
 
               <div className="mt-8 space-y-4">
-                {[
-                  "Experienced HOA and condominium association leadership",
-                  "Proactive systems built for stronger communication and follow-through",
-                  "Collections strength and operational discipline",
-                  "A proposal process designed to be clear, responsive, and professional",
-                ].map((item) => (
+                {benefits.map((item) => (
                   <div
                     key={item}
-                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4"
+                    className="rounded-2xl border border-white/10 bg-white/5 p-4 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/35 hover:bg-white/[0.07] hover:shadow-[0_0_24px_rgba(250,204,21,0.10)]"
                   >
-                    <div className="mt-1 h-2.5 w-2.5 rounded-full bg-yellow-300" />
-                    <p className="text-sm leading-7 text-white/75">{item}</p>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 h-2.5 w-2.5 rounded-full bg-yellow-300" />
+                      <p className="text-sm leading-7 text-white/75">{item}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -153,6 +181,7 @@ export default function ProposalPage() {
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-yellow-300/80">
                   What to expect
                 </div>
+
                 <div className="mt-5 space-y-4">
                   {[
                     ["01", "Submit your community details"],
@@ -168,19 +197,33 @@ export default function ProposalPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="mt-8 rounded-[1.75rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
+                <div className="text-sm font-semibold uppercase tracking-[0.2em] text-yellow-300">
+                  Confidential and no obligation
+                </div>
+                <p className="mt-4 text-sm leading-7 text-white/75">
+                  Your information is reviewed privately and used only to
+                  evaluate your request and follow up regarding management
+                  services.
+                </p>
+              </div>
             </div>
 
             <div className="relative">
               <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-yellow-400/10 to-transparent blur-2xl" />
+
               <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6 lg:p-7">
                 <div className="rounded-[1.75rem] border border-white/10 bg-slate-900/80 p-5 sm:p-6 lg:p-7">
                   <div className="mb-6">
                     <div className="text-sm font-semibold uppercase tracking-[0.22em] text-yellow-300/80">
                       Proposal Request Form
                     </div>
+
                     <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
                       Tell us about your association
                     </h2>
+
                     <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">
                       Complete the form below and we will follow up to discuss
                       your community, current challenges, and the level of
@@ -323,14 +366,7 @@ export default function ProposalPage() {
                         Services Needed
                       </label>
                       <div className="grid gap-3 sm:grid-cols-2">
-                        {[
-                          "Full Service Management",
-                          "Financial Management",
-                          "Collections Support",
-                          "Board Guidance",
-                          "Operational Oversight",
-                          "Proposal Review / Transition Help",
-                        ].map((item) => (
+                        {serviceOptions.map((item) => (
                           <label
                             key={item}
                             className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
@@ -377,11 +413,12 @@ export default function ProposalPage() {
                       name="_subject"
                       value="New Proposal Request - Stoutt Property Management"
                     />
-<input
-  type="hidden"
-  name="_next"
-  value="https://stouttmgmt.com/thank-you"
-/>
+                    <input
+                      type="hidden"
+                      name="_next"
+                      value="https://stouttmgmt.com/thank-you"
+                    />
+
                     <button
                       type="submit"
                       className="w-full rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-4 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)] active:scale-[0.99]"
@@ -401,29 +438,15 @@ export default function ProposalPage() {
           </div>
         </section>
 
+        {/* TRUST STRIP */}
         <section className="mx-auto max-w-7xl px-5 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
           <div className="grid gap-5 md:grid-cols-3">
-            {[
-              {
-                title: "Professional First Impression",
-                text: "Your proposal page should feel as strong and credible as the service you intend to deliver.",
-              },
-              {
-                title: "Clear Intake Structure",
-                text: "The form captures the essential information without feeling cold, heavy, or overwhelming.",
-              },
-              {
-                title: "Built to Convert",
-                text: "This page supports trust, clarity, and momentum so interested boards actually take the next step.",
-              },
-            ].map((item) => (
+            {trustCards.map((item) => (
               <div
                 key={item.title}
-                className="rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/8 to-white/4 p-7 transition-all duration-300 hover:border-yellow-400/35 hover:shadow-[0_0_30px_rgba(234,179,8,0.12)]"
+                className="rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/8 to-white/4 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-yellow-400/35 hover:shadow-[0_0_30px_rgba(234,179,8,0.12)]"
               >
-                <h3 className="text-xl font-semibold text-white">
-                  {item.title}
-                </h3>
+                <h3 className="text-xl font-semibold text-white">{item.title}</h3>
                 <p className="mt-4 text-sm leading-7 text-white/65">
                   {item.text}
                 </p>
@@ -432,6 +455,8 @@ export default function ProposalPage() {
           </div>
         </section>
       </main>
+
+      <StickyMobileCTA />
     </div>
   );
 }
