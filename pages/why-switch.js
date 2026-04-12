@@ -118,9 +118,7 @@ export default function WhySwitchPage() {
                 {problems.map((item) => (
                   <div
                     key={item}
-                    className="rounded-[1.75rem] border border-yellow-400/20 bg-yellow-400/5 p-5 text-sm leading-7 text-white/80"
-                  >
-                    {item}
+className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 text-sm leading-7 text-white/80 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-slate-900/80 hover:text-yellow-200 hover:shadow-[0_0_30px_rgba(250,204,21,0.14)]"                    {item}
                   </div>
                 ))}
               </div>
@@ -153,9 +151,7 @@ export default function WhySwitchPage() {
                 {solutions.map((item) => (
                   <div
                     key={item}
-                    className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/80"
-                  >
-                    {item}
+className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 text-sm leading-7 text-white/80 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-slate-900/80 hover:text-yellow-200 hover:shadow-[0_0_30px_rgba(250,204,21,0.14)]"                    {item}
                   </div>
                 ))}
               </div>
@@ -213,9 +209,7 @@ export default function WhySwitchPage() {
               {differentiators.map((item) => (
                 <div
                   key={item}
-                  className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 text-sm leading-7 text-white/80"
-                >
-                  {item}
+className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 text-sm leading-7 text-white/80 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-slate-900/80 hover:text-yellow-200 hover:shadow-[0_0_30px_rgba(250,204,21,0.14)]"                  {item}
                 </div>
               ))}
             </div>
