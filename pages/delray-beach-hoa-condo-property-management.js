@@ -4,7 +4,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.38em] text-cyan-300">
+            <div className="text-[11px] uppercase tracking-[0.38em] text-amber-400">
               Florida Property Management
             </div>
             <div className="text-2xl font-semibold tracking-tight">
@@ -17,7 +17,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
             <a href="/services" className="transition hover:text-white">Services</a>
             <a href="/founder" className="transition hover:text-white">Founder</a>
             <a href="/coverage" className="transition hover:text-white">Coverage</a>
-            <a href="/contact" className="transition hover:text-white">Contact</a>
+            <a href="/proposal" className="transition hover:text-white">Contact</a>
           </nav>
 
           <a
@@ -31,7 +31,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
 
       <main className="mx-auto max-w-6xl px-6 py-20">
         <section className="mb-20 text-center">
-          <div className="mb-4 text-[11px] uppercase tracking-[0.38em] text-cyan-300">
+          <div className="mb-4 text-[11px] uppercase tracking-[0.38em] text-amber-400">
             Palm Beach County
           </div>
           <h1 className="mx-auto mb-6 max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
@@ -44,14 +44,14 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
-              href="/contact"
+              href="/proposal"
               className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950"
             >
               Request a Proposal
             </a>
             <a
               href="/palm-beach-county-property-management"
-              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold transition hover:border-cyan-300/50 hover:bg-white/[0.04]"
+              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold transition hover:border-amber-400/50 hover:bg-white/[0.04]"
             >
               Back to Palm Beach County
             </a>
@@ -60,7 +60,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
 
         <section className="mb-16 grid gap-8 md:grid-cols-2">
           <div className="rounded-2xl border border-white/10 p-8">
-            <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-300">
+            <div className="mb-3 text-xs uppercase tracking-[0.3em] text-amber-400">
               Why communities switch
             </div>
             <h2 className="mb-4 text-2xl font-semibold">
@@ -103,7 +103,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
           </div>
 
           <div className="rounded-2xl border border-white/10 p-8">
-            <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-300">
+            <div className="mb-3 text-xs uppercase tracking-[0.3em] text-amber-400">
               Our approach
             </div>
             <h2 className="mb-4 text-2xl font-semibold">
@@ -121,7 +121,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
 
         <section className="text-center">
           <div className="rounded-2xl border border-white/10 p-10">
-            <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-300">
+            <div className="mb-3 text-xs uppercase tracking-[0.3em] text-amber-400">
               Next step
             </div>
             <h2 className="mb-4 text-3xl font-semibold">
@@ -132,7 +132,7 @@ export default function DelrayBeachHoaCondoPropertyManagement() {
               support can become stronger.
             </p>
             <a
-              href="/contact"
+              href="/proposal"
               className="inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950"
             >
               Schedule a Consultation
