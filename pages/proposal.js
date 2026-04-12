@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import StickyMobileCTA from "../components/StickyMobileCTA";
 
 export default function ProposalPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
