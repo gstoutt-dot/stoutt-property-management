@@ -9,12 +9,14 @@ export default function HomePage() {
   const PHONE_NUMBER_HREF = "tel:+19540000000";
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Founder", href: "/founder" },
-    { label: "Coverage", href: "/coverage" },
-    { label: "Proposal", href: "/proposal" },
-  ];
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "Why Switch", href: "/why-switch" },
+  { label: "Founder", href: "/founder" },
+  { label: "Collections", href: "/collections" },
+  { label: "Coverage", href: "/coverage" },
+  { label: "Proposal", href: "/proposal" },
+];
 
   const trustStats = [
     { value: "82", label: "Associations Managed" },
