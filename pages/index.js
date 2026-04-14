@@ -121,33 +121,33 @@ export default function HomePage() {
             </Link>
 
             <nav className="hidden items-center gap-8 lg:flex">
-              {navLinks.map((item) => {
-  const isExternal =
-    item.href &&
-    typeof item.href === "string" &&
-    item.href.startsWith("http");
+  {navLinks.map((item) => {
+    const isExternal =
+      item.href &&
+      typeof item.href === "string" &&
+      item.href.startsWith("http");
 
-  return isExternal ? (
-    <a
-      key={item.label}
-      href={item.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-sm font-medium text-white/75 transition hover:text-white"
-    >
-      {item.label}
-    </a>
-  ) : (
-    <Link
-      key={item.label}
-      href={item.href || "#"}
-      className="text-sm font-medium text-white/75 transition hover:text-white"
-    >
-      {item.label}
-    </Link>
-  );
-})}
-            </nav>
+    return isExternal ? (
+      <a
+        key={item.label}
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm font-medium text-white/75 transition hover:text-white"
+      >
+        {item.label}
+      </a>
+    ) : (
+      <Link
+        key={item.label}
+        href={item.href || "#"}
+        className="text-sm font-medium text-white/75 transition hover:text-white"
+      >
+        {item.label}
+      </Link>
+    );
+  })}
+</nav>
 
             <div className="hidden items-center gap-3 lg:flex">
               <Link
