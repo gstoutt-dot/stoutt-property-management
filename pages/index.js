@@ -1,18 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  Phone,
-  Menu,
-  X,
-  ArrowRight,
-  Building2,
-  ShieldCheck,
-  Brain,
-  Users,
-  CheckCircle2,
-  MapPin,
-} from "lucide-react";
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,17 +25,14 @@ export default function HomePage() {
 
   const pillars = [
     {
-      icon: Building2,
       title: "Operational Excellence",
       text: "Responsive, structured management systems that help boards regain confidence and control.",
     },
     {
-      icon: Brain,
       title: "Intelligent Systems",
       text: "AI-powered support, faster communication, and streamlined execution across daily operations.",
     },
     {
-      icon: ShieldCheck,
       title: "Steady Leadership",
       text: "Experienced oversight with the discipline, follow-through, and accountability communities expect.",
     },
@@ -76,20 +61,15 @@ export default function HomePage() {
           name="description"
           content="Stoutt Property Management helps Florida condominium and HOA boards with proactive management, intelligent systems, and experienced leadership."
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div className="min-h-screen bg-slate-950 text-white">
-        {/* Background */}
         <div className="pointer-events-none fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(14,165,233,0.14),transparent_20%),radial-gradient(circle_at_bottom,rgba(15,23,42,0.9),rgba(2,6,23,1))]" />
           <div className="absolute left-1/2 top-0 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
         </div>
 
-        {/* Header */}
         <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
             <Link href="/" className="flex items-center gap-3">
@@ -132,7 +112,7 @@ export default function HomePage() {
                 href={PHONE_NUMBER_HREF}
                 className="inline-flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:scale-[1.02] hover:bg-cyan-300"
               >
-                <Phone className="h-4 w-4" />
+                <span className="text-base leading-none">☎</span>
                 Call Now
               </a>
             </div>
@@ -143,7 +123,7 @@ export default function HomePage() {
               onClick={() => setMobileOpen((prev) => !prev)}
               className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 lg:hidden"
             >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <span className="text-xl leading-none">{mobileOpen ? "✕" : "☰"}</span>
             </button>
           </div>
 
@@ -173,7 +153,7 @@ export default function HomePage() {
                   href={PHONE_NUMBER_HREF}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950"
                 >
-                  <Phone className="h-4 w-4" />
+                  <span className="text-base leading-none">☎</span>
                   Call Now
                 </a>
               </div>
@@ -182,12 +162,11 @@ export default function HomePage() {
         </header>
 
         <main className="relative">
-          {/* Hero */}
           <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 lg:px-8 lg:pb-28 lg:pt-24">
             <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
               <div>
                 <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200">
-                  <ShieldCheck className="h-4 w-4" />
+                  <span>◆</span>
                   Redefining Property Management Through Experience, Intelligent Systems and Being Proactive
                 </div>
 
@@ -207,20 +186,20 @@ export default function HomePage() {
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-base font-semibold text-slate-950 transition hover:scale-[1.01]"
                   >
                     Request a Proposal
-                    <ArrowRight className="h-4 w-4" />
+                    <span>→</span>
                   </Link>
 
                   <a
                     href={PHONE_NUMBER_HREF}
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-6 py-4 text-base font-semibold text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-400/15"
                   >
-                    <Phone className="h-4 w-4" />
+                    <span className="text-base leading-none">☎</span>
                     Call Now
                   </a>
                 </div>
 
                 <div className="mt-10 flex items-center gap-3 text-sm text-white/60">
-                  <MapPin className="h-4 w-4 text-cyan-300" />
+                  <span>📍</span>
                   Serving Broward, Miami-Dade, and Palm Beach counties
                 </div>
               </div>
@@ -237,8 +216,8 @@ export default function HomePage() {
                         A stronger operating partner
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-3">
-                      <Users className="h-6 w-6 text-cyan-300" />
+                    <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-cyan-300">
+                      ✦
                     </div>
                   </div>
 
@@ -253,7 +232,7 @@ export default function HomePage() {
                         key={item}
                         className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4"
                       >
-                        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
+                        <span className="mt-0.5 text-cyan-300">✓</span>
                         <p className="text-sm leading-6 text-white/75">{item}</p>
                       </div>
                     ))}
@@ -265,7 +244,7 @@ export default function HomePage() {
                       href={PHONE_NUMBER_HREF}
                       className="mt-2 inline-flex items-center gap-2 text-lg font-semibold text-white transition hover:text-cyan-200"
                     >
-                      <Phone className="h-5 w-5 text-cyan-300" />
+                      <span className="text-base leading-none">☎</span>
                       {PHONE_NUMBER_DISPLAY}
                     </a>
                   </div>
@@ -274,7 +253,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Trust Strip */}
           <section className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="grid gap-4 rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-sm sm:grid-cols-2 lg:grid-cols-4 lg:p-8">
               {trustStats.map((stat) => (
@@ -293,7 +271,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Pillars */}
           <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
             <div className="max-w-3xl">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-300">
@@ -309,29 +286,25 @@ export default function HomePage() {
             </div>
 
             <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {pillars.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className="group rounded-[2rem] border border-white/10 bg-white/5 p-8 transition hover:-translate-y-1 hover:border-cyan-300/20 hover:bg-white/[0.07]"
-                  >
-                    <div className="inline-flex rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-3">
-                      <Icon className="h-6 w-6 text-cyan-300" />
-                    </div>
-                    <h3 className="mt-6 text-2xl font-semibold text-white">
-                      {item.title}
-                    </h3>
-                    <p className="mt-4 text-base leading-7 text-white/70">
-                      {item.text}
-                    </p>
+              {pillars.map((item) => (
+                <div
+                  key={item.title}
+                  className="group rounded-[2rem] border border-white/10 bg-white/5 p-8 transition hover:-translate-y-1 hover:border-cyan-300/20 hover:bg-white/[0.07]"
+                >
+                  <div className="inline-flex rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-cyan-300">
+                    ✦
                   </div>
-                );
-              })}
+                  <h3 className="mt-6 text-2xl font-semibold text-white">
+                    {item.title}
+                  </h3>
+                  <p className="mt-4 text-base leading-7 text-white/70">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
 
-          {/* Why Switch */}
           <section className="border-y border-white/10 bg-slate-900/50">
             <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[0.95fr_1.05fr] lg:px-8 lg:py-28">
               <div>
@@ -352,7 +325,7 @@ export default function HomePage() {
                     href={PHONE_NUMBER_HREF}
                     className="inline-flex items-center gap-2 rounded-full bg-cyan-400 px-6 py-4 text-base font-semibold text-slate-950 transition hover:scale-[1.01] hover:bg-cyan-300"
                   >
-                    <Phone className="h-4 w-4" />
+                    <span className="text-base leading-none">☎</span>
                     Call Now
                   </a>
                 </div>
@@ -365,7 +338,7 @@ export default function HomePage() {
                     className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5"
                   >
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
+                      <span className="mt-0.5 text-cyan-300">✓</span>
                       <p className="text-sm leading-6 text-white/75">{reason}</p>
                     </div>
                   </div>
@@ -374,7 +347,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Service Area */}
           <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
             <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
@@ -402,7 +374,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Bottom CTA */}
           <section className="mx-auto max-w-7xl px-6 pb-24 lg:px-8">
             <div className="overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-gradient-to-br from-cyan-400/15 via-slate-900 to-slate-950 p-8 shadow-2xl shadow-cyan-950/30 lg:p-12">
               <div className="max-w-3xl">
@@ -413,7 +384,7 @@ export default function HomePage() {
                   If your board is considering a change, let’s talk.
                 </h2>
                 <p className="mt-5 text-lg leading-8 text-white/70">
-                  This homepage version now keeps the experience simple and direct:
+                  This homepage version keeps the experience simple and direct:
                   one strong call to action for faster response and cleaner conversion.
                 </p>
               </div>
@@ -423,7 +394,7 @@ export default function HomePage() {
                   href={PHONE_NUMBER_HREF}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-cyan-400 px-6 py-4 text-base font-semibold text-slate-950 transition hover:scale-[1.01] hover:bg-cyan-300"
                 >
-                  <Phone className="h-4 w-4" />
+                  <span className="text-base leading-none">☎</span>
                   Call Now
                 </a>
 
@@ -432,14 +403,13 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-4 text-base font-semibold text-white transition hover:bg-white/10"
                 >
                   Request a Proposal
-                  <ArrowRight className="h-4 w-4" />
+                  <span>→</span>
                 </Link>
               </div>
             </div>
           </section>
         </main>
 
-        {/* Footer */}
         <footer className="border-t border-white/10 bg-slate-950/80">
           <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 text-sm text-white/55 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div>
@@ -460,20 +430,19 @@ export default function HomePage() {
                 href={PHONE_NUMBER_HREF}
                 className="inline-flex items-center gap-2 font-medium text-cyan-300 transition hover:text-cyan-200"
               >
-                <Phone className="h-4 w-4" />
+                <span className="text-base leading-none">☎</span>
                 {PHONE_NUMBER_DISPLAY}
               </a>
             </div>
           </div>
         </footer>
 
-        {/* Floating Mobile Call Button */}
         <a
           href={PHONE_NUMBER_HREF}
           aria-label="Call Now"
           className="fixed bottom-5 right-5 z-50 inline-flex h-16 w-16 items-center justify-center rounded-full bg-cyan-400 text-slate-950 shadow-2xl shadow-cyan-950/50 transition hover:scale-105 lg:hidden"
         >
-          <Phone className="h-7 w-7" />
+          <span className="text-2xl leading-none">☎</span>
         </a>
       </div>
     </>
