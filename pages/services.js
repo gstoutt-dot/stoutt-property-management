@@ -1,6 +1,8 @@
 import SiteHeader from "../components/SiteHeader";
 import StickyMobileCTA from "../components/StickyMobileCTA";
 
+const PHONE_NUMBER_HREF = "tel:+19540000000";
+
 const services = [
   {
     title: "Full-Service Association Management",
@@ -97,7 +99,6 @@ export default function ServicesPage() {
       <SiteHeader />
 
       <main>
-        {/* HERO */}
         <section className="relative overflow-hidden border-b border-white/10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.05),transparent_28%)]" />
           <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
@@ -123,8 +124,8 @@ export default function ServicesPage() {
                   <a href="/proposal" className={primaryBtn}>
                     Request a Proposal
                   </a>
-                  <a href="/proposal" className={secondaryBtn}>
-                    Schedule a Conversation
+                  <a href={PHONE_NUMBER_HREF} className={secondaryBtn}>
+                    Call Now
                   </a>
                 </div>
               </div>
@@ -153,7 +154,6 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* INTRO */}
         <section className="py-16 sm:py-20 lg:py-24">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
             <div>
@@ -181,7 +181,6 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* SERVICES */}
         <section className="pb-16 sm:pb-20 lg:pb-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-6 lg:grid-cols-2">
@@ -214,7 +213,6 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* DIFFERENTIATORS */}
         <section className="border-y border-white/10 bg-white/[0.03] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
@@ -249,7 +247,6 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* FINAL CTA */}
         <section className="pb-16 pt-16 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-[2rem] border border-yellow-500/20 bg-yellow-500/10 p-8 text-center sm:p-10 lg:p-14">
@@ -274,8 +271,8 @@ export default function ServicesPage() {
                 <a href="/proposal" className={primaryBtn}>
                   Request a Proposal
                 </a>
-                <a href="/proposal" className={secondaryBtn}>
-                  Schedule a Conversation
+                <a href={PHONE_NUMBER_HREF} className={secondaryBtn}>
+                  Call Now
                 </a>
               </div>
             </div>
