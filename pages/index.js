@@ -9,14 +9,14 @@ export default function HomePage() {
   const PHONE_NUMBER_HREF = "tel:+17546004755";
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Why Switch", href: "/why-switch" },
-    { label: "Founder", href: "/founder" },
-    { label: "Collections", href: "/collections" },
-    { label: "Coverage", href: "/coverage" },
-    { label: "Proposal", href: "/proposal" },
-  ];
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "Why Switch", href: "/why-switch" },
+  { label: "Founder", href: "https://glennstoutt.com" },
+  { label: "Collections", href: "/collections" },
+  { label: "Coverage", href: "/coverage" },
+  { label: "Proposal", href: "/proposal" },
+];
 
   const trustStats = [
     { value: "82", label: "Associations Managed" },
@@ -163,14 +163,25 @@ export default function HomePage() {
             <div className="border-t border-white/10 bg-slate-950/95 lg:hidden">
               <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-5">
                 {navLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition hover:bg-white/10"
-                  >
-                    {item.label}
-                  </Link>
+                  {item.href.startsWith("http") ? (
+  <a
+    key={item.label}
+    href={item.href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-sm font-medium text-white/75 hover:text-white"
+  >
+    {item.label}
+  </a>
+) : (
+  <Link
+    key={item.label}
+    href={item.href}
+    className="text-sm font-medium text-white/75 hover:text-white"
+  >
+    {item.label}
+  </Link>
+)}
                 ))}
 
                 <Link
