@@ -17,8 +17,8 @@ import {
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const PHONE_NUMBER_DISPLAY = "(954) 000-0000";
-  const PHONE_NUMBER_HREF = "tel:+19540000000";
+  const PHONE_NUMBER_DISPLAY = "(754) 600-4755";
+  const PHONE_NUMBER_HREF = "tel:+17546004755";
 
   const navLinks = [
     { label: "Home", href: "/" },
