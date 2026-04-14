@@ -3,6 +3,9 @@ import React, { useState } from "react";
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const phoneNumber = "+17546004755";
+  const callHref = `tel:${phoneNumber}`;
+
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
@@ -17,6 +20,12 @@ export default function HomePage() {
 
   const premiumButton =
     "rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_45px_rgba(234,179,8,0.32)]";
+
+  const navButton =
+    "rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow-400/30 hover:bg-white/10 hover:text-yellow-200";
+
+  const mobileMenuButton =
+    "rounded-2xl border px-4 py-3 text-center text-sm font-semibold transition-all duration-300";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -56,6 +65,23 @@ export default function HomePage() {
                 {link.label}
               </a>
             ))}
+
+            <a href={callHref} className={`${navButton} ml-2 inline-flex items-center gap-2`}>
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.89.34 1.76.66 2.59a2 2 0 0 1-.45 2.11L8 9.94a16 16 0 0 0 6.06 6.06l1.52-1.27a2 2 0 0 1 2.11-.45c.83.32 1.7.54 2.59.66A2 2 0 0 1 22 16.92Z" />
+              </svg>
+              Call Now
+            </a>
+
             <a href="/proposal" className="ml-2 rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]">
               Request a Proposal
             </a>
@@ -104,9 +130,18 @@ export default function HomePage() {
                   {link.label}
                 </a>
               ))}
+
+              <a
+                href={callHref}
+                className={`${mobileMenuButton} mt-2 border-white/15 bg-white/5 text-white hover:border-yellow-400/30 hover:bg-white/10 hover:text-yellow-200`}
+                onClick={() => setMobileOpen(false)}
+              >
+                Call Now
+              </a>
+
               <a
                 href="/proposal"
-                className="mt-2 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
+                className={`${mobileMenuButton} border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]`}
                 onClick={() => setMobileOpen(false)}
               >
                 Request a Proposal
@@ -324,15 +359,33 @@ export default function HomePage() {
                 <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a href="/proposal" className={premiumButton}>
-                  Schedule a Conversation
+                <a href={callHref} className={premiumButton}>
+                  Call Now
                 </a>
               </div>
             </div>
           </div>
         </section>
       </main>
+
+      <a
+        href={callHref}
+        aria-label="Call Stoutt Property Management now"
+        className="fixed bottom-5 right-5 z-50 inline-flex h-16 w-16 items-center justify-center rounded-full border border-yellow-300/40 bg-gradient-to-r from-yellow-300 to-amber-400 text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.32)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_45px_rgba(234,179,8,0.42)] lg:hidden"
+      >
+        <svg
+          className="h-7 w-7"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.89.34 1.76.66 2.59a2 2 0 0 1-.45 2.11L8 9.94a16 16 0 0 0 6.06 6.06l1.52-1.27a2 2 0 0 1 2.11-.45c.83.32 1.7.54 2.59.66A2 2 0 0 1 22 16.92Z" />
+        </svg>
+      </a>
     </div>
   );
 }
-
