@@ -12,7 +12,7 @@ export default function HomePage() {
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
   { label: "Why Switch", href: "/why-switch" },
-  { label: "Founder", href: "https://glennstoutt.com" },
+  { label: "Founder", href: "https://glennstoutt.com" }, // external
   { label: "Collections", href: "/collections" },
   { label: "Coverage", href: "/coverage" },
   { label: "Proposal", href: "/proposal" },
@@ -121,15 +121,32 @@ export default function HomePage() {
             </Link>
 
             <nav className="hidden items-center gap-8 lg:flex">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="text-sm font-medium text-white/75 transition hover:text-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navLinks.map((item) => {
+  const isExternal =
+    item.href &&
+    typeof item.href === "string" &&
+    item.href.startsWith("http");
+
+  return isExternal ? (
+    <a
+      key={item.label}
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-sm font-medium text-white/75 transition hover:text-white"
+    >
+      {item.label}
+    </a>
+  ) : (
+    <Link
+      key={item.label}
+      href={item.href || "#"}
+      className="text-sm font-medium text-white/75 transition hover:text-white"
+    >
+      {item.label}
+    </Link>
+  );
+})}
             </nav>
 
             <div className="hidden items-center gap-3 lg:flex">
