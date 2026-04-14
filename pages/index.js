@@ -5,18 +5,18 @@ import { useState } from "react";
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const PHONE_NUMBER_DISPLAY = "(954) 000-0000";
-  const PHONE_NUMBER_HREF = "tel:+19540000000";
+  const PHONE_NUMBER_DISPLAY = "(754) 600-4755";
+  const PHONE_NUMBER_HREF = "tel:+17546004755";
 
   const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Why Switch", href: "/why-switch" },
-  { label: "Founder", href: "/founder" },
-  { label: "Collections", href: "/collections" },
-  { label: "Coverage", href: "/coverage" },
-  { label: "Proposal", href: "/proposal" },
-];
+    { label: "Home", href: "/" },
+    { label: "Services", href: "/services" },
+    { label: "Why Switch", href: "/why-switch" },
+    { label: "Founder", href: "/founder" },
+    { label: "Collections", href: "/collections" },
+    { label: "Coverage", href: "/coverage" },
+    { label: "Proposal", href: "/proposal" },
+  ];
 
   const trustStats = [
     { value: "82", label: "Associations Managed" },
@@ -28,25 +28,43 @@ export default function HomePage() {
   const pillars = [
     {
       title: "Operational Excellence",
-      text: "Responsive, structured management systems that help boards regain confidence and control.",
+      text: "Structured management systems, cleaner execution, and consistent follow-through that help boards regain confidence in daily operations.",
     },
     {
       title: "Intelligent Systems",
-      text: "AI-powered support, faster communication, and streamlined execution across daily operations.",
+      text: "A more modern operating model supported by AI, faster communication workflows, and better visibility across key tasks.",
     },
     {
       title: "Steady Leadership",
-      text: "Experienced oversight with the discipline, follow-through, and accountability communities expect.",
+      text: "Experienced oversight, accountability, and a more proactive management style built for communities that expect more.",
     },
   ];
 
   const reasons = [
-    "Slow response times from management",
-    "Missed inspections and inconsistent follow-through",
-    "Weak collections process and lack of urgency",
+    "Slow response times and unresolved issues",
+    "Missed inspections and weak follow-through",
+    "Poor vendor coordination and delayed updates",
+    "Weak collections discipline and lack of urgency",
     "High staff turnover and constant re-explaining",
     "No real relationship-building with the board",
-    "Too much reactivity and not enough proactive leadership",
+  ];
+
+  const servicesPreview = [
+    {
+      title: "Full-Service Association Management",
+      text: "Day-to-day operational support for condominium and HOA communities with stronger structure and responsiveness.",
+      href: "/services",
+    },
+    {
+      title: "Financial Oversight & Reporting",
+      text: "Clearer board visibility, stronger processes, and better financial coordination to support decision-making.",
+      href: "/services",
+    },
+    {
+      title: "Maintenance & Vendor Coordination",
+      text: "Proactive issue tracking, vendor follow-up, and better communication around maintenance progress.",
+      href: "/services",
+    },
   ];
 
   const serviceAreas = [
@@ -176,93 +194,32 @@ export default function HomePage() {
         </header>
 
         <main className="relative">
-          <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 lg:px-8 lg:pb-28 lg:pt-24">
-            <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
-              <div>
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-4 py-2 text-sm font-medium text-yellow-300">
-                  <span>◆</span>
-                  Redefining Property Management Through Experience, Intelligent Systems and Being Proactive
-                </div>
+          <section className="mx-auto max-w-7xl px-6 pb-20 pt-14 lg:px-8 lg:pb-24 lg:pt-24">
+            <div className="max-w-4xl">
+              <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
+                Florida property management built for boards that expect more.
+              </h1>
 
-                <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
-                  Florida property management built for boards that expect more.
-                </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl">
+                Proactive systems, stronger accountability, and faster response times built for modern HOA and condo boards.
+              </p>
 
-                <p className="mt-6 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl">
-                  Stoutt Property Management helps condominium and HOA boards move
-                  beyond slow response times, inconsistent follow-through, and outdated
-                  management habits with a more proactive, higher-accountability model.
-                </p>
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <Link
+                  href="/proposal"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-base font-semibold text-slate-950 transition hover:scale-[1.01]"
+                >
+                  Request Proposal
+                  <span>→</span>
+                </Link>
 
-                <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                  <Link
-                    href="/proposal"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-base font-semibold text-slate-950 transition hover:scale-[1.01]"
-                  >
-                    Request Proposal
-                    <span>→</span>
-                  </Link>
-
-                  <a
-                    href={PHONE_NUMBER_HREF}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-6 py-4 text-base font-semibold text-yellow-300 transition hover:border-yellow-400/40 hover:bg-yellow-500/15"
-                  >
-                    <span className="text-base leading-none">☎</span>
-                    Call Now
-                  </a>
-                </div>
-
-                <div className="mt-10 flex items-center gap-3 text-sm text-white/60">
-                  <span>📍</span>
-                  Serving Broward, Miami-Dade, and Palm Beach counties
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute -inset-6 rounded-[2rem] bg-yellow-500/10 blur-2xl" />
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-yellow-950/20 backdrop-blur-sm">
-                  <div className="mb-6 flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-yellow-300">
-                        Why boards switch
-                      </div>
-                      <div className="mt-1 text-2xl font-semibold text-white">
-                        A stronger operating partner
-                      </div>
-                    </div>
-                    <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-yellow-300">
-                      ✦
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {[
-                      "Faster communication and cleaner accountability",
-                      "More proactive inspections and follow-through",
-                      "Collections discipline without added confusion",
-                      "A better board relationship, not just a vendor relationship",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4"
-                      >
-                        <span className="mt-0.5 text-yellow-300">✓</span>
-                        <p className="text-sm leading-6 text-white/75">{item}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-r from-white/8 to-yellow-500/10 p-5">
-                    <div className="text-sm text-white/60">Direct line</div>
-                    <a
-                      href={PHONE_NUMBER_HREF}
-                      className="mt-2 inline-flex items-center gap-2 text-lg font-semibold text-white transition hover:text-yellow-300"
-                    >
-                      <span className="text-base leading-none">☎</span>
-                      {PHONE_NUMBER_DISPLAY}
-                    </a>
-                  </div>
-                </div>
+                <a
+                  href={PHONE_NUMBER_HREF}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-yellow-500/30 bg-transparent px-6 py-4 text-base font-semibold text-yellow-300 transition hover:border-yellow-400/40 hover:bg-yellow-500/10"
+                >
+                  <span className="text-base leading-none">☎</span>
+                  Call Now
+                </a>
               </div>
             </div>
           </section>
@@ -294,8 +251,7 @@ export default function HomePage() {
                 A more disciplined, proactive, and intelligent management model.
               </h2>
               <p className="mt-5 text-lg leading-8 text-white/70">
-                We are building a system-driven company designed to help boards
-                feel supported, informed, and confident in the execution.
+                We are building a system-driven company designed to help boards feel supported, informed, and confident in the execution.
               </p>
             </div>
 
@@ -329,19 +285,17 @@ export default function HomePage() {
                   Boards usually start looking when the basics are no longer getting done well.
                 </h2>
                 <p className="mt-5 text-lg leading-8 text-white/70">
-                  The decision to change management usually comes after a pattern:
-                  repeated delays, lack of visibility, inconsistent execution, and a
-                  board that no longer feels supported.
+                  The decision to change management usually comes after a pattern: repeated delays, weak visibility, inconsistent execution, and a board that no longer feels supported.
                 </p>
 
                 <div className="mt-8">
-                  <a
-                    href={PHONE_NUMBER_HREF}
+                  <Link
+                    href="/why-switch"
                     className="inline-flex items-center gap-2 rounded-full bg-yellow-500 px-6 py-4 text-base font-semibold text-slate-950 transition hover:scale-[1.01] hover:bg-yellow-400"
                   >
-                    <span className="text-base leading-none">☎</span>
-                    Call Now
-                  </a>
+                    Explore Why Switch
+                    <span>→</span>
+                  </Link>
                 </div>
               </div>
 
@@ -356,6 +310,48 @@ export default function HomePage() {
                       <p className="text-sm leading-6 text-white/75">{reason}</p>
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
+            <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr]">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-400">
+                  Services
+                </p>
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                  Management support built around execution, responsiveness, and board confidence.
+                </h2>
+                <p className="mt-5 text-lg leading-8 text-white/70">
+                  We help associations operate more effectively with stronger systems, clearer communication, and more disciplined follow-through.
+                </p>
+
+                <div className="mt-8">
+                  <Link
+                    href="/services"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-4 text-base font-semibold text-white transition hover:bg-white/10"
+                  >
+                    View Services
+                    <span>→</span>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid gap-6">
+                {servicesPreview.map((service) => (
+                  <Link
+                    key={service.title}
+                    href={service.href}
+                    className="rounded-[2rem] border border-white/10 bg-white/5 p-8 transition hover:-translate-y-1 hover:border-yellow-400/20 hover:bg-white/[0.07]"
+                  >
+                    <h3 className="text-xl font-semibold text-white">{service.title}</h3>
+                    <p className="mt-3 text-base leading-7 text-white/70">{service.text}</p>
+                    <div className="mt-5 text-sm font-semibold text-yellow-300">
+                      Learn more →
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -406,8 +402,7 @@ export default function HomePage() {
                   If your board is considering a change, let’s talk.
                 </h2>
                 <p className="mt-5 text-lg leading-8 text-white/70">
-                  This homepage keeps the experience simple and direct while still
-                  giving boards the depth and confidence they need before reaching out.
+                  Whether your community needs better responsiveness, stronger systems, or a more proactive operating partner, this is the next step.
                 </p>
               </div>
 
