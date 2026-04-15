@@ -321,13 +321,13 @@ export default function HomePage() {
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
-                <a href="/proposal" className={premiumButton}>
-                  Request a Proposal
-                </a>
-                <a href="/proposal" className={premiumButton}>
-                  Schedule a Conversation
-                </a>
-              </div>
+  <a href="/proposal" className={premiumButton}>
+    Request a Proposal
+  </a>
+  <a href="tel:+17546004755" className={premiumButton}>
+    Call Now
+  </a>
+</div>
             </div>
           </div>
         </section>
