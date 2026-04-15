@@ -16,7 +16,7 @@ export default function SiteHeader() {
   const PHONE_HREF = "tel:+17546004755";
 
   const linkClasses =
-    "text-sm font-medium text-white/80 transition hover:text-white";
+    "whitespace-nowrap text-sm font-medium text-white/80 transition hover:text-white";
 
   const primaryBtn =
     "inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300";
