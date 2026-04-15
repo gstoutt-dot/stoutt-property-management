@@ -4,13 +4,14 @@ export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false); 
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Why Switch", href: "/why-switch" },
-    { label: "Founder", href: "https://glennstoutt.com", external: true },
-    { label: "Coverage", href: "/coverage" },
-    { label: "Proposal", href: "/proposal" },
-  ];
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "Why Switch", href: "/why-switch" },
+  { label: "Founder", href: "https://glennstoutt.com", external: true },
+  { label: "Collections", href: "/collections" },
+  { label: "Coverage", href: "/coverage" },
+  { label: "Proposal", href: "/proposal" },
+];
 
   const premiumCard =
     "rounded-[2rem] border border-yellow-400/20 bg-white/[0.04] shadow-[0_0_0_1px_rgba(234,179,8,0.06),0_0_30px_rgba(234,179,8,0.10)] backdrop-blur-xl transition-all duration-300 hover:border-yellow-400/40 hover:bg-white/[0.07] hover:shadow-[0_0_0_1px_rgba(234,179,8,0.14),0_0_40px_rgba(234,179,8,0.18)]";
