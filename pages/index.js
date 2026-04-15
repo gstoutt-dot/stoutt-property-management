@@ -137,7 +137,7 @@ export default function HomePage() {
               </div>
 
               <h1 className="max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl xl:text-[5.2rem]">
-                Florida property management built for boards that expect more.
+                Florida premier property management built for boards that expect more.
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
