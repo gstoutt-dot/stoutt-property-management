@@ -1,18 +1,7 @@
-import React, { useState } from "react";
+import SiteHeader from "../components/SiteHeader";
 import StickyMobileCTA from "../components/StickyMobileCTA";
 
 export default function ProposalPage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Why Switch", href: "/why-switch" },
-    { label: "Founder", href: "/founder" },
-    { label: "Coverage", href: "/coverage" },
-    { label: "Proposal", href: "/proposal" },
-  ];
-
   const benefits = [
     "Experienced HOA and condominium association leadership",
     "Proactive systems built for stronger communication and follow-through",
@@ -52,107 +41,9 @@ export default function ProposalPage() {
         <div className="absolute left-0 bottom-[10%] h-[360px] w-[360px] rounded-full bg-white/5 blur-3xl" />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
-          <a href="/" className="group flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-yellow-400/25 bg-white/5 shadow-[0_0_30px_rgba(234,179,8,0.08)] transition-all duration-300 group-hover:border-yellow-400/50 group-hover:bg-white/10">
-              <span className="text-lg font-semibold tracking-[0.2em] text-yellow-300">
-                S
-              </span>
-            </div>
-            <div className="leading-tight">
-              <div className="text-[11px] uppercase tracking-[0.28em] text-yellow-300/80">
-                Florida HOA & Condo Management
-              </div>
-              <div className="text-base font-semibold text-white sm:text-lg">
-                Stoutt Property Management
-              </div>
-            </div>
-          </a>
+      <SiteHeader />
 
-          <nav className="hidden items-center gap-2 lg:flex">
-            {navLinks.map((link) => {
-              const isActive = link.href === "/proposal";
-              return (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                    isActive
-                      ? "border border-yellow-400/30 bg-white/5 text-white shadow-[0_0_20px_rgba(234,179,8,0.12)]"
-                      : "border border-transparent text-white/80 hover:border-yellow-400/30 hover:bg-white/5 hover:text-white hover:shadow-[0_0_20px_rgba(234,179,8,0.12)]"
-                  }`}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-            <>
-  <a
-    href="/proposal"
-    className="ml-2 rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-  >
-    Request a Proposal
-  </a>
-
-  <a
-    href="tel:+17546004755"
-    className="ml-2 rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-  >
-    Call Now
-  </a>
-</>
-          </nav>
-
-          <button
-            type="button"
-            aria-label="Toggle menu"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 lg:hidden"
-          >
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {mobileOpen ? (
-                <path d="M6 6l12 12M18 6L6 18" />
-              ) : (
-                <>
-                  <path d="M3 6h18" />
-                  <path d="M3 12h18" />
-                  <path d="M3 18h18" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
-
-        {mobileOpen && (
-          <div className="border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:px-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className={`rounded-2xl border px-4 py-3 text-sm font-medium transition-all duration-300 ${
-                    link.href === "/proposal"
-                      ? "border-yellow-400/30 bg-white/10 text-white"
-                      : "border-white/10 bg-white/5 text-white/85 hover:border-yellow-400/30 hover:bg-white/10"
-                  }`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </header>
+      <main className="relative z-10">
 
       <main className="relative z-10">
         {/* HERO + FORM */}
