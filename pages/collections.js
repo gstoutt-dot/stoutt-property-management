@@ -24,6 +24,9 @@ export default function CollectionsPage() {
   const secondaryBtn =
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
 
+  const premiumHover =
+    "transition-all duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_0_1px_rgba(250,204,21,0.14),0_0_36px_rgba(250,204,21,0.16)]";
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <SiteHeader />
@@ -65,7 +68,7 @@ export default function CollectionsPage() {
             {strengths.map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm font-medium text-white/75 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_26px_rgba(250,204,21,0.10)]"
+                className={`rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm font-medium text-white/75 ${premiumHover}`}
               >
                 {item}
               </div>
@@ -99,7 +102,7 @@ export default function CollectionsPage() {
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_26px_rgba(250,204,21,0.10)]"
+                  className={`rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75 ${premiumHover}`}
                 >
                   {item}
                 </div>
@@ -129,7 +132,7 @@ export default function CollectionsPage() {
               {outcomes.map((item) => (
                 <div
                   key={item}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_26px_rgba(250,204,21,0.10)]"
+                  className={`rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75 ${premiumHover}`}
                 >
                   {item}
                 </div>
@@ -139,7 +142,7 @@ export default function CollectionsPage() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:shadow-[0_0_26px_rgba(250,204,21,0.10)] lg:p-12">
+          <div className={`rounded-[2rem] border border-white/10 bg-white/5 p-8 lg:p-12 ${premiumHover}`}>
             <div className="max-w-3xl">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Positioning that matters
