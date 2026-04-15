@@ -87,12 +87,21 @@ export default function ProposalPage() {
                 </a>
               );
             })}
-            <a
-              href="/proposal"
-              className="ml-2 rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-            >
-              Request a Proposal
-            </a>
+            <>
+  <a
+    href="/proposal"
+    className="ml-2 rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+  >
+    Request a Proposal
+  </a>
+
+  <a
+    href="tel:+17546004755"
+    className="ml-2 rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+  >
+    Call Now
+  </a>
+</>
           </nav>
 
           <button
