@@ -4,14 +4,16 @@ export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/why-switch", label: "Why Switch" },
-  { href: "https://glennstoutt.com", label: "Founder", external: true },
-  { href: "/collections", label: "Collections" },
-  { href: "/coverage", label: "Coverage" },
-  { href: "/proposal", label: "Proposal" },
-];
+    { href: "/", label: "Home" },
+    { href: "/services", label: "Services" },
+    { href: "/why-switch", label: "Why Switch" },
+    { href: "https://glennstoutt.com", label: "Founder", external: true },
+    { href: "/collections", label: "Collections" },
+    { href: "/coverage", label: "Coverage" },
+    { href: "/proposal", label: "Proposal" },
+  ];
+
+  const PHONE_HREF = "tel:+17546004755";
 
   const linkClasses =
     "text-sm font-medium text-white/80 transition hover:text-white";
@@ -52,11 +54,11 @@ export default function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <a href="/services" className={secondaryBtn}>
-            View Services
-          </a>
-          <a href="/proposal" className={primaryBtn}>
+          <a href="/proposal" className={secondaryBtn}>
             Request a Proposal
+          </a>
+          <a href={PHONE_HREF} className={primaryBtn}>
+            Call Now
           </a>
         </div>
 
@@ -121,18 +123,18 @@ export default function SiteHeader() {
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <a
-                href="/services"
+                href="/proposal"
                 onClick={() => setMobileOpen(false)}
                 className={secondaryBtn}
               >
-                View Services
+                Request a Proposal
               </a>
               <a
-                href="/proposal"
+                href={PHONE_HREF}
                 onClick={() => setMobileOpen(false)}
                 className={primaryBtn}
               >
-                Request a Proposal
+                Call Now
               </a>
             </div>
           </div>
