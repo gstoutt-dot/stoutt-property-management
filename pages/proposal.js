@@ -44,9 +44,6 @@ export default function ProposalPage() {
       <SiteHeader />
 
       <main className="relative z-10">
-
-      <main className="relative z-10">
-        {/* HERO + FORM */}
         <section className="mx-auto max-w-7xl px-5 pb-14 pt-16 sm:px-6 sm:pb-16 sm:pt-20 lg:px-8 lg:pb-20 lg:pt-24">
           <div className="grid items-start gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14">
             <div className="max-w-2xl">
@@ -339,7 +336,6 @@ export default function ProposalPage() {
           </div>
         </section>
 
-        {/* TRUST STRIP */}
         <section className="mx-auto max-w-7xl px-5 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
           <div className="grid gap-5 md:grid-cols-3">
             {trustCards.map((item) => (
