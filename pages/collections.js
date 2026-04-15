@@ -1,5 +1,6 @@
 import SiteHeader from "../components/SiteHeader";
 import StickyMobileCTA from "../components/StickyMobileCTA";
+
 export default function CollectionsPage() {
   const strengths = [
     "Disciplined follow-up and communication",
@@ -64,7 +65,7 @@ export default function CollectionsPage() {
             {strengths.map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4 text-sm font-medium text-white/75"
+                className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm font-medium text-white/75 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_26px_rgba(250,204,21,0.10)]"
               >
                 {item}
               </div>
@@ -98,7 +99,7 @@ export default function CollectionsPage() {
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75"
+                  className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_26px_rgba(250,204,21,0.10)]"
                 >
                   {item}
                 </div>
@@ -110,7 +111,7 @@ export default function CollectionsPage() {
         <section className="bg-slate-900/60">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_.9fr] lg:px-8 lg:py-24">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Our approach
               </div>
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
@@ -128,7 +129,7 @@ export default function CollectionsPage() {
               {outcomes.map((item) => (
                 <div
                   key={item}
-                  className="rounded-3xl border border-cyan-400/20 bg-cyan-400/5 p-5 text-sm leading-7 text-white/75"
+                  className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/75 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:text-yellow-200 hover:shadow-[0_0_26px_rgba(250,204,21,0.10)]"
                 >
                   {item}
                 </div>
@@ -138,7 +139,7 @@ export default function CollectionsPage() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 lg:p-12">
+          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:shadow-[0_0_26px_rgba(250,204,21,0.10)] lg:p-12">
             <div className="max-w-3xl">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Positioning that matters
@@ -175,15 +176,15 @@ export default function CollectionsPage() {
                 <a href="/proposal" className={primaryBtn}>
                   Request a Proposal
                 </a>
-                <a href="/proposal" className={secondaryBtn}>
-                  Schedule a Conversation
+                <a href="tel:+17546004755" className={secondaryBtn}>
+                  Call Now
                 </a>
               </div>
             </div>
           </div>
         </section>
       </main>
-      <StickyMobileCTA /> 
+      <StickyMobileCTA />
     </div>
   );
 }
