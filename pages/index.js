@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 export default function HomePage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false); 
 
   const navLinks = [
     { label: "Home", href: "/" },
