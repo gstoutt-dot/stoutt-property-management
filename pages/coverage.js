@@ -121,39 +121,49 @@ export default function CoveragePage() {
         {/* COUNTY CARDS */}
         <section className="py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
-                Counties we serve
-              </div>
-              <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
-                Focused growth with service built around quality.
-              </h2>
-              <p className="mt-5 text-base leading-8 text-white/70">
-                Our approach is not about chasing volume. It is about serving
-                communities where strong board relationships, proactive
-                operations, and a disciplined management structure can make a
-                real difference.
-              </p>
-            </div>
+            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <div className="max-w-3xl">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-yellow-300">
+                  Counties we serve
+                </div>
+                <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+                  Focused growth with service built around quality.
+                </h2>
+                <p className="mt-5 text-base leading-8 text-white/70">
+                  Our approach is not about chasing volume. It is about serving
+                  communities where strong board relationships, proactive
+                  operations, and a disciplined management structure can make a
+                  real difference.
+                </p>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {counties.map((county) => (
-                <a
-                  key={county.name}
-                  href={county.href}
-                  className="group rounded-[2rem] border border-white/10 bg-white/5 p-6 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]"
-                >
-                  <h3 className="text-xl font-semibold text-white transition group-hover:text-yellow-200">
-                    {county.name}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-white/70 transition group-hover:text-yellow-100/90">
-                    {county.description}
-                  </p>
-                  <div className="mt-5 text-sm font-semibold text-yellow-300 transition group-hover:text-yellow-200">
-                    Explore Area →
-                  </div>
-                </a>
-              ))}
+                <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-[0_0_30px_rgba(0,0,0,0.22)]">
+                  <img
+                    src="/condo.jpeg"
+                    alt="Condominium community exterior"
+                    className="h-[300px] w-full object-cover object-center"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                {counties.map((county) => (
+                  <a
+                    key={county.name}
+                    href={county.href}
+                    className="group rounded-[2rem] border border-white/10 bg-white/5 p-6 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]"
+                  >
+                    <h3 className="text-xl font-semibold text-white transition group-hover:text-yellow-200">
+                      {county.name}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-white/70 transition group-hover:text-yellow-100/90">
+                      {county.description}
+                    </p>
+                    <div className="mt-5 text-sm font-semibold text-yellow-300 transition group-hover:text-yellow-200">
+                      Explore Area →
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </section>
