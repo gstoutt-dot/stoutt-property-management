@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 
 export default function HomePage() {
-  const [mobileOpen, setMobileOpen] = useState(false); 
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Why Switch", href: "/why-switch" },
-  { label: "Founder", href: "https://glennstoutt.com", external: true },
-  { label: "Collections", href: "/collections" },
-  { label: "Coverage", href: "/coverage" },
-  { label: "Proposal", href: "/proposal" },
-];
+    { label: "Home", href: "/" },
+    { label: "Services", href: "/services" },
+    { label: "Why Switch", href: "/why-switch" },
+    { label: "Founder", href: "https://glennstoutt.com", external: true },
+    { label: "Collections", href: "/collections" },
+    { label: "Coverage", href: "/coverage" },
+    { label: "Proposal", href: "/proposal" },
+  ];
 
   const premiumCard =
     "rounded-[2rem] border border-yellow-400/20 bg-white/[0.04] shadow-[0_0_0_1px_rgba(234,179,8,0.06),0_0_30px_rgba(234,179,8,0.10)] backdrop-blur-xl transition-all duration-300 hover:border-yellow-400/40 hover:bg-white/[0.07] hover:shadow-[0_0_0_1px_rgba(234,179,8,0.14),0_0_40px_rgba(234,179,8,0.18)]";
@@ -30,40 +30,41 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
           <a href="/" className="flex items-center">
-  <img
-    src="/logo.png"
-    alt="Stoutt Property Management"
-    className="h-20 w-auto object-contain"
-  />
-</a>
-          
-      <nav className="hidden items-center gap-2 lg:flex">
-  {navLinks.map((link) => (
-    <a
-      key={link.label}
-      href={link.href}
-      target={link.external ? "_blank" : "_self"}
-      rel={link.external ? "noopener noreferrer" : undefined}
-      className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
-    >
-      {link.label}
-    </a>
-  ))}
+            <img
+              src="/logo.png"
+              alt="Stoutt Property Management"
+              className="h-20 w-auto object-contain"
+            />
+          </a>
 
-  <a
-    href="/proposal"
-    className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-  >
-    Request a Proposal
-  </a>
+          <nav className="hidden items-center gap-2 lg:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.external ? "_blank" : "_self"}
+                rel={link.external ? "noopener noreferrer" : undefined}
+                className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+              >
+                {link.label}
+              </a>
+            ))}
 
-  <a
-    href="tel:+17546004755"
-    className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-  >
-    Call Now
-  </a>
-</nav>
+            <a
+              href="/proposal"
+              className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+            >
+              Request a Proposal
+            </a>
+
+            <a
+              href="tel:+17546004755"
+              className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+            >
+              Call Now
+            </a>
+          </nav>
+
           <button
             type="button"
             aria-label="Toggle menu"
@@ -120,16 +121,27 @@ export default function HomePage() {
       </header>
 
       <main className="relative z-10">
-        <section className="mx-auto max-w-7xl px-5 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24 lg:pt-24">
+        <section className="mx-auto max-w-7xl px-5 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8 lg:pb-24 lg:pt-20">
           <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200">
-                Redefining Property Management Through Experience, Intelligent
-                Systems and Being Proactive
+              <div className="mb-8">
+                <img
+                  src="/logo.png"
+                  alt="Stoutt Property Management"
+                  className="h-36 w-auto object-contain sm:h-44 lg:h-52 xl:h-56"
+                />
               </div>
 
-              <h1 className="max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl xl:text-[5.2rem]">
-                Florida premier property management built for boards that expect more.
+              <div className="mb-6 inline-flex max-w-[820px] rounded-full border border-yellow-400/20 bg-yellow-400/10 px-5 py-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200 sm:text-xs">
+                  Redefining Property Management Through Experience, Intelligent
+                  Systems and Being Proactive
+                </span>
+              </div>
+
+              <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl">
+                Florida premier property management built for boards that expect
+                more.
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
@@ -138,15 +150,6 @@ export default function HomePage() {
                 faster execution, stronger follow-through, and intelligent
                 systems that keep communities running smoothly.
               </p>
-
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <a href="/proposal" className={premiumButton}>
-                  Request a Proposal
-                </a>
-                <a href="/services" className={premiumButton}>
-                  View Services
-                </a>
-              </div>
 
               <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
@@ -324,13 +327,13 @@ export default function HomePage() {
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
-  <a href="/proposal" className={premiumButton}>
-    Request a Proposal
-  </a>
-  <a href="tel:+17546004755" className={premiumButton}>
-    Call Now
-  </a>
-</div>
+                <a href="/proposal" className={premiumButton}>
+                  Request a Proposal
+                </a>
+                <a href="tel:+17546004755" className={premiumButton}>
+                  Call Now
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -338,7 +341,6 @@ export default function HomePage() {
     </div>
   );
 }
-
 
 
 
