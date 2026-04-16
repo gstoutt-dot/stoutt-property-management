@@ -378,7 +378,65 @@ className="inline-flex items-center justify-center rounded-full border border-wh
             </div>
           </div>
         </section>
+<section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+  <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
+    {/* IMAGE */}
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
+      </div>
+
+      <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+        <img
+          src="/condocanal.jpg"
+          alt="Condominium community aerial view"
+          className="h-[420px] w-full object-cover object-center transition duration-700 hover:scale-105"
+        />
+      </div>
+    </div>
+
+    {/* CONTENT */}
+    <div>
+      <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+        Real experience
+      </div>
+
+      <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+        Real properties. Real oversight.
+      </h2>
+
+      <p className="mt-5 text-base leading-8 text-white/70">
+        Stoutt Property Management is built on real-world experience across
+        condominium and HOA communities — from landscape architectural design
+        and installation to hands-on property management and long-term
+        operational oversight.
+      </p>
+
+      <p className="mt-4 text-base leading-8 text-white/70">
+        This is not theoretical management. It is built from years of direct
+        involvement in how communities are designed, maintained, and operated.
+      </p>
+
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+        <a
+          href="/proposal"
+          className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+        >
+          Request a Proposal
+        </a>
+
+        <a
+          href="/services"
+          className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/5"
+        >
+          View Services
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div
             className={`${premiumCard} p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-10 lg:p-12`}
