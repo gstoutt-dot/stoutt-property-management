@@ -345,7 +345,6 @@ export default function HomePage() {
     </div>
 
   </div>
-</section>
 <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
   <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
