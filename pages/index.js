@@ -333,7 +333,7 @@ export default function HomePage() {
                 <img
                   src="/cessna414.jpeg"
                   alt="Founder flying to meetings"
-                  className="h-[420px] w-full object-cover object-center"
+                  className="h-[420px] w-full object-cover object-[65%_center]"
                 />
               </div>
             </div>
