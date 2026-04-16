@@ -133,6 +133,14 @@ export default function HomePage() {
                 </div>
               </div>
 
+              <div className="mb-8 flex justify-center">
+                <img
+                  src="/logo.png"
+                  alt="Stoutt Property Management"
+                  className="h-48 w-auto object-contain sm:h-56 lg:h-64 xl:h-72"
+                />
+              </div>
+
               <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl">
                 Florida premier property management built for boards that expect
                 more.
@@ -166,10 +174,9 @@ export default function HomePage() {
 
             <div className="relative">
               <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-yellow-400/10 to-transparent blur-2xl" />
-
-              <div className="relative flex flex-col items-center gap-8">
+              <div className="relative flex flex-col items-center gap-4">
                 <div
-                  className={`${premiumCard} w-full p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-8`}
+                  className={`${premiumCard} relative w-full p-6 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-8`}
                 >
                   <div className="rounded-[1.5rem] border border-yellow-400/15 bg-slate-900/85 p-6">
                     <div className="mb-6 flex items-center justify-between">
@@ -213,7 +220,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="relative flex w-full justify-center">
+                <div className="relative -mt-3 flex w-full justify-center sm:-mt-4">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="h-[260px] w-[260px] rounded-full bg-yellow-400/10 blur-3xl sm:h-[320px] sm:w-[320px]" />
                   </div>
@@ -221,7 +228,7 @@ export default function HomePage() {
                   <img
                     src="/logo.png"
                     alt="Stoutt Property Management"
-                    className="relative w-full max-w-[460px] object-contain sm:max-w-[520px] lg:max-w-[560px]"
+                    className="relative w-full max-w-[520px] object-contain sm:max-w-[580px] lg:max-w-[640px]"
                   />
                 </div>
               </div>
