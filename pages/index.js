@@ -13,11 +13,37 @@ export default function HomePage() {
     { label: "Proposal", href: "/proposal" },
   ];
 
+  const selectedProperties = [
+    {
+      image: "/bocawest.jpeg",
+      title: "Luxury Residential Community",
+      text: "Curated environments shaped by high standards, disciplined oversight, and long-term property value protection.",
+    },
+    {
+      image: "/environtowers2.jpeg",
+      title: "High-Rise Condominium Setting",
+      text: "Experience across larger condominium environments where visibility, consistency, and operational follow-through matter.",
+    },
+    {
+      image: "/hoapic2.jpg",
+      title: "HOA Community Environment",
+      text: "Board-focused support built around responsiveness, accountability, and a proactive management structure.",
+    },
+    {
+      image: "/condo.jpeg",
+      title: "South Florida Condominium Property",
+      text: "Real communities and real-world property experience informing the service model behind Stoutt Property Management.",
+    },
+  ];
+
   const premiumCard =
     "rounded-[2rem] border border-yellow-400/20 bg-white/[0.04] shadow-[0_0_0_1px_rgba(234,179,8,0.06),0_0_30px_rgba(234,179,8,0.10)] backdrop-blur-xl transition-all duration-300 hover:border-yellow-400/40 hover:bg-white/[0.07] hover:shadow-[0_0_0_1px_rgba(234,179,8,0.14),0_0_40px_rgba(234,179,8,0.18)]";
 
   const premiumButton =
     "rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-3.5 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_45px_rgba(234,179,8,0.32)]";
+
+  const subtleButton =
+    "inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/5";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -322,7 +348,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
+        <section className="mx-auto max-w-7xl px-5 pb-16 pt-8 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center justify-center">
@@ -371,72 +397,123 @@ export default function HomePage() {
 
                 <a
                   href="/proposal"
-className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/5"                >
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/5"
+                >
                   Request a Proposal
                 </a>
               </div>
             </div>
           </div>
         </section>
-<section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-  <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
-    {/* IMAGE */}
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
-      </div>
+        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
+              </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
-        <img
-  src="/condocanal.jpg"
-  alt="Condominium community aerial view"
-  className="h-[420px] w-full object-cover object-[60%_center] transition duration-700 hover:scale-105"
-/>
-      </div>
-    </div>
+              <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+                <img
+                  src="/condocanal.jpg"
+                  alt="Condominium community aerial view"
+                  className="h-[420px] w-full object-cover object-[60%_center] transition duration-700 hover:scale-105"
+                />
+              </div>
+            </div>
 
-    {/* CONTENT */}
-    <div>
-      <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
-        Real experience
-      </div>
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+                Real experience
+              </div>
 
-      <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
-        Real properties. Real oversight.
-      </h2>
+              <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+                Real properties. Real oversight.
+              </h2>
 
-      <p className="mt-5 text-base leading-8 text-white/70">
-        Stoutt Property Management is built on real-world experience across
-        condominium and HOA communities — from landscape architectural design
-        and installation to hands-on property management and long-term
-        operational oversight.
-      </p>
+              <p className="mt-5 text-base leading-8 text-white/70">
+                Stoutt Property Management is built on real-world experience across
+                condominium and HOA communities — from landscape architectural design
+                and installation to hands-on property management and long-term
+                operational oversight.
+              </p>
 
-      <p className="mt-4 text-base leading-8 text-white/70">
-        This is not theoretical management. It is built from years of direct
-        involvement in how communities are designed, maintained, and operated.
-      </p>
+              <p className="mt-4 text-base leading-8 text-white/70">
+                This is not theoretical management. It is built from years of direct
+                involvement in how communities are designed, maintained, and operated.
+              </p>
 
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-        <a
-          href="/proposal"
-          className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
-        >
-          Request a Proposal
-        </a>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <a
+                  href="/proposal"
+                  className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+                >
+                  Request a Proposal
+                </a>
 
-        <a
-          href="/services"
-          className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/5"
-        >
-          View Services
-        </a>
-      </div>
-    </div>
+                <a
+                  href="/services"
+                  className={subtleButton}
+                >
+                  View Services
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
-  </div>
-</section>
+        <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
+          <div className="flex items-end justify-between gap-6">
+            <div className="max-w-3xl">
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+                Selected properties
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+                Curated examples of real property environments behind the standard.
+              </h2>
+              <p className="mt-5 text-base leading-8 text-white/70">
+                A controlled glimpse into the types of communities and property settings
+                that have shaped the operating discipline behind Stoutt Property Management.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {selectedProperties.map((property) => (
+              <div
+                key={property.title}
+                className="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 transition duration-300 hover:-translate-y-1 hover:border-yellow-300/40 hover:bg-white/[0.07] hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={property.image}
+                    alt={property.title}
+                    className="h-[240px] w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-white transition group-hover:text-yellow-200">
+                    {property.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-white/70 transition group-hover:text-yellow-100/90">
+                    {property.text}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <a href="/proposal" className={premiumButton}>
+              Request a Proposal
+            </a>
+            <a href="/owner-access" className={subtleButton}>
+              Owner Access
+            </a>
+          </div>
+        </section>
+
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div
             className={`${premiumCard} p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-10 lg:p-12`}
@@ -461,8 +538,8 @@ className="inline-flex items-center justify-center rounded-full border border-wh
                 <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a href="tel:+17546004755" className={premiumButton}>
-                  Call Now
+                <a href="/owner-access" className={subtleButton}>
+                  Owner Access
                 </a>
               </div>
             </div>
