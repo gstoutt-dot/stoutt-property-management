@@ -371,8 +371,7 @@ export default function HomePage() {
 
                 <a
                   href="/proposal"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
-                >
+className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/5"                >
                   Request a Proposal
                 </a>
               </div>
