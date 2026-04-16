@@ -124,21 +124,20 @@ export default function HomePage() {
         <section className="mx-auto max-w-7xl px-5 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8 lg:pb-24 lg:pt-20">
           <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
             <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-              <div className="mb-8">
+              <div className="mb-6 flex justify-center">
+  <div className="inline-flex max-w-[900px] justify-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-6 py-3">
+    <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-yellow-200 sm:text-xs">
+      Redefining Property Management Through Experience, Intelligent Systems and Being Proactive
+    </span>
+  </div>
+</div>
+          <div className="mb-8">
                 <img
                   src="/logo.png"
                   alt="Stoutt Property Management"
                   className="h-48 w-auto object-contain sm:h-56 lg:h-64 xl:h-72"
                 />
-              </div>
-
-              <div className="mb-6 inline-flex max-w-[820px] rounded-full border border-yellow-400/20 bg-yellow-400/10 px-5 py-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200 sm:text-xs">
-                  Redefining Property Management Through Experience, Intelligent
-                  Systems and Being Proactive
-                </span>
-              </div>
-
+              
               <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl">
                 Florida premier property management built for boards that expect
                 more.
