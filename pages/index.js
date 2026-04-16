@@ -125,19 +125,22 @@ export default function HomePage() {
           <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
             <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
               <div className="mb-6 flex justify-center">
-  <div className="inline-flex max-w-[900px] justify-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-6 py-3">
-    <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-yellow-200 sm:text-xs">
-      Redefining Property Management Through Experience, Intelligent Systems and Being Proactive
-    </span>
-  </div>
-</div>
-          <div className="mb-8">
+                <div className="inline-flex max-w-[900px] justify-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-6 py-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-yellow-200 sm:text-xs">
+                    Redefining Property Management Through Experience, Intelligent
+                    Systems and Being Proactive
+                  </span>
+                </div>
+              </div>
+
+              <div className="mb-8 flex justify-center">
                 <img
                   src="/logo.png"
                   alt="Stoutt Property Management"
                   className="h-48 w-auto object-contain sm:h-56 lg:h-64 xl:h-72"
                 />
-              
+              </div>
+
               <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl">
                 Florida premier property management built for boards that expect
                 more.
@@ -150,7 +153,7 @@ export default function HomePage() {
                 systems that keep communities running smoothly.
               </p>
 
-              <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="mt-10 grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
                   ["82", "Associations Managed"],
                   ["$500M+", "Assets Overseen"],
