@@ -29,21 +29,15 @@ export default function HomePage() {
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
-          <a href="/" className="group flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-yellow-400/25 bg-white/5 shadow-[0_0_30px_rgba(234,179,8,0.08)] transition-all duration-300 group-hover:border-yellow-400/50 group-hover:bg-white/10">
-              <span className="text-lg font-semibold tracking-[0.2em] text-yellow-300">
-                S
-              </span>
-            </div>
-            <a href="/" className="flex items-center">
+          <a href="/" className="flex items-center">
   <img
     src="/logo.png"
     alt="Stoutt Property Management"
-    className="h-24 w-auto object-contain"
+    className="h-20 w-auto object-contain"
   />
 </a>
-
-          <nav className="hidden items-center gap-2 lg:flex">
+          
+      <nav className="hidden items-center gap-2 lg:flex">
   {navLinks.map((link) => (
     <a
       key={link.label}
