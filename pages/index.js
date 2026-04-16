@@ -123,12 +123,12 @@ export default function HomePage() {
       <main className="relative z-10">
         <section className="mx-auto max-w-7xl px-5 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8 lg:pb-24 lg:pt-20">
           <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
-            <div className="max-w-3xl">
+            <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
               <div className="mb-8">
                 <img
                   src="/logo.png"
                   alt="Stoutt Property Management"
-                  className="h-36 w-auto object-contain sm:h-44 lg:h-52 xl:h-56"
+                  className="h-48 w-auto object-contain sm:h-56 lg:h-64 xl:h-72"
                 />
               </div>
 
