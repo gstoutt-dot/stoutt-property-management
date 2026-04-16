@@ -285,127 +285,101 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-  <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <div className="grid gap-6 lg:grid-cols-3">
+            {[
+              {
+                title: "Hands-On Leadership",
+                text: "Experienced oversight, stronger accountability, and a more direct relationship with your board.",
+              },
+              {
+                title: "Intelligent Systems",
+                text: "Technology that accelerates communication, tracking, follow-up, and operational clarity.",
+              },
+              {
+                title: "Proactive Management",
+                text: "A management approach built to identify issues early and keep communities moving forward.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className={`${premiumCard} bg-gradient-to-b from-white/8 to-white/[0.03] p-7`}
+              >
+                <h3 className="text-2xl font-semibold text-yellow-300">
+                  {item.title}
+                </h3>
+                <p className="mt-4 text-base leading-8 text-yellow-100/90">
+                  {item.text}
+                </p>
+                <a
+                  href="/services"
+                  className="mt-6 inline-flex text-sm font-semibold text-yellow-300 transition-all duration-300 hover:text-yellow-200"
+                >
+                  Explore
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
 
-    {/* IMAGE */}
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
-      </div>
+        <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
+              </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
-        <img
-          src="/cessna414.jpeg"
-          alt="Founder flying to meetings"
-          className="h-[420px] w-full object-cover object-center"
-        />
-      </div>
-    </div>
+              <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+                <img
+                  src="/cessna414.jpeg"
+                  alt="Founder flying to meetings"
+                  className="h-[420px] w-full object-cover object-center"
+                />
+              </div>
+            </div>
 
-    {/* CONTENT */}
-    <div>
-      <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
-        Founder-led
-      </div>
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+                Founder-led
+              </div>
 
-      <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
-        Leadership that shows up.
-      </h2>
+              <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+                Leadership that shows up.
+              </h2>
 
-      <p className="mt-5 text-base leading-8 text-white/70">
-        Stoutt Property Management is built on hands-on leadership, discipline,
-        and a level of accountability that boards can rely on. This is not a
-        layered corporate structure — it is direct, experienced oversight
-        backed by systems designed to execute.
-      </p>
+              <p className="mt-5 text-base leading-8 text-white/70">
+                Stoutt Property Management is built on hands-on leadership,
+                discipline, and a level of accountability that boards can rely
+                on. This is not a layered corporate structure — it is direct,
+                experienced oversight backed by systems designed to execute.
+              </p>
 
-      <p className="mt-4 text-base leading-8 text-white/70">
-        When service matters, responsiveness is not limited by distance — it is
-        driven by commitment.
-      </p>
+              <p className="mt-4 text-base leading-8 text-white/70">
+                When service matters, responsiveness is not limited by distance —
+                it is driven by commitment.
+              </p>
 
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-        <a
-          href="https://glennstoutt.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
-        >
-          Meet the Founder
-        </a>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <a
+                  href="https://glennstoutt.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+                >
+                  Meet the Founder
+                </a>
 
-        <a
-          href="/proposal"
-          className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
-        >
-          Request a Proposal
-        </a>
-      </div>
-    </div>
+                <a
+                  href="/proposal"
+                  className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
+                >
+                  Request a Proposal
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
-  </div>
-<section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
-  <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-
-    {/* IMAGE */}
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
-      </div>
-
-      <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
-        <img
-          src="/cessna414.jpeg"
-          alt="Founder flying to meetings"
-          className="h-[420px] w-full object-cover object-center"
-        />
-      </div>
-    </div>
-
-    {/* CONTENT */}
-    <div>
-      <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
-        Founder-led
-      </div>
-
-      <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
-        Leadership that shows up.
-      </h2>
-
-      <p className="mt-5 text-base leading-8 text-white/70">
-        Stoutt Property Management is built on hands-on leadership, discipline,
-        and a level of accountability that boards can rely on. This is not a
-        layered corporate structure — it is direct, experienced oversight
-        backed by systems designed to execute.
-      </p>
-
-      <p className="mt-4 text-base leading-8 text-white/70">
-        When service matters, responsiveness is not limited by distance — it is
-        driven by commitment.
-      </p>
-
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-        <a
-          href="https://glennstoutt.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
-        >
-          Meet the Founder
-        </a>
-
-        <a
-          href="/proposal"
-          className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
-        >
-          Request a Proposal
-        </a>
-      </div>
-    </div>
-
-  </div>
-</section>
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div
             className={`${premiumCard} p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:p-10 lg:p-12`}
