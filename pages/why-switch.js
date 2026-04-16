@@ -96,7 +96,7 @@ export default function WhySwitchPage() {
         {/* PROBLEMS */}
         <section className="py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-10 lg:grid-cols-2">
+            <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
               <div>
                 <h2 className="text-3xl font-semibold sm:text-4xl">
                   What boards are dealing with
@@ -104,6 +104,14 @@ export default function WhySwitchPage() {
                 <p className="mt-5 text-white/70">
                   These are the patterns we see again and again.
                 </p>
+
+                <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-[0_0_30px_rgba(0,0,0,0.22)]">
+                  <img
+                    src="/whyswitch1.jpg"
+                    alt="Board members in discussion"
+                    className="h-[420px] w-full object-cover object-center"
+                  />
+                </div>
               </div>
 
               <div className="grid gap-4">
@@ -123,11 +131,19 @@ export default function WhySwitchPage() {
         {/* SOLUTIONS */}
         <section className="border-y border-white/10 bg-white/[0.03] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-10 lg:grid-cols-2">
+            <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
               <div>
                 <h2 className="text-3xl font-semibold sm:text-4xl">
                   What changes when management is done right
                 </h2>
+
+                <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-[0_0_30px_rgba(0,0,0,0.22)]">
+                  <img
+                    src="/whyswitch2.jpg"
+                    alt="Board members meeting with confidence"
+                    className="h-[420px] w-full object-cover object-center"
+                  />
+                </div>
               </div>
 
               <div className="grid gap-4">
