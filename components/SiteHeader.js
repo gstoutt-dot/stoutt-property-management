@@ -31,7 +31,7 @@ export default function SiteHeader() {
   <img
     src="/logo.png"
     alt="Stoutt Property Management"
-    className="h-25 w-auto object-contain"
+    className="h-24 w-auto object-contain"
   />
 </a>
 
