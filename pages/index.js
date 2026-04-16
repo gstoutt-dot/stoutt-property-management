@@ -389,7 +389,7 @@ className="inline-flex items-center justify-center rounded-full border border-wh
 
       <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
         <img
-          src="/condocanal.jpg"
+          src="/environtowers2.jpg"
           alt="Condominium community aerial view"
           className="h-[420px] w-full object-cover object-center transition duration-700 hover:scale-105"
         />
