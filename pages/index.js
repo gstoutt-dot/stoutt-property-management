@@ -35,15 +35,13 @@ export default function HomePage() {
                 S
               </span>
             </div>
-            <div className="leading-tight">
-              <div className="text-[11px] uppercase tracking-[0.28em] text-yellow-300/80">
-                Florida HOA & Condo Management
-              </div>
-              <div className="text-base font-semibold text-white sm:text-lg">
-                Stoutt Property Management
-              </div>
-            </div>
-          </a>
+            <a href="/" className="flex items-center">
+  <img
+    src="/logo.png"
+    alt="Stoutt Property Management"
+    className="h-24 w-auto object-contain"
+  />
+</a>
 
           <nav className="hidden items-center gap-2 lg:flex">
   {navLinks.map((link) => (
