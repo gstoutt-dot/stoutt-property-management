@@ -333,7 +333,7 @@ export default function HomePage() {
                 <img
                   src="/cessna414.jpeg"
                   alt="Founder flying to meetings"
-                  className="h-[420px] w-full object-cover object-[65%_center]"
+                  className="h-[420px] w-full object-cover object-[70%_center] transition duration-700 hover:scale-105"
                 />
               </div>
             </div>
