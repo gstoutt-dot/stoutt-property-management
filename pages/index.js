@@ -123,30 +123,28 @@ export default function HomePage() {
         <section className="mx-auto max-w-7xl px-5 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20 lg:px-8 lg:pb-24 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200">
-                Redefining Property Management Through Experience, Intelligent
-                Systems and Being Proactive
-              </div>
+  <div className="mb-8">
+    <img
+      src="/logo.png"
+      alt="Stoutt Property Management"
+      className="h-40 w-auto object-contain sm:h-48 lg:h-56"
+    />
+  </div>
 
-              <h1 className="max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl xl:text-[5.2rem]">
-                Florida premier property management built for boards that expect more.
-              </h1>
+  <div className="mb-6 inline-flex rounded-full border border-yellow-400/20 bg-yellow-400/10 px-5 py-3">
+    <span className="text-xs font-semibold uppercase tracking-[0.28em] text-yellow-300 sm:text-sm">
+      Redefining Property Management Through Experience, Intelligent Systems and Being Proactive
+    </span>
+  </div>
 
-              <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
-                Stoutt Property Management delivers a higher standard of HOA and
-                condominium association management through deep experience,
-                faster execution, stronger follow-through, and intelligent
-                systems that keep communities running smoothly.
-              </p>
+  <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
+    Florida premier property management built for boards that expect more.
+  </h1>
 
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <a href="/proposal" className={premiumButton}>
-                  Request a Proposal
-                </a>
-                <a href="/services" className={premiumButton}>
-                  View Services
-                </a>
-              </div>
+  <p className="mt-8 max-w-2xl text-lg leading-8 text-white/75 sm:text-xl">
+    Stoutt Property Management delivers a higher standard of HOA and condominium association management through deep experience, faster execution, stronger follow-through, and intelligent systems that keep communities running smoothly.
+  </p>
+</div>
 
               <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
