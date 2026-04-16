@@ -27,17 +27,13 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <a href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-yellow-400/30 bg-yellow-400/10 text-sm font-bold text-yellow-300">
-            S
-          </div>
-          <div>
-            <div className="text-sm font-semibold tracking-[0.22em] text-yellow-300">
-              STOUTT PROPERTY
-            </div>
-            <div className="text-sm text-white/70">Management</div>
-          </div>
-        </a>
+        <a href="/" className="flex items-center">
+  <img
+    src="/logo.png"
+    alt="Stoutt Property Management"
+    className="h-16 w-auto object-contain"
+  />
+</a>
 
         <nav className="hidden items-center gap-6 lg:flex">
           {navLinks.map((link) => (
