@@ -6,19 +6,16 @@ export default function OwnerLoginPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-sm font-semibold tracking-[0.22em] text-amber-300">
-              SPM
-            </div>
-            <div>
-              <div className="text-sm font-semibold tracking-[0.28em] text-white">
-                STOUTT
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.35em] text-white/50">
-                Property Management
-              </div>
-            </div>
-          </Link>
+          <Link href="/" className="flex items-center">
+  <Image
+    src="/logo.png"
+    alt="Stoutt Property Management"
+    width={180}
+    height={60}
+    className="h-12 w-auto object-contain"
+    priority
+  />
+</Link>
 
           <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
             <Link href="/" className="transition hover:text-white">
