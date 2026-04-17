@@ -128,30 +128,7 @@ export default function OwnerLoginPage() {
                 ))}
               </div>
 
-              <div className="mt-10 rounded-[1.75rem] border border-amber-400/20 bg-amber-400/8 p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">
-                      Portal Status
-                    </div>
-                    <p className="mt-2 text-sm leading-7 text-white/65">
-                      White-labeled homeowner portal access is being prepared for
-                      launch. This page is ready now, and your final portal link
-                      can be connected as soon as PayHOA access is live.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="min-w-[180px] rounded-full border border-amber-400/30 bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
-                  >
-                    Launching Soon
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Side Info Panel */}
+              {/* Right Side Info Panel */}
             <div className="rounded-[2rem] border border-white/10 bg-slate-900/70 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl lg:p-10">
               <div className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
                 Why This Matters
@@ -213,62 +190,7 @@ export default function OwnerLoginPage() {
       </section>
 
       {/* Future-Ready Section */}
-      <section className="py-10 lg:py-16">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 to-slate-950 p-8 lg:p-12">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
-                  Built for what comes next
-                </div>
-                <h3 className="mt-4 text-3xl font-semibold text-white">
-                  Ready now. Connected later.
-                </h3>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-white/65">
-                  This page gives you the right structure today so you can
-                  connect the white-labeled PayHOA portal later with minimal
-                  effort. It preserves your premium branding now while keeping
-                  the path open for your future software platform.
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  {
-                    title: "Brand Consistency",
-                    text: "Keeps your private-access experience aligned with the Stoutt brand.",
-                  },
-                  {
-                    title: "Future White Labeling",
-                    text: "Lets you swap in the final portal URL once PayHOA is active.",
-                  },
-                  {
-                    title: "Competitive Protection",
-                    text: "Separates public messaging from owner-only systems and resources.",
-                  },
-                  {
-                    title: "AI-Ready Foundation",
-                    text: "Supports your broader vision for Ava and mirrored owner data workflows.",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.title}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-                  >
-                    <div className="text-base font-semibold text-white">
-                      {item.title}
-                    </div>
-                    <p className="mt-2 text-sm leading-7 text-white/60">
-                      {item.text}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+     
       {/* Footer */}
       <footer className="border-t border-white/10 py-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 text-sm text-white/45 lg:flex-row lg:items-center lg:justify-between lg:px-8">
@@ -286,9 +208,12 @@ export default function OwnerLoginPage() {
             <Link href="/proposal" className="transition hover:text-white">
               Proposal
             </Link>
-            <Link href="/contact" className="transition hover:text-white">
-              Contact
-            </Link>
+           <a
+  href="tel:7546004755"
+  className="transition hover:text-white"
+>
+  Call 754-600-4755
+</a>
           </div>
         </div>
       </footer>
