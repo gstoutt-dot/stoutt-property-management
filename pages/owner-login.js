@@ -11,7 +11,7 @@ export default function OwnerLoginPage() {
           {/* LOGO */}
           <Link href="/" className="flex items-center">
             <img
-              src="/stoutt-logo.png"
+              src="/logo.png"
               alt="Stoutt Property Management"
               className="h-12 w-auto object-contain"
             />
