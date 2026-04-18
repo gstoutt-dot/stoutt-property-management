@@ -8,7 +8,7 @@ export default function OwnerLoginPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
           <Link href="/" className="flex items-center">
             <img
-              src="/stoutt-logo.png"
+              src="/logo.png"
               alt="Stoutt Property Management"
               className="h-16 w-auto object-contain lg:h-20"
             />
