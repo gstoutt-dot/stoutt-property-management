@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 
 export default function BoardHallandaleGardens() {
   return (
@@ -17,15 +18,33 @@ export default function BoardHallandaleGardens() {
           <div className="hero-glow hero-glow-2" />
 
           <div className="wrap">
-            <div className="eyebrow">Hallandale Gardens Condominium Association</div>
+            <div className="hero-top">
+              <div className="hero-copy">
+                <div className="eyebrow">Hallandale Gardens Condominium Association</div>
 
-            <h1>Board Decision Overview</h1>
+                <h1>
+                  Board Decision
+                  <br />
+                  Overview
+                </h1>
 
-            <p className="lead">
-              A management decision is not simply about changing vendors. It is about
-              choosing the level of leadership, accountability, follow-through, and
-              operating discipline that will shape the experience of the community.
-            </p>
+                <p className="lead">
+                  A management decision is not simply about changing vendors. It is about
+                  choosing the level of leadership, accountability, follow-through, and
+                  operating discipline that will shape the experience of the community.
+                </p>
+              </div>
+
+              <div className="hero-logo">
+                <Image
+                  src="/logo.png"
+                  alt="Stoutt Property Management"
+                  width={420}
+                  height={140}
+                  priority
+                />
+              </div>
+            </div>
 
             <div className="message-block">
               <p>
@@ -481,6 +500,32 @@ export default function BoardHallandaleGardens() {
           color: rgba(255, 255, 255, 0.84);
         }
 
+        .hero-top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 48px;
+        }
+
+        .hero-copy {
+          flex: 1 1 700px;
+          max-width: 760px;
+        }
+
+        .hero-logo {
+          flex: 0 0 auto;
+          display: flex;
+          justify-content: flex-end;
+          align-items: flex-start;
+          padding-top: 8px;
+        }
+
+        .hero-logo :global(img) {
+          width: 320px;
+          height: auto;
+          opacity: 0.98;
+        }
+
         .message-block {
           max-width: 900px;
           margin-top: 28px;
@@ -715,6 +760,23 @@ export default function BoardHallandaleGardens() {
           .section,
           .final-section {
             padding: 68px 0;
+          }
+
+          .hero-top {
+            flex-direction: column;
+            gap: 28px;
+          }
+
+          .hero-copy {
+            max-width: 100%;
+          }
+
+          .hero-logo {
+            justify-content: flex-start;
+          }
+
+          .hero-logo :global(img) {
+            width: 240px;
           }
         }
 
