@@ -27,8 +27,29 @@ export default function BoardHallandaleGardens() {
               operating discipline that will shape the experience of the community.
             </p>
 
+            <div className="message-block">
+              <p>
+                Most management companies send a proposal. We build a decision
+                environment. This page exists to show how years of operating
+                experience, combined with intelligent systems, can materially
+                change the way a property is managed.
+              </p>
+              <p>
+                Properly implemented technology does not simply help solve
+                problems faster. It helps prevent many of them from developing in
+                the first place. What once required days of delay, follow-up,
+                and uncertainty can now begin moving toward resolution within
+                minutes.
+              </p>
+              <p className="message-close">
+                Why wait for the old way to catch up?
+              </p>
+            </div>
+
             <div className="property-strip">
-              <div className="property-pill">1301 NE 7th St., Hallandale Beach, Florida 33009</div>
+              <div className="property-pill">
+                1301 NE 7th St., Hallandale Beach, Florida 33009
+              </div>
               <div className="property-pill">84 Units</div>
               <div className="property-pill">Lobby-Floor Office</div>
               <div className="property-pill">Pool</div>
@@ -41,13 +62,16 @@ export default function BoardHallandaleGardens() {
           <div className="wrap">
             <div className="section-head">
               <div className="section-kicker">Leadership Perspective</div>
-              <h2>This company is being built by someone who has already done the work at scale.</h2>
+              <h2>
+                This company is being built by someone who has already done the
+                work at scale.
+              </h2>
               <p>
-                Glenn Stoutt previously led Sundance Property Management, managing 82
-                associations and overseeing more than $500 million in assets. That
-                matters not simply as history, but because it reflects operating depth,
-                board experience, and the ability to lead communities with steadiness
-                and professionalism.
+                Glenn Stoutt previously led Sundance Property Management,
+                managing 82 associations and overseeing more than $500 million
+                in assets. That matters not simply as history, but because it
+                reflects operating depth, board experience, and the ability to
+                lead communities with steadiness and professionalism.
               </p>
             </div>
 
@@ -56,10 +80,10 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">Experience</div>
                 <h3>Proven in real operating environments.</h3>
                 <p>
-                  Boards want calm, experienced leadership when issues escalate. They
-                  want a management partner who has seen complexity before, knows how to
-                  prioritize, and understands that standards and response time shape
-                  trust.
+                  Boards want calm, experienced leadership when issues escalate.
+                  They want a management partner who has seen complexity before,
+                  knows how to prioritize, and understands that standards and
+                  response time shape trust.
                 </p>
               </article>
 
@@ -67,9 +91,10 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">Operating Style</div>
                 <h3>Built on focus, stewardship, and disciplined execution.</h3>
                 <p>
-                  Stoutt Property Management is positioned around proactive management,
-                  cleaner accountability, stronger systems, and a service standard meant
-                  to reflect well on both the board and the community it represents.
+                  Stoutt Property Management is positioned around proactive
+                  management, cleaner accountability, stronger systems, and a
+                  service standard meant to reflect well on both the board and
+                  the community it represents.
                 </p>
               </article>
             </div>
@@ -80,12 +105,16 @@ export default function BoardHallandaleGardens() {
           <div className="wrap">
             <div className="section-head">
               <div className="section-kicker">Why This Matters</div>
-              <h2>Boards do not hire history. They hire what that history produces.</h2>
+              <h2>
+                Boards do not hire history. They hire what that history
+                produces.
+              </h2>
               <p>
-                In a community like Hallandale Gardens, the decision is not just about
-                selecting a management company. It is about selecting a leadership
-                partner capable of restoring consistency, reducing operational burden,
-                and elevating how the property functions day to day.
+                In a community like Hallandale Gardens, the decision is not just
+                about selecting a management company. It is about selecting a
+                leadership partner capable of restoring consistency, reducing
+                operational burden, and elevating how the property functions day
+                to day.
               </p>
             </div>
 
@@ -94,9 +123,10 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">For the Board</div>
                 <h3>More confidence in leadership.</h3>
                 <p>
-                  The founder’s depth helps reassure directors that they are selecting a
-                  company led by someone who understands operations, communication
-                  standards, board dynamics, and reputation management.
+                  The founder’s depth helps reassure directors that they are
+                  selecting a company led by someone who understands operations,
+                  communication standards, board dynamics, and reputation
+                  management.
                 </p>
               </article>
 
@@ -104,9 +134,9 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">For the Property</div>
                 <h3>Higher standards become visible.</h3>
                 <p>
-                  Communities feel management quality in the details: inspections,
-                  follow-up, professionalism, consistency, and how quickly issues begin
-                  moving toward resolution.
+                  Communities feel management quality in the details:
+                  inspections, follow-up, professionalism, consistency, and how
+                  quickly issues begin moving toward resolution.
                 </p>
               </article>
 
@@ -114,10 +144,10 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">For the Future</div>
                 <h3>Proven judgment supported by modern systems.</h3>
                 <p>
-                  What makes Stoutt Property Management different is the combination of
-                  long operating experience with a deliberate move toward intelligent,
-                  AI-enabled systems that very few competitors are prepared to execute
-                  well.
+                  What makes Stoutt Property Management different is the
+                  combination of long operating experience with a deliberate move
+                  toward intelligent, AI-enabled systems that very few
+                  competitors are prepared to execute well.
                 </p>
               </article>
             </div>
@@ -128,12 +158,15 @@ export default function BoardHallandaleGardens() {
           <div className="wrap">
             <div className="section-head">
               <div className="section-kicker">Property Reality</div>
-              <h2>Where management quality becomes visible at Hallandale Gardens.</h2>
+              <h2>
+                Where management quality becomes visible at Hallandale Gardens.
+              </h2>
               <p>
-                In an 84-unit property with a lobby-floor office, pool, and tennis
-                court, management is not theoretical. It becomes visible in the
-                consistency of maintenance, the speed of response, the coordination of
-                vendors, and the amount of burden the board quietly carries.
+                In an 84-unit property with a lobby-floor office, pool, and
+                tennis court, management is not theoretical. It becomes visible
+                in the consistency of maintenance, the speed of response, the
+                coordination of vendors, and the amount of burden the board
+                quietly carries.
               </p>
             </div>
 
@@ -166,21 +199,24 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">Leadership Continuity</div>
                 <h3>Frequent management changes create instability.</h3>
                 <p>
-                  After several management changes over the past seven years, stability
-                  becomes more than a preference. It becomes essential. Repeated
-                  transitions often lead to inconsistent standards, reduced
-                  accountability, and the repeated resetting of expectations.
+                  After several management changes over the past seven years,
+                  stability becomes more than a preference. It becomes
+                  essential. Repeated transitions often lead to inconsistent
+                  standards, reduced accountability, and the repeated resetting
+                  of expectations.
                 </p>
               </article>
 
               <article className="card glow-card">
                 <div className="card-label">Financial Alignment</div>
-                <h3>A recent accounting transition requires tighter coordination.</h3>
+                <h3>
+                  A recent accounting transition requires tighter coordination.
+                </h3>
                 <p>
-                  With financial management having changed at the end of last year,
-                  coordination between operations and accounting becomes especially
-                  important. Clear alignment helps avoid delays, confusion, and gaps in
-                  follow-through.
+                  With financial management having changed at the end of last
+                  year, coordination between operations and accounting becomes
+                  especially important. Clear alignment helps avoid delays,
+                  confusion, and gaps in follow-through.
                 </p>
               </article>
             </div>
@@ -190,9 +226,9 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">On-Site Presence</div>
                 <h3>The office should function, not just exist.</h3>
                 <p>
-                  A lobby-floor office should operate as an extension of management,
-                  supporting residents, reinforcing standards, and improving
-                  communication throughout the property.
+                  A lobby-floor office should operate as an extension of
+                  management, supporting residents, reinforcing standards, and
+                  improving communication throughout the property.
                 </p>
               </article>
 
@@ -200,16 +236,17 @@ export default function BoardHallandaleGardens() {
                 <div className="card-label">Board Burden</div>
                 <h3>Directors should not have to carry operations.</h3>
                 <p>
-                  When management is not fully proactive, board members begin absorbing
-                  responsibilities that should be handled professionally. Over time,
-                  that becomes inefficient and unsustainable.
+                  When management is not fully proactive, board members begin
+                  absorbing responsibilities that should be handled
+                  professionally. Over time, that becomes inefficient and
+                  unsustainable.
                 </p>
               </article>
             </div>
 
             <div className="statement-line">
-              This is where the difference between reactive management and disciplined,
-              proactive management becomes clear.
+              This is where the difference between reactive management and
+              disciplined, proactive management becomes clear.
             </div>
           </div>
         </section>
@@ -220,9 +257,10 @@ export default function BoardHallandaleGardens() {
               <div className="section-kicker">90-Day Execution Plan</div>
               <h2>The first 90 days at Hallandale Gardens.</h2>
               <p>
-                The objective in the first 90 days is straightforward: stabilize
-                operations, re-establish standards, improve visibility, and create
-                measurable momentum the board and residents can feel.
+                The objective in the first 90 days is straightforward:
+                stabilize operations, re-establish standards, improve
+                visibility, and create measurable momentum the board and
+                residents can feel.
               </p>
             </div>
 
@@ -250,7 +288,9 @@ export default function BoardHallandaleGardens() {
                   <li>Introduce response-time discipline</li>
                   <li>Streamline maintenance workflow</li>
                   <li>Improve reporting clarity to the board</li>
-                  <li>Strengthen alignment between operations and accounting</li>
+                  <li>
+                    Strengthen alignment between operations and accounting
+                  </li>
                   <li>Deliver initial visible property improvements</li>
                 </ul>
               </article>
@@ -272,7 +312,8 @@ export default function BoardHallandaleGardens() {
 
             <div className="statement-line">
               The difference in a well-managed community is not theoretical. It
-              becomes visible through consistency, responsiveness, and follow-through.
+              becomes visible through consistency, responsiveness, and
+              follow-through.
             </div>
           </div>
         </section>
@@ -281,11 +322,15 @@ export default function BoardHallandaleGardens() {
           <div className="wrap">
             <div className="final-panel">
               <div className="section-kicker">Next Step</div>
-              <h2>If the board is evaluating management as a leadership decision, this is the level of execution to expect.</h2>
+              <h2>
+                If the board is evaluating management as a leadership decision,
+                this is the level of execution to expect.
+              </h2>
               <p>
-                This is not simply a change in management. It is a transition into a
-                more disciplined, proactive operating standard designed to reduce board
-                burden and improve how the community functions day to day.
+                This is not simply a change in management. It is a transition
+                into a more disciplined, proactive operating standard designed
+                to reduce board burden and improve how the community functions
+                day to day.
               </p>
 
               <div className="actions">
@@ -434,6 +479,34 @@ export default function BoardHallandaleGardens() {
           font-size: 1.16rem;
           line-height: 1.95;
           color: rgba(255, 255, 255, 0.84);
+        }
+
+        .message-block {
+          max-width: 900px;
+          margin-top: 28px;
+          padding: 24px 26px;
+          border-radius: 24px;
+          border: 1px solid rgba(212, 175, 55, 0.22);
+          background:
+            linear-gradient(180deg, rgba(212, 175, 55, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+          box-shadow:
+            0 18px 40px rgba(0, 0, 0, 0.2),
+            0 0 30px rgba(212, 175, 55, 0.08);
+        }
+
+        .message-block p {
+          margin: 0 0 14px;
+          color: rgba(255, 255, 255, 0.84);
+        }
+
+        .message-block p:last-child {
+          margin-bottom: 0;
+        }
+
+        .message-close {
+          color: #f1d27a !important;
+          font-weight: 700;
+          font-size: 1.08rem;
         }
 
         .property-strip {
@@ -659,7 +732,8 @@ export default function BoardHallandaleGardens() {
           }
 
           .card,
-          .final-panel {
+          .final-panel,
+          .message-block {
             border-radius: 24px;
             padding: 26px 22px;
           }
