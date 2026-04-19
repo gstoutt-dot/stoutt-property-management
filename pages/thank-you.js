@@ -116,48 +116,44 @@ export default function ThankYouPage() {
               <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-yellow-400/10 to-transparent blur-2xl" />
               <div className="relative rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6 lg:p-8">
                 <div className="rounded-[1.75rem] border border-white/10 bg-slate-900/80 p-8 sm:p-10 lg:p-12">
-                  <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="w-full max-w-3xl text-center lg:text-left">
-                      <div className="flex justify-center lg:justify-start">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-yellow-400/25 bg-yellow-400/10 shadow-[0_0_40px_rgba(234,179,8,0.12)]">
-                          <svg
-                            className="h-10 w-10 text-yellow-300"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
-                        </div>
-                      </div>
+                  <div className="mx-auto max-w-4xl text-center">
+  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-yellow-400/25 bg-yellow-400/10 shadow-[0_0_40px_rgba(234,179,8,0.12)]">
+    <svg
+      className="h-10 w-10 text-yellow-300"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  </div>
 
-                      <div className="mt-6 inline-flex items-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200">
-                        Proposal Request Received
-                      </div>
+  <div className="mt-8 flex justify-center">
+    <img
+      src="/logo.png"
+      alt="Stoutt Property Management"
+      className="h-auto w-[180px] sm:w-[220px] lg:w-[260px] opacity-100"
+    />
+  </div>
 
-                      <h1 className="mt-6 text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl">
-                        Thank you. Your request has been received.
-                      </h1>
+  <div className="mt-6 inline-flex items-center rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-yellow-200">
+    Proposal Request Received
+  </div>
 
-                      <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg lg:mx-0">
-                        You’ve taken the right next step. We’ll review your
-                        community details and follow up with a thoughtful,
-                        tailored response regarding your association’s management
-                        needs.
-                      </p>
-                    </div>
+  <h1 className="mt-6 text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl">
+    Thank you. Your request has been received.
+  </h1>
 
-                    <div className="flex w-full justify-center lg:w-auto lg:justify-end">
-                      <img
-                        src="/logo.png"
-                        alt="Stoutt Property Management"
-                        className="h-auto w-[180px] opacity-95 sm:w-[220px] lg:w-[250px]"
-                      />
-                    </div>
-                  </div>
+  <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
+    You’ve taken the right next step. We’ll review your
+    community details and follow up with a thoughtful,
+    tailored response regarding your association’s management
+    needs.
+  </p>
+</div>
 
                   <div className="mt-10 grid gap-5 md:grid-cols-3">
                     {[
