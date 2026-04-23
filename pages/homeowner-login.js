@@ -125,7 +125,7 @@ export default function HomeownerLoginPage() {
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {[
                   "Association documents and notices",
-                  "Owner account and payment visibility",
+                  "Homeowner account and payment visibility",
                   "Service request and communication tools",
                   "Private access by managed community",
                 ].map((item) => (
@@ -151,7 +151,7 @@ export default function HomeownerLoginPage() {
               <div className="mt-6 space-y-5 text-sm leading-7 text-white/65">
                 <p>
                   This portal access point is intentionally designed to separate
-                  public-facing information from private owner tools and
+                  public-facing information from private homeowner tools and
                   community resources.
                 </p>
 
