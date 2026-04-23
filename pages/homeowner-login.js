@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function OwnerLoginPage() {
+export default function HomeownerLoginPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       {/* Header */}
@@ -37,10 +37,10 @@ export default function OwnerLoginPage() {
 
           <div className="flex items-center gap-4">
             <Link
-              href="/owner-login"
+              href="/homeowner-login"
               className="rounded-full border border-amber-400/40 bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
             >
-              Owner Access
+              Homeowner Access
             </Link>
 
             <a
@@ -65,12 +65,12 @@ export default function OwnerLoginPage() {
             </div>
 
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-7xl">
-              Secure owner access built for the communities we manage.
+              Secure homeowner access built for the communities we manage.
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-white/70 sm:text-xl">
               Access association documents, communications, financial
-              information, service requests, and owner resources through a
+              information, service requests, and homeowner resources through a
               secure portal experience designed to feel like a seamless part of
               Stoutt Property Management.
             </p>
@@ -107,7 +107,7 @@ export default function OwnerLoginPage() {
               <div className="mb-6 flex items-center gap-3">
                 <div className="h-3 w-3 rounded-full bg-emerald-400" />
                 <div className="text-xs font-semibold uppercase tracking-[0.28em] text-white/45">
-                  Owner Portal Gateway
+                  Homowner Portal Gateway
                 </div>
               </div>
 
