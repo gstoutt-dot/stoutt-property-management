@@ -77,10 +77,10 @@ export default function HomePage() {
             ))}
 
             <a
-  href="/owner-login"
+  href="/homeowner-login"
   className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
 >
-  Owner Access
+  Homeowner Access
 </a>
 
             <a
@@ -508,8 +508,8 @@ export default function HomePage() {
             <a href="/proposal" className={premiumButton}>
               Request a Proposal
             </a>
-            <a href="/owner-access" className={subtleButton}>
-              Owner Access
+            <a href="/homeowner-access" className={subtleButton}>
+              Homeowner Access
             </a>
           </div>
         </section>
@@ -538,8 +538,8 @@ export default function HomePage() {
                 <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a href="/owner-access" className={subtleButton}>
-                  Owner Access
+                <a href="/homeowner-access" className={subtleButton}>
+                  Homeowner Access
                 </a>
               </div>
             </div>
