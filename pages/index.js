@@ -10,7 +10,7 @@ export default function HomePage() {
     { label: "Founder", href: "https://glennstoutt.com", external: true },
     { label: "Collections", href: "/collections" },
     { label: "Coverage", href: "/coverage" },
-    { label: "homeowner Access", href: "/homeowner-login" },,
+    { label: "Homeowner Access", href: "/homeowner-login" },,
   ];
 
   const selectedProperties = [
