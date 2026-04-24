@@ -63,61 +63,98 @@ export default function AboutUs() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
 
-      {/* UNIVERSAL HEADER */}
-      <header className="fixed left-0 top-0 z-[9999] w-full border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
-  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
+          <a href="/" className="flex items-center">
+            <img
+              src="/logo.png"
+              alt="Stoutt Property Management"
+              className="h-20 w-auto object-contain"
+            />
+          </a>
 
-    <a href="/" className="flex items-center gap-4">
-      <img
-        src="/logo.png"
-        alt="Stoutt Property Management"
-        className="h-12 w-auto"
-      />
+          <nav className="hidden items-center gap-2 lg:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.external ? "_blank" : "_self"}
+                rel={link.external ? "noopener noreferrer" : undefined}
+                className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+              >
+                {link.label}
+              </a>
+            ))}
 
-      <div>
-        <div className="text-lg font-semibold tracking-wide text-white">
-          Stoutt Property Management
+            <a
+  href="/owner-login"
+  className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
+>
+  Owner Access
+</a>
+
+            <a
+              href="tel:+17546004755"
+              className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+            >
+              Call Now
+            </a>
+          </nav>
+
+          <button
+            type="button"
+            aria-label="Toggle menu"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 lg:hidden"
+          >
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {mobileOpen ? (
+                <path d="M6 6l12 12M18 6L6 18" />
+              ) : (
+                <>
+                  <path d="M3 6h18" />
+                  <path d="M3 12h18" />
+                  <path d="M3 18h18" />
+                </>
+              )}
+            </svg>
+          </button>
         </div>
 
-        <div className="text-xs uppercase tracking-[0.25em] text-amber-300">
-          Florida HOA & Condo Management
-        </div>
-      </div>
-    </a>
-
-    <nav className="hidden lg:flex items-center gap-8">
-      {navLinks.map((item) =>
-        item.external ? (
-          <a
-            key={item.label}
-            href={item.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-slate-200 hover:text-amber-300 transition"
-          >
-            {item.label}
-          </a>
-        ) : (
-          <a
-            key={item.label}
-            href={item.href}
-            className="text-sm font-medium text-slate-200 hover:text-amber-300 transition"
-          >
-            {item.label}
-          </a>
-        )
-      )}
-    </nav>
-
-    <a
-      href="/proposal"
-      className="hidden lg:inline-flex rounded-full border border-amber-300 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-300 hover:text-slate-950 transition"
-    >
-      Request a Proposal
-    </a>
-
-  </div>
-</header>
+        {mobileOpen && (
+          <div className="border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:px-6">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target={link.external ? "_blank" : "_self"}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <a
+                href="/proposal"
+                className="mt-2 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
+                onClick={() => setMobileOpen(false)}
+              >
+                Request a Proposal
+              </a>
+            </div>
+          </div>
+        )}
+      </header>
 
       {/* HERO */}
       <section className="relative overflow-hidden px-6 pt-44 pb-24">
