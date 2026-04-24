@@ -64,7 +64,7 @@ export default function AboutUs() {
     <main className="min-h-screen bg-slate-950 text-white">
 
       {/* UNIVERSAL HEADER */}
-      <header className="sticky top-0 z-[100] border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
+      <header className="fixed left-0 top-0 z-[9999] w-full border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
   <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
     <a href="/" className="flex items-center gap-4">
@@ -120,7 +120,7 @@ export default function AboutUs() {
 </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden px-6 pt-36 pb-24">
+      <section className="relative overflow-hidden px-6 pt-44 pb-24">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.12),transparent_35%)]" />
 
         <div className="relative mx-auto max-w-7xl">
