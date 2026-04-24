@@ -7,11 +7,11 @@ export default function HomePage() {
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
     { label: "Why Switch", href: "/why-switch" },
+    { label: "About Us", href: "/about-us" },
     { label: "Founder", href: "https://glennstoutt.com", external: true },
     { label: "Collections", href: "/collections" },
     { label: "Coverage", href: "/coverage" },
-    { label: "Owner Access", href: "/owner-login" },,
-  ];
+    { label: "Owner Access", href: "/owner-login" },
 
   const selectedProperties = [
     {
