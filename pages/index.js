@@ -12,7 +12,8 @@ export default function HomePage() {
     { label: "Collections", href: "/collections" },
     { label: "Coverage", href: "/coverage" },
     { label: "Owner Access", href: "/owner-login" },
-
+  ];
+  
   const selectedProperties = [
     {
       image: "/bocawest.jpeg",
