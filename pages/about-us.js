@@ -69,7 +69,7 @@ export default function AboutUs() {
 
           <a href="/" className="flex items-center gap-4">
   <img
-    src="/logo.png"
+    src="/public/logo.png"
     alt="Stoutt Property Management"
     className="h-12 w-auto"
   />
