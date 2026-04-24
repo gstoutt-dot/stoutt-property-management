@@ -68,11 +68,22 @@ export default function AboutUs() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
           <a href="/" className="flex items-center gap-4">
-            <img
-              src="/logo.png"
-              alt="Stoutt Property Management"
-              className="h-12 w-auto"
-            />
+  <img
+    src="/logo.png"
+    alt="Stoutt Property Management"
+    className="h-12 w-auto"
+  />
+
+  <div>
+    <div className="text-lg font-semibold tracking-wide text-white">
+      Stoutt Property Management
+    </div>
+
+    <div className="text-xs uppercase tracking-[0.25em] text-amber-300">
+      Florida HOA & Condo Management
+    </div>
+  </div>
+</a>
 
             <div>
               <div className="text-lg font-semibold tracking-wide text-white">
