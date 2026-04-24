@@ -7,6 +7,7 @@ export default function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/services", label: "Services" },
     { href: "/why-switch", label: "Why Switch" },
+    { label: "About Us", href: "/about-us" },
     { href: "https://glennstoutt.com", label: "Founder", external: true },
     { href: "/collections", label: "Collections" },
     { href: "/coverage", label: "Coverage" },
