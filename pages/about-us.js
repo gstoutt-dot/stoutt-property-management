@@ -64,74 +64,63 @@ export default function AboutUs() {
     <main className="min-h-screen bg-slate-950 text-white">
 
       {/* UNIVERSAL HEADER */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <header className="sticky top-0 z-[100] border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
-          <a href="/" className="flex items-center gap-4">
-  <img
-    src="/public/logo.png"
-    alt="Stoutt Property Management"
-    className="h-12 w-auto"
-  />
+    <a href="/" className="flex items-center gap-4">
+      <img
+        src="/logo.png"
+        alt="Stoutt Property Management"
+        className="h-12 w-auto"
+      />
 
-  <div>
-    <div className="text-lg font-semibold tracking-wide text-white">
-      Stoutt Property Management
-    </div>
-
-    <div className="text-xs uppercase tracking-[0.25em] text-amber-300">
-      Florida HOA & Condo Management
-    </div>
-  </div>
-</a>
-
-            <div>
-              <div className="text-lg font-semibold tracking-wide text-white">
-                Stoutt Property Management
-              </div>
-
-              <div className="text-xs uppercase tracking-[0.25em] text-amber-300">
-                Florida HOA & Condo Management
-              </div>
-            </div>
-          </a>
-
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((item) =>
-              item.external ? (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-slate-200 hover:text-amber-300 transition"
-                >
-                  {item.label}
-                </a>
-              ) : (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-sm font-medium text-slate-200 hover:text-amber-300 transition"
-                >
-                  {item.label}
-                </a>
-              )
-            )}
-          </nav>
-
-          <a
-            href="/proposal"
-            className="hidden lg:inline-flex rounded-full border border-amber-300 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-300 hover:text-slate-950 transition"
-          >
-            Request a Proposal
-          </a>
-
+      <div>
+        <div className="text-lg font-semibold tracking-wide text-white">
+          Stoutt Property Management
         </div>
-      </header>
+
+        <div className="text-xs uppercase tracking-[0.25em] text-amber-300">
+          Florida HOA & Condo Management
+        </div>
+      </div>
+    </a>
+
+    <nav className="hidden lg:flex items-center gap-8">
+      {navLinks.map((item) =>
+        item.external ? (
+          <a
+            key={item.label}
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-slate-200 hover:text-amber-300 transition"
+          >
+            {item.label}
+          </a>
+        ) : (
+          <a
+            key={item.label}
+            href={item.href}
+            className="text-sm font-medium text-slate-200 hover:text-amber-300 transition"
+          >
+            {item.label}
+          </a>
+        )
+      )}
+    </nav>
+
+    <a
+      href="/proposal"
+      className="hidden lg:inline-flex rounded-full border border-amber-300 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-300 hover:text-slate-950 transition"
+    >
+      Request a Proposal
+    </a>
+
+  </div>
+</header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden px-6 py-24">
+      <section className="relative overflow-hidden px-6 pt-36 pb-24">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.12),transparent_35%)]" />
 
         <div className="relative mx-auto max-w-7xl">
