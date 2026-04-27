@@ -538,8 +538,8 @@ export default function HomePage() {
                 <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a href="/owner-access" className={subtleButton}>
-                  Owner Access
+                <a href="/homeowner-login" className={subtleButton}>
+                  Homeowner Access
                 </a>
               </div>
             </div>
