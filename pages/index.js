@@ -53,98 +53,124 @@ export default function HomePage() {
         <div className="absolute bottom-[10%] left-0 h-[360px] w-[360px] rounded-full bg-white/5 blur-3xl" />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="Stoutt Property Management"
-              className="h-20 w-auto object-contain"
-            />
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+    
+    {/* Logo / Brand */}
+    <a href="/" className="flex items-center gap-3">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-yellow-400/40 bg-yellow-400/10 text-sm font-bold text-yellow-300">
+        SPM
+      </div>
+
+      <div>
+        <div className="text-sm font-semibold tracking-[0.22em] text-yellow-300 uppercase">
+          Stoutt
+        </div>
+        <div className="text-sm font-semibold text-white">
+          Property Management
+        </div>
+      </div>
+    </a>
+
+    {/* Desktop Navigation */}
+    <nav className="hidden items-center gap-8 md:flex">
+      <a
+        href="/"
+        className="text-sm font-medium text-white/80 transition hover:text-yellow-300"
+      >
+        Home
+      </a>
+
+      <a
+        href="/services"
+        className="text-sm font-medium text-white/80 transition hover:text-yellow-300"
+      >
+        Services
+      </a>
+
+      <a
+        href="/why-switch"
+        className="text-sm font-medium text-white/80 transition hover:text-yellow-300"
+      >
+        Why Switch
+      </a>
+
+      <a
+        href="/coverage"
+        className="text-sm font-medium text-white/80 transition hover:text-yellow-300"
+      >
+        Coverage
+      </a>
+
+      {/* Board Education Dropdown */}
+      <div className="relative group">
+        <button
+          type="button"
+          className="flex items-center gap-1 text-sm font-medium text-white/80 transition hover:text-yellow-300"
+        >
+          Board Education
+          <span className="text-xs">▾</span>
+        </button>
+
+        <div className="absolute left-0 top-full z-50 mt-4 hidden w-80 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-2xl backdrop-blur-xl group-hover:block">
+          <a
+            href="/board-education"
+            className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+          >
+            <div className="text-sm font-semibold text-white">
+              Education & Compliance
+            </div>
+            <div className="mt-1 text-xs leading-relaxed text-white/60">
+              Board guidance, governance support, and statutory awareness.
+            </div>
           </a>
 
-          <nav className="hidden items-center gap-2 lg:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target={link.external ? "_blank" : "_self"}
-                rel={link.external ? "noopener noreferrer" : undefined}
-                className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
-              >
-                {link.label}
-              </a>
-            ))}
-
-            <a
-  href="/homeowner-login"
-  className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
->
-  Homeowner Access
-</a>
-
-            <a
-              href="tel:+17546004755"
-              className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
-            >
-              Call Now
-            </a>
-          </nav>
-
-          <button
-            type="button"
-            aria-label="Toggle menu"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 lg:hidden"
+          <a
+            href="/board-workshops"
+            className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
           >
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {mobileOpen ? (
-                <path d="M6 6l12 12M18 6L6 18" />
-              ) : (
-                <>
-                  <path d="M3 6h18" />
-                  <path d="M3 12h18" />
-                  <path d="M3 18h18" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
-
-        {mobileOpen && (
-          <div className="border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:px-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target={link.external ? "_blank" : "_self"}
-                  rel={link.external ? "noopener noreferrer" : undefined}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
-              <a
-                href="/proposal"
-                className="mt-2 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
-                onClick={() => setMobileOpen(false)}
-              >
-                Request a Proposal
-              </a>
+            <div className="flex items-center gap-2 text-sm font-semibold text-white">
+              Board Workshops
+              <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
+                NEW
+              </span>
             </div>
-          </div>
-        )}
-      </header>
+            <div className="mt-1 text-xs leading-relaxed text-white/60">
+              Educational sessions for stronger board leadership.
+            </div>
+          </a>
+
+          <a
+            href="/compliance-alerts"
+            className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+          >
+            <div className="text-sm font-semibold text-white">
+              Compliance Alerts
+            </div>
+            <div className="mt-1 text-xs leading-relaxed text-white/60">
+              Updates and proactive compliance support.
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <a
+        href="/proposal"
+        className="rounded-full bg-yellow-400 px-5 py-2 text-sm font-bold text-slate-950 shadow-lg shadow-yellow-400/20 transition hover:bg-yellow-300"
+      >
+        Proposal
+      </a>
+    </nav>
+
+    {/* Mobile Proposal Button */}
+    <a
+      href="/proposal"
+      className="rounded-full bg-yellow-400 px-4 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-yellow-400/20 transition hover:bg-yellow-300 md:hidden"
+    >
+      Proposal
+    </a>
+  </div>
+</header>
 
       <main className="relative z-10">
         <section className="mx-auto max-w-7xl px-5 pb-8 pt-12 sm:px-6 sm:pb-10 sm:pt-16 lg:px-8 lg:pb-12 lg:pt-20">
