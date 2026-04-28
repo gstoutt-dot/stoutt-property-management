@@ -48,7 +48,6 @@ export default function BoardWorkshopsPage() {
               >
                 View Education & Compliance
               </a>
-            </div>
           </div>
         </div>
       </section>
