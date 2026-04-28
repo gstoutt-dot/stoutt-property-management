@@ -22,6 +22,18 @@ export default function BoardWorkshopsPage() {
               their communities with greater confidence.
             </p>
 
+<div className="mt-8 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-6">
+  <p className="text-lg leading-8 text-white/85">
+    Florida Board Education Requirements continue to evolve.
+
+    Stoutt Property Management helps train boards to stay current,
+    informed, and prepared through practical training, compliance
+    awareness, and proactive support.
+  </p>
+</div>
+
+<div className="mt-10 flex flex-col gap-4 sm:flex-row">
+
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <a
                 href="/proposal"
