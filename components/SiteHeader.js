@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false);
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -11,6 +12,12 @@ export default function SiteHeader() {
     { href: "https://glennstoutt.com", label: "Founder", external: true },
     { href: "/collections", label: "Collections" },
     { href: "/coverage", label: "Coverage" },
+  ];
+
+  const boardEducationLinks = [
+    { href: "/board-education", label: "Education & Compliance" },
+    { href: "/board-workshops", label: "Board Workshops" },
+    { href: "/compliance-alerts", label: "Compliance Alerts" },
   ];
 
   const PHONE_HREF = "tel:+17546004755";
@@ -30,7 +37,6 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-
         <a href="/" className="flex min-w-[220px] items-center">
           <img
             src="/logo.png"
@@ -52,18 +58,37 @@ export default function SiteHeader() {
             </a>
           ))}
 
-          {/* Fixed plain link — no dropdown */}
-          <a href="/board-education" className={linkClasses}>
-            Board Education
-          </a>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setBoardMenuOpen((prev) => !prev)}
+              className={linkClasses}
+              aria-expanded={boardMenuOpen}
+            >
+              Board Education ▾
+            </button>
 
+            {boardMenuOpen && (
+              <div className="absolute left-0 top-full z-50 mt-4 w-64 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+                {boardEducationLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setBoardMenuOpen(false)}
+                    className="block rounded-2xl px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
           <a href="/homeowner-login" className={secondaryBtn}>
             Homeowner Access
           </a>
-
           <a href={PHONE_HREF} className={primaryBtn}>
             Call Now
           </a>
@@ -76,45 +101,13 @@ export default function SiteHeader() {
           onClick={() => setMobileOpen((prev) => !prev)}
           className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white lg:hidden"
         >
-          {mobileOpen ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 6l12 12M18 6L6 18"
-              />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 7h16M4 12h16M4 17h16"
-              />
-            </svg>
-          )}
+          {mobileOpen ? "×" : "☰"}
         </button>
-
       </div>
 
       {mobileOpen && (
         <div className="border-t border-white/10 bg-slate-950 lg:hidden">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-
             <nav className="flex flex-col gap-2">
               {navLinks.map((link) => (
                 <a
@@ -129,18 +122,19 @@ export default function SiteHeader() {
                 </a>
               ))}
 
-              <a
-                href="/board-education"
-                onClick={() => setMobileOpen(false)}
-                className={mobileLinkClasses}
-              >
-                Board Education
-              </a>
-
+              {boardEducationLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={mobileLinkClasses}
+                >
+                  {item.label}
+                </a>
+              ))}
             </nav>
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-
               <a
                 href="/homeowner-login"
                 onClick={() => setMobileOpen(false)}
@@ -156,9 +150,7 @@ export default function SiteHeader() {
               >
                 Call Now
               </a>
-
             </div>
-
           </div>
         </div>
       )}
