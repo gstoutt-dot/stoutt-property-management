@@ -79,6 +79,54 @@ export default function BoardWorkshopsPage() {
           </p>
         </div>
       </section>
+    <section className="px-6 pb-24">
+  <div className="mx-auto max-w-5xl">
+    <h2 className="mb-8 text-3xl font-semibold">
+      Related Board Resources
+    </h2>
+
+    <div className="grid gap-6 md:grid-cols-3">
+      <a
+        href="/board-education"
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
+      >
+        <h3 className="text-xl font-semibold">
+          Education & Compliance
+        </h3>
+
+        <p className="mt-3 text-white/65">
+          Guidance for board responsibilities, governance awareness, and compliance expectations.
+        </p>
+      </a>
+
+      <a
+        href="/board-workshops"
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
+      >
+        <h3 className="text-xl font-semibold">
+          Board Workshops
+        </h3>
+
+        <p className="mt-3 text-white/65">
+          Practical workshops designed to help board members lead with confidence.
+        </p>
+      </a>
+
+      <a
+        href="/compliance-alerts"
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
+      >
+        <h3 className="text-xl font-semibold">
+          Compliance Alerts
+        </h3>
+
+        <p className="mt-3 text-white/65">
+          Proactive updates and reminders to help boards stay ahead of important requirements.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
     </main>
   );
 }
