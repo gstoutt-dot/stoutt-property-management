@@ -89,7 +89,7 @@ export default function HomePage() {
     className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
     aria-expanded={boardMenuOpen}
   >
-    Board Education ▾
+    Board Resources ▾
   </button>
 
   {boardMenuOpen && (
