@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false);
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -67,32 +68,40 @@ export default function SiteHeader() {
             </a>
           ))}
 
-          <div className="relative group">
-            <button type="button" className={linkClasses}>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setBoardMenuOpen((prev) => !prev)}
+              className={linkClasses}
+              aria-expanded={boardMenuOpen}
+            >
               Board Education ▾
             </button>
 
-            <div className="absolute left-0 top-full z-50 mt-4 hidden w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl group-hover:block">
-              {boardEducationLinks.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
-                >
-                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    {item.label}
-                    {item.badge && (
-                      <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-1 text-xs leading-relaxed text-white/60">
-                    {item.text}
-                  </div>
-                </a>
-              ))}
-            </div>
+            {boardMenuOpen && (
+              <div className="absolute left-0 top-full z-50 mt-4 w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+                {boardEducationLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setBoardMenuOpen(false)}
+                    className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                      {item.label}
+                      {item.badge && (
+                        <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 text-xs leading-relaxed text-white/60">
+                      {item.text}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </nav>
 
@@ -199,6 +208,7 @@ export default function SiteHeader() {
               >
                 Homeowner Access
               </a>
+
               <a
                 href={PHONE_HREF}
                 onClick={() => setMobileOpen(false)}
