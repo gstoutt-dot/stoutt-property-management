@@ -17,6 +17,10 @@ export default function HomePage() {
   { href: "/board-education", label: "Education & Compliance" },
   { href: "/board-workshops", label: "Board Workshops" },
   { href: "/compliance-alerts", label: "Compliance Alerts" },
+  {
+    href: "/florida-board-education-requirements",
+    label: "Florida Education Requirements"
+  },
 ];
 
   const selectedProperties = [
