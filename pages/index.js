@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false);
 
   const navLinks = [
   { label: "Home", href: "/" },
@@ -11,6 +12,11 @@ export default function HomePage() {
   { label: "Founder", href: "https://glennstoutt.com", external: true },
   { label: "Collections", href: "/collections" },
   { label: "Coverage", href: "/coverage" },
+];
+  const boardEducationLinks = [
+  { href: "/board-education", label: "Education & Compliance" },
+  { href: "/board-workshops", label: "Board Workshops" },
+  { href: "/compliance-alerts", label: "Compliance Alerts" },
 ];
 
   const selectedProperties = [
@@ -76,12 +82,31 @@ export default function HomePage() {
         </a>
       ))}
 
-      <a
-  href="/board-education"
-  className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
->
-  Board Education
-</a>
+      <div className="relative">
+  <button
+    type="button"
+    onClick={() => setBoardMenuOpen((prev) => !prev)}
+    className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+    aria-expanded={boardMenuOpen}
+  >
+    Board Education ▾
+  </button>
+
+  {boardMenuOpen && (
+    <div className="absolute left-0 top-full z-50 mt-3 w-64 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+      {boardEducationLinks.map((item) => (
+        <a
+          key={item.label}
+          href={item.href}
+          onClick={() => setBoardMenuOpen(false)}
+          className="block rounded-2xl px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+        >
+          {item.label}
+        </a>
+      ))}
+    </div>
+  )}
+</div>
 
       <a
         href="/homeowner-login"
