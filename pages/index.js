@@ -74,13 +74,13 @@ const boardEducationLinks = [
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
   <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
-    <a href="/" className="flex items-center min-w-[300px]">
-  <img
-    src="/logo.png"
-    alt="Stoutt Property Management"
-    className="h-36 w-auto object-contain lg:h-40"
-  />
-</a>
+    <a href="/" className="flex min-w-[300px] items-center">
+      <img
+        src="/logo.png"
+        alt="Stoutt Property Management"
+        className="h-36 w-auto object-contain lg:h-40"
+      />
+    </a>
 
     <nav className="hidden items-center gap-2 lg:flex">
       {navLinks.map((link) => (
@@ -95,35 +95,40 @@ const boardEducationLinks = [
         </a>
       ))}
 
-      <div className="relative group">
+      <div className="relative">
         <button
           type="button"
+          onClick={() => setBoardMenuOpen((prev) => !prev)}
           className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+          aria-expanded={boardMenuOpen}
         >
           Board Education ▾
         </button>
 
-        <div className="absolute left-0 top-full z-50 mt-3 hidden w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl group-hover:block">
-          {boardEducationLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
-            >
-              <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                {item.label}
-                {item.badge && (
-                  <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              <div className="mt-1 text-xs leading-relaxed text-white/60">
-                {item.text}
-              </div>
-            </a>
-          ))}
-        </div>
+        {boardMenuOpen && (
+          <div className="absolute left-0 top-full z-50 mt-3 w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+            {boardEducationLinks.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={() => setBoardMenuOpen(false)}
+                className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                  {item.label}
+                  {item.badge && (
+                    <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 text-xs leading-relaxed text-white/60">
+                  {item.text}
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       <a
@@ -185,32 +190,13 @@ const boardEducationLinks = [
           </a>
         ))}
 
-        <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-2">
-          <div className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
-            Board Education
-          </div>
-
-          {boardEducationLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="block rounded-xl px-3 py-3 text-sm font-medium text-white/85 transition hover:bg-white/10"
-              onClick={() => setMobileOpen(false)}
-            >
-              <span className="flex items-center gap-2">
-                {item.label}
-                {item.badge && (
-                  <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
-                    {item.badge}
-                  </span>
-                )}
-              </span>
-              <span className="mt-1 block text-xs leading-relaxed text-white/55">
-                {item.text}
-              </span>
-            </a>
-          ))}
-        </div>
+        <a
+          href="/board-education"
+          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
+          onClick={() => setMobileOpen(false)}
+        >
+          Board Education
+        </a>
 
         <a
           href="/homeowner-login"
