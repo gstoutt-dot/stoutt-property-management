@@ -15,6 +15,12 @@ export default function SiteHeader() {
   ];
 
   const boardEducationLinks = [
+    { href: "/board-education", label: "Education & Compliance" },
+    { href: "/board-workshops", label: "Board Workshops", badge: "NEW" },
+    { href: "/compliance-alerts", label: "Compliance Alerts" },
+  ];
+
+  const desktopBoardEducationLinks = [
     {
       href: "/board-education",
       label: "Education & Compliance",
@@ -43,6 +49,9 @@ export default function SiteHeader() {
 
   const secondaryBtn =
     "inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5";
+
+  const mobileLinkClasses =
+    "rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10";
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
@@ -80,7 +89,7 @@ export default function SiteHeader() {
 
             {boardMenuOpen && (
               <div className="absolute left-0 top-full z-50 mt-4 w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-                {boardEducationLinks.map((item) => (
+                {desktopBoardEducationLinks.map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
@@ -164,7 +173,7 @@ export default function SiteHeader() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
+                  className={mobileLinkClasses}
                   target={link.external ? "_blank" : undefined}
                   rel={link.external ? "noreferrer" : undefined}
                 >
@@ -172,32 +181,27 @@ export default function SiteHeader() {
                 </a>
               ))}
 
-              <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-2">
-                <div className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
-                  Board Education
-                </div>
-
-                {boardEducationLinks.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block rounded-xl px-3 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
-                  >
-                    <span className="flex items-center gap-2">
-                      {item.label}
-                      {item.badge && (
-                        <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
-                          {item.badge}
-                        </span>
-                      )}
-                    </span>
-                    <span className="mt-1 block text-xs leading-relaxed text-white/55">
-                      {item.text}
-                    </span>
-                  </a>
-                ))}
+              <div className="px-1 pt-2 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
+                Board Education
               </div>
+
+              {boardEducationLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={mobileLinkClasses}
+                >
+                  <span className="flex items-center gap-2">
+                    {item.label}
+                    {item.badge && (
+                      <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
+                        {item.badge}
+                      </span>
+                    )}
+                  </span>
+                </a>
+              ))}
             </nav>
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
