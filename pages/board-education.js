@@ -55,10 +55,15 @@ export default function BoardEducationPage() {
 
           <div className="relative mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-28">
             <div className="max-w-5xl">
-              <div className="inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-300">
-                Board Education • Compliance • Strategic Board Support
-                Helping Florida boards meet responsibilities with confidence.
-              </div>
+              <div className="flex flex-col items-start">
+  <div className="inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-300">
+    Board Education • Compliance • Strategic Board Support
+  </div>
+
+  <p className="mt-4 text-sm font-medium leading-6 tracking-[0.08em] text-yellow-100/85">
+    Helping Florida boards lead with greater clarity.
+  </p>
+</div>
 
               <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Helping Florida boards govern smarter, stay informed, and lead
