@@ -185,24 +185,27 @@ export default function HomeownerWorkOrders() {
 
             <div className="mt-5 space-y-4">
               {[
-                "Request submitted",
-                "Ava reviews issue details",
-                "Management verifies responsibility",
-                "Vendor assigned if needed",
-                "Resident receives status updates",
-              ].map((item, index) => (
-                <div key={item} className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-slate-950">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="font-medium">{item}</p>
-                    <p className="text-sm text-slate-400">
-                      Step {index + 1} of the service request process
-                    </p>
-                  </div>
-                </div>
-              ))}
+  "Request submitted",
+  "Ava reviews issue details",
+  "Management verifies responsibility",
+  "BOD approval if required",
+  "Vendor assigned if needed",
+  "Resident receives status updates",
+].map((item, index) => (
+  <div key={item} className="flex gap-4">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-slate-950">
+      {index + 1}
+    </div>
+
+    <div>
+      <p className="font-medium">{item}</p>
+
+      <p className="text-sm text-slate-400">
+        Step {index + 1} of the service request process
+      </p>
+    </div>
+  </div>
+))}
             </div>
           </div>
         </div>
