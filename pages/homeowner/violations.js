@@ -297,12 +297,12 @@ Documents Quick Links
 "Architectural Standards",
 ].map((doc)=>(
 
-button key={doc}
-className="block w-full rounded-2xl border border-white/10 px-4 py-3 text-left text-sm hover:border-yellow-400/40"
+<button
+  key={doc}
+  className="block w-full w-full rounded-2xl border border-white/10 px-4 py-3 text-left text-sm hover:border-yellow-400/40"
 >
-{doc}
+  {doc}
 </button>
-
 ))}
 
 </div>
