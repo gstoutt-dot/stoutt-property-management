@@ -14,12 +14,6 @@ export default function SiteHeader() {
     { href: "/coverage", label: "Coverage" },
   ];
 
-  const boardEducationLinks = [
-    { href: "/board-education", label: "Education & Compliance" },
-    { href: "/board-workshops", label: "Board Workshops", badge: "NEW" },
-    { href: "/compliance-alerts", label: "Compliance Alerts" },
-  ];
-
   const desktopBoardEducationLinks = [
     {
       href: "/board-education",
@@ -131,34 +125,12 @@ export default function SiteHeader() {
           className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white lg:hidden"
         >
           {mobileOpen ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 6l12 12M18 6L6 18"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
             </svg>
           ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 7h16M4 12h16M4 17h16"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           )}
         </button>
@@ -181,27 +153,13 @@ export default function SiteHeader() {
                 </a>
               ))}
 
-              <div className="px-1 pt-2 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
+              <a
+                href="/board-education"
+                onClick={() => setMobileOpen(false)}
+                className={mobileLinkClasses}
+              >
                 Board Education
-              </div>
-
-              {boardEducationLinks.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={mobileLinkClasses}
-                >
-                  <span className="flex items-center gap-2">
-                    {item.label}
-                    {item.badge && (
-                      <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
-                        {item.badge}
-                      </span>
-                    )}
-                  </span>
-                </a>
-              ))}
+              </a>
             </nav>
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
