@@ -15,10 +15,14 @@ export default function SiteHeader() {
   ];
 
   const boardEducationLinks = [
-    { href: "/board-education", label: "Education & Compliance" },
-    { href: "/board-workshops", label: "Board Workshops" },
-    { href: "/compliance-alerts", label: "Compliance Alerts" },
-  ];
+  { href: "/board-education", label: "Education & Compliance" },
+  { href: "/board-workshops", label: "Board Workshops" },
+  { href: "/compliance-alerts", label: "Compliance Alerts" },
+  {
+    href: "/florida-board-education-requirements",
+    label: "Florida Education Requirements"
+  },
+];
 
   const PHONE_HREF = "tel:+17546004755";
 
