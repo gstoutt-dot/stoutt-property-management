@@ -315,54 +315,66 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto -mt-2 max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="max-w-3xl">
-            <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300/80">
-              Why communities switch
-            </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Boards do not change management companies lightly.
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-white/65 sm:text-lg">
-              They switch when response times slow down, inspections are missed,
-              collections lose momentum, and trust begins to erode. That is
-              where Stoutt Property Management is built to be different.
-            </p>
-          </div>
+        <section className="border-y border-white/10 bg-white/[0.03] py-20 sm:py-24 lg:py-28">
+  <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              {
-                title: "Slow Response Times",
-                text: "Questions linger, follow-through slips, and boards are left waiting too long for answers.",
-              },
-              {
-                title: "Missed Inspections",
-                text: "Small issues go unnoticed until they become larger operational or financial problems.",
-              },
-              {
-                title: "Weak Collections",
-                text: "Delinquency follow-up lacks consistency, urgency, and process discipline.",
-              },
-              {
-                title: "High Turnover",
-                text: "Communities lose continuity when staff changes constantly and relationships never deepen.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className={`${premiumCard} p-6 hover:-translate-y-1`}
-              >
-                <h3 className="text-xl font-semibold text-yellow-300">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-yellow-100/90">
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+    <div className="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center">
+
+      <div>
+        <div className="text-sm font-semibold uppercase tracking-[0.22em] text-yellow-300">
+          Alignment
+        </div>
+
+        <h2 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+          Better educated boards make better governed communities.
+        </h2>
+
+        <p className="mt-6 text-lg leading-8 text-white/70">
+          Our Board Alignment Process helps boards understand fiduciary
+          responsibilities, improve decision-making, reduce friction,
+          and create stronger operational relationships before problems begin.
+        </p>
+
+        <p className="mt-5 text-lg leading-8 text-white/70">
+          This is not simply how we manage communities.
+          It is the philosophy behind how we help boards govern well.
+        </p>
+
+        <div className="mt-8">
+          <a
+            href="/alignment"
+            className="inline-flex items-center rounded-full bg-yellow-400 px-7 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+          >
+            Explore Our Board Alignment Process
+          </a>
+        </div>
+      </div>
+
+      <div className="rounded-[2rem] border border-yellow-400/20 bg-white/[0.04] p-8 sm:p-10">
+        <div className="grid gap-5">
+
+          {[
+            "Establish Responsibilities",
+            "Define Protection Protocols",
+            "Create Operational Alignment",
+            "Reduce Friction Before It Forms",
+            "Build Better Communities Through Better Governance",
+          ].map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-yellow-100/90"
+            >
+              {item}
+            </div>
+          ))}
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div className="grid gap-6 lg:grid-cols-3">
