@@ -13,25 +13,6 @@ export default function HomePage() {
   { label: "Coverage", href: "/coverage" },
 ];
 
-const boardEducationLinks = [
-  {
-    label: "Education & Compliance",
-    href: "/board-education",
-    text: "Board guidance, governance support, and statutory awareness.",
-  },
-  {
-    label: "Board Workshops",
-    href: "/board-workshops",
-    text: "Educational sessions for stronger board leadership.",
-    badge: "NEW",
-  },
-  {
-    label: "Compliance Alerts",
-    href: "/compliance-alerts",
-    text: "Updates and proactive compliance support.",
-  },
-];
-  
   const selectedProperties = [
     {
       image: "/bocawest.jpeg",
@@ -95,41 +76,12 @@ const boardEducationLinks = [
         </a>
       ))}
 
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setBoardMenuOpen((prev) => !prev)}
-          className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
-          aria-expanded={boardMenuOpen}
-        >
-          Board Education ▾
-        </button>
-
-        {boardMenuOpen && (
-          <div className="absolute left-0 top-full z-50 mt-3 w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-            {boardEducationLinks.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={() => setBoardMenuOpen(false)}
-                className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
-              >
-                <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                  {item.label}
-                  {item.badge && (
-                    <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-1 text-xs leading-relaxed text-white/60">
-                  {item.text}
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
+      <a
+  href="/board-education"
+  className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+>
+  Board Education
+</a>
 
       <a
         href="/homeowner-login"
