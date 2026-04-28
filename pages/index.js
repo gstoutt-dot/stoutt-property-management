@@ -74,13 +74,13 @@ const boardEducationLinks = [
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
   <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
-    <a href="/" className="flex items-center">
-      <img
-        src="/logo.png"
-        alt="Stoutt Property Management"
-        className="h-28 w-auto object-contain lg:h-32"
-      />
-    </a>
+    <a href="/" className="flex items-center min-w-[260px]">
+  <img
+    src="/logo.png"
+    alt="Stoutt Property Management"
+    className="h-32 w-auto object-contain lg:h-36"
+  />
+</a>
 
     <nav className="hidden items-center gap-2 lg:flex">
       {navLinks.map((link) => (
