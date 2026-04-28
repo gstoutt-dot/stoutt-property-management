@@ -7,11 +7,29 @@ export default function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/services", label: "Services" },
     { href: "/why-switch", label: "Why Switch" },
-    { label: "About Us", href: "/about-us" },
+    { href: "/about-us", label: "About Us" },
     { href: "https://glennstoutt.com", label: "Founder", external: true },
     { href: "/collections", label: "Collections" },
     { href: "/coverage", label: "Coverage" },
-    { href: "/proposal", label: "Proposal" },
+  ];
+
+  const boardEducationLinks = [
+    {
+      href: "/board-education",
+      label: "Education & Compliance",
+      text: "Board guidance, governance support, and statutory awareness.",
+    },
+    {
+      href: "/board-workshops",
+      label: "Board Workshops",
+      text: "Educational sessions for stronger board leadership.",
+      badge: "NEW",
+    },
+    {
+      href: "/compliance-alerts",
+      label: "Compliance Alerts",
+      text: "Updates and proactive compliance support.",
+    },
   ];
 
   const PHONE_HREF = "tel:+17546004755";
@@ -28,13 +46,13 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <a href="/" className="flex items-center">
-  <img
-    src="/logo.png"
-    alt="Stoutt Property Management"
-    className="h-24 w-auto object-contain"
-  />
-</a>
+        <a href="/" className="flex min-w-[220px] items-center">
+          <img
+            src="/logo.png"
+            alt="Stoutt Property Management"
+            className="h-28 w-auto object-contain lg:h-32"
+          />
+        </a>
 
         <nav className="hidden items-center gap-6 lg:flex">
           {navLinks.map((link) => (
@@ -48,11 +66,39 @@ export default function SiteHeader() {
               {link.label}
             </a>
           ))}
+
+          <div className="relative group">
+            <button type="button" className={linkClasses}>
+              Board Education ▾
+            </button>
+
+            <div className="absolute left-0 top-full z-50 mt-4 hidden w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl group-hover:block">
+              {boardEducationLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
+                >
+                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                    {item.label}
+                    {item.badge && (
+                      <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-xs leading-relaxed text-white/60">
+                    {item.text}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <a href="/proposal" className={secondaryBtn}>
-            Request a Proposal
+          <a href="/homeowner-login" className={secondaryBtn}>
+            Homeowner Access
           </a>
           <a href={PHONE_HREF} className={primaryBtn}>
             Call Now
@@ -116,15 +162,42 @@ export default function SiteHeader() {
                   {link.label}
                 </a>
               ))}
+
+              <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-2">
+                <div className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
+                  Board Education
+                </div>
+
+                {boardEducationLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-xl px-3 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
+                  >
+                    <span className="flex items-center gap-2">
+                      {item.label}
+                      {item.badge && (
+                        <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
+                          {item.badge}
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-1 block text-xs leading-relaxed text-white/55">
+                      {item.text}
+                    </span>
+                  </a>
+                ))}
+              </div>
             </nav>
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <a
-                href="/proposal"
+                href="/homeowner-login"
                 onClick={() => setMobileOpen(false)}
                 className={secondaryBtn}
               >
-                Request a Proposal
+                Homeowner Access
               </a>
               <a
                 href={PHONE_HREF}
