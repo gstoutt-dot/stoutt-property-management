@@ -56,14 +56,14 @@ export default function BoardEducationPage() {
           <div className="relative mx-auto max-w-7xl px-5 py-20 sm:px-6 lg:px-8 lg:py-28">
             <div className="max-w-5xl">
               <div className="flex flex-col items-start">
-  <div className="inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-300">
-    Board Education • Compliance • Strategic Board Support
-  </div>
+                <div className="inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-yellow-300">
+                  Board Education • Compliance • Strategic Board Support
+                </div>
 
-  <p className="mt-4 text-sm font-medium leading-6 tracking-[0.08em] text-yellow-100/85">
-    Helping Florida boards lead with greater clarity.
-  </p>
-</div>
+                <p className="mt-4 text-sm font-medium leading-6 tracking-[0.08em] text-yellow-100/85">
+                  Helping Florida boards lead with greater clarity.
+                </p>
+              </div>
 
               <h1 className="mt-7 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Helping Florida boards govern smarter, stay informed, and lead
@@ -76,14 +76,15 @@ export default function BoardEducationPage() {
                 compliance awareness, and proactive systems designed to
                 strengthen communities and reduce risk.
               </p>
+
               <div className="mt-8 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-6">
-  <p className="text-lg leading-8 text-white/85">
-    Florida Board Education Requirements continue to evolve. 
-    Stoutt Property Management helps train boards stay current, informed, 
-    and prepared through practical training, compliance awareness, 
-    and proactive support.
-  </p>
-</div>
+                <p className="text-lg leading-8 text-white/85">
+                  Florida Board Education Requirements continue to evolve.
+                  Stoutt Property Management helps train boards stay current,
+                  informed, and prepared through practical training, compliance
+                  awareness, and proactive support.
+                </p>
+              </div>
 
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
                 <a href="/proposal" className={primaryBtn}>
@@ -252,6 +253,122 @@ export default function BoardEducationPage() {
           </div>
         </section>
 
+        {/* Seminar Training & Educational CEUs */}
+        <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
+            <div className="max-w-4xl">
+              <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+                Board Education Program
+              </span>
+
+              <h2 className="mt-6 text-3xl font-light text-white md:text-4xl">
+                Seminar Training & Educational CEUs
+              </h2>
+
+              <p className="mt-6 text-lg leading-relaxed text-slate-300">
+                Stoutt Property Management is developing educational seminars
+                and board training workshops designed to help directors
+                strengthen their understanding of budgeting, reserves, insurance
+                responsibilities, collections, governance, and statutory
+                requirements affecting Florida condominium and homeowners
+                associations.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <h3 className="mb-3 text-lg font-medium text-white">
+                  Upcoming Workshops
+                </h3>
+                <p className="text-sm leading-relaxed text-slate-300">
+                  Seminar dates are currently being scheduled. Future sessions
+                  and registration opportunities will be posted here.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <h3 className="mb-3 text-lg font-medium text-white">
+                  Continuing Education
+                </h3>
+                <p className="text-sm leading-relaxed text-slate-300">
+                  Workshops are planned to support continuing education
+                  objectives for board members seeking practical governance and
+                  operational training.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <h3 className="mb-3 text-lg font-medium text-white">
+                  Custom On-Site Training
+                </h3>
+                <p className="text-sm leading-relaxed text-slate-300">
+                  Private educational sessions for individual boards and
+                  communities will also be available upon request.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <a
+                href="/proposal"
+                className="inline-flex items-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-105"
+              >
+                Request Board Training Information
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Related Board Resources */}
+        <section className="px-6 pb-16">
+          <div className="mx-auto max-w-5xl">
+            <h2 className="mb-8 text-3xl font-semibold">
+              Related Board Resources
+            </h2>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <a
+                href="/board-education"
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
+              >
+                <h3 className="text-xl font-semibold">
+                  Education & Compliance
+                </h3>
+
+                <p className="mt-3 text-white/65">
+                  Guidance for board responsibilities, governance awareness, and
+                  compliance expectations.
+                </p>
+              </a>
+
+              <a
+                href="/board-workshops"
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
+              >
+                <h3 className="text-xl font-semibold">Board Workshops</h3>
+
+                <p className="mt-3 text-white/65">
+                  Practical workshops designed to help board members lead with
+                  confidence.
+                </p>
+              </a>
+
+              <a
+                href="/compliance-alerts"
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
+              >
+                <h3 className="text-xl font-semibold">Compliance Alerts</h3>
+
+                <p className="mt-3 text-white/65">
+                  Proactive updates and reminders to help boards stay ahead of
+                  important requirements.
+                </p>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Why Experience Matters */}
         <section className="border-y border-white/10 bg-white/[0.03] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-4xl text-center">
@@ -276,6 +393,7 @@ export default function BoardEducationPage() {
           </div>
         </section>
 
+        {/* Join The Winning Team */}
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div className={`${premiumCard} p-8 text-center sm:p-10 lg:p-14`}>
             <div className="mx-auto max-w-3xl">
@@ -302,117 +420,6 @@ export default function BoardEducationPage() {
             </div>
           </div>
         </section>
-        {/* Seminar Training & Educational CEUs */}
-<section className="mt-0 mb-12 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
-  <div className="max-w-4xl">
-    <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
-      Board Education Program
-    </span>
-
-    <h2 className="mt-6 text-3xl md:text-4xl font-light text-white">
-      Seminar Training & Educational CEUs
-    </h2>
-
-    <p className="mt-6 text-lg leading-relaxed text-slate-300">
-      Stoutt Property Management is developing educational seminars and
-      board training workshops designed to help directors strengthen their
-      understanding of budgeting, reserves, insurance responsibilities,
-      collections, governance, and statutory requirements affecting Florida
-      condominium and homeowners associations.
-    </p>
-
-    <div className="mt-8 grid gap-6 md:grid-cols-3">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="mb-3 text-lg font-medium text-white">
-          Upcoming Workshops
-        </h3>
-        <p className="text-sm leading-relaxed text-slate-300">
-          Seminar dates are currently being scheduled. Future sessions and
-          registration opportunities will be posted here.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="mb-3 text-lg font-medium text-white">
-          Continuing Education
-        </h3>
-        <p className="text-sm leading-relaxed text-slate-300">
-          Workshops are planned to support continuing education objectives
-          for board members seeking practical governance and operational
-          training.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="mb-3 text-lg font-medium text-white">
-          Custom On-Site Training
-        </h3>
-        <p className="text-sm leading-relaxed text-slate-300">
-          Private educational sessions for individual boards and communities
-          will also be available upon request.
-        </p>
-      </div>
-    </div>
-
-    <div className="mt-8">
-      <a
-        href="/proposal"
-        className="inline-flex items-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-105"
-      >
-        Request Board Training Information
-      </a>
-    </div>
-  </div>
-</section>
-          
-        <section className="px-6 pb-24">
-  <div className="mx-auto max-w-5xl">
-    <h2 className="mb-8 text-3xl font-semibold">
-      Related Board Resources
-    </h2>
-
-    <div className="grid gap-6 md:grid-cols-3">
-      <a
-        href="/board-education"
-        className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
-      >
-        <h3 className="text-xl font-semibold">
-          Education & Compliance
-        </h3>
-
-        <p className="mt-3 text-white/65">
-          Guidance for board responsibilities, governance awareness, and compliance expectations.
-        </p>
-      </a>
-
-      <a
-        href="/board-workshops"
-        className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
-      >
-        <h3 className="text-xl font-semibold">
-          Board Workshops
-        </h3>
-
-        <p className="mt-3 text-white/65">
-          Practical workshops designed to help board members lead with confidence.
-        </p>
-      </a>
-
-      <a
-        href="/compliance-alerts"
-        className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 transition hover:bg-white/8"
-      >
-        <h3 className="text-xl font-semibold">
-          Compliance Alerts
-        </h3>
-
-        <p className="mt-3 text-white/65">
-          Proactive updates and reminders to help boards stay ahead of important requirements.
-        </p>
-      </a>
-    </div>
-  </div>
-</section>
       </main>
 
       <StickyMobileCTA />
