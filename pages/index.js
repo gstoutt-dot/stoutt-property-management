@@ -4,14 +4,33 @@ export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Why Switch", href: "/why-switch" },
-    { label: "About Us", href: "/about-us" },
-    { label: "Founder", href: "https://glennstoutt.com", external: true },
-    { label: "Collections", href: "/collections" },
-    { label: "Coverage", href: "/coverage" },
-  ];
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "Why Switch", href: "/why-switch" },
+  { label: "About Us", href: "/about-us" },
+  { label: "Founder", href: "https://glennstoutt.com", external: true },
+  { label: "Collections", href: "/collections" },
+  { label: "Coverage", href: "/coverage" },
+];
+
+const boardEducationLinks = [
+  {
+    label: "Education & Compliance",
+    href: "/board-education",
+    text: "Board guidance, governance support, and statutory awareness.",
+  },
+  {
+    label: "Board Workshops",
+    href: "/board-workshops",
+    text: "Educational sessions for stronger board leadership.",
+    badge: "NEW",
+  },
+  {
+    label: "Compliance Alerts",
+    href: "/compliance-alerts",
+    text: "Updates and proactive compliance support.",
+  },
+];
   
   const selectedProperties = [
     {
