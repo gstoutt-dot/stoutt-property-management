@@ -303,7 +303,7 @@ export default function BoardEducationPage() {
           </div>
         </section>
         {/* Seminar Training & Educational CEUs */}
-<section className="mt-0 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
+<section className="mt-0 mb-12 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
   <div className="max-w-4xl">
     <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
       Board Education Program
