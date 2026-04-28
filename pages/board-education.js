@@ -303,7 +303,7 @@ export default function BoardEducationPage() {
           </div>
         </section>
         {/* Seminar Training & Educational CEUs */}
-<section className="mt-16 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
+<section className="mt-0 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
   <div className="max-w-4xl">
     <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
       Board Education Program
@@ -323,20 +323,20 @@ export default function BoardEducationPage() {
 
     <div className="mt-8 grid gap-6 md:grid-cols-3">
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="text-lg font-medium text-white mb-3">
+        <h3 className="mb-3 text-lg font-medium text-white">
           Upcoming Workshops
         </h3>
-        <p className="text-slate-300 text-sm leading-relaxed">
+        <p className="text-sm leading-relaxed text-slate-300">
           Seminar dates are currently being scheduled. Future sessions and
           registration opportunities will be posted here.
         </p>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="text-lg font-medium text-white mb-3">
+        <h3 className="mb-3 text-lg font-medium text-white">
           Continuing Education
         </h3>
-        <p className="text-slate-300 text-sm leading-relaxed">
+        <p className="text-sm leading-relaxed text-slate-300">
           Workshops are planned to support continuing education objectives
           for board members seeking practical governance and operational
           training.
@@ -344,10 +344,10 @@ export default function BoardEducationPage() {
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h3 className="text-lg font-medium text-white mb-3">
+        <h3 className="mb-3 text-lg font-medium text-white">
           Custom On-Site Training
         </h3>
-        <p className="text-slate-300 text-sm leading-relaxed">
+        <p className="text-sm leading-relaxed text-slate-300">
           Private educational sessions for individual boards and communities
           will also be available upon request.
         </p>
