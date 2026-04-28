@@ -302,6 +302,69 @@ export default function BoardEducationPage() {
             </div>
           </div>
         </section>
+        {/* Seminar Training & Educational CEUs */}
+<section className="mt-16 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-500/10 to-yellow-400/5 p-8 md:p-10">
+  <div className="max-w-4xl">
+    <span className="inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+      Board Education Program
+    </span>
+
+    <h2 className="mt-6 text-3xl md:text-4xl font-light text-white">
+      Seminar Training & Educational CEUs
+    </h2>
+
+    <p className="mt-6 text-lg leading-relaxed text-slate-300">
+      Stoutt Property Management is developing educational seminars and
+      board training workshops designed to help directors strengthen their
+      understanding of budgeting, reserves, insurance responsibilities,
+      collections, governance, and statutory requirements affecting Florida
+      condominium and homeowners associations.
+    </p>
+
+    <div className="mt-8 grid gap-6 md:grid-cols-3">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h3 className="text-lg font-medium text-white mb-3">
+          Upcoming Workshops
+        </h3>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          Seminar dates are currently being scheduled. Future sessions and
+          registration opportunities will be posted here.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h3 className="text-lg font-medium text-white mb-3">
+          Continuing Education
+        </h3>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          Workshops are planned to support continuing education objectives
+          for board members seeking practical governance and operational
+          training.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h3 className="text-lg font-medium text-white mb-3">
+          Custom On-Site Training
+        </h3>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          Private educational sessions for individual boards and communities
+          will also be available upon request.
+        </p>
+      </div>
+    </div>
+
+    <div className="mt-8">
+      <a
+        href="/proposal"
+        className="inline-flex items-center rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-105"
+      >
+        Request Board Training Information
+      </a>
+    </div>
+  </div>
+</section>
+          
         <section className="px-6 pb-24">
   <div className="mx-auto max-w-5xl">
     <h2 className="mb-8 text-3xl font-semibold">
