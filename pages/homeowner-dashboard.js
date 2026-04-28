@@ -24,7 +24,7 @@ const dashboardCards = [
   },
   {
     title: "Violations",
-    value: "No Open Violations",
+    value: "Account in Compliance",
     detail: "Account currently in compliance",
     href: "/homeowner/violations",
     action: "View Compliance",
@@ -92,7 +92,7 @@ export default function HomeownerDashboardPage() {
                 Homeowner Dashboard
               </p>
               <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-                Welcome, Robert Johnson
+                Welcome, Homeowner
               </h1>
               <p className="mt-3 text-lg text-white/65">
                 Environ Towers I — Unit 1204
@@ -170,12 +170,41 @@ export default function HomeownerDashboardPage() {
                 ))}
               </div>
 
-              <Link
-                href="/homeowner/ava"
-                className="mt-7 block rounded-full bg-slate-950 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:scale-[1.02]"
-              >
-                Start Conversation
-              </Link>
+              <div className="mt-7 rounded-3xl bg-white/45 p-5">
+  <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-800">
+    Action Items
+  </p>
+
+  <div className="mt-4 space-y-3 text-sm font-medium text-slate-900">
+    <div className="flex items-center justify-between gap-4">
+      <span>Payment due</span>
+      <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
+        $485
+      </span>
+    </div>
+
+    <div className="flex items-center justify-between gap-4">
+      <span>Compliance status</span>
+      <span className="rounded-full bg-emerald-700 px-3 py-1 text-xs font-semibold text-white">
+        Good
+      </span>
+    </div>
+
+    <div className="flex items-center justify-between gap-4">
+      <span>Work order</span>
+      <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
+        1 Open
+      </span>
+    </div>
+  </div>
+</div>
+
+<Link
+  href="/homeowner/ava"
+  className="mt-5 block rounded-full bg-slate-950 px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:scale-[1.02]"
+>
+  Start Conversation
+</Link>
             </aside>
           </div>
 
