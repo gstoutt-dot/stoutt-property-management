@@ -73,97 +73,164 @@ const boardEducationLinks = [
       </div>
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
-          <a href="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="Stoutt Property Management"
-              className="h-20 w-auto object-contain"
-            />
-          </a>
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
+    <a href="/" className="flex items-center">
+      <img
+        src="/logo.png"
+        alt="Stoutt Property Management"
+        className="h-20 w-auto object-contain"
+      />
+    </a>
 
-          <nav className="hidden items-center gap-2 lg:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target={link.external ? "_blank" : "_self"}
-                rel={link.external ? "noopener noreferrer" : undefined}
-                className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
-              >
-                {link.label}
-              </a>
-            ))}
+    <nav className="hidden items-center gap-2 lg:flex">
+      {navLinks.map((link) => (
+        <a
+          key={link.label}
+          href={link.href}
+          target={link.external ? "_blank" : "_self"}
+          rel={link.external ? "noopener noreferrer" : undefined}
+          className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+        >
+          {link.label}
+        </a>
+      ))}
 
+      <div className="relative group">
+        <button
+          type="button"
+          className="whitespace-nowrap rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+        >
+          Board Education ▾
+        </button>
+
+        <div className="absolute left-0 top-full z-50 mt-3 hidden w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl group-hover:block">
+          {boardEducationLinks.map((item) => (
             <a
-  href="/homeowner-login"
-  className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
->
-  Homeowner Access
-</a>
-
-            <a
-              href="tel:+17546004755"
-              className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+              key={item.label}
+              href={item.href}
+              className="block rounded-2xl px-4 py-3 transition hover:bg-white/10"
             >
-              Call Now
+              <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                {item.label}
+                {item.badge && (
+                  <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-yellow-300">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 text-xs leading-relaxed text-white/60">
+                {item.text}
+              </div>
             </a>
-          </nav>
+          ))}
+        </div>
+      </div>
 
-          <button
-            type="button"
-            aria-label="Toggle menu"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 lg:hidden"
+      <a
+        href="/homeowner-login"
+        className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
+      >
+        Homeowner Access
+      </a>
+
+      <a
+        href="tel:+17546004755"
+        className="ml-2 whitespace-nowrap rounded-full border border-yellow-400/30 bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_0_30px_rgba(234,179,8,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(234,179,8,0.28)]"
+      >
+        Call Now
+      </a>
+    </nav>
+
+    <button
+      type="button"
+      aria-label="Toggle menu"
+      onClick={() => setMobileOpen(!mobileOpen)}
+      className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 lg:hidden"
+    >
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {mobileOpen ? (
+          <path d="M6 6l12 12M18 6L6 18" />
+        ) : (
+          <>
+            <path d="M3 6h18" />
+            <path d="M3 12h18" />
+            <path d="M3 18h18" />
+          </>
+        )}
+      </svg>
+    </button>
+  </div>
+
+  {mobileOpen && (
+    <div className="border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:px-6">
+        {navLinks.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            target={link.external ? "_blank" : "_self"}
+            rel={link.external ? "noopener noreferrer" : undefined}
+            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
+            onClick={() => setMobileOpen(false)}
           >
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            {link.label}
+          </a>
+        ))}
+
+        <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-2">
+          <div className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
+            Board Education
+          </div>
+
+          {boardEducationLinks.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className="block rounded-xl px-3 py-3 text-sm font-medium text-white/85 transition hover:bg-white/10"
+              onClick={() => setMobileOpen(false)}
             >
-              {mobileOpen ? (
-                <path d="M6 6l12 12M18 6L6 18" />
-              ) : (
-                <>
-                  <path d="M3 6h18" />
-                  <path d="M3 12h18" />
-                  <path d="M3 18h18" />
-                </>
-              )}
-            </svg>
-          </button>
+              <span className="flex items-center gap-2">
+                {item.label}
+                {item.badge && (
+                  <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
+                    {item.badge}
+                  </span>
+                )}
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-white/55">
+                {item.text}
+              </span>
+            </a>
+          ))}
         </div>
 
-        {mobileOpen && (
-          <div className="border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:px-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target={link.external ? "_blank" : "_self"}
-                  rel={link.external ? "noopener noreferrer" : undefined}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
-              <a
-                href="/proposal"
-                className="mt-2 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
-                onClick={() => setMobileOpen(false)}
-              >
-                Request a Proposal
-              </a>
-            </div>
-          </div>
-        )}
-      </header>
+        <a
+          href="/homeowner-login"
+          className="rounded-2xl border border-amber-400/40 bg-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950"
+          onClick={() => setMobileOpen(false)}
+        >
+          Homeowner Access
+        </a>
+
+        <a
+          href="/proposal"
+          className="rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
+          onClick={() => setMobileOpen(false)}
+        >
+          Request a Proposal
+        </a>
+      </div>
+    </div>
+  )}
+</header>
 
       <main className="relative z-10">
         <section className="mx-auto max-w-7xl px-5 pb-8 pt-12 sm:px-6 sm:pb-10 sm:pt-16 lg:px-8 lg:pb-12 lg:pt-20">
