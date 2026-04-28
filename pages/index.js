@@ -78,7 +78,7 @@ const boardEducationLinks = [
       <img
         src="/logo.png"
         alt="Stoutt Property Management"
-        className="h-20 w-auto object-contain"
+        className="h-28 w-auto object-contain lg:h-32"
       />
     </a>
 
