@@ -65,7 +65,7 @@ export default function SiteHeader() {
               className={linkClasses}
               aria-expanded={boardMenuOpen}
             >
-              Board Education ▾
+              Board Resources ▾
             </button>
 
             {boardMenuOpen && (
