@@ -7,6 +7,7 @@ export default function HomePage() {
   const navLinks = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
+  { label: "Alignment", href: "/alignment" },
   { label: "Why Switch", href: "/why-switch" },
   { label: "About Us", href: "/about-us" },
   { label: "Founder", href: "https://glennstoutt.com", external: true },
