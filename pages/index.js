@@ -76,10 +76,10 @@ const boardEducationLinks = [
   <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
     <a href="/" className="flex items-center">
       <img
-        src="/logo.png"
-        alt="Stoutt Property Management"
-        className="h-20 w-auto object-contain"
-      />
+  src="/logo.png"
+  alt="Stoutt Property Management"
+  className="h-28 w-auto object-contain lg:h-32"
+/>
     </a>
 
     <nav className="hidden items-center gap-2 lg:flex">
