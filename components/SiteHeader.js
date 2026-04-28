@@ -5,14 +5,17 @@ export default function SiteHeader() {
   const [boardMenuOpen, setBoardMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/services", label: "Services" },
-    { href: "/why-switch", label: "Why Switch" },
-    { href: "/about-us", label: "About Us" },
-    { href: "https://glennstoutt.com", label: "Founder", external: true },
-    { href: "/collections", label: "Collections" },
-    { href: "/coverage", label: "Coverage" },
-  ];
+  { href: "/", label: "Home" },
+  { href: "/services", label: "Services" },
+
+  { href: "/alignment", label: "Alignment" },
+
+  { href: "/why-switch", label: "Why Switch" },
+  { href: "/about-us", label: "About Us" },
+  { href: "https://glennstoutt.com", label: "Founder", external: true },
+  { href: "/collections", label: "Collections" },
+  { href: "/coverage", label: "Coverage" },
+];
 
   const boardEducationLinks = [
   { href: "/board-education", label: "Education & Compliance" },
