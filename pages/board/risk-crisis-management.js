@@ -1,245 +1,194 @@
-import React from "react";
 import Link from "next/link";
+import { bosSignals, aiEvents } from "../../lib/bosData";
 
-export default function RiskCrisisManagementCenter() {
+export default function RiskCrisisManagement() {
+  const crisisSignals = bosSignals.filter(
+    (item) =>
+      item.riskLevel === "Critical" ||
+      item.riskLevel === "High" ||
+      item.type === "Risk" ||
+      item.type === "Legal"
+  );
+
+  const crisisAiEvents = aiEvents.filter(
+    (event) =>
+      event.priority === "High" ||
+      event.status === "Escalated" ||
+      event.type === "Rule Violation"
+  );
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
+      <section className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide text-white">
-            Stoutt Board Portal
-          </Link>
-
-          <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board" className="hover:text-amber-300">Board Portal</Link>
-            <Link href="/board/violation-review" className="hover:text-amber-300">Violations</Link>
-            <Link href="/board/architectural-approvals" className="hover:text-amber-300">ARC Approvals</Link>
-            <Link href="/board/maintenance-review" className="hover:text-amber-300">Maintenance</Link>
-            <Link href="/board/financial-review" className="hover:text-amber-300">Financials</Link>
-          </nav>
-        </div>
-      </header>
-
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(30,41,59,0.9),transparent_45%)]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-16">
-          <div className="max-w-4xl">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
-              Risk, Safety & Emergency Readiness
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
             </p>
 
-            <h1 className="text-4xl font-bold tracking-tight text-white md:text-6xl">
-              Risk & Crisis Management Center
+            <h1 className="mt-2 text-2xl font-semibold">
+              Risk-Crisis Management
             </h1>
-
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-              A board-level command center for emergency planning, hurricane readiness,
-              insurance exposure, life safety issues, critical vendor contacts, incident
-              tracking, compliance risk, crisis communications, and recovery action plans.
-            </p>
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
-            {[
-              ["Readiness Level", "High"],
-              ["Open Risk Items", "8"],
-              ["Critical Vendors", "12"],
-              ["Recovery Tasks", "91%"],
-            ].map(([label, value]) => (
-              <div
-                key={label}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-              >
-                <p className="text-sm text-slate-400">{label}</p>
-                <p className="mt-3 text-3xl font-bold text-amber-300">{value}</p>
-              </div>
-            ))}
-          </div>
+          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
+            <Link href="/board">Board Home</Link>
+            <Link href="/board/command-center">Command Center</Link>
+            <Link href="/board/insurance-risk">Insurance & Risk</Link>
+            <Link href="/board/compliance-legal-review">Legal</Link>
+            <Link href="/board/action-items">Action Items</Link>
+          </nav>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/20 lg:col-span-2">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                  Crisis Command Board
-                </p>
-                <h2 className="mt-2 text-2xl font-bold text-white">
-                  Active Risk & Emergency Priorities
-                </h2>
-              </div>
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="rounded-3xl border border-red-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+          <p className="text-sm uppercase tracking-[0.25em] text-red-300">
+            Crisis Signal Layer Active
+          </p>
 
-              <span className="w-fit rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-200">
-                Preparedness Review Active
-              </span>
-            </div>
+          <h2 className="mt-3 text-4xl font-semibold">
+            Critical and high-risk BOS signals now route into crisis oversight.
+          </h2>
 
-            <div className="space-y-4">
-              {[
-                {
-                  title: "Hurricane Readiness Plan",
-                  status: "Updated",
-                  detail:
-                    "Storm preparation checklist, vendor response assignments, owner communications, and post-storm inspection workflow are current.",
-                },
-                {
-                  title: "Life Safety & Access Controls",
-                  status: "Monitoring",
-                  detail:
-                    "Gate access, fire/life safety systems, emergency lighting, pool safety, and elevator readiness are under active review.",
-                },
-                {
-                  title: "Insurance Exposure Review",
-                  status: "Board Review",
-                  detail:
-                    "Policy limits, deductibles, exclusions, renewal risks, claim history, and coverage gaps are queued for board discussion.",
-                },
-                {
-                  title: "Critical Vendor Response List",
-                  status: "Verified",
-                  detail:
-                    "Emergency contacts for restoration, plumbing, electrical, roofing, security, elevator, gate, and cleanup vendors are confirmed.",
-                },
-                {
-                  title: "Crisis Communication Protocol",
-                  status: "Ready",
-                  detail:
-                    "Resident notices, board updates, manager scripts, vendor escalation messages, and emergency announcement templates are staged.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-slate-950/70 p-5"
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-slate-400">{item.detail}</p>
-                    </div>
+          <p className="mt-4 max-w-3xl text-slate-300">
+            Risk-Crisis Management now receives legal, risk, high-priority, and
+            AI-escalated events from the shared Board Operating System layer.
+          </p>
+        </div>
 
-                    <span className="w-fit rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200">
-                      {item.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <aside className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/20">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-              Recovery Readiness
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+          <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
+            <p className="text-sm text-red-100">Crisis Signals</p>
+            <p className="mt-3 text-4xl font-semibold text-red-200">
+              {crisisSignals.length}
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-white">Action Plan Progress</h2>
+          </div>
 
-            <div className="mt-8">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-5xl font-bold text-white">91%</p>
-                  <p className="mt-2 text-sm text-slate-400">Recovery tasks prepared</p>
-                </div>
-                <p className="text-sm text-amber-300">Target: 100%</p>
-              </div>
+          <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
+            <p className="text-sm text-violet-100">AI Escalations</p>
+            <p className="mt-3 text-4xl font-semibold text-violet-200">
+              {crisisAiEvents.length}
+            </p>
+          </div>
 
-              <div className="mt-6 h-3 overflow-hidden rounded-full bg-slate-800">
-                <div className="h-full w-[91%] rounded-full bg-amber-400" />
-              </div>
-            </div>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">Legal / Risk Items</p>
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {
+                crisisSignals.filter(
+                  (item) => item.type === "Legal" || item.type === "Risk"
+                ).length
+              }
+            </p>
+          </div>
 
-            <div className="mt-8 space-y-4">
-              {[
-                ["Emergency Vendors", "12"],
-                ["Open Incidents", "2"],
-                ["Insurance Items", "4"],
-                ["Board Actions", "3"],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between border-b border-white/10 pb-3"
+          <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-6">
+            <p className="text-sm text-emerald-100">Future Crisis Feeds</p>
+            <p className="mt-3 text-4xl font-semibold text-emerald-200">4</p>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-red-400/20 bg-red-500/10 p-6">
+            <h3 className="text-xl font-semibold text-red-100">
+              Crisis Signal Queue
+            </h3>
+
+            <div className="mt-6 space-y-4">
+              {crisisSignals.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-red-300/20 bg-slate-950/60 p-5 hover:border-red-200/50"
                 >
-                  <span className="text-sm text-slate-400">{label}</span>
-                  <span className="font-semibold text-white">{value}</span>
-                </div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-red-200">
+                    {item.id} · {item.type}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">{item.title}</h4>
+
+                  <p className="mt-2 text-sm text-slate-300">
+                    Crisis Action: Assess exposure, board notification, legal
+                    review, and urgent response path.
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-400">
+                    Owner: {item.owner} · Risk: {item.riskLevel}
+                  </p>
+                </Link>
               ))}
             </div>
-          </aside>
-        </div>
+          </div>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              title: "Emergency Planning",
-              text: "Centralize emergency procedures, response roles, board responsibilities, manager tasks, and owner communication plans.",
-            },
-            {
-              title: "Hurricane Readiness",
-              text: "Track pre-storm inspections, vendor staging, owner notices, generator/fuel checks, shutters, drainage, and post-storm actions.",
-            },
-            {
-              title: "Insurance Exposure",
-              text: "Monitor policy limits, deductibles, coverage gaps, renewal concerns, claims history, and broker follow-up items.",
-            },
-            {
-              title: "Life Safety Issues",
-              text: "Prioritize elevator, gate, fire, lighting, pool, structural, access, security, and urgent habitability concerns.",
-            },
-            {
-              title: "Critical Vendors",
-              text: "Maintain emergency-ready contacts for restoration, roofing, plumbing, electrical, security, elevator, gate, and cleanup vendors.",
-            },
-            {
-              title: "Incident Tracking",
-              text: "Log incidents, dates, photos, vendor response, resident impact, insurance relevance, legal notes, and resolution status.",
-            },
-            {
-              title: "Legal & Compliance Risk",
-              text: "Flag unresolved violations, statutory deadlines, board exposure, document conflicts, claims risk, and escalation requirements.",
-            },
-            {
-              title: "Recovery Action Plans",
-              text: "Coordinate post-event inspections, vendor deployment, owner updates, insurance documentation, repairs, and final closeout.",
-            },
-          ].map((card) => (
-            <div
-              key={card.title}
-              className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition hover:border-amber-400/40 hover:bg-white/[0.06]"
-            >
-              <h3 className="text-xl font-bold text-white">{card.title}</h3>
-              <p className="mt-4 text-sm leading-6 text-slate-400">{card.text}</p>
-            </div>
-          ))}
-        </div>
+          <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
+            <h3 className="text-xl font-semibold text-violet-100">
+              AI Escalation Queue
+            </h3>
 
-        <div className="mt-8 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-8">
-          <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                SPM Governance Advantage
-              </p>
-              <h2 className="mt-3 text-3xl font-bold text-white">
-                Calm boards are prepared boards.
-              </h2>
-              <p className="mt-4 max-w-3xl text-slate-300">
-                This center helps associations move from reactive crisis handling to
-                disciplined emergency readiness, giving the board visibility into risks,
-                vendors, insurance exposure, communication steps, and recovery progress
-                before pressure hits.
-              </p>
-            </div>
+            <p className="mt-2 text-sm text-violet-100/70">
+              High-priority AI-originated items that may require crisis review.
+            </p>
 
-            <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
-              <p className="text-sm text-slate-400">Next Risk Action</p>
-              <p className="mt-2 text-xl font-semibold text-white">
-                Review insurance exposure summary
-              </p>
-              <p className="mt-3 text-sm text-amber-200">
-                Recommended before the next board risk review.
-              </p>
+            <div className="mt-6 space-y-4">
+              {crisisAiEvents.map((event) => (
+                <Link
+                  key={event.id}
+                  href={event.route}
+                  className="block rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5 hover:border-violet-200/50"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+                    {event.id} · {event.type}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">{event.event}</h4>
+
+                  <p className="mt-2 text-sm text-slate-300">
+                    Source: {event.source}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-400">
+                    Status: {event.status} · Priority: {event.priority}
+                  </p>
+                </Link>
+              ))}
             </div>
           </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
+          <h3 className="text-xl font-semibold text-emerald-100">
+            Future Crisis Response Feeds
+          </h3>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+              Emergency Incident Timeline
+            </div>
+
+            <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+              Board Notification Log
+            </div>
+
+            <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+              Legal / Insurance Escalation Path
+            </div>
+
+            <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+              Vendor Emergency Dispatch Feed
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Risk-Crisis Management now receives critical BOS signals and
+            high-priority AI escalation events.
+          </p>
         </div>
       </section>
     </main>
