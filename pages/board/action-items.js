@@ -1,186 +1,171 @@
 import Link from "next/link";
+import { bosSignals, aiEvents } from "../../lib/bosData";
 
-export default function BoardActionItems() {
-  const actionItems = [
-    {
-      title: "Review gate repair proposal",
-      owner: "Board President",
-      category: "Maintenance",
-      status: "Decision Needed",
-      due: "Apr 30, 2026",
-      notes:
-        "Proposal received for north entrance gate arm repair. Board approval needed before vendor scheduling.",
-    },
-    {
-      title: "Confirm April meeting minutes",
-      owner: "Secretary",
-      category: "Meeting Follow-Up",
-      status: "Pending Review",
-      due: "May 2, 2026",
-      notes:
-        "Draft minutes prepared from the April board meeting and awaiting final board review.",
-    },
-    {
-      title: "Request updated insurance certificate",
-      owner: "Manager",
-      category: "Vendor Compliance",
-      status: "In Progress",
-      due: "May 6, 2026",
-      notes:
-        "Landscape vendor certificate of insurance needs renewal and upload to the board document center.",
-    },
-  ];
+export default function ActionItems() {
+  const actionItems = bosSignals.filter(
+    (item) =>
+      item.status === "Pending Review" ||
+      item.status === "Escalation Review" ||
+      item.status === "Vendor Follow-Up" ||
+      item.status === "Board Review" ||
+      item.status === "Counsel Review Needed" ||
+      item.status === "In Progress"
+  );
+
+  const aiActionItems = aiEvents.filter(
+    (event) =>
+      event.status === "Open" ||
+      event.status === "Needs Review" ||
+      event.status === "Escalated"
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%)]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-8">
-          <div className="mb-10 flex items-center justify-between">
-            <Link href="/board" className="text-xl font-semibold tracking-wide">
-              Stoutt Property Management
-            </Link>
-
-            <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-              <Link href="/board" className="hover:text-white">
-                Board Portal
-              </Link>
-              <Link href="/board/violation-review" className="hover:text-white">
-                Violations
-              </Link>
-              <Link href="/board/architectural-approvals" className="hover:text-white">
-                ARC Approvals
-              </Link>
-              <Link href="/board/maintenance-review" className="hover:text-white">
-                Maintenance
-              </Link>
-              <Link href="/board/financial-review" className="hover:text-white">
-                Financials
-              </Link>
-              
-            </nav>
-          </div>
-
-          <div className="max-w-3xl py-16">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-300">
-              Board Action Tracker
-            </p>
-
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Keep every board decision and follow-up moving forward.
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              Track open tasks, board decisions, manager follow-ups, vendor deadlines,
-              and meeting carryover items in one organized board-facing queue.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#action-items"
-                className="rounded-full bg-yellow-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200"
-              >
-                View Action Items
-              </a>
-
-              <Link
-                href="/board"
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Back to Board Portal
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-5 md:grid-cols-4">
-          {[
-            ["3", "Open Items"],
-            ["1", "Decision Needed"],
-            ["1", "Manager Follow-Up"],
-            ["0", "Overdue"],
-          ].map(([number, label]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="text-3xl font-bold text-yellow-300">{number}</div>
-              <div className="mt-2 text-sm text-slate-300">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="action-items" className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <section className="border-b border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
-              Open Follow-Ups
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
             </p>
-            <h2 className="mt-2 text-3xl font-bold">Board Action Items</h2>
+            <h1 className="mt-2 text-2xl font-semibold">Action Items</h1>
           </div>
 
-          <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10">
-            Add Action Item
-          </button>
+          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
+            <Link href="/board">Board Home</Link>
+            <Link href="/board/performance-dashboard">Dashboard</Link>
+            <Link href="/board/workflow-engine">Workflow</Link>
+            <Link href="/board/command-center">Command Center</Link>
+            <Link href="/board/meeting-packet">Meeting Packet</Link>
+          </nav>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Task System Active
+          </p>
+
+          <h2 className="mt-3 text-4xl font-semibold">
+            Action Items now pull from BOS signals and AI events.
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-slate-300">
+            This page now acts as the task layer for governance items,
+            operational follow-ups, legal escalations, financial review matters,
+            and AI-generated events.
+          </p>
         </div>
 
-        <div className="grid gap-5">
-          {actionItems.map((item) => (
-            <article
-              key={`${item.title}-${item.due}`}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-2xl font-semibold">{item.title}</h3>
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">BOS Action Items</p>
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {actionItems.length}
+            </p>
+          </div>
 
-                    <span className="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-semibold text-yellow-200">
-                      {item.status}
-                    </span>
+          <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
+            <p className="text-sm text-violet-100">AI Action Items</p>
+            <p className="mt-3 text-4xl font-semibold text-violet-200">
+              {aiActionItems.length}
+            </p>
+          </div>
 
-                    <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
-                      {item.category}
-                    </span>
-                  </div>
+          <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
+            <p className="text-sm text-red-100">High Priority</p>
+            <p className="mt-3 text-4xl font-semibold text-red-200">
+              {
+                actionItems.filter(
+                  (item) =>
+                    item.priority === "High" || item.priority === "Critical"
+                ).length
+              }
+            </p>
+          </div>
 
-                  <div className="mt-3 grid gap-2 text-sm text-slate-300 md:grid-cols-3">
-                    <p>
-                      <span className="text-slate-500">Assigned To:</span>{" "}
-                      {item.owner}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Due:</span> {item.due}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Status:</span>{" "}
-                      {item.status}
-                    </p>
-                  </div>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">Total Open Tasks</p>
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {actionItems.length + aiActionItems.length}
+            </p>
+          </div>
+        </div>
 
-                  <p className="mt-5 max-w-3xl leading-7 text-slate-300">
-                    {item.notes}
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <h3 className="text-xl font-semibold">BOS Action Queue</h3>
+
+            <div className="mt-6 space-y-4">
+              {actionItems.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                    {item.id} · {item.module}
                   </p>
-                </div>
 
-                <div className="flex flex-wrap gap-3 lg:justify-end">
-                  <button className="rounded-full bg-yellow-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200">
-                    Review
-                  </button>
-                  <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                    Update Status
-                  </button>
-                  <button className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10">
-                    Mark Complete
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
+                  <h4 className="mt-2 font-semibold">{item.title}</h4>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Action: {item.nextAction}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-500">
+                    Owner: {item.owner} · Due: {item.dueDate} · Status:{" "}
+                    {item.status}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
+            <h3 className="text-xl font-semibold text-violet-100">
+              AI-Generated Action Queue
+            </h3>
+
+            <p className="mt-2 text-sm text-violet-100/70">
+              AI assistant events requiring follow-up.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              {aiActionItems.map((event) => (
+                <Link
+                  key={event.id}
+                  href={event.route}
+                  className="block rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5 hover:border-violet-200/50"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+                    {event.id} · {event.type}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">{event.event}</h4>
+
+                  <p className="mt-2 text-sm text-slate-300">
+                    Source: {event.source}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-400">
+                    Status: {event.status} · Priority: {event.priority}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Action Items now receives both BOS governance signals and
+            AI-generated follow-up events.
+          </p>
         </div>
       </section>
     </main>
