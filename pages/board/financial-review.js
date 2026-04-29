@@ -57,11 +57,7 @@ export default function BoardFinancialReview() {
               </Link>
               <Link href="/board/maintenance-review" className="hover:text-white">
                 Maintenance
-              </Link>
-              <Link href="/board/financial-review" className="text-yellow-300">
-                Financials
-              </Link>
-            </nav>
+             </nav>
           </div>
 
           <div className="max-w-3xl py-16">
