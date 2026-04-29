@@ -1,6 +1,7 @@
 import Link from "next/link";
 import BosActionPanel from "../../components/board/BosActionPanel";
 import BosSystemStatus from "../../components/board/BosSystemStatus";
+import BosLiveConsole from "../../components/board/BosLiveConsole";
 import {
   getSharedWorkflowQueue,
   crossModuleRoutingRules,
@@ -58,17 +59,17 @@ export default function CommandCenter() {
           <div className="grid gap-10 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
-                Command Center · BOS Core
+                Command Center · Live Console Connected
               </p>
 
               <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                The Board Operating System is now live and connected.
+                The BOS now has a live execution console.
               </h1>
 
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                This Command Center aggregates workflow, execution state, system
-                readiness, routing logic, and shared action controls into one
-                operational view.
+                This Command Center now combines system status, workflow state,
+                routing logic, shared actions, and a live console-style
+                execution stream for real operating-system visibility.
               </p>
             </div>
 
@@ -106,7 +107,7 @@ export default function CommandCenter() {
                 <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
                   <p className="text-3xl font-semibold text-white">1</p>
                   <p className="mt-1 text-xs text-slate-400">
-                    Execution engine
+                    Live console
                   </p>
                 </div>
               </div>
@@ -116,8 +117,8 @@ export default function CommandCenter() {
                   What this represents
                 </p>
                 <p className="mt-2 text-sm leading-6 text-purple-50/80">
-                  The platform has transitioned from UI → connected system →
-                  executable operating model.
+                  The BOS now feels like a command layer: status, action,
+                  execution, and feedback in one premium operating view.
                 </p>
               </div>
             </div>
@@ -125,8 +126,9 @@ export default function CommandCenter() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-10">
+      <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr]">
         <BosSystemStatus />
+        <BosLiveConsole />
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-4">
@@ -144,7 +146,7 @@ export default function CommandCenter() {
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
             This is no longer a collection of pages. This is now a structured
             operating system capable of handling intake, routing, execution,
-            audit tracking, and cross-module coordination.
+            audit tracking, console feedback, and cross-module coordination.
           </p>
         </div>
 
@@ -153,9 +155,9 @@ export default function CommandCenter() {
             <h3 className="text-lg font-semibold text-white">
               AI → Workflow → Task
             </h3>
-            <p className="mt-3 text-sm text-slate-400">
-              Voice assistant events can now generate structured workflow items
-              and tasks inside the BOS.
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Voice assistant events can generate structured workflow items and
+              tasks inside the BOS.
             </p>
           </div>
 
@@ -163,19 +165,19 @@ export default function CommandCenter() {
             <h3 className="text-lg font-semibold text-white">
               Action → Engine → Result
             </h3>
-            <p className="mt-3 text-sm text-slate-400">
-              Every button now routes through a shared execution engine capable
-              of driving real system behavior.
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Every button routes through a shared execution engine capable of
+              driving real system behavior.
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <h3 className="text-lg font-semibold text-white">
-              Signal → Routing → Module
+              Result → Console → Audit
             </h3>
-            <p className="mt-3 text-sm text-slate-400">
-              Issues now move intelligently between modules without duplicate
-              entry or manual coordination.
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              The live console creates the visual foundation for execution logs,
+              AI activity, accounting sync, and vendor dispatch tracking.
             </p>
           </div>
         </div>
