@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BosActionPanel from "../../components/board/BosActionPanel";
+import BosActionButtons from "../../components/board/BosActionButtons";
 import {
   getSharedWorkflowQueue,
   crossModuleRoutingRules,
@@ -30,6 +31,12 @@ const priorityStyles = {
   Normal: "border-cyan-400/30 bg-cyan-500/10 text-cyan-200",
   Low: "border-slate-400/30 bg-slate-500/10 text-slate-200",
 };
+
+const fallbackActions = [
+  { id: "close", label: "Close Item", type: "close" },
+  { id: "assign", label: "Assign", type: "assign" },
+  { id: "review", label: "Mark Reviewed", type: "review" },
+];
 
 export default function ActionItems() {
   const workflowQueue = getSharedWorkflowQueue("manager");
@@ -62,7 +69,7 @@ export default function ActionItems() {
         item.summary ||
         item.description ||
         "Review and move this task through the BOS workflow.",
-      availableActions: [],
+      availableActions: fallbackActions,
       type: "Board Task",
     })),
   ];
@@ -116,17 +123,17 @@ export default function ActionItems() {
           <div className="grid gap-10 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
-                Shared Task-State Actions
+                Engine-Connected Task Controls
               </p>
 
               <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                Action Items now operate from the shared BOS workflow queue.
+                Action Items now execute through the BOS engine.
               </h1>
 
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                This page now combines board action items with workflow items
-                created by maintenance, violations, financial review, reserves,
-                vendors, legal review, and AI events.
+                Board tasks and shared workflow items now use the same execution
+                layer, allowing task controls to return audit-ready BOS action
+                results.
               </p>
             </div>
 
@@ -170,9 +177,8 @@ export default function ActionItems() {
                   What changed
                 </p>
                 <p className="mt-2 text-sm leading-6 text-emerald-50/80">
-                  Tasks are no longer isolated. They can now originate from
-                  BOS signals, AI events, workflow routing, and board operating
-                  modules.
+                  Action Items now share the same executable button component as
+                  the Workflow Engine.
                 </p>
               </div>
             </div>
@@ -190,8 +196,8 @@ export default function ActionItems() {
               Resolve with audit memory
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Closing a task should eventually write to the audit trail, update
-              dashboards, and remove the item from active board review.
+              Closing a task now calls the BOS engine and produces a system
+              execution result.
             </p>
           </div>
 
@@ -203,8 +209,8 @@ export default function ActionItems() {
               Move work to the right owner
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              The same task can move from AI intake to management, vendor,
-              accounting, legal, or board oversight.
+              Tasks can be routed toward management, accounting, vendors, legal,
+              or board review from one shared operating layer.
             </p>
           </div>
 
@@ -216,9 +222,8 @@ export default function ActionItems() {
               Turn one issue into connected work
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              A maintenance issue can create a vendor task, a violation issue
-              can create legal review, and a financial issue can create
-              accounting review.
+              The same control path can later create vendor dispatches,
+              QuickBooks review, packet items, or compliance escalations.
             </p>
           </div>
         </div>
@@ -240,9 +245,9 @@ export default function ActionItems() {
           </div>
 
           <p className="max-w-2xl text-sm leading-6 text-slate-400">
-            This feed prepares the system for live task operations. The next
-            development step is making these buttons persist changes to a
-            database, update the audit log, and propagate status across modules.
+            The task feed now uses executable controls. The next step is
+            database-backed persistence so action results update every connected
+            module automatically.
           </p>
         </div>
 
@@ -252,7 +257,7 @@ export default function ActionItems() {
               key={item.id}
               className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-xl shadow-black/20"
             >
-              <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+              <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span
@@ -322,31 +327,20 @@ export default function ActionItems() {
 
                 <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-4">
                   <p className="text-sm font-semibold text-white">
-                    Task Controls
+                    Executable Task Controls
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(item.availableActions.length > 0
-                      ? item.availableActions
-                      : [
-                          { id: "close", label: "Close Item" },
-                          { id: "assign", label: "Assign" },
-                          { id: "review", label: "Mark Reviewed" },
-                        ]
-                    ).map((action) => (
-                      <button
-                        key={action.id}
-                        type="button"
-                        className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/50 hover:bg-cyan-300/15"
-                      >
-                        {action.label}
-                      </button>
-                    ))}
+                  <div className="mt-4">
+                    <BosActionButtons
+                      item={item}
+                      actions={item.availableActions || fallbackActions}
+                      actor="Manager"
+                      role="manager"
+                    />
                   </div>
 
                   <p className="mt-4 text-xs leading-5 text-slate-500">
-                    These are visual controls in this phase. Database-backed
-                    state updates come next.
+                    These buttons now call the shared BOS execution engine.
                   </p>
                 </div>
               </div>
