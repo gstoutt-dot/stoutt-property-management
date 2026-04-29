@@ -1,3 +1,5 @@
+// pages/board/onboarding-checklist.js
+
 import Link from "next/link";
 
 export default function BoardOnboardingChecklist() {
@@ -45,40 +47,57 @@ export default function BoardOnboardingChecklist() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-400">
-              Stoutt Property Management
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-              Board Onboarding Checklist
-            </h1>
+      <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-8 lg:px-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+                Stoutt Property Management
+              </div>
+
+              <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white md:text-6xl">
+                Board Onboarding Checklist
+              </h1>
+
+              <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+                A complete onboarding pathway for new board members to understand their role,
+                review essential documents, gain portal access, and acknowledge key governance
+                responsibilities.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 px-6 py-5 text-right shadow-2xl">
+              <div className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Onboarding Status
+              </div>
+              <div className="mt-2 text-3xl font-bold text-white">In Progress</div>
+              <div className="mt-1 text-sm text-slate-300">Board member setup active</div>
+            </div>
           </div>
 
-          <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board" className="hover:text-amber-300">
+          <nav className="flex flex-wrap gap-3 text-sm">
+            <Link href="/board" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
               Board Portal
             </Link>
-            <Link href="/board/violation-review" className="hover:text-amber-300">
+            <Link href="/board/violation-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
               Violations
             </Link>
-            <Link href="/board/architectural-approvals" className="hover:text-amber-300">
+            <Link href="/board/architectural-approvals" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
               ARC Approvals
             </Link>
-            <Link href="/board/maintenance-review" className="hover:text-amber-300">
+            <Link href="/board/maintenance-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
               Maintenance
             </Link>
-            <Link href="/board/financial-review" className="hover:text-amber-300">
+            <Link href="/board/financial-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
               Financials
             </Link>
           </nav>
         </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-6 py-10">
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6 shadow-2xl shadow-black/30">
+          <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-7 shadow-2xl shadow-black/30">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">
               Purpose
             </p>
@@ -92,7 +111,7 @@ export default function BoardOnboardingChecklist() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-2xl shadow-black/30">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
               Why It Matters
             </p>
@@ -106,7 +125,7 @@ export default function BoardOnboardingChecklist() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-6 shadow-2xl shadow-black/30">
+          <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-7 shadow-2xl shadow-black/30">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-300">
               Digital Record
             </p>
