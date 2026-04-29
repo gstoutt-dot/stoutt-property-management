@@ -1,171 +1,158 @@
 import Link from "next/link";
+import { bosSignals } from "../../lib/bosData";
 
-export default function BoardArchitecturalApprovals() {
-  const requests = [
-    {
-      owner: "Michael Reynolds",
-      property: "2148 Palm Court",
-      type: "Exterior Paint",
-      status: "Pending Review",
-      submitted: "Apr 22, 2026",
-      notes: "Owner requesting approval to repaint exterior using approved neutral palette.",
-    },
-    {
-      owner: "Denise Carter",
-      property: "1180 Lakeside Drive",
-      type: "Screen Enclosure",
-      status: "Board Review",
-      submitted: "Apr 20, 2026",
-      notes: "Installation request includes contractor proposal and elevation drawing.",
-    },
-    {
-      owner: "Robert Jenkins",
-      property: "309 Coral Way",
-      type: "Landscape Modification",
-      status: "Needs More Info",
-      submitted: "Apr 18, 2026",
-      notes: "Owner submitted new landscape layout; missing plant list and irrigation details.",
-    },
-  ];
+export default function ArchitecturalApprovals() {
+  const arcSignals = bosSignals.filter(
+    (item) =>
+      item.module === "ARC Approvals" ||
+      item.type === "Architectural"
+  );
+
+  const pendingArcItems = arcSignals.filter(
+    (item) =>
+      item.status === "Pending Review" ||
+      item.status === "Board Review"
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%)]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-8">
-          <div className="mb-10 flex items-center justify-between">
-            <Link href="/board" className="text-xl font-semibold tracking-wide">
-              Stoutt Property Management
-            </Link>
-
-            <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-              <Link href="/board" className="hover:text-white">
-                Board Portal
-              </Link>
-              <Link href="/board/violation-review" className="hover:text-white">
-                Violations
-              </Link>
-              <Link href="/board/architectural-approvals" className="text-yellow-300">
-                ARC Approvals
-              </Link>
-            </nav>
-          </div>
-
-          <div className="max-w-3xl py-16">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-300">
-              Board Review Queue
-            </p>
-
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Architectural approvals made clear, organized, and accountable.
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              Review owner ARC submissions, confirm supporting documents, track decision
-              status, and keep every approval moving with structure and transparency.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#approval-queue"
-                className="rounded-full bg-yellow-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200"
-              >
-                View Approval Queue
-              </a>
-
-              <Link
-                href="/board"
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Back to Board Portal
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-5 md:grid-cols-4">
-          {[
-            ["3", "Open Requests"],
-            ["1", "Needs More Info"],
-            ["2", "Awaiting Board Action"],
-            ["0", "Past Due"],
-          ].map(([number, label]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="text-3xl font-bold text-yellow-300">{number}</div>
-              <div className="mt-2 text-sm text-slate-300">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="approval-queue" className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <section className="border-b border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
-              ARC Requests
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
             </p>
-            <h2 className="mt-2 text-3xl font-bold">Architectural Approval Queue</h2>
+
+            <h1 className="mt-2 text-2xl font-semibold">
+              Architectural Approvals
+            </h1>
           </div>
 
-          <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10">
-            Export Review List
-          </button>
+          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
+            <Link href="/board">Board Home</Link>
+            <Link href="/board/workflow-engine">Workflow</Link>
+            <Link href="/board/action-items">Action Items</Link>
+            <Link href="/board/meeting-packet">Meeting Packet</Link>
+            <Link href="/board/command-center">Command Center</Link>
+          </nav>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            ARC Review Routing Active
+          </p>
+
+          <h2 className="mt-3 text-4xl font-semibold">
+            Architectural approvals now connect to the BOS workflow layer.
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-slate-300">
+            ARC requests can now surface into workflow, action items, meeting
+            packets, and board oversight through the shared BOS data layer.
+          </p>
         </div>
 
-        <div className="grid gap-5">
-          {requests.map((request) => (
-            <article
-              key={`${request.owner}-${request.property}`}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-2xl font-semibold">{request.type}</h3>
-                    <span className="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-semibold text-yellow-200">
-                      {request.status}
-                    </span>
-                  </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">ARC Signals</p>
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {arcSignals.length}
+            </p>
+          </div>
 
-                  <div className="mt-3 grid gap-2 text-sm text-slate-300 md:grid-cols-3">
-                    <p>
-                      <span className="text-slate-500">Owner:</span> {request.owner}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Property:</span>{" "}
-                      {request.property}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Submitted:</span>{" "}
-                      {request.submitted}
-                    </p>
-                  </div>
+          <div className="rounded-3xl border border-amber-300/20 bg-amber-500/10 p-6">
+            <p className="text-sm text-amber-100">Pending Review</p>
+            <p className="mt-3 text-4xl font-semibold text-amber-200">
+              {pendingArcItems.length}
+            </p>
+          </div>
 
-                  <p className="mt-5 max-w-3xl leading-7 text-slate-300">
-                    {request.notes}
+          <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
+            <p className="text-sm text-red-100">High Risk</p>
+            <p className="mt-3 text-4xl font-semibold text-red-200">
+              {
+                arcSignals.filter(
+                  (item) =>
+                    item.riskLevel === "High" ||
+                    item.riskLevel === "Critical"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-6">
+            <p className="text-sm text-emerald-100">Future ARC Feeds</p>
+            <p className="mt-3 text-4xl font-semibold text-emerald-200">4</p>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <h3 className="text-xl font-semibold">ARC Review Queue</h3>
+
+            <div className="mt-6 space-y-4">
+              {arcSignals.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                    {item.id} · {item.module}
                   </p>
-                </div>
 
-                <div className="flex flex-wrap gap-3 lg:justify-end">
-                  <button className="rounded-full bg-yellow-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200">
-                    Review
-                  </button>
-                  <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                    Request Info
-                  </button>
-                  <button className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10">
-                    Approve
-                  </button>
-                </div>
+                  <h4 className="mt-2 font-semibold">{item.title}</h4>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Review Action: Confirm committee decision, owner notice,
+                    approval conditions, and deadline tracking.
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-500">
+                    Owner: {item.owner} · Due: {item.dueDate} · Status:{" "}
+                    {item.status}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
+            <h3 className="text-xl font-semibold text-emerald-100">
+              Future ARC Data Feeds
+            </h3>
+
+            <div className="mt-6 grid gap-4">
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Owner Application Intake
               </div>
-            </article>
-          ))}
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Committee Vote Tracking
+              </div>
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Conditional Approval Monitoring
+              </div>
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Completion Inspection Feed
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Architectural Approvals now connects to BOS workflow, action,
+            meeting packet, and board oversight logic.
+          </p>
         </div>
       </section>
     </main>
