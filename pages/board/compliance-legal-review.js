@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-export default function ComplianceLegalReview() {
+export default function CybersecurityDataControls() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
@@ -13,39 +13,29 @@ export default function ComplianceLegalReview() {
                 Stoutt Property Management
               </div>
               <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                Compliance & Legal Review Center
+                Board Cybersecurity & Data Controls
               </h1>
               <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-                Board-level oversight for legal escalations, statutory deadlines, covenant
-                enforcement, attorney review items, authority checks and decision protection.
+                Board-level oversight for wire fraud prevention, vendor payment verification,
+                portal access, data permissions, phishing incidents, audit trails and cyber risk readiness.
               </p>
             </div>
 
             <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 px-6 py-5 text-right shadow-2xl">
               <div className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Legal Review Status
+                Cyber Status
               </div>
-              <div className="mt-2 text-3xl font-bold text-white">Controlled</div>
-              <div className="mt-1 text-sm text-slate-300">5 items require review</div>
+              <div className="mt-2 text-3xl font-bold text-white">Protected</div>
+              <div className="mt-1 text-sm text-slate-300">Controls under board visibility</div>
             </div>
           </div>
 
           <nav className="flex flex-wrap gap-3 text-sm">
-            <Link href="/board" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Board Portal
-            </Link>
-            <Link href="/board/violation-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Violations
-            </Link>
-            <Link href="/board/architectural-approvals" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              ARC Approvals
-            </Link>
-            <Link href="/board/maintenance-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Maintenance
-            </Link>
-            <Link href="/board/financial-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Financials
-            </Link>
+            <Link href="/board" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Board Portal</Link>
+            <Link href="/board/violation-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Violations</Link>
+            <Link href="/board/architectural-approvals" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">ARC Approvals</Link>
+            <Link href="/board/maintenance-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Maintenance</Link>
+            <Link href="/board/financial-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Financials</Link>
           </nav>
         </div>
       </header>
@@ -54,16 +44,16 @@ export default function ComplianceLegalReview() {
         <section className="grid gap-6 md:grid-cols-3">
           {[
             {
-              title: 'Authority Verification',
-              text: 'Confirm whether proposed action is supported by the governing documents, board authority and association policy.',
+              title: 'Financial Fraud Controls',
+              text: 'Protect association funds through vendor verification, payment approval safeguards and wire fraud prevention checks.',
             },
             {
-              title: 'Legal Escalation Control',
-              text: 'Sensitive enforcement, collection, dispute and attorney matters are separated from routine workflows.',
+              title: 'Access Governance',
+              text: 'Monitor board, manager, vendor and portal access permissions so sensitive records stay controlled.',
             },
             {
-              title: 'Decision Protection',
-              text: 'Board actions are supported by documentation, deadlines, review notes and defensible process history.',
+              title: 'Incident Readiness',
+              text: 'Track phishing attempts, suspicious activity, cyber insurance items and response steps before risk spreads.',
             },
           ].map((item) => (
             <div key={item.title} className="rounded-3xl border border-amber-400/25 bg-gradient-to-br from-amber-400/10 to-slate-900 p-7 shadow-2xl">
@@ -75,10 +65,10 @@ export default function ComplianceLegalReview() {
 
         <section className="mt-10 grid gap-6 md:grid-cols-4">
           {[
-            ['Attorney Review', '5', 'Pending'],
-            ['Deadline Watch', '3', 'Active'],
-            ['Authority Checks', '12', 'Open'],
-            ['Resolved Matters', '28', 'This month'],
+            ['MFA Coverage', '96%', 'Strong'],
+            ['Vendor Verifications', '8', 'This month'],
+            ['Access Reviews', '4', 'Pending'],
+            ['Phishing Reports', '2', 'Logged'],
           ].map(([label, value, status]) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
               <div className="text-sm text-slate-400">{label}</div>
@@ -91,20 +81,19 @@ export default function ComplianceLegalReview() {
         </section>
 
         <section className="mt-10 rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-          <h2 className="text-2xl font-semibold text-amber-300">Compliance Review Pathway</h2>
+          <h2 className="text-2xl font-semibold text-amber-300">Cyber Control Pathway</h2>
           <p className="mt-3 max-w-5xl leading-7 text-slate-300">
-            Legal-sensitive matters should not move through ordinary task flow without review.
-            This pathway protects the board by separating document authority, statutory timing,
-            attorney involvement and final board action.
+            Cybersecurity is now a governance issue. This pathway gives the board visibility
+            into how association funds, resident data, vendor access and digital records are protected.
           </p>
 
           <div className="mt-8 grid gap-5 md:grid-cols-5">
             {[
-              ['1', 'Identify', 'Matter is flagged as compliance or legal-sensitive.'],
-              ['2', 'Verify', 'Governing authority and policy basis are checked.'],
-              ['3', 'Review', 'Management or attorney review is requested when needed.'],
-              ['4', 'Decide', 'Board action is documented with supporting basis.'],
-              ['5', 'Record', 'Decision history and compliance trail are preserved.'],
+              ['1', 'Verify', 'Confirm payment, vendor and access changes.'],
+              ['2', 'Control', 'Apply MFA, permissions and approval safeguards.'],
+              ['3', 'Monitor', 'Track access logs, suspicious activity and exceptions.'],
+              ['4', 'Escalate', 'Route fraud, breach or phishing concerns for review.'],
+              ['5', 'Document', 'Preserve incident history and board-level audit trail.'],
             ].map(([number, title, text]) => (
               <div key={title} className="rounded-2xl border border-white/10 bg-slate-800 p-5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-sm font-bold text-slate-950">
@@ -118,37 +107,37 @@ export default function ComplianceLegalReview() {
         </section>
 
         <section className="mt-10 grid gap-8 lg:grid-cols-3">
-          <Panel title="Legal Review Queues" rows={[
-            ['Collection Escalations', '2 pending'],
-            ['Violation Hearings', '3 scheduled'],
-            ['Owner Disputes', '4 open'],
-            ['Attorney Questions', '5 pending'],
+          <Panel title="Payment Protection" rows={[
+            ['Wire Change Verification', 'Required'],
+            ['Vendor Bank Changes', 'Dual review'],
+            ['Invoice Approval Trail', 'Enabled'],
+            ['QuickBooks Access', 'Monitored'],
           ]} />
 
-          <Panel title="Authority Checks" rows={[
-            ['Declaration Support', 'Required'],
-            ['Bylaw Authority', 'Verify'],
-            ['Rules Consistency', 'Check'],
-            ['Board Approval Needed', 'Flag'],
+          <Panel title="Portal Access Controls" rows={[
+            ['Board MFA', 'Enabled'],
+            ['Manager Permissions', 'Controlled'],
+            ['Vendor Access', 'Limited'],
+            ['Inactive Users', 'Review'],
           ]} />
 
-          <Panel title="Deadline Protection" rows={[
-            ['Hearing Notice Window', 'Tracked'],
-            ['Response Deadlines', 'Monitored'],
-            ['Meeting Requirements', 'Flagged'],
-            ['Document Production', 'Timed'],
+          <Panel title="Cyber Incident Tracking" rows={[
+            ['Phishing Reports', 'Logged'],
+            ['Suspicious Login', 'Monitored'],
+            ['Data Request Exception', 'Flagged'],
+            ['Cyber Insurance Review', 'Pending'],
           ]} />
         </section>
 
         <section className="mt-10 grid gap-8 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold text-amber-300">Active Legal-Sensitive Items</h2>
+            <h2 className="text-2xl font-semibold text-amber-300">Active Cyber Review Items</h2>
             <div className="mt-6 space-y-4">
               {[
-                'Owner violation dispute requires document authority confirmation before escalation.',
-                'Collection file requires attorney review before next enforcement action.',
-                'Architectural denial appeal requires consistency review against prior decisions.',
-                'Records request deadline is being tracked for timely production.',
+                'Vendor banking change requires independent callback verification.',
+                'Inactive board portal user requires permission removal review.',
+                'Suspicious email reported by board member logged for phishing review.',
+                'QuickBooks access roles require quarterly permission confirmation.',
               ].map((item) => (
                 <div key={item} className="rounded-2xl bg-slate-800 p-4 text-slate-300">
                   {item}
@@ -158,13 +147,13 @@ export default function ComplianceLegalReview() {
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold text-amber-300">Board Protection Controls</h2>
+            <h2 className="text-2xl font-semibold text-amber-300">Board Cyber Readiness</h2>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               {[
-                ['Document Basis', 'Required'],
-                ['Attorney Notes', 'Tracked'],
-                ['Deadline Alerts', 'Active'],
-                ['Decision History', 'Preserved'],
+                ['MFA Policy', 'Active'],
+                ['Payment Controls', 'Enabled'],
+                ['Audit Trail', 'Available'],
+                ['Incident Plan', 'Ready'],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl bg-slate-800 p-5">
                   <div className="text-sm text-slate-400">{label}</div>
@@ -176,29 +165,29 @@ export default function ComplianceLegalReview() {
         </section>
 
         <section className="mt-10 grid gap-6 md:grid-cols-3">
-          <Link href="/board/violation-review" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">Violation Review</h3>
-            <p className="mt-3 text-slate-400">Connect enforcement issues to compliance review and hearing controls.</p>
+          <Link href="/board/quickbooks-integration" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
+            <h3 className="text-xl font-semibold text-amber-300">QuickBooks Integration</h3>
+            <p className="mt-3 text-slate-400">Connect financial controls to accounting access and payment verification.</p>
           </Link>
 
-          <Link href="/board/workflow-engine" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">Workflow Engine</h3>
-            <p className="mt-3 text-slate-400">Route legal-sensitive matters into controlled review pathways.</p>
+          <Link href="/board/ai-assistant-settings" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
+            <h3 className="text-xl font-semibold text-amber-300">AI Assistant Settings</h3>
+            <p className="mt-3 text-slate-400">Align AI transcript, knowledge and access boundaries with data protection.</p>
           </Link>
 
           <Link href="/board/command-center" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
             <h3 className="text-xl font-semibold text-amber-300">Command Center</h3>
-            <p className="mt-3 text-slate-400">Surface legal risk and escalation items for executive board visibility.</p>
+            <p className="mt-3 text-slate-400">Surface cyber exceptions and fraud risks for executive board visibility.</p>
           </Link>
         </section>
 
         <section className="mt-12 rounded-3xl border border-amber-400/25 bg-gradient-to-r from-slate-900 to-slate-800 p-8 shadow-2xl">
           <h2 className="text-2xl font-semibold text-amber-300">Governance Commentary</h2>
           <p className="mt-4 max-w-5xl leading-8 text-slate-300">
-            Boards do not need to practice law, but they do need disciplined process. This
-            center helps protect the association by making sure legal-sensitive decisions are
-            supported by governing documents, proper timing, attorney guidance when appropriate
-            and a clear record of board action.
+            Cybersecurity is no longer just an IT concern. Associations manage owner data,
+            vendor payments, bank accounts, board records and sensitive financial workflows.
+            This control center helps boards reduce fraud exposure, improve access discipline
+            and document cyber readiness as part of responsible governance.
           </p>
         </section>
       </main>
