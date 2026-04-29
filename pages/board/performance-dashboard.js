@@ -1,195 +1,173 @@
-// pages/board/performance-dashboard.js
-
-import Link from 'next/link'
+import Link from "next/link";
+import { bosMetrics, bosSignals, getHighRiskSignals } from "../../lib/bosData";
 
 export default function PerformanceDashboard() {
-  return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-8 lg:px-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
-                Stoutt Property Management
-              </div>
-              <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                Board Performance Dashboard
-              </h1>
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-                Executive-level oversight for financial health, operational performance,
-                vendor accountability, reserve funding and community risk trends.
-              </p>
-            </div>
+  const highRiskSignals = getHighRiskSignals();
 
-            <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 px-6 py-5 text-right shadow-2xl">
-              <div className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Current Status
-              </div>
-              <div className="mt-2 text-3xl font-bold text-white">Stable</div>
-              <div className="mt-1 text-sm text-slate-300">No critical exposure detected</div>
-            </div>
+  const metricCards = [
+    {
+      label: "Open BOS Items",
+      value: bosMetrics.openItems,
+      detail: "Active governance items across the board platform",
+    },
+    {
+      label: "High-Risk Items",
+      value: bosMetrics.highRiskItems,
+      detail: "Items requiring board or management attention",
+    },
+    {
+      label: "Overdue / Aging Items",
+      value: bosMetrics.overdueItems,
+      detail: "Items open longer than the expected threshold",
+    },
+    {
+      label: "Legal Escalations",
+      value: bosMetrics.legalEscalations,
+      detail: "Governance matters requiring legal review",
+    },
+  ];
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-white">
+      <section className="border-b border-white/10 bg-slate-950/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold">
+              Performance Dashboard
+            </h1>
           </div>
 
-          <nav className="flex flex-wrap gap-3 text-sm">
-            <Link href="/board" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Board Portal
+          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
+            <Link href="/board" className="hover:text-white">
+              Board Home
             </Link>
-            <Link href="/board/violation-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Violations
+            <Link href="/board/workflow-engine" className="hover:text-white">
+              Workflow
             </Link>
-            <Link href="/board/architectural-approvals" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              ARC Approvals
+            <Link href="/board/command-center" className="hover:text-white">
+              Command Center
             </Link>
-            <Link href="/board/maintenance-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Maintenance
+            <Link href="/board/financial-review" className="hover:text-white">
+              Financial
             </Link>
-            <Link href="/board/financial-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">
-              Financials
+            <Link href="/board/compliance-legal-review" className="hover:text-white">
+              Legal
             </Link>
           </nav>
         </div>
-      </header>
+      </section>
 
-      <main className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-        <section className="grid gap-6 md:grid-cols-3">
-          {[
-            {
-              title: 'Financial Health',
-              text: 'Monitor liquidity, delinquencies, reserves and budget pressure before they become board-level emergencies.',
-            },
-            {
-              title: 'Operational Response',
-              text: 'Track violations, maintenance response times, vendor performance and unresolved service bottlenecks.',
-            },
-            {
-              title: 'Risk Intelligence',
-              text: 'Identify community exposure, deferred maintenance, funding gaps and governance risks early.',
-            },
-          ].map((item) => (
-            <div key={item.title} className="rounded-3xl border border-amber-400/25 bg-gradient-to-br from-amber-400/10 to-slate-900 p-7 shadow-2xl">
-              <h2 className="text-2xl font-semibold text-amber-300">{item.title}</h2>
-              <p className="mt-4 leading-7 text-slate-300">{item.text}</p>
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-10 grid gap-6 md:grid-cols-4">
-          {[
-            ['Operating Cash Ratio', '4.6 mo.', 'Healthy'],
-            ['Delinquency Rate', '3.2%', 'Watch'],
-            ['Reserve Funding', '82%', 'Monitor'],
-            ['Risk Score', 'Low', 'Stable'],
-          ].map(([label, value, status]) => (
-            <div key={label} className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
-              <div className="text-sm text-slate-400">{label}</div>
-              <div className="mt-3 text-4xl font-bold text-amber-300">{value}</div>
-              <div className="mt-4 inline-flex rounded-full border border-amber-400/30 px-3 py-1 text-xs text-amber-200">
-                {status}
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-10 grid gap-8 lg:grid-cols-3">
-          <Panel title="Open Violations Aging" rows={[
-            ['0–30 Days', '14'],
-            ['31–60 Days', '7'],
-            ['61–90 Days', '3'],
-            ['90+ Days', '1'],
-          ]} />
-
-          <Panel title="Maintenance Response Times" rows={[
-            ['Emergency', '2.4 hrs'],
-            ['Priority', '8.1 hrs'],
-            ['Routine', '1.8 days'],
-            ['Owner Follow-Up', '94%'],
-          ]} />
-
-          <Panel title="Vendor Scorecards" rows={[
-            ['Landscape', '94/100'],
-            ['Pool', '89/100'],
-            ['Janitorial', '92/100'],
-            ['Security', '96/100'],
-          ]} />
-        </section>
-
-        <section className="mt-10 grid gap-8 lg:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold text-amber-300">Collections Performance</h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-3">
-              {[
-                ['Recovery Rate', '91%'],
-                ['Payment Plans', '11'],
-                ['Legal Escalations', '2'],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl bg-slate-800 p-5">
-                  <div className="text-sm text-slate-400">{label}</div>
-                  <div className="mt-2 text-3xl font-bold">{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold text-amber-300">Community Risk Scoring</h2>
-            <div className="mt-6 space-y-4">
-              {[
-                'Insurance renewal concentration risk is currently minimal.',
-                'Collections exposure remains within acceptable operating limits.',
-                'Deferred maintenance pressure is trending downward.',
-                'Vendor dependency is balanced across active contracts.',
-              ].map((risk) => (
-                <div key={risk} className="rounded-2xl bg-slate-800 p-4 text-slate-300">
-                  {risk}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-10 grid gap-6 md:grid-cols-3">
-          <Link href="/board/workflow-engine" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">Workflow Engine</h3>
-            <p className="mt-3 text-slate-400">Move from dashboard insight into operational execution.</p>
-          </Link>
-
-          <Link href="/board/quickbooks-integration" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">QuickBooks Integration</h3>
-            <p className="mt-3 text-slate-400">Review accounting sync, financial feeds and reporting controls.</p>
-          </Link>
-
-          <Link href="/board/command-center" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">Command Center</h3>
-            <p className="mt-3 text-slate-400">Escalate performance oversight into executive operating control.</p>
-          </Link>
-        </section>
-
-        <section className="mt-12 rounded-3xl border border-amber-400/25 bg-gradient-to-r from-slate-900 to-slate-800 p-8 shadow-2xl">
-          <h2 className="text-2xl font-semibold text-amber-300">Governance Commentary</h2>
-          <p className="mt-4 max-w-5xl leading-8 text-slate-300">
-            Performance oversight is fiduciary intelligence. This dashboard gives board
-            members a structured way to see where the association is strong, where pressure
-            is building and where management action should be prioritized before small issues
-            become expensive community problems.
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Live BOS Metrics
           </p>
-        </section>
-      </main>
-    </div>
-  )
-}
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight">
+            Governance performance now reads from the shared BOS data layer.
+          </h2>
+          <p className="mt-4 max-w-3xl text-slate-300">
+            This dashboard is no longer just a static page. It is now pulling
+            active signals from the central Board Operating System file and
+            displaying the current condition of the association governance
+            environment.
+          </p>
+        </div>
 
-function Panel({ title, rows }) {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-slate-900 p-7 shadow-2xl">
-      <h2 className="text-xl font-semibold text-amber-300">{title}</h2>
-      <div className="mt-6 space-y-4">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex items-center justify-between border-b border-white/5 pb-3">
-            <span className="text-slate-300">{label}</span>
-            <span className="font-semibold text-white">{value}</span>
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+          {metricCards.map((card) => (
+            <div
+              key={card.label}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-xl"
+            >
+              <p className="text-sm text-slate-400">{card.label}</p>
+              <p className="mt-3 text-4xl font-semibold text-amber-300">
+                {card.value}
+              </p>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                {card.detail}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <h3 className="text-xl font-semibold">High-Risk BOS Signals</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              These items are being pulled from shared BOS data and can later be
+              connected to real database records.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              {highRiskSignals.map((signal) => (
+                <Link
+                  key={signal.id}
+                  href={signal.route}
+                  className="block rounded-2xl border border-white/10 bg-slate-900/80 p-5 transition hover:border-amber-300/40 hover:bg-slate-900"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                        {signal.id} · {signal.module}
+                      </p>
+                      <h4 className="mt-2 font-semibold">{signal.title}</h4>
+                      <p className="mt-2 text-sm text-slate-400">
+                        Next Action: {signal.nextAction}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1 text-xs text-red-200">
+                      {signal.riskLevel}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
-  )
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <h3 className="text-xl font-semibold">All Active BOS Items</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              This creates the first operating feed across modules.
+            </p>
+
+            <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
+              <div className="grid grid-cols-4 bg-white/[0.06] px-4 py-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+                <span>Module</span>
+                <span>Status</span>
+                <span>Owner</span>
+                <span>Risk</span>
+              </div>
+
+              {bosSignals.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="grid grid-cols-4 border-t border-white/10 px-4 py-4 text-sm transition hover:bg-white/[0.04]"
+                >
+                  <span className="font-medium text-white">{item.module}</span>
+                  <span className="text-slate-300">{item.status}</span>
+                  <span className="text-slate-300">{item.owner}</span>
+                  <span className="text-amber-300">{item.riskLevel}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+          <p className="mt-3 text-slate-300">
+            Performance Dashboard is now connected to the shared BOS data file.
+            Next, we wire the Workflow Engine so it reads the same active item
+            feed.
+          </p>
+        </div>
+      </section>
+    </main>
+  );
 }
