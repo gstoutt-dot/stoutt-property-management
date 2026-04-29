@@ -116,11 +116,11 @@ export default function HomeownerLoginPage() {
               </div>
 
               <Link
-                href="/homeowner-dashboard"
-                className="block w-full rounded-2xl bg-amber-400 px-5 py-4 text-center text-sm font-bold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
-              >
-                Sign In
-              </Link>
+  href="/homeowner"
+  className="block w-full rounded-2xl bg-amber-400 px-5 py-4 text-center text-sm font-bold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
+>
+  Sign In
+</Link>
             </form>
 
             <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
