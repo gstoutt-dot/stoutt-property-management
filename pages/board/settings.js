@@ -98,7 +98,7 @@ export default function BoardSettings() {
             ["Active", "Association Profile"],
             ["5", "Board Users"],
             ["Connected", "AI Assistant"],
-            ["Pending", "PayHOA Sync"],
+            ["Pending", "QBooks Sync"],
           ].map(([number, label]) => (
             <div
               key={label}
