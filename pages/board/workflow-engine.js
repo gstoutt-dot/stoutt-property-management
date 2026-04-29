@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { bosSignals } from "../../lib/bosData";
+import {
+  bosSignals,
+  aiEvents
+} from "../../lib/bosData";
 
 export default function WorkflowEngine() {
 
@@ -13,12 +16,15 @@ export default function WorkflowEngine() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
+
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-5">
+
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
               Board Operating System
             </p>
+
             <h1 className="mt-2 text-2xl font-semibold">
               Workflow Engine
             </h1>
@@ -31,6 +37,7 @@ export default function WorkflowEngine() {
             <Link href="/board/action-items">Action Items</Link>
             <Link href="/board/compliance-legal-review">Legal</Link>
           </nav>
+
         </div>
       </section>
 
@@ -42,17 +49,16 @@ export default function WorkflowEngine() {
           </p>
 
           <h2 className="mt-3 text-4xl font-semibold">
-            Shared BOS task routing is now active.
+            Workflow now routes BOS tasks and AI-generated events.
           </h2>
 
           <p className="mt-4 max-w-3xl text-slate-300">
-            Workflow Engine now reads from the same shared data model as
-            the Performance Dashboard. This creates a live operating queue
-            instead of a static workflow page.
+            Workflow Engine now receives both shared governance signals and
+            AI voice assistant events, creating a unified operating queue.
           </p>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-4">
+        <div className="mt-8 grid gap-5 md:grid-cols-5">
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-sm text-slate-400">Pending Queue</p>
@@ -94,6 +100,16 @@ export default function WorkflowEngine() {
             </p>
           </div>
 
+          <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
+            <p className="text-sm text-violet-100">
+              AI Events
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-violet-200">
+              {aiEvents.length}
+            </p>
+          </div>
+
         </div>
 
         <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
@@ -101,10 +117,6 @@ export default function WorkflowEngine() {
           <h3 className="text-xl font-semibold">
             Live Workflow Queue
           </h3>
-
-          <p className="mt-2 text-sm text-slate-400">
-            Each item routes to the related governance module.
-          </p>
 
           <div className="mt-6 space-y-4">
 
@@ -114,50 +126,76 @@ export default function WorkflowEngine() {
                 href={item.route}
                 className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
               >
-                <div className="flex justify-between gap-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                  {item.id} · {item.module}
+                </p>
 
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-                      {item.id} · {item.module}
-                    </p>
+                <h4 className="mt-2 font-semibold">
+                  {item.title}
+                </h4>
 
-                    <h4 className="mt-2 font-semibold">
-                      {item.title}
-                    </h4>
-
-                    <p className="mt-2 text-sm text-slate-400">
-                      Next Action: {item.nextAction}
-                    </p>
-
-                    <p className="mt-2 text-xs text-slate-500">
-                      Owner: {item.owner}
-                    </p>
-                  </div>
-
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-amber-300">
-                    {item.status}
-                  </span>
-
-                </div>
+                <p className="mt-2 text-sm text-slate-400">
+                  Next Action: {item.nextAction}
+                </p>
               </Link>
             ))}
 
           </div>
+
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
+
+          <h3 className="text-xl font-semibold text-violet-100">
+            AI Event Routing Queue
+          </h3>
+
+          <p className="mt-2 text-sm text-violet-100/70">
+            Voice assistant events now enter workflow routing.
+          </p>
+
+          <div className="mt-6 space-y-4">
+
+            {aiEvents.map(event => (
+              <Link
+                key={event.id}
+                href={event.route}
+                className="block rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5"
+              >
+                <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+                  {event.id} · {event.type}
+                </p>
+
+                <h4 className="mt-2 font-semibold">
+                  {event.event}
+                </h4>
+
+                <p className="mt-2 text-sm text-slate-300">
+                  Status: {event.status}
+                </p>
+
+              </Link>
+            ))}
+
+          </div>
+
         </div>
 
         <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+
           <h3 className="text-xl font-semibold text-amber-200">
             BOS Wiring Status
           </h3>
 
           <p className="mt-3 text-slate-300">
-            Workflow Engine is now connected to the shared BOS data layer.
-            Next step is wiring Command Center to aggregate signals from
-            all modules.
+            Workflow Engine now routes governance signals and AI assistant
+            events through one shared operating queue.
           </p>
+
         </div>
 
       </section>
+
     </main>
   );
 }
