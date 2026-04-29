@@ -55,9 +55,11 @@ export default function BoardFinancialReview() {
               >
                 ARC Approvals
               </Link>
-              <Link href="/board/maintenance-review" className="hover:text-white">
-                Maintenance
-             </nav>
+             <Link href="/board/maintenance-review" className="hover:text-white">
+  Maintenance
+</Link>
+
+</nav>
           </div>
 
           <div className="max-w-3xl py-16">
