@@ -1,195 +1,198 @@
 import Link from "next/link";
+import { bosSignals } from "../../lib/bosData";
 
-export default function BoardVendors() {
-  const vendors = [
-    {
-      name: "Premier Landscape Services",
-      category: "Landscaping",
-      status: "Active",
-      contract: "Current",
-      insurance: "Expires Jun 30, 2026",
-      notes:
-        "Monthly landscape maintenance vendor with active contract, routine walkthroughs, and open service tracking.",
-    },
-    {
-      name: "Coastal Gate & Access",
-      category: "Access Control",
-      status: "Proposal Pending",
-      contract: "Pending Approval",
-      insurance: "On File",
-      notes:
-        "Submitted proposal for north entrance gate arm repair. Awaiting board review and authorization.",
-    },
-    {
-      name: "Bluewater Pool Maintenance",
-      category: "Pool Service",
-      status: "Active",
-      contract: "Current",
-      insurance: "Expires Aug 15, 2026",
-      notes:
-        "Weekly pool maintenance vendor handling chemical balance, inspections, and minor repair coordination.",
-    },
-  ];
+export default function Vendors() {
+  const vendorSignals = bosSignals.filter(
+    (item) =>
+      item.status === "Vendor Follow-Up" ||
+      item.module === "Maintenance" ||
+      item.type === "Operations"
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%)]" />
-
-        <div className="relative mx-auto max-w-7xl px-6 py-8">
-          <div className="mb-10 flex items-center justify-between">
-            <Link href="/board" className="text-xl font-semibold tracking-wide">
-              Stoutt Property Management
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-6 text-sm text-slate-300">
-              <Link href="/board" className="hover:text-white">
-                Board Portal
-              </Link>
-
-              <Link href="/board/violation-review" className="hover:text-white">
-                Violations
-              </Link>
-
-              <Link href="/board/architectural-approvals" className="hover:text-white">
-                ARC Approvals
-              </Link>
-
-              <Link href="/board/maintenance-review" className="hover:text-white">
-                Maintenance
-              </Link>
-
-              <Link href="/board/financial-review" className="hover:text-white">
-                Financials
-              </Link>
-            </nav>
-          </div>
-
-          <div className="max-w-3xl py-16">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-300">
-              Board Vendor Oversight
-            </p>
-
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Vendor contracts, proposals and performance in one organized view.
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              Review approved vendors, contracts, insurance certificates, open proposals,
-              bid comparisons, service schedules, and vendor performance notes from one
-              board-facing dashboard.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#vendors"
-                className="rounded-full bg-yellow-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200"
-              >
-                View Vendors
-              </a>
-
-              <Link
-                href="/board"
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Back to Board Portal
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-5 md:grid-cols-4">
-          {[
-            ["14", "Approved Vendors"],
-            ["2", "Open Proposals"],
-            ["1", "Contract Review"],
-            ["0", "Expired Insurance"],
-          ].map(([number, label]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="text-3xl font-bold text-yellow-300">{number}</div>
-              <div className="mt-2 text-sm text-slate-300">{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="vendors" className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <section className="border-b border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
-              Vendor Directory
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
             </p>
-            <h2 className="mt-2 text-3xl font-bold">Board Vendor Center</h2>
+
+            <h1 className="mt-2 text-2xl font-semibold">
+              Vendors
+            </h1>
           </div>
 
-          <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10">
-            Add Vendor
-          </button>
-        </div>
-
-        <div className="grid gap-5">
-          {vendors.map((vendor) => (
-            <article
-              key={`${vendor.name}-${vendor.category}`}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-2xl font-semibold">{vendor.name}</h3>
-
-                    <span className="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-semibold text-yellow-200">
-                      {vendor.status}
-                    </span>
-
-                    <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
-                      {vendor.category}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 grid gap-2 text-sm text-slate-300 md:grid-cols-3">
-                    <p>
-                      <span className="text-slate-500">Contract:</span>{" "}
-                      {vendor.contract}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Insurance:</span>{" "}
-                      {vendor.insurance}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Status:</span>{" "}
-                      {vendor.status}
-                    </p>
-                  </div>
-
-                  <p className="mt-5 max-w-3xl leading-7 text-slate-300">
-                    {vendor.notes}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-3 lg:justify-end">
-                  <button className="rounded-full bg-yellow-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200">
-                    Open
-                  </button>
-
-                  <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                    View Contract
-                  </button>
-
-                  <button className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10">
-                    Review
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
+          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
+            <Link href="/board">Board Home</Link>
+            <Link href="/board/maintenance-review">Maintenance</Link>
+            <Link href="/board/workflow-engine">Workflow</Link>
+            <Link href="/board/command-center">Command Center</Link>
+            <Link href="/board/action-items">Action Items</Link>
+          </nav>
         </div>
       </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-10">
+
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Vendor Routing Active
+          </p>
+
+          <h2 className="mt-3 text-4xl font-semibold">
+            Vendor management now reads operational BOS signals.
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-slate-300">
+            Maintenance-related vendor follow-up items now route into
+            Vendor oversight from the shared Board Operating System layer.
+          </p>
+
+        </div>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">
+              Vendor Queue
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {vendorSignals.length}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-amber-300/20 bg-amber-500/10 p-6">
+            <p className="text-sm text-amber-100">
+              Open Follow-Ups
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-amber-200">
+              {
+                vendorSignals.filter(
+                  item => item.status === "Vendor Follow-Up"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
+            <p className="text-sm text-red-100">
+              High-Risk Vendor Items
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-red-200">
+              {
+                vendorSignals.filter(
+                  item =>
+                    item.riskLevel === "High" ||
+                    item.riskLevel === "Critical"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">
+              Board Review Items
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {
+                vendorSignals.filter(
+                  item => item.status === "Board Review"
+                ).length
+              }
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+
+            <h3 className="text-xl font-semibold">
+              Vendor Oversight Queue
+            </h3>
+
+            <div className="mt-6 space-y-4">
+
+              {vendorSignals.map(item => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                    {item.id} · {item.module}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">
+                    {item.title}
+                  </h4>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Next Action: {item.nextAction}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-500">
+                    Owner: {item.owner}
+                  </p>
+                </Link>
+              ))}
+
+            </div>
+
+          </div>
+
+          <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
+
+            <h3 className="text-xl font-semibold text-emerald-100">
+              Future Vendor Feeds
+            </h3>
+
+            <div className="mt-6 grid gap-4">
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Approved Vendor Registry
+              </div>
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Work Order Dispatch Feed
+              </div>
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Vendor Insurance Tracking
+              </div>
+
+              <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+                Invoice Approval Routing
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Vendors now receives operational BOS signals and vendor
+            follow-up routing.
+          </p>
+
+        </div>
+
+      </section>
+
     </main>
   );
 }
