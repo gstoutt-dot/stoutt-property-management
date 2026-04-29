@@ -58,9 +58,7 @@ export default function BoardActionItems() {
               <Link href="/board/financial-review" className="hover:text-white">
                 Financials
               </Link>
-              <Link href="/board/documents" className="hover:text-white">
-                Documents
-              </Link>
+              
             </nav>
           </div>
 
