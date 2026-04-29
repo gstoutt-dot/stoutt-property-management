@@ -1,212 +1,241 @@
 import Link from "next/link";
+import {
+  bosSignals,
+  getHighRiskSignals,
+  getSignalsByType
+} from "../../lib/bosData";
 
-export default function BoardMeetingPacket() {
-  const packetSections = [
-    {
-      title: "Agenda",
-      status: "Ready",
-      desc: "Final board agenda prepared for upcoming meeting.",
-    },
-    {
-      title: "Manager’s Report",
-      status: "Draft",
-      desc: "Operational summary, open issues, inspections and escalations.",
-    },
-    {
-      title: "Financial Package",
-      status: "Review",
-      desc: "Budget comparison, balance sheet, income statement and delinquencies.",
-    },
-    {
-      title: "Violation Summary",
-      status: "Ready",
-      desc: "Open violations, hearing items and enforcement recommendations.",
-    },
-    {
-      title: "ARC Requests",
-      status: "Pending",
-      desc: "Architectural applications requiring board review.",
-    },
-    {
-      title: "Vendor Proposals",
-      status: "Review",
-      desc: "Bids, contracts and service recommendations.",
-    },
-  ];
+export default function MeetingPacket() {
 
-  const packetActions = [
-    "Generate board packet",
-    "Attach financial reports",
-    "Add agenda items",
-    "Prepare approval list",
-    "Export meeting PDF",
-    "Send to board members",
-  ];
+  const highRiskSignals = getHighRiskSignals();
+  const financialSignals = getSignalsByType("Financial");
+  const legalSignals = getSignalsByType("Legal");
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
+    <main className="min-h-screen bg-slate-950 text-white">
+
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-5">
+
           <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Stoutt Property Management
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold">
-              Digital Board Book
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
+            </p>
+
+            <h1 className="mt-2 text-2xl font-semibold">
+              Meeting Packet
             </h1>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/board" className="hover:text-amber-300">
-              Board Portal
-            </Link>
-            <Link href="/board/violation-review" className="hover:text-amber-300">
-              Violations
-            </Link>
-            <Link href="/board/architectural-approvals" className="hover:text-amber-300">
-              ARC Approvals
-            </Link>
-            <Link href="/board/maintenance-review" className="hover:text-amber-300">
-              Maintenance
-            </Link>
-            <Link href="/board/financial-review" className="hover:text-amber-300">
-              Financials
-            </Link>
+          <nav className="hidden md:flex gap-4 text-sm text-slate-300">
+            <Link href="/board">Board Home</Link>
+            <Link href="/board/performance-dashboard">Dashboard</Link>
+            <Link href="/board/command-center">Command Center</Link>
+            <Link href="/board/financial-review">Financial</Link>
+            <Link href="/board/compliance-legal-review">Legal</Link>
           </nav>
+
         </div>
-      </header>
+      </section>
 
-      <main className="mx-auto max-w-7xl px-6 py-14">
-        <section className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 p-10 shadow-2xl">
-          <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-            Board Meeting Packet Center
+      <section className="mx-auto max-w-7xl px-6 py-10">
+
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Packet Assembly Active
+          </p>
+
+          <h2 className="mt-3 text-4xl font-semibold">
+            Board packet now pulls live governance signals.
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-slate-300">
+            Meeting Packet now assembles agenda-sensitive matters from the
+            shared Board Operating System data layer.
+          </p>
+
+        </div>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">
+              Agenda Items
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {bosSignals.length}
+            </p>
           </div>
 
-          <div className="mt-5 grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
-            <div>
-              <h2 className="text-4xl font-semibold leading-tight">
-                One polished board packet, assembled from every operating module.
-              </h2>
-              <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
-                Prepare meeting agendas, financial packages, violation summaries,
-                ARC requests, maintenance decisions, vendor proposals and manager
-                reports in one executive board book.
-              </p>
-            </div>
+          <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
+            <p className="text-sm text-red-100">
+              High-Risk Items
+            </p>
 
-            <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 p-6">
-              <div className="text-sm text-slate-300">Upcoming Meeting</div>
-              <div className="mt-2 text-2xl font-semibold text-amber-300">
-                Monthly Board Meeting
-              </div>
-              <div className="mt-4 text-slate-300">
-                Packet completion:{" "}
-                <span className="font-semibold text-white">82%</span>
-              </div>
-              <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-800">
-                <div className="h-full w-[82%] rounded-full bg-amber-400" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-10 grid gap-6 md:grid-cols-3">
-          {[
-            ["Agenda Items", "14"],
-            ["Pending Attachments", "5"],
-            ["Board Decisions", "9"],
-          ].map(([label, value]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/5 p-7"
-            >
-              <div className="text-sm text-slate-400">{label}</div>
-              <div className="mt-3 text-4xl font-semibold text-amber-300">
-                {value}
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-14">
-          <div className="mb-8">
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Packet Builder
-            </div>
-            <h3 className="mt-3 text-3xl font-semibold">
-              Meeting Packet Sections
-            </h3>
+            <p className="mt-3 text-4xl font-semibold text-red-200">
+              {highRiskSignals.length}
+            </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {packetSections.map((item) => (
-              <div
-                key={item.title}
-                className="rounded-3xl border border-white/10 bg-slate-900 p-7 hover:border-amber-400/40 transition"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <h4 className="text-xl font-semibold">{item.title}</h4>
-                  <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs text-amber-300">
-                    {item.status}
-                  </span>
-                </div>
-                <p className="mt-4 leading-relaxed text-slate-300">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+          <div className="rounded-3xl border border-amber-300/20 bg-amber-500/10 p-6">
+            <p className="text-sm text-amber-100">
+              Financial Matters
+            </p>
 
-        <section className="mt-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Packet Actions
-            </div>
-            <h3 className="mt-3 text-3xl font-semibold">
-              Executive Workflow
+            <p className="mt-3 text-4xl font-semibold text-amber-200">
+              {financialSignals.length}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
+            <p className="text-sm text-violet-100">
+              Legal Matters
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-violet-200">
+              {legalSignals.length}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+
+          <div className="rounded-3xl border border-red-400/20 bg-red-500/10 p-6">
+
+            <h3 className="text-xl font-semibold text-red-100">
+              Executive Session Items
             </h3>
 
-            <div className="mt-8 space-y-4">
-              {packetActions.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-slate-200"
+            <div className="mt-6 space-y-4">
+
+              {highRiskSignals.map(item => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-red-300/20 bg-slate-950/60 p-5"
                 >
-                  {item}
-                </div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-red-200">
+                    {item.id}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">
+                    {item.title}
+                  </h4>
+                </Link>
               ))}
+
             </div>
+
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 p-8">
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              AI Prepared Summary
-            </div>
-            <h3 className="mt-3 text-3xl font-semibold">
-              Suggested Board Meeting Brief
+          <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+
+            <h3 className="text-xl font-semibold text-amber-100">
+              Financial Agenda
             </h3>
 
-            <div className="mt-8 space-y-5 text-slate-300 leading-relaxed">
-              <p>
-                The upcoming meeting should prioritize delinquency review,
-                approval of two vendor proposals, one reserve funding exception,
-                and pending architectural decisions with documented conditions.
-              </p>
-              <p>
-                AI recommendations can summarize open items, identify unresolved
-                board actions and prepare agenda language before the manager
-                finalizes the board packet.
-              </p>
+            <div className="mt-6 space-y-4">
+
+              {financialSignals.map(item => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-amber-300/20 bg-slate-950/60 p-5"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-amber-200">
+                    {item.id}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">
+                    {item.title}
+                  </h4>
+                </Link>
+              ))}
+
             </div>
 
-            <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-amber-200">
-              Recommended next step: finalize financial attachments and publish
-              the packet to board members.
-            </div>
           </div>
-        </section>
-      </main>
-    </div>
+
+          <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
+
+            <h3 className="text-xl font-semibold text-violet-100">
+              Legal Agenda
+            </h3>
+
+            <div className="mt-6 space-y-4">
+
+              {legalSignals.map(item => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+                    {item.id}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">
+                    {item.title}
+                  </h4>
+                </Link>
+              ))}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+
+          <h3 className="text-xl font-semibold">
+            Full Packet Feed
+          </h3>
+
+          <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
+
+            <div className="grid grid-cols-4 bg-white/[0.06] px-4 py-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+              <span>Module</span>
+              <span>Status</span>
+              <span>Owner</span>
+              <span>Risk</span>
+            </div>
+
+            {bosSignals.map(item => (
+              <Link
+                key={item.id}
+                href={item.route}
+                className="grid grid-cols-4 border-t border-white/10 px-4 py-4 text-sm"
+              >
+                <span>{item.module}</span>
+                <span>{item.status}</span>
+                <span>{item.owner}</span>
+                <span>{item.riskLevel}</span>
+              </Link>
+            ))}
+
+          </div>
+
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Meeting Packet now assembles live governance signals into
+            agenda-ready packet structure.
+          </p>
+
+        </div>
+
+      </section>
+
+    </main>
   );
 }
