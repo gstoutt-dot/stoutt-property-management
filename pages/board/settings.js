@@ -26,6 +26,14 @@ export default function BoardSettings() {
       notes:
         "AI call handling, escalation rules, knowledge-base access, work order routing, and board notification preferences.",
     },
+    {
+  title: "QuickBooks Integration",
+  category: "Accounting",
+  status: "Connected",
+  updated: "Apr 24, 2026",
+  notes:
+    "General ledger connection, financial reporting sync, invoice workflow, and accounting data integration settings."
+  },
   ];
 
   return (
@@ -69,8 +77,7 @@ export default function BoardSettings() {
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
               Manage association profile details, board roles, portal access, approval
-              rules, notification preferences, AI assistant settings, and accounting
-              connection status.
+              rules, notification preferences, AI assistant settings, and QuickBooks accounting connection status.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -98,7 +105,7 @@ export default function BoardSettings() {
             ["Active", "Association Profile"],
             ["5", "Board Users"],
             ["Connected", "AI Assistant"],
-            ["Pending", "QBooks Sync"],
+            ["Connected", "QuickBooks Sync"],
           ].map(([number, label]) => (
             <div
               key={label}
