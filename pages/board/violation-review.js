@@ -1,227 +1,192 @@
 import Link from "next/link";
+import { bosSignals, aiEvents } from "../../lib/bosData";
 
-export default function BoardViolationsReview() {
-  const cases = [
-    {
-      id: "V-2204",
-      property: "Unit 204",
-      issue: "Landscape Maintenance Notice",
-      status: "Pending Board Review",
-      deadline: "May 5, 2026",
-      recommendation: "Courtesy extension recommended",
-    },
-    {
-      id: "V-2198",
-      property: "Unit 118",
-      issue: "Parking Violation Warning",
-      status: "Fine Consideration",
-      deadline: "May 2, 2026",
-      recommendation: "Review owner response before decision",
-    },
-    {
-      id: "V-2187",
-      property: "Unit 311",
-      issue: "Unapproved Exterior Modification",
-      status: "Hearing Eligible",
-      deadline: "May 10, 2026",
-      recommendation: "Schedule committee or board hearing",
-    },
-  ];
+export default function ViolationReview() {
+  const violationSignals = bosSignals.filter(
+    (item) =>
+      item.module === "Violations" ||
+      item.type === "Compliance"
+  );
+
+  const aiViolationEvents = aiEvents.filter(
+    (event) => event.route === "/board/violation-review"
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,179,8,0.22),transparent_35%),radial-gradient(circle_at_top_left,rgba(15,23,42,1),transparent_40%)]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-yellow-400">
-                Board Member Portal
-              </p>
+      <section className="border-b border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
 
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
-                Violations Review
-              </h1>
-
-              <p className="mt-4 max-w-3xl text-slate-300">
-                Review compliance cases, owner responses, hearing status,
-                recommendations, and board decision actions.
-              </p>
-            </div>
-
-            <Link
-              href="/board"
-              className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-yellow-400/60 hover:text-yellow-300"
-            >
-              Back to Board Dashboard
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid gap-6 md:grid-cols-4">
-          {[
-            ["Pending Review", "12"],
-            ["Owner Responses", "4"],
-            ["Hearing Eligible", "3"],
-            ["Fine Decisions", "2"],
-          ].map(([label, value]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-            >
-              <p className="text-sm text-slate-400">{label}</p>
-              <div className="mt-3 text-3xl font-bold text-yellow-400">
-                {value}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-12 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <div className="mb-5">
-            <p className="text-sm font-medium text-yellow-400">
-              Compliance Cases
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operating System
             </p>
-            <h2 className="mt-2 text-2xl font-semibold">
-              Board Review Queue
-            </h2>
+
+            <h1 className="mt-2 text-2xl font-semibold">
+              Violation Review
+            </h1>
           </div>
 
-          <div className="space-y-5">
-            {cases.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-slate-400">
-                      {item.id} • {item.property}
-                    </p>
+          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
+            <Link href="/board">Board Home</Link>
+            <Link href="/board/performance-dashboard">Dashboard</Link>
+            <Link href="/board/workflow-engine">Workflow</Link>
+            <Link href="/board/command-center">Command Center</Link>
+            <Link href="/board/compliance-legal-review">Legal</Link>
+          </nav>
 
-                    <h3 className="mt-2 text-xl font-semibold">
-                      {item.issue}
-                    </h3>
-                  </div>
+        </div>
+      </section>
 
-                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-                    {item.status}
-                  </span>
-                </div>
+      <section className="mx-auto max-w-7xl px-6 py-10">
 
-                <div className="mt-5 space-y-3 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-slate-400">Deadline</span>
-                    <span>{item.deadline}</span>
-                  </div>
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
 
-                  <div className="flex justify-between gap-4">
-                    <span className="text-slate-400">Recommendation</span>
-                    <span className="text-right text-yellow-300">
-                      {item.recommendation}
-                    </span>
-                  </div>
-                </div>
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Compliance Intake Active
+          </p>
 
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
-                    Review Case
-                  </button>
+          <h2 className="mt-3 text-4xl font-semibold">
+            AI-captured rule complaints now enter violations review.
+          </h2>
 
-                  <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-                    View Owner Response
-                  </button>
+          <p className="mt-4 max-w-3xl text-slate-300">
+            Complaints captured by the AI assistant can now route directly
+            into the violations queue for management and board escalation.
+          </p>
 
-                  <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-                    Ask Ava
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm font-medium text-yellow-400">
-              Board Decision Actions
+            <p className="text-sm text-slate-400">
+              Violation Signals
             </p>
 
-            <div className="mt-5 space-y-3">
-              {[
-                "Issue courtesy extension",
-                "Mark corrected / resolved",
-                "Request additional information",
-                "Schedule hearing",
-                "Recommend fine",
-                "Escalate to legal review",
-              ].map((action) => (
-                <button
-                  key={action}
-                  className="block w-full rounded-2xl border border-white/10 px-4 py-3 text-left text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {violationSignals.length}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
+            <p className="text-sm text-violet-100">
+              AI Violation Events
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-violet-200">
+              {aiViolationEvents.length}
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm text-slate-400">
+              Total Active Items
+            </p>
+
+            <p className="mt-3 text-4xl font-semibold text-amber-300">
+              {violationSignals.length + aiViolationEvents.length}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+
+            <h3 className="text-xl font-semibold">
+              Violation Review Queue
+            </h3>
+
+            <div className="mt-6 space-y-4">
+
+              {violationSignals.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.route}
+                  className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
                 >
-                  {action}
-                </button>
+                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                    {item.id} · {item.module}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">
+                    {item.title}
+                  </h4>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Next Action: {item.nextAction}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-500">
+                    Owner: {item.owner} · Status: {item.status}
+                  </p>
+                </Link>
               ))}
+
             </div>
+
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm font-medium text-yellow-400">
-              Review Timeline
+          <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
+
+            <h3 className="text-xl font-semibold text-violet-100">
+              AI Complaint Intake Queue
+            </h3>
+
+            <p className="mt-2 text-sm text-violet-100/70">
+              Complaints originating from AI assistant intake.
             </p>
 
-            <div className="mt-5 space-y-4">
-              {[
-                "Violation notice issued",
-                "Owner response received",
-                "Management prepares summary",
-                "Board / committee review",
-                "Decision recorded",
-                "Owner notified",
-              ].map((step, index) => (
-                <div key={step} className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-slate-950">
-                    {index + 1}
-                  </div>
+            <div className="mt-6 space-y-4">
 
-                  <div>
-                    <p className="font-medium">{step}</p>
-                    <p className="text-sm text-slate-400">
-                      Step {index + 1} of board compliance review
-                    </p>
-                  </div>
+              {aiViolationEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+                    {event.id} · {event.type}
+                  </p>
+
+                  <h4 className="mt-2 font-semibold">
+                    {event.event}
+                  </h4>
+
+                  <p className="mt-2 text-sm text-slate-300">
+                    Source: {event.source}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-400">
+                    Status: {event.status} · Priority: {event.priority}
+                  </p>
+
                 </div>
               ))}
+
             </div>
+
           </div>
 
-          <div className="rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-6">
-            <p className="text-sm font-medium text-yellow-300">
-              Ava Board Assistant
-            </p>
-
-            <h2 className="mt-2 text-2xl font-semibold">
-              Summarize cases before the meeting
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Ava can summarize the notice history, owner response, applicable
-              governing language, deadlines, and recommended next steps for
-              board review.
-            </p>
-
-            <button className="mt-5 rounded-2xl border border-yellow-400/40 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400 hover:text-slate-950">
-              Ask Ava for Case Summary
-            </button>
-          </div>
         </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+
+          <h3 className="text-xl font-semibold text-amber-200">
+            BOS Wiring Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Violation Review now receives compliance signals and
+            AI-generated complaint events.
+          </p>
+
+        </div>
+
       </section>
+
     </main>
   );
 }
