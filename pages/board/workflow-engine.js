@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BosActionPanel from "../../components/board/BosActionPanel";
+import BosActionButtons from "../../components/board/BosActionButtons";
 import {
   getSharedWorkflowQueue,
   crossModuleRoutingRules,
@@ -74,18 +75,18 @@ export default function WorkflowEngine() {
           <div className="grid gap-10 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
-                Phase 2 · Operating-System Behavior
+                Phase 2 · Engine Connected
               </p>
 
               <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                Workflow Engine now connects actions across the BOS.
+                Workflow actions now execute through the BOS engine.
               </h1>
 
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                This page now reads from the shared workflow state and action
-                layer, giving the portal one common operating language for
-                closing, escalating, assigning, reviewing, creating tasks, and
-                routing signals across board modules.
+                The Workflow Engine now connects the visible action buttons to
+                the shared BOS execution layer, allowing close, escalate, assign,
+                review, create task, and route signal controls to behave like
+                operating-system commands.
               </p>
             </div>
 
@@ -123,7 +124,7 @@ export default function WorkflowEngine() {
                 <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
                   <p className="text-3xl font-semibold text-white">1</p>
                   <p className="mt-1 text-xs text-slate-400">
-                    Unified BOS queue
+                    Execution engine
                   </p>
                 </div>
               </div>
@@ -133,8 +134,8 @@ export default function WorkflowEngine() {
                   What changed
                 </p>
                 <p className="mt-2 text-sm leading-6 text-cyan-50/80">
-                  The Workflow Engine is no longer a static page. It is now the
-                  shared operating layer that other BOS modules can feed into.
+                  Workflow buttons now call the BOS engine and return a visible
+                  execution result with audit-trail language.
                 </p>
               </div>
             </div>
@@ -153,20 +154,20 @@ export default function WorkflowEngine() {
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">
               Maintenance, violations, financial review, reserves, vendors, and
-              legal items can now feed into the same workflow structure.
+              legal items feed into the same workflow structure.
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-300">
-              Action Consistency
+              Action Execution
             </p>
             <h2 className="mt-3 text-xl font-semibold text-white">
-              Same controls everywhere
+              Buttons now trigger the engine
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Close, escalate, assign, review, create task, and route signal are
-              now standardized instead of being handled differently by each page.
+              Each workflow action now calls the shared execution layer instead
+              of remaining only visual.
             </p>
           </div>
 
@@ -175,11 +176,11 @@ export default function WorkflowEngine() {
               Audit Memory
             </p>
             <h2 className="mt-3 text-xl font-semibold text-white">
-              Every action leaves a trail
+              Every action creates a result
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              This prepares the platform for board accountability, manager
-              oversight, legal review, and AI-generated operating histories.
+              Executed actions return a system response that prepares the portal
+              for persistent audit logs and database-backed state.
             </p>
           </div>
         </div>
@@ -201,9 +202,10 @@ export default function WorkflowEngine() {
           </div>
 
           <p className="max-w-2xl text-sm leading-6 text-slate-400">
-            These items are read from the shared workflow state layer. Later,
-            these actions can become live buttons connected to database updates,
-            vendor dispatch, QuickBooks sync, and board packet generation.
+            These controls now execute through the BOS engine. In the next
+            phase, the same action path can write to a database, update module
+            state, dispatch vendors, sync QuickBooks, and generate board packet
+            history.
           </p>
         </div>
 
@@ -213,7 +215,7 @@ export default function WorkflowEngine() {
               key={item.id}
               className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-xl shadow-black/20"
             >
-              <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+              <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span
@@ -279,24 +281,21 @@ export default function WorkflowEngine() {
 
                 <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-4">
                   <p className="text-sm font-semibold text-white">
-                    Available Actions
+                    Executable Actions
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {item.availableActions.map((action) => (
-                      <button
-                        key={action.id}
-                        type="button"
-                        className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/50 hover:bg-cyan-300/15"
-                      >
-                        {action.label}
-                      </button>
-                    ))}
+                  <div className="mt-4">
+                    <BosActionButtons
+                      item={item}
+                      actions={item.availableActions}
+                      actor="Manager"
+                      role="manager"
+                    />
                   </div>
 
                   <p className="mt-4 text-xs leading-5 text-slate-500">
-                    Buttons are intentionally visual in this phase. The next
-                    step is wiring these actions into persistent database state.
+                    These buttons now call the shared BOS execution engine and
+                    return a live action result.
                   </p>
                 </div>
               </div>
