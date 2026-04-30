@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/bosClient";
+import { supabase } from "../../lib/bosClient"; 
 
 export default function CommandCenter() {
   const [actions, setActions] = useState([]);
