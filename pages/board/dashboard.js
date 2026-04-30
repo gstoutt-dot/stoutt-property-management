@@ -39,10 +39,6 @@ export default function BoardDashboard() {
   async function updateBoardInteraction(id, updates) {
     setSavingId(id);
 
-    setActions((current) =>
-      current.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
-
     const { error } = await supabase
       .from("bos_actions")
       .update({
@@ -52,9 +48,36 @@ export default function BoardDashboard() {
       .eq("id", id);
 
     if (error) {
-      console.warn("Board interaction not saved to database:", error.message);
+      console.error("Board interaction save error:", error);
+      alert(
+        "This did not save. Make sure the board interaction columns exist in Supabase."
+      );
     }
 
+    await loadData();
+    setSavingId(null);
+  }
+
+  async function markResolved(id) {
+    setSavingId(id);
+
+    const { error } = await supabase
+      .from("bos_actions")
+      .update({
+        status: "completed",
+        board_response: "resolved",
+        board_reviewed: true,
+        board_acknowledged: true,
+        board_last_interaction_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Mark resolved error:", error);
+      alert("This did not save. Check the Supabase table columns.");
+    }
+
+    await loadData();
     setSavingId(null);
   }
 
@@ -85,7 +108,7 @@ export default function BoardDashboard() {
 
   const completedItems = actions
     .filter((a) => a.status === "completed")
-    .slice(0, 5);
+    .slice(0, 8);
 
   function humanStatus(status) {
     if (status === "open") return "Awaiting Action";
@@ -117,7 +140,7 @@ export default function BoardDashboard() {
 
                 <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
                   A live executive view of community operations, notifications,
-                  board review, and management follow-through.
+                  board review, decisions, and management follow-through.
                 </p>
 
                 <p className="mt-5 text-sm text-slate-500">
@@ -169,6 +192,7 @@ export default function BoardDashboard() {
                         tone="danger"
                         saving={savingId === item.id}
                         onInteract={updateBoardInteraction}
+                        onResolve={markResolved}
                         message="This item has been elevated for immediate attention and is being actively reviewed by management."
                       />
                     ))}
@@ -193,6 +217,7 @@ export default function BoardDashboard() {
                         tone="progress"
                         saving={savingId === item.id}
                         onInteract={updateBoardInteraction}
+                        onResolve={markResolved}
                         message="Work has begun and this matter is actively being handled by management."
                       />
                     ))}
@@ -217,6 +242,7 @@ export default function BoardDashboard() {
                         tone="success"
                         saving={savingId === item.id}
                         onInteract={updateBoardInteraction}
+                        onResolve={markResolved}
                         message="This item has been successfully resolved and closed in the management workflow."
                       />
                     ))}
@@ -300,7 +326,7 @@ function EmptyState({ title, message, tone }) {
   );
 }
 
-function BoardItem({ item, status, message, tone, onInteract, saving }) {
+function BoardItem({ item, status, message, tone, onInteract, onResolve, saving }) {
   const [comment, setComment] = useState(item.board_comment || "");
 
   const toneClasses = {
@@ -314,6 +340,8 @@ function BoardItem({ item, status, message, tone, onInteract, saving }) {
     progress: "bg-amber-400 text-slate-950",
     success: "bg-emerald-500 text-white",
   };
+
+  const isCompleted = item.status === "completed";
 
   return (
     <div
@@ -347,6 +375,12 @@ function BoardItem({ item, status, message, tone, onInteract, saving }) {
             {item.board_reviewed && (
               <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 font-bold text-amber-300">
                 Reviewed
+              </span>
+            )}
+
+            {item.board_response && (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-bold text-slate-300">
+                Response: {formatResponse(item.board_response)}
               </span>
             )}
           </div>
@@ -421,6 +455,15 @@ function BoardItem({ item, status, message, tone, onInteract, saving }) {
               })
             }
           />
+
+          {!isCompleted && (
+            <ActionButton
+              label="Mark Resolved"
+              disabled={saving}
+              danger
+              onClick={() => onResolve(item.id)}
+            />
+          )}
         </div>
 
         <div className="mt-5">
@@ -459,12 +502,16 @@ function BoardItem({ item, status, message, tone, onInteract, saving }) {
   );
 }
 
-function ActionButton({ label, onClick, disabled }) {
+function ActionButton({ label, onClick, disabled, danger }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-amber-300 transition hover:bg-amber-300 hover:text-slate-950 disabled:opacity-50"
+      className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.14em] transition disabled:opacity-50 ${
+        danger
+          ? "border-red-400/30 bg-red-500/10 text-red-200 hover:bg-red-500 hover:text-white"
+          : "border-amber-300/20 bg-amber-300/10 text-amber-300 hover:bg-amber-300 hover:text-slate-950"
+      }`}
     >
       {label}
     </button>
