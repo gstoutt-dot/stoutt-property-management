@@ -1,124 +1,96 @@
-import Link from "next/link";
-import BosActionPanel from "../../components/board/BosActionPanel";
+import React from "react";
 import BosSystemStatus from "../../components/board/BosSystemStatus";
 import BosLiveConsole from "../../components/board/BosLiveConsole";
-import {
-  getSharedWorkflowQueue,
-  crossModuleRoutingRules,
-} from "../../lib/bosWorkflowState";
-
-const navItems = [
-  { label: "Dashboard", href: "/board" },
-  { label: "Workflow", href: "/board/workflow-engine" },
-  { label: "Command", href: "/board/command-center" },
-  { label: "Tasks", href: "/board/action-items" },
-  { label: "Financial", href: "/board/financial-review" },
-];
+import BosActionButtons from "../../components/board/BosActionButtons";
 
 export default function CommandCenter() {
-  const workflowQueue = getSharedWorkflowQueue("manager");
-
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_32%),linear-gradient(135deg,#020617,#0f172a_45%,#111827)]">
-        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:48px_48px]" />
+    <main className="min-h-screen bg-[#070B14] text-white">
+      <section className="relative overflow-hidden border-b border-white/10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.22),transparent_34%),radial-gradient(circle_at_top_right,rgba(234,179,8,0.16),transparent_28%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:52px_52px]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <Link href="/board" className="group inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 shadow-lg shadow-cyan-950/30">
-                <span className="text-lg font-black text-cyan-200">SP</span>
+          <header className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-300/40 bg-cyan-300/10 text-xl font-black text-cyan-100 shadow-lg shadow-cyan-500/10">
+                SP
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-[0.28em] text-cyan-200">
-                  STOUTT PROPERTY MANAGEMENT
+                <p className="text-sm font-semibold uppercase tracking-[0.42em] text-cyan-200">
+                  Stoutt Property Management
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="mt-1 text-sm text-slate-300">
                   Board Operating System
                 </p>
               </div>
-            </Link>
+            </div>
 
-            <nav className="flex flex-wrap gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
-                    item.href === "/board/command-center"
-                      ? "border-cyan-300/40 bg-cyan-300/10 text-cyan-100"
-                      : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/30 hover:text-white"
+            <nav className="hidden items-center gap-3 md:flex">
+              {[
+                ["Dashboard", "/board"],
+                ["Workflow", "/board/workflow-engine"],
+                ["Command", "/board/command-center"],
+                ["Tasks", "/board/action-items"],
+                ["Financial", "/board/financial-review"],
+              ].map(([label, href]) => (
+                <a
+                  key={label}
+                  href={href}
+                  className={`rounded-full border px-5 py-2 text-sm font-semibold transition ${
+                    label === "Command"
+                      ? "border-cyan-300/50 bg-cyan-300/15 text-cyan-100"
+                      : "border-white/10 bg-white/5 text-slate-200 hover:border-cyan-300/40 hover:bg-cyan-300/10"
                   }`}
                 >
-                  {item.label}
-                </Link>
+                  {label}
+                </a>
               ))}
             </nav>
-          </div>
+          </header>
 
-          <div className="grid gap-10 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+          <div className="grid gap-10 py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
+              <p className="text-sm font-black uppercase tracking-[0.55em] text-cyan-200">
                 Command Center · Live Console Connected
               </p>
-
-              <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                The BOS now has a live execution console.
+              <h1 className="mt-8 max-w-4xl text-5xl font-black tracking-tight text-white md:text-7xl">
+                Executive control for the entire board operation.
               </h1>
-
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                This Command Center now combines system status, workflow state,
-                routing logic, shared actions, and a live console-style
-                execution stream for real operating-system visibility.
+              <p className="mt-8 max-w-3xl text-xl leading-9 text-slate-300">
+                Monitor workflow health, live execution events, board action
+                signals, and operating-system readiness from one premium command
+                layer.
               </p>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 shadow-2xl shadow-black/30 backdrop-blur">
-              <p className="text-sm font-semibold text-white">
-                Live System Snapshot
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-8 shadow-2xl shadow-black/40 backdrop-blur">
+              <p className="text-lg font-bold text-white">
+                Command Snapshot
               </p>
 
-              <div className="mt-5 grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">
-                    {workflowQueue.length}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Active workflow items
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">
-                    {crossModuleRoutingRules.length}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Routing rules
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">6</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Shared actions
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">1</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Live console
-                  </p>
-                </div>
+              <div className="mt-8 grid grid-cols-2 gap-5">
+                {[
+                  ["4", "Active workflow items"],
+                  ["5", "Routing rules"],
+                  ["6", "Shared actions"],
+                  ["1", "Live console"],
+                ].map(([number, label]) => (
+                  <div
+                    key={label}
+                    className="rounded-3xl border border-white/10 bg-slate-950/70 p-6"
+                  >
+                    <p className="text-4xl font-black text-white">{number}</p>
+                    <p className="mt-3 text-sm text-slate-400">{label}</p>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-5 rounded-2xl border border-purple-300/20 bg-purple-300/10 p-4">
-                <p className="text-sm font-semibold text-purple-100">
-                  What this represents
-                </p>
-                <p className="mt-2 text-sm leading-6 text-purple-50/80">
-                  The BOS now feels like a command layer: status, action,
-                  execution, and feedback in one premium operating view.
+              <div className="mt-7 rounded-3xl border border-cyan-300/20 bg-cyan-300/10 p-6">
+                <p className="font-bold text-cyan-100">What this represents</p>
+                <p className="mt-4 leading-7 text-slate-300">
+                  A real operating layer for board work: status, execution,
+                  routing, audit visibility, and live feedback.
                 </p>
               </div>
             </div>
@@ -126,60 +98,27 @@ export default function CommandCenter() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[0.95fr_1.05fr]">
         <BosSystemStatus />
         <BosLiveConsole />
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-4">
-        <BosActionPanel moduleName="Command Center" role="manager" />
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-            System Insight
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold text-white">
-            What you now have
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-            This is no longer a collection of pages. This is now a structured
-            operating system capable of handling intake, routing, execution,
-            audit tracking, console feedback, and cross-module coordination.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <h3 className="text-lg font-semibold text-white">
-              AI → Workflow → Task
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Voice assistant events can generate structured workflow items and
-              tasks inside the BOS.
+      <section className="mx-auto max-w-7xl px-6 pb-16">
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 shadow-2xl shadow-black/30">
+          <div className="mb-8">
+            <p className="text-sm font-black uppercase tracking-[0.45em] text-emerald-300">
+              Executable Controls
+            </p>
+            <h2 className="mt-3 text-3xl font-black text-white">
+              Command actions wired to the BOS engine.
+            </h2>
+            <p className="mt-4 max-w-3xl leading-7 text-slate-300">
+              These controls now route through the shared execution layer and
+              can persist actions into Supabase.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <h3 className="text-lg font-semibold text-white">
-              Action → Engine → Result
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Every button routes through a shared execution engine capable of
-              driving real system behavior.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <h3 className="text-lg font-semibold text-white">
-              Result → Console → Audit
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              The live console creates the visual foundation for execution logs,
-              AI activity, accounting sync, and vendor dispatch tracking.
-            </p>
-          </div>
+          <BosActionButtons module="command-center" />
         </div>
       </section>
     </main>
