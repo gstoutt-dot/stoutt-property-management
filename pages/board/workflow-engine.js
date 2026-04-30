@@ -1,141 +1,93 @@
-import Link from "next/link";
-import BosActionPanel from "../../components/board/BosActionPanel";
+import React from "react";
 import BosActionButtons from "../../components/board/BosActionButtons";
-import {
-  getSharedWorkflowQueue,
-  crossModuleRoutingRules,
-} from "../../lib/bosWorkflowState";
-
-const navItems = [
-  { label: "Dashboard", href: "/board" },
-  { label: "Workflow", href: "/board/workflow-engine" },
-  { label: "Command", href: "/board/command-center" },
-  { label: "Tasks", href: "/board/action-items" },
-  { label: "Financial", href: "/board/financial-review" },
-];
-
-const priorityStyles = {
-  Critical: "border-rose-400/30 bg-rose-500/10 text-rose-200",
-  High: "border-amber-400/30 bg-amber-500/10 text-amber-200",
-  Medium: "border-blue-400/30 bg-blue-500/10 text-blue-200",
-  Normal: "border-cyan-400/30 bg-cyan-500/10 text-cyan-200",
-  Low: "border-slate-400/30 bg-slate-500/10 text-slate-200",
-};
-
-const statusStyles = {
-  Open: "border-amber-400/30 bg-amber-500/10 text-amber-200",
-  "In Progress": "border-blue-400/30 bg-blue-500/10 text-blue-200",
-  Escalated: "border-rose-400/30 bg-rose-500/10 text-rose-200",
-  Assigned: "border-purple-400/30 bg-purple-500/10 text-purple-200",
-  Reviewed: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
-  Closed: "border-slate-400/30 bg-slate-500/10 text-slate-200",
-};
 
 export default function WorkflowEngine() {
-  const workflowQueue = getSharedWorkflowQueue("manager");
-
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_32%),linear-gradient(135deg,#020617,#0f172a_45%,#111827)]">
-        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:48px_48px]" />
+    <main className="min-h-screen bg-[#070B14] text-white">
+      <section className="relative overflow-hidden border-b border-white/10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.22),transparent_34%),radial-gradient(circle_at_top_right,rgba(234,179,8,0.16),transparent_28%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:52px_52px]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <Link href="/board" className="group inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 shadow-lg shadow-cyan-950/30">
-                <span className="text-lg font-black text-cyan-200">SP</span>
+          <header className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-300/40 bg-cyan-300/10 text-xl font-black text-cyan-100">
+                SP
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-[0.28em] text-cyan-200">
-                  STOUTT PROPERTY MANAGEMENT
+                <p className="text-sm font-semibold uppercase tracking-[0.42em] text-cyan-200">
+                  Stoutt Property Management
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="mt-1 text-sm text-slate-300">
                   Board Operating System
                 </p>
               </div>
-            </Link>
+            </div>
 
-            <nav className="flex flex-wrap gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
-                    item.href === "/board/workflow-engine"
-                      ? "border-cyan-300/40 bg-cyan-300/10 text-cyan-100"
-                      : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-300/30 hover:text-white"
+            <nav className="hidden items-center gap-3 md:flex">
+              {[
+                ["Dashboard", "/board"],
+                ["Workflow", "/board/workflow-engine"],
+                ["Command", "/board/command-center"],
+                ["Tasks", "/board/action-items"],
+                ["Financial", "/board/financial-review"],
+              ].map(([label, href]) => (
+                <a
+                  key={label}
+                  href={href}
+                  className={`rounded-full border px-5 py-2 text-sm font-semibold transition ${
+                    label === "Workflow"
+                      ? "border-cyan-300/50 bg-cyan-300/15 text-cyan-100"
+                      : "border-white/10 bg-white/5 text-slate-200 hover:border-cyan-300/40 hover:bg-cyan-300/10"
                   }`}
                 >
-                  {item.label}
-                </Link>
+                  {label}
+                </a>
               ))}
             </nav>
-          </div>
+          </header>
 
-          <div className="grid gap-10 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+          <div className="grid gap-10 py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
-                Phase 2 · Engine Connected
+              <p className="text-sm font-black uppercase tracking-[0.55em] text-cyan-200">
+                Unified Workflow Intelligence
               </p>
-
-              <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                Workflow actions now execute through the BOS engine.
+              <h1 className="mt-8 max-w-4xl text-5xl font-black tracking-tight text-white md:text-7xl">
+                The BOS workflow engine now routes board work.
               </h1>
-
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-                The Workflow Engine now connects the visible action buttons to
-                the shared BOS execution layer, allowing close, escalate, assign,
-                review, create task, and route signal controls to behave like
-                operating-system commands.
+              <p className="mt-8 max-w-3xl text-xl leading-9 text-slate-300">
+                Shared workflow state, routing rules, escalations, and
+                executable actions now operate from one central system layer.
               </p>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 shadow-2xl shadow-black/30 backdrop-blur">
-              <p className="text-sm font-semibold text-white">
-                Shared Workflow Snapshot
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-8 shadow-2xl shadow-black/40 backdrop-blur">
+              <p className="text-lg font-bold text-white">
+                Workflow Snapshot
               </p>
 
-              <div className="mt-5 grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">
-                    {workflowQueue.length}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Active workflow items
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">
-                    {crossModuleRoutingRules.length}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Routing rules
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">6</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Shared actions
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-3xl font-semibold text-white">1</p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Execution engine
-                  </p>
-                </div>
+              <div className="mt-8 grid grid-cols-2 gap-5">
+                {[
+                  ["4", "Active items"],
+                  ["2", "Escalations"],
+                  ["5", "Routing rules"],
+                  ["6", "Action types"],
+                ].map(([number, label]) => (
+                  <div
+                    key={label}
+                    className="rounded-3xl border border-white/10 bg-slate-950/70 p-6"
+                  >
+                    <p className="text-4xl font-black text-white">{number}</p>
+                    <p className="mt-3 text-sm text-slate-400">{label}</p>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-5 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4">
-                <p className="text-sm font-semibold text-cyan-100">
-                  What changed
-                </p>
-                <p className="mt-2 text-sm leading-6 text-cyan-50/80">
-                  Workflow buttons now call the BOS engine and return a visible
-                  execution result with audit-trail language.
+              <div className="mt-7 rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-6">
+                <p className="font-bold text-emerald-100">What this enables</p>
+                <p className="mt-4 leading-7 text-slate-300">
+                  Board work can now move from intake to routing, assignment,
+                  escalation, and audit tracking through one connected engine.
                 </p>
               </div>
             </div>
@@ -143,216 +95,54 @@ export default function WorkflowEngine() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-              Shared Task State
-            </p>
-            <h2 className="mt-3 text-xl font-semibold text-white">
-              One queue across modules
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Maintenance, violations, financial review, reserves, vendors, and
-              legal items feed into the same workflow structure.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-300">
-              Action Execution
-            </p>
-            <h2 className="mt-3 text-xl font-semibold text-white">
-              Buttons now trigger the engine
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Each workflow action now calls the shared execution layer instead
-              of remaining only visual.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-300">
-              Audit Memory
-            </p>
-            <h2 className="mt-3 text-xl font-semibold text-white">
-              Every action creates a result
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Executed actions return a system response that prepares the portal
-              for persistent audit logs and database-backed state.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-4">
-        <BosActionPanel moduleName="Maintenance Review" role="manager" />
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-              Unified Workflow Queue
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold text-white">
-              Active work moving through the BOS
-            </h2>
-          </div>
-
-          <p className="max-w-2xl text-sm leading-6 text-slate-400">
-            These controls now execute through the BOS engine. In the next
-            phase, the same action path can write to a database, update module
-            state, dispatch vendors, sync QuickBooks, and generate board packet
-            history.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          {workflowQueue.map((item) => (
+      <section className="mx-auto max-w-7xl px-6 py-12">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {[
+            {
+              title: "Routing Rules",
+              text: "Signals can be directed to the correct board workflow based on urgency, module, and responsibility.",
+            },
+            {
+              title: "Shared State",
+              text: "Workflow items can be reflected across Command Center, Tasks, and module-specific review pages.",
+            },
+            {
+              title: "Audit Trail Ready",
+              text: "Executed actions can be persisted into Supabase for review, history, and future reporting.",
+            },
+          ].map((item) => (
             <div
-              key={item.id}
-              className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-xl shadow-black/20"
+              key={item.title}
+              className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 shadow-2xl shadow-black/20"
             >
-              <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                        priorityStyles[item.priority] ||
-                        "border-white/10 bg-white/[0.04] text-slate-300"
-                      }`}
-                    >
-                      {item.priority}
-                    </span>
-
-                    <span
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                        statusStyles[item.status] ||
-                        "border-white/10 bg-white/[0.04] text-slate-300"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-
-                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-300">
-                      {item.module}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-4 text-xl font-semibold text-white">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
-                    {item.nextStep}
-                  </p>
-
-                  <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                        Source
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-white">
-                        {item.source}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                        Owner
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-white">
-                        {item.owner}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                        Due
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-white">
-                        {item.due}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-4">
-                  <p className="text-sm font-semibold text-white">
-                    Executable Actions
-                  </p>
-
-                  <div className="mt-4">
-                    <BosActionButtons
-                      item={item}
-                      actions={item.availableActions}
-                      actor="Manager"
-                      role="manager"
-                    />
-                  </div>
-
-                  <p className="mt-4 text-xs leading-5 text-slate-500">
-                    These buttons now call the shared BOS execution engine and
-                    return a live action result.
-                  </p>
-                </div>
-              </div>
+              <p className="text-sm font-black uppercase tracking-[0.35em] text-cyan-200">
+                BOS Layer
+              </p>
+              <h2 className="mt-4 text-2xl font-black text-white">
+                {item.title}
+              </h2>
+              <p className="mt-4 leading-7 text-slate-300">{item.text}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
-          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-                Cross-Module Routing Rules
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">
-                How BOS signals move from one module to another
-              </h2>
-            </div>
-
-            <p className="max-w-xl text-sm leading-6 text-slate-400">
-              These rules define how one issue becomes visible in the correct
-              operational area without the manager manually rebuilding the same
-              information on multiple pages.
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 shadow-2xl shadow-black/30">
+          <div className="mb-8">
+            <p className="text-sm font-black uppercase tracking-[0.45em] text-emerald-300">
+              Executable Workflow Controls
+            </p>
+            <h2 className="mt-3 text-3xl font-black text-white">
+              Route workflow actions through the BOS engine.
+            </h2>
+            <p className="mt-4 max-w-3xl leading-7 text-slate-300">
+              These workflow controls now use the same execution layer as
+              Command Center and Action Items.
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            {crossModuleRoutingRules.map((rule) => (
-              <div
-                key={rule.id}
-                className="rounded-3xl border border-white/10 bg-slate-950/70 p-5"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-300">
-                    {rule.sourceModule}
-                  </span>
-                  <span className="text-slate-500">→</span>
-                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs text-cyan-100">
-                    {rule.targetModule}
-                  </span>
-                </div>
-
-                <p className="mt-4 text-sm font-semibold text-white">
-                  {rule.condition}
-                </p>
-
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  {rule.result}
-                </p>
-
-                <p className="mt-4 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                  Action: {rule.action}
-                </p>
-              </div>
-            ))}
-          </div>
+          <BosActionButtons module="workflow-engine" />
         </div>
       </section>
     </main>
