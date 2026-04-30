@@ -1,12 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createBOSAction } from "../../lib/bosClient";
+import { supabase, createBOSAction } from "../../lib/bosClient";
 
 export default function ActionItems() {
   const [title, setTitle] = useState("");
-  const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [actions, setActions] = useState([]);
+
+  async function fetchActions() {
+    const { data, error } = await supabase
+      .from("bos_actions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error) setActions(data);
+  }
+
+  useEffect(() => {
+    fetchActions();
+  }, []);
 
   async function handleCreate() {
     if (!title) {
@@ -27,6 +40,9 @@ export default function ActionItems() {
 
       setTitle("");
       setMessage("Action successfully written to Supabase.");
+
+      fetchActions(); // 🔥 refresh list
+
     } catch (err) {
       setMessage("Error: " + err.message);
     }
@@ -57,12 +73,12 @@ export default function ActionItems() {
       <section className="mx-auto max-w-7xl px-6 py-12">
         <h1 className="text-4xl font-bold">Action Items</h1>
         <p className="mt-4 text-slate-300">
-          Create and persist board-level actions into the BOS system.
+          Create and view live BOS actions from the system.
         </p>
       </section>
 
-      {/* CREATE ACTION */}
-      <section className="mx-auto max-w-7xl px-6 pb-16">
+      {/* CREATE */}
+      <section className="mx-auto max-w-7xl px-6 pb-10">
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 max-w-xl">
           <h2 className="text-xl font-semibold mb-4">Create New Action</h2>
 
@@ -84,6 +100,31 @@ export default function ActionItems() {
 
           {message && (
             <p className="mt-4 text-sm text-amber-300">{message}</p>
+          )}
+        </div>
+      </section>
+
+      {/* LIVE DATA LIST */}
+      <section className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+          <h2 className="text-2xl font-bold mb-6">Live Action Feed</h2>
+
+          {actions.length === 0 ? (
+            <p className="text-slate-400 text-sm">No actions yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {actions.map((action) => (
+                <div
+                  key={action.id}
+                  className="border border-white/10 rounded-xl p-4 bg-slate-900/60"
+                >
+                  <p className="text-white font-semibold">{action.title}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {new Date(action.created_at).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </section>
