@@ -49,9 +49,7 @@ export default function BoardDashboard() {
 
     if (error) {
       console.error("Board interaction save error:", error);
-      alert(
-        "This did not save. Make sure the board interaction columns exist in Supabase."
-      );
+      alert("This did not save. Check Supabase columns.");
     }
 
     await loadData();
@@ -86,6 +84,7 @@ export default function BoardDashboard() {
     const highAttention = actions.filter(
       (a) => a.priority === "high" && a.status !== "completed"
     );
+    const decisionRequired = actions.filter((a) => requiresBoardDecision(a));
     const resolved = actions.filter((a) => a.status === "completed");
     const reviewed = actions.filter((a) => a.board_reviewed === true);
     const acknowledged = actions.filter((a) => a.board_acknowledged === true);
@@ -93,6 +92,7 @@ export default function BoardDashboard() {
     return {
       active: active.length,
       highAttention: highAttention.length,
+      decisionRequired: decisionRequired.length,
       resolved: resolved.length,
       total: actions.length,
       reviewed: reviewed.length,
@@ -100,8 +100,13 @@ export default function BoardDashboard() {
     };
   }, [actions]);
 
+  const decisionItems = actions.filter((a) => requiresBoardDecision(a));
+
   const attentionItems = actions.filter(
-    (a) => a.priority === "high" && a.status !== "completed"
+    (a) =>
+      a.priority === "high" &&
+      a.status !== "completed" &&
+      !requiresBoardDecision(a)
   );
 
   const inProgressItems = actions.filter((a) => a.status === "in_progress");
@@ -139,8 +144,8 @@ export default function BoardDashboard() {
                 </h1>
 
                 <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-                  A live executive view of community operations, notifications,
-                  board review, decisions, and management follow-through.
+                  A live executive view of operations, board decisions,
+                  notifications, accountability, and management follow-through.
                 </p>
 
                 <p className="mt-5 text-sm text-slate-500">
@@ -166,19 +171,63 @@ export default function BoardDashboard() {
             </div>
           ) : (
             <>
-              <div className="grid gap-5 md:grid-cols-3 lg:grid-cols-6">
+              <div className="grid gap-5 md:grid-cols-3 lg:grid-cols-7">
                 <SummaryCard label="Active" value={summary.active} />
-                <SummaryCard label="Attention" value={summary.highAttention} highlight />
+                <SummaryCard
+                  label="Decision"
+                  value={summary.decisionRequired}
+                  highlight
+                />
+                <SummaryCard label="Attention" value={summary.highAttention} />
                 <SummaryCard label="Resolved" value={summary.resolved} />
                 <SummaryCard label="Total" value={summary.total} />
-                <SummaryCard label="Acknowledged" value={summary.acknowledged} />
+                <SummaryCard label="Ack." value={summary.acknowledged} />
                 <SummaryCard label="Reviewed" value={summary.reviewed} />
               </div>
+
+              <div className="mt-8 rounded-3xl border border-amber-300/10 bg-white/[0.04] p-6 shadow-2xl shadow-slate-950/40">
+                <p className="text-lg leading-8 text-slate-300">
+                  Management is actively overseeing{" "}
+                  <span className="font-bold text-amber-300">
+                    {summary.active}
+                  </span>{" "}
+                  open item{summary.active === 1 ? "" : "s"}.{" "}
+                  <span className="font-bold text-amber-300">
+                    {summary.decisionRequired}
+                  </span>{" "}
+                  currently require board decision or board-level review.
+                </p>
+              </div>
+
+              <DashboardSection
+                eyebrow="Board Decision Queue"
+                title="Requires Board Decision"
+                emptyTitle="No board decisions are currently required."
+                emptyMessage="Items needing formal board review, approval, or direction will appear here."
+                emptyTone="success"
+              >
+                {decisionItems.length === 0 ? null : (
+                  <div className="grid gap-4">
+                    {decisionItems.map((item) => (
+                      <BoardItem
+                        key={item.id}
+                        item={item}
+                        status={humanStatus(item.status)}
+                        tone="decision"
+                        saving={savingId === item.id}
+                        onInteract={updateBoardInteraction}
+                        onResolve={markResolved}
+                        message="This item requires board-level review, approval, or direction before management can fully proceed."
+                      />
+                    ))}
+                  </div>
+                )}
+              </DashboardSection>
 
               <DashboardSection
                 eyebrow="Priority Review"
                 title="Attention Required"
-                emptyTitle="No urgent items require board attention."
+                emptyTitle="No urgent non-decision items require attention."
                 emptyMessage="Current open items are being managed within normal operating priority."
                 emptyTone="success"
               >
@@ -257,6 +306,28 @@ export default function BoardDashboard() {
   );
 }
 
+function requiresBoardDecision(item) {
+  if (!item) return false;
+  if (item.status === "completed") return false;
+  if (item.board_response === "approved") return false;
+  if (item.board_response === "resolved") return false;
+
+  const priority = String(item.priority || "").toLowerCase();
+  const category = String(item.category || "").toLowerCase();
+  const title = String(item.title || "").toLowerCase();
+
+  return (
+    priority === "high" ||
+    category.includes("collections") ||
+    category.includes("vendor") ||
+    category.includes("legal") ||
+    title.includes("proposal") ||
+    title.includes("approval") ||
+    title.includes("authorize") ||
+    title.includes("collection")
+  );
+}
+
 function SummaryCard({ label, value, highlight }) {
   return (
     <div
@@ -329,19 +400,22 @@ function EmptyState({ title, message, tone }) {
 function BoardItem({ item, status, message, tone, onInteract, onResolve, saving }) {
   const [comment, setComment] = useState(item.board_comment || "");
 
+  const decisionRequired = requiresBoardDecision(item);
+  const isCompleted = item.status === "completed";
+
   const toneClasses = {
+    decision: "border-amber-400/50 bg-amber-400/10",
     danger: "border-red-500/40 bg-red-500/10",
     progress: "border-amber-400/30 bg-amber-400/10",
     success: "border-emerald-500/30 bg-emerald-500/10",
   };
 
   const badgeClasses = {
+    decision: "bg-amber-400 text-slate-950",
     danger: "bg-red-500 text-white",
     progress: "bg-amber-400 text-slate-950",
     success: "bg-emerald-500 text-white",
   };
-
-  const isCompleted = item.status === "completed";
 
   return (
     <div
@@ -351,6 +425,20 @@ function BoardItem({ item, status, message, tone, onInteract, onResolve, saving 
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {decisionRequired && (
+              <span className="rounded-full border border-amber-300/40 bg-amber-300/15 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-amber-300">
+                Requires Board Decision
+              </span>
+            )}
+
+            {item.board_response && (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-slate-300">
+                {formatResponse(item.board_response)}
+              </span>
+            )}
+          </div>
+
           <h3 className="text-xl font-black text-white">{item.title}</h3>
 
           <p className="mt-2 max-w-3xl text-slate-300">{message}</p>
@@ -366,6 +454,12 @@ function BoardItem({ item, status, message, tone, onInteract, onResolve, saving 
               </span>
             )}
 
+            {item.category && (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-bold text-slate-300">
+                Category: {item.category}
+              </span>
+            )}
+
             {item.board_acknowledged && (
               <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 font-bold text-emerald-300">
                 Acknowledged
@@ -375,12 +469,6 @@ function BoardItem({ item, status, message, tone, onInteract, onResolve, saving 
             {item.board_reviewed && (
               <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 font-bold text-amber-300">
                 Reviewed
-              </span>
-            )}
-
-            {item.board_response && (
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-bold text-slate-300">
-                Response: {formatResponse(item.board_response)}
               </span>
             )}
           </div>
@@ -394,6 +482,8 @@ function BoardItem({ item, status, message, tone, onInteract, onResolve, saving 
           {status}
         </span>
       </div>
+
+      <ActivityTimeline item={item} />
 
       <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/50 p-5">
         <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400">
@@ -489,14 +579,81 @@ function BoardItem({ item, status, message, tone, onInteract, onResolve, saving 
           </button>
         </div>
 
-        {item.board_response && (
-          <p className="mt-4 text-sm text-slate-400">
-            Latest board response:{" "}
-            <span className="font-bold text-amber-300">
-              {formatResponse(item.board_response)}
-            </span>
-          </p>
+        {item.board_comment && (
+          <div className="mt-4 rounded-2xl border border-amber-300/10 bg-amber-300/5 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              Latest Board Note
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              {item.board_comment}
+            </p>
+          </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ActivityTimeline({ item }) {
+  const timeline = [
+    {
+      label: "Created",
+      value: item.created_at ? formatDateTime(item.created_at) : null,
+      active: !!item.created_at,
+    },
+    {
+      label: "Board acknowledged",
+      value: item.board_acknowledged ? "Acknowledged by board" : null,
+      active: item.board_acknowledged === true,
+    },
+    {
+      label: "Board reviewed",
+      value: item.board_reviewed ? "Reviewed by board" : null,
+      active: item.board_reviewed === true,
+    },
+    {
+      label: "Last board action",
+      value: item.board_last_interaction_at
+        ? formatDateTime(item.board_last_interaction_at)
+        : null,
+      active: !!item.board_last_interaction_at,
+    },
+    {
+      label: "Resolved",
+      value: item.status === "completed" ? "Closed in BOS workflow" : null,
+      active: item.status === "completed",
+    },
+  ];
+
+  return (
+    <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+      <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-400">
+        Activity Timeline
+      </p>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-5">
+        {timeline.map((event) => (
+          <div
+            key={event.label}
+            className={`rounded-2xl border p-4 ${
+              event.active
+                ? "border-amber-300/25 bg-amber-300/10"
+                : "border-white/10 bg-white/[0.03]"
+            }`}
+          >
+            <p
+              className={`text-xs font-black uppercase tracking-[0.16em] ${
+                event.active ? "text-amber-300" : "text-slate-500"
+              }`}
+            >
+              {event.label}
+            </p>
+
+            <p className="mt-2 text-sm leading-5 text-slate-300">
+              {event.value || "Pending"}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -520,5 +677,10 @@ function ActionButton({ label, onClick, disabled, danger }) {
 
 function formatResponse(value) {
   if (!value) return "";
-  return value.replaceAll("_", " ");
+  return String(value).replaceAll("_", " ");
+}
+
+function formatDateTime(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleString();
 }
