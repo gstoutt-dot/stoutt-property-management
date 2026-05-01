@@ -19,12 +19,22 @@ function makeId(prefix) {
 }
 
 function cleanText(value, fallback = "") {
-  if (!value) return fallback;
+  if (value === undefined || value === null || value === "") return fallback;
   return String(value).trim();
 }
 
+function firstValue(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return value;
+    }
+  }
+
+  return "";
+}
+
 function normalizeTitle(value) {
-  const text = cleanText(value, "General Request");
+  const text = cleanText(value, "Owner Request");
   return text.length > 70 ? `${text.slice(0, 67)}...` : text;
 }
 
@@ -59,7 +69,7 @@ function createHistory({ requestId, action, details }) {
 
 function buildSubmittedNotification(request) {
   const subject = normalizeTitle(request.subject);
-  const category = cleanText(request.category, "General Request");
+  const category = cleanText(request.category, "general");
   const unit = cleanText(request.unit, "your property");
 
   return {
@@ -126,27 +136,71 @@ export default function handler(req, res) {
       const body = req.body || {};
 
       const requestId =
-        body.requestId ||
+        firstValue(body.requestId, body.id) ||
         `REQ-${new Date().getFullYear()}-${String(
           bosStore.requests.length + 1
         ).padStart(4, "0")}`;
 
+      const subject = cleanText(
+        firstValue(
+          body.subject,
+          body.title,
+          body.issue,
+          body.requestTitle,
+          body.requestType,
+          body.type,
+          body.category
+        ),
+        "Owner Request"
+      );
+
       const newRequest = {
         id: requestId,
         requestId,
-        ownerName: cleanText(body.ownerName || body.name, "Owner"),
-        unit: cleanText(body.unit || body.property, "Not provided"),
-        category: cleanText(body.category || body.type, "General Request"),
-        subject: cleanText(body.subject || body.title, "Owner Request"),
+        ownerName: cleanText(
+          firstValue(
+            body.ownerName,
+            body.name,
+            body.fullName,
+            body.residentName,
+            body.homeownerName,
+            body.submittedBy
+          ),
+          "Owner"
+        ),
+        email: cleanText(firstValue(body.email, body.ownerEmail), ""),
+        phone: cleanText(firstValue(body.phone, body.ownerPhone), ""),
+        unit: cleanText(
+          firstValue(
+            body.unit,
+            body.unitNumber,
+            body.address,
+            body.property,
+            body.location
+          ),
+          "Not provided"
+        ),
+        category: cleanText(
+          firstValue(body.category, body.type, body.requestCategory),
+          "General Request"
+        ),
+        subject,
+        title: subject,
         description: cleanText(
-          body.description || body.message,
+          firstValue(
+            body.description,
+            body.message,
+            body.details,
+            body.notes,
+            body.requestDescription
+          ),
           "No description provided."
         ),
-        priority: cleanText(body.priority, "Normal"),
-        status: cleanText(body.status, "Submitted"),
+        priority: cleanText(firstValue(body.priority, body.urgency), "Normal"),
+        status: cleanText(firstValue(body.status), "Submitted"),
+        source: cleanText(firstValue(body.source), "Owner Portal"),
         createdAt: nowISO(),
         updatedAt: nowISO(),
-        source: cleanText(body.source, "Owner Portal"),
       };
 
       bosStore.requests.unshift(newRequest);
@@ -201,7 +255,7 @@ export default function handler(req, res) {
         });
       }
 
-      const requestId = body.requestId || body.id;
+      const requestId = firstValue(body.requestId, body.id);
 
       if (!requestId) {
         return res.status(400).json({
@@ -223,24 +277,41 @@ export default function handler(req, res) {
 
       const previousStatus = request.status;
 
+      const updatedStatus = cleanText(firstValue(body.status), request.status);
+
+      const updatedSubject = cleanText(
+        firstValue(
+          body.subject,
+          body.title,
+          body.issue,
+          body.requestTitle,
+          body.requestType
+        ),
+        request.subject
+      );
+
       Object.assign(request, {
+        ...request,
         ...body,
         id: request.id,
         requestId: request.requestId,
+        subject: updatedSubject,
+        title: updatedSubject,
+        status: updatedStatus,
         updatedAt: nowISO(),
       });
 
-      if (body.status && body.status !== previousStatus) {
+      if (updatedStatus && updatedStatus !== previousStatus) {
         createHistory({
           requestId: request.requestId,
           action: "Status Updated",
-          details: `"${request.subject}" changed from ${previousStatus} to ${body.status}.`,
+          details: `"${request.subject}" changed from ${previousStatus} to ${updatedStatus}.`,
         });
 
         const statusAlert = buildStatusNotification(
           request,
           previousStatus,
-          body.status
+          updatedStatus
         );
 
         createNotification({
@@ -285,6 +356,7 @@ export default function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: "Server error",
+      message: error.message,
     });
   }
 }
