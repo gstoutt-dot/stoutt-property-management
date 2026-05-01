@@ -1,123 +1,239 @@
-// File: /api/bos-demo-store.js
+let bosStore = global.bosStore;
 
-let STORE = [];
-let NOTIFICATIONS = [];
-
-function createNotification(item, status, note) {
-  const ownerName = item.submittedBy || "Owner";
-  const title = `Request status updated: ${status}`;
-  const message = note || `${ownerName}'s request status was updated to ${status}.`;
-
-  const notification = {
-    id: `NTF-${Date.now()}`,
-    source: "System Notification",
-    ownerName,
-    requestId: item.id,
-    requestTitle: item.title || "Owner Request",
-    title,
-    message,
-    status,
-    read: false,
-    createdAt: new Date().toISOString(),
+if (!bosStore) {
+  bosStore = {
+    requests: [],
+    notifications: [],
+    history: [],
   };
 
-  NOTIFICATIONS.push(notification);
+  global.bosStore = bosStore;
+}
+
+function nowISO() {
+  return new Date().toISOString();
+}
+
+function makeId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createNotification({ title, message, requestId, type = "system" }) {
+  const notification = {
+    id: makeId("NOTIFY"),
+    title,
+    message,
+    requestId: requestId || null,
+    type,
+    read: false,
+    status: "unread",
+    createdAt: nowISO(),
+  };
+
+  bosStore.notifications.unshift(notification);
   return notification;
 }
 
-export default function handler(req, res) {
-  if (req.method === "GET") {
-    const view = req.query.view;
+function createHistory({ requestId, action, details }) {
+  const historyItem = {
+    id: makeId("HIST"),
+    requestId: requestId || null,
+    action,
+    details,
+    createdAt: nowISO(),
+  };
 
-    if (view === "notifications") {
-      return res.status(200).json(NOTIFICATIONS);
+  bosStore.history.unshift(historyItem);
+  return historyItem;
+}
+
+export default function handler(req, res) {
+  try {
+    if (req.method === "GET") {
+      const view = req.query.view;
+
+      if (view === "notifications") {
+        return res.status(200).json({
+          success: true,
+          notifications: bosStore.notifications,
+        });
+      }
+
+      if (view === "history") {
+        return res.status(200).json({
+          success: true,
+          history: bosStore.history,
+        });
+      }
+
+      if (view === "requests") {
+        return res.status(200).json({
+          success: true,
+          requests: bosStore.requests,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        requests: bosStore.requests,
+        notifications: bosStore.notifications,
+        history: bosStore.history,
+      });
     }
 
-    return res.status(200).json(STORE);
-  }
+    if (req.method === "POST") {
+      const body = req.body || {};
 
-  if (req.method === "POST") {
-    const item = req.body;
+      const requestId =
+        body.requestId ||
+        `REQ-${new Date().getFullYear()}-${String(
+          bosStore.requests.length + 1
+        ).padStart(4, "0")}`;
 
-    const enrichedItem = {
-      ...item,
-      id: `ITEM-${Date.now()}`,
-      status: item.status || "Submitted to Manager Intake",
-      createdAt: new Date().toISOString(),
-      history: [
-        {
-          status: item.status || "Submitted to Manager Intake",
-          timestamp: new Date().toISOString(),
-          note: "Submitted from Owner Portal",
-        },
-      ],
-    };
+      const newRequest = {
+        id: requestId,
+        requestId,
+        ownerName: body.ownerName || body.name || "Owner",
+        unit: body.unit || body.property || "Not provided",
+        category: body.category || body.type || "General Request",
+        subject: body.subject || body.title || "Owner Request",
+        description:
+          body.description || body.message || "No description provided.",
+        priority: body.priority || "Normal",
+        status: body.status || "Submitted",
+        createdAt: nowISO(),
+        updatedAt: nowISO(),
+        source: body.source || "Owner Portal",
+      };
 
-    STORE.push(enrichedItem);
+      bosStore.requests.unshift(newRequest);
 
-    NOTIFICATIONS.push({
-      id: `NTF-${Date.now()}`,
-      source: "System Notification",
-      ownerName: enrichedItem.submittedBy || "Owner",
-      requestId: enrichedItem.id,
-      requestTitle: enrichedItem.title || "Owner Request",
-      title: "Request submitted to management",
-      message: "Your request has been received and routed to the Manager Intake Queue.",
-      status: enrichedItem.status,
-      read: false,
-      createdAt: new Date().toISOString(),
-    });
-
-    return res.status(200).json({ success: true, item: enrichedItem });
-  }
-
-  if (req.method === "PUT") {
-    const { id, status, note, markNotificationRead } = req.body;
-
-    if (markNotificationRead) {
-      NOTIFICATIONS = NOTIFICATIONS.map((notification) => {
-        if (notification.id === id) {
-          return {
-            ...notification,
-            read: true,
-          };
-        }
-        return notification;
+      createHistory({
+        requestId,
+        action: "Request Submitted",
+        details: `${newRequest.subject} was submitted by ${newRequest.ownerName}.`,
       });
 
-      return res.status(200).json({ success: true });
+      createNotification({
+        title: "Request Submitted",
+        message: `Your request ${requestId} has been submitted and is pending review.`,
+        requestId,
+        type: "request_submitted",
+      });
+
+      return res.status(201).json({
+        success: true,
+        request: newRequest,
+        requests: bosStore.requests,
+        notifications: bosStore.notifications,
+        history: bosStore.history,
+      });
     }
 
-    let updatedItem = null;
+    if (req.method === "PUT") {
+      const body = req.body || {};
 
-    STORE = STORE.map((item) => {
-      if (item.id === id) {
-        updatedItem = {
-          ...item,
-          status: status || item.status,
-          history: [
-            ...(item.history || []),
-            {
-              status: status || item.status,
-              timestamp: new Date().toISOString(),
-              note: note || "Status updated",
-            },
-          ],
-        };
+      if (body.view === "notifications" && body.action === "mark_read") {
+        const notification = bosStore.notifications.find(
+          (item) => item.id === body.id
+        );
 
-        return updatedItem;
+        if (!notification) {
+          return res.status(404).json({
+            success: false,
+            error: "Notification not found",
+          });
+        }
+
+        notification.read = true;
+        notification.status = "read";
+        notification.readAt = nowISO();
+
+        return res.status(200).json({
+          success: true,
+          notification,
+          notifications: bosStore.notifications,
+        });
       }
-      return item;
-    });
 
-    if (updatedItem) {
-      createNotification(updatedItem, updatedItem.status, note);
+      const requestId = body.requestId || body.id;
+
+      if (!requestId) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing requestId",
+        });
+      }
+
+      const request = bosStore.requests.find(
+        (item) => item.id === requestId || item.requestId === requestId
+      );
+
+      if (!request) {
+        return res.status(404).json({
+          success: false,
+          error: "Request not found",
+        });
+      }
+
+      const previousStatus = request.status;
+
+      Object.assign(request, {
+        ...body,
+        id: request.id,
+        requestId: request.requestId,
+        updatedAt: nowISO(),
+      });
+
+      if (body.status && body.status !== previousStatus) {
+        createHistory({
+          requestId: request.requestId,
+          action: "Status Updated",
+          details: `Status changed from ${previousStatus} to ${body.status}.`,
+        });
+
+        createNotification({
+          title: "Status Updated",
+          message: `Your request ${request.requestId} status has been updated to "${body.status}".`,
+          requestId: request.requestId,
+          type: "status_updated",
+        });
+      } else {
+        createHistory({
+          requestId: request.requestId,
+          action: "Request Updated",
+          details: "Request information was updated by management.",
+        });
+
+        createNotification({
+          title: "Request Updated",
+          message: `Your request ${request.requestId} has been updated by management.`,
+          requestId: request.requestId,
+          type: "request_updated",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        request,
+        requests: bosStore.requests,
+        notifications: bosStore.notifications,
+        history: bosStore.history,
+      });
     }
 
-    return res.status(200).json({ success: true, item: updatedItem });
-  }
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed",
+    });
+  } catch (error) {
+    console.error("BOS demo store error:", error);
 
-  res.status(405).json({ error: "Method not allowed" });
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
 }
 
 
