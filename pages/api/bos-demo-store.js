@@ -18,6 +18,16 @@ function makeId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function cleanText(value, fallback = "") {
+  if (!value) return fallback;
+  return String(value).trim();
+}
+
+function normalizeTitle(value) {
+  const text = cleanText(value, "General Request");
+  return text.length > 70 ? `${text.slice(0, 67)}...` : text;
+}
+
 function createNotification({ title, message, requestId, type = "system" }) {
   const notification = {
     id: makeId("NOTIFY"),
@@ -45,6 +55,37 @@ function createHistory({ requestId, action, details }) {
 
   bosStore.history.unshift(historyItem);
   return historyItem;
+}
+
+function buildSubmittedNotification(request) {
+  const subject = normalizeTitle(request.subject);
+  const category = cleanText(request.category, "General Request");
+  const unit = cleanText(request.unit, "your property");
+
+  return {
+    title: `${subject} Submitted`,
+    message: `Your ${category.toLowerCase()} request for "${subject}" at ${unit} has been submitted and is pending manager review.`,
+  };
+}
+
+function buildStatusNotification(request, previousStatus, newStatus) {
+  const subject = normalizeTitle(request.subject);
+  const unit = cleanText(request.unit, "your property");
+
+  return {
+    title: `${subject} Status Updated`,
+    message: `Your request for "${subject}" at ${unit} changed from "${previousStatus}" to "${newStatus}".`,
+  };
+}
+
+function buildUpdatedNotification(request) {
+  const subject = normalizeTitle(request.subject);
+  const unit = cleanText(request.unit, "your property");
+
+  return {
+    title: `${subject} Updated`,
+    message: `A management update was recorded for your request "${subject}" at ${unit}.`,
+  };
 }
 
 export default function handler(req, res) {
@@ -93,17 +134,19 @@ export default function handler(req, res) {
       const newRequest = {
         id: requestId,
         requestId,
-        ownerName: body.ownerName || body.name || "Owner",
-        unit: body.unit || body.property || "Not provided",
-        category: body.category || body.type || "General Request",
-        subject: body.subject || body.title || "Owner Request",
-        description:
-          body.description || body.message || "No description provided.",
-        priority: body.priority || "Normal",
-        status: body.status || "Submitted",
+        ownerName: cleanText(body.ownerName || body.name, "Owner"),
+        unit: cleanText(body.unit || body.property, "Not provided"),
+        category: cleanText(body.category || body.type, "General Request"),
+        subject: cleanText(body.subject || body.title, "Owner Request"),
+        description: cleanText(
+          body.description || body.message,
+          "No description provided."
+        ),
+        priority: cleanText(body.priority, "Normal"),
+        status: cleanText(body.status, "Submitted"),
         createdAt: nowISO(),
         updatedAt: nowISO(),
-        source: body.source || "Owner Portal",
+        source: cleanText(body.source, "Owner Portal"),
       };
 
       bosStore.requests.unshift(newRequest);
@@ -111,12 +154,14 @@ export default function handler(req, res) {
       createHistory({
         requestId,
         action: "Request Submitted",
-        details: `${newRequest.subject} was submitted by ${newRequest.ownerName}.`,
+        details: `${newRequest.ownerName} submitted "${newRequest.subject}" for ${newRequest.unit}. Category: ${newRequest.category}.`,
       });
 
+      const submittedAlert = buildSubmittedNotification(newRequest);
+
       createNotification({
-        title: "Request Submitted",
-        message: `Your request ${requestId} has been submitted and is pending review.`,
+        title: submittedAlert.title,
+        message: submittedAlert.message,
         requestId,
         type: "request_submitted",
       });
@@ -189,12 +234,18 @@ export default function handler(req, res) {
         createHistory({
           requestId: request.requestId,
           action: "Status Updated",
-          details: `Status changed from ${previousStatus} to ${body.status}.`,
+          details: `"${request.subject}" changed from ${previousStatus} to ${body.status}.`,
         });
 
+        const statusAlert = buildStatusNotification(
+          request,
+          previousStatus,
+          body.status
+        );
+
         createNotification({
-          title: "Status Updated",
-          message: `Your request ${request.requestId} status has been updated to "${body.status}".`,
+          title: statusAlert.title,
+          message: statusAlert.message,
           requestId: request.requestId,
           type: "status_updated",
         });
@@ -202,12 +253,14 @@ export default function handler(req, res) {
         createHistory({
           requestId: request.requestId,
           action: "Request Updated",
-          details: "Request information was updated by management.",
+          details: `Management updated "${request.subject}" for ${request.unit}.`,
         });
 
+        const updatedAlert = buildUpdatedNotification(request);
+
         createNotification({
-          title: "Request Updated",
-          message: `Your request ${request.requestId} has been updated by management.`,
+          title: updatedAlert.title,
+          message: updatedAlert.message,
           requestId: request.requestId,
           type: "request_updated",
         });
