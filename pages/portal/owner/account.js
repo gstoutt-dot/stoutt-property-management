@@ -52,7 +52,7 @@ export default function OwnerAccount() {
         {/* Top Navigation */}
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <Link href="/portal/owner" className="text-sm text-green-400 hover:text-green-300">
+            <Link href="/portal/owner" className="text-sm text-yellow-400 hover:text-yellow-300">
               ← Back to Owner Portal
             </Link>
             <h1 className="mt-3 text-4xl font-bold tracking-tight">My Account</h1>
@@ -62,10 +62,10 @@ export default function OwnerAccount() {
           </div>
 
           <div className="flex gap-3">
-            <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/80 hover:border-green-400 hover:text-white transition">
+            <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/80 hover:border-yellow-400 hover:text-white transition">
               Download Statement
             </button>
-            <button className="rounded-2xl bg-green-500 px-5 py-3 text-sm font-bold text-slate-950 hover:bg-green-400 transition">
+            <button className="rounded-2xl bg-yellow-500 px-5 py-3 text-sm font-bold text-slate-950 hover:bg-yellow-400 transition">
               Make Payment
             </button>
           </div>
@@ -77,13 +77,13 @@ export default function OwnerAccount() {
             <div className="lg:col-span-2">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.25em] text-green-400">Owner Account</p>
+                  <p className="text-sm uppercase tracking-[0.25em] text-yellow-400">Owner Account</p>
                   <h2 className="mt-3 text-3xl font-bold">{accountSummary.ownerName}</h2>
                   <p className="mt-2 text-white/60">{accountSummary.propertyAddress}</p>
                   <p className="mt-1 text-white/50">{accountSummary.association}</p>
                 </div>
 
-                <div className="rounded-full border border-green-400/30 bg-green-400/10 px-4 py-2 text-sm font-semibold text-green-300">
+                <div className="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-semibold text-yellow-300">
                   {accountSummary.accountStatus}
                 </div>
               </div>
@@ -91,7 +91,7 @@ export default function OwnerAccount() {
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
                   <p className="text-sm text-white/50">Current Balance</p>
-                  <p className="mt-2 text-3xl font-bold text-green-300">{accountSummary.balance}</p>
+                  <p className="mt-2 text-3xl font-bold text-yellow-300">{accountSummary.balance}</p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
@@ -111,7 +111,7 @@ export default function OwnerAccount() {
               <div className="mt-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <span className="text-white/60">Autopay</span>
-                  <span className="font-semibold text-green-300">{accountSummary.autopay}</span>
+                  <span className="font-semibold text-yellow-300">{accountSummary.autopay}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <span className="text-white/60">Payment Method</span>
@@ -122,7 +122,7 @@ export default function OwnerAccount() {
                   <span className="font-semibold">Email</span>
                 </div>
                 <div className="pt-2">
-                  <button className="w-full rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/80 hover:border-green-400 hover:text-white transition">
+                  <button className="w-full rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/80 hover:border-yellow-400 hover:text-white transition">
                     Manage Payment Settings
                   </button>
                 </div>
@@ -141,7 +141,7 @@ export default function OwnerAccount() {
                 <h2 className="text-2xl font-bold">Recent Ledger Activity</h2>
                 <p className="mt-1 text-sm text-white/50">Latest charges, payments, and account postings.</p>
               </div>
-              <button className="rounded-xl border border-white/10 px-4 py-2 text-sm text-white/70 hover:border-green-400 hover:text-white transition">
+              <button className="rounded-xl border border-white/10 px-4 py-2 text-sm text-white/70 hover:border-yellow-400 hover:text-white transition">
                 View All
               </button>
             </div>
@@ -163,11 +163,11 @@ export default function OwnerAccount() {
                       <td className="px-4 py-4 text-white/60">{item.date}</td>
                       <td className="px-4 py-4 font-medium">{item.description}</td>
                       <td className="px-4 py-4 text-white/60">{item.type}</td>
-                      <td className={`px-4 py-4 text-right font-semibold ${item.amount.includes("-") ? "text-green-300" : "text-white"}`}>
+                      <td className={`px-4 py-4 text-right font-semibold ${item.amount.includes("-") ? "text-yellow-300" : "text-white"}`}>
                         {item.amount}
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <span className="rounded-full border border-green-400/20 bg-green-400/10 px-3 py-1 text-xs font-semibold text-green-300">
+                        <span className="rounded-full border border-yellow-400/20 bg-yellow-400/10 px-3 py-1 text-xs font-semibold text-yellow-300">
                           {item.status}
                         </span>
                       </td>
@@ -184,22 +184,22 @@ export default function OwnerAccount() {
             <p className="mt-1 text-sm text-white/50">Common account tasks.</p>
 
             <div className="mt-6 space-y-3">
-              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-green-400 transition">
+              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-yellow-400 transition">
                 <p className="font-semibold">Make a Payment</p>
                 <p className="mt-1 text-sm text-white/50">Pay your assessment balance.</p>
               </button>
 
-              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-green-400 transition">
+              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-yellow-400 transition">
                 <p className="font-semibold">Set Up Autopay</p>
                 <p className="mt-1 text-sm text-white/50">Automate monthly payments.</p>
               </button>
 
-              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-green-400 transition">
+              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-yellow-400 transition">
                 <p className="font-semibold">Request Ledger Review</p>
                 <p className="mt-1 text-sm text-white/50">Ask management to review an item.</p>
               </button>
 
-              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-green-400 transition">
+              <button className="w-full rounded-2xl border border-white/10 bg-slate-900/60 p-4 text-left hover:border-yellow-400 transition">
                 <p className="font-semibold">Update Contact Info</p>
                 <p className="mt-1 text-sm text-white/50">Keep your owner profile current.</p>
               </button>
@@ -211,3 +211,4 @@ export default function OwnerAccount() {
     </div>
   );
 }
+
