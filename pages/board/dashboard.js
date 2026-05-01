@@ -1,6 +1,5 @@
 import Link from "next/link";
-import bosTheme from "../../../styles/bos-theme";
-
+import bosTheme from "../../styles/bos-theme";
 const boardItems = [
   {
     id: "SUB-9001",
