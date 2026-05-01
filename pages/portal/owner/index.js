@@ -25,6 +25,20 @@ const ownerModules = [
     label: "Open Items",
   },
   {
+    title: "Live Status",
+    description: "Track requests moving through the live SPM workflow.",
+    href: "/portal/owner/live-status",
+    stat: "Live",
+    label: "System Feed",
+  },
+  {
+    title: "Request History",
+    description: "View timeline history and audit trail for submitted requests.",
+    href: "/portal/owner/request-history",
+    stat: "Live",
+    label: "Audit Trail",
+  },
+  {
     title: "Violations",
     description: "Review notices, deadlines, and compliance updates.",
     href: "/portal/owner/violations",
@@ -101,6 +115,11 @@ const recentActivity = [
     time: "Today",
   },
   {
+    title: "Request timeline updated",
+    category: "Audit Trail",
+    time: "Today",
+  },
+  {
     title: "Architectural request under review",
     category: "ARC",
     time: "Apr 28, 2026",
@@ -127,7 +146,13 @@ export default function OwnerDashboard() {
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/portal/owner/live-status"
+              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/80 hover:border-yellow-400 hover:text-white transition"
+            >
+              Live Status
+            </Link>
             <Link
               href="/portal/owner/support"
               className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/80 hover:border-yellow-400 hover:text-white transition"
@@ -135,7 +160,7 @@ export default function OwnerDashboard() {
               Contact Management
             </Link>
             <Link
-              href="/portal/owner/requests"
+              href="/portal/owner/new-request"
               className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-bold text-slate-950 hover:bg-yellow-300 transition"
             >
               New Request
@@ -164,6 +189,36 @@ export default function OwnerDashboard() {
               <p className="mt-2 text-4xl font-bold text-yellow-100">2</p>
             </div>
           </div>
+        </div>
+
+        {/* Live System Strip */}
+        <div className="mb-8 grid gap-4 md:grid-cols-3">
+          <Link
+            href="/portal/owner/new-request"
+            className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 hover:border-yellow-400 hover:bg-white/[0.06] transition"
+          >
+            <p className="text-sm uppercase tracking-[0.2em] text-yellow-300">Step 1</p>
+            <h2 className="mt-3 text-xl font-bold">Submit Request</h2>
+            <p className="mt-2 text-sm text-white/55">Send an item directly into manager intake.</p>
+          </Link>
+
+          <Link
+            href="/portal/owner/live-status"
+            className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 hover:border-yellow-400 hover:bg-white/[0.06] transition"
+          >
+            <p className="text-sm uppercase tracking-[0.2em] text-yellow-300">Step 2</p>
+            <h2 className="mt-3 text-xl font-bold">Track Live Status</h2>
+            <p className="mt-2 text-sm text-white/55">See manager updates as the item moves forward.</p>
+          </Link>
+
+          <Link
+            href="/portal/owner/request-history"
+            className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 hover:border-yellow-400 hover:bg-white/[0.06] transition"
+          >
+            <p className="text-sm uppercase tracking-[0.2em] text-yellow-300">Step 3</p>
+            <h2 className="mt-3 text-xl font-bold">Review Timeline</h2>
+            <p className="mt-2 text-sm text-white/55">View the audit trail and status history.</p>
+          </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -219,13 +274,34 @@ export default function OwnerDashboard() {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+              <h2 className="text-2xl font-bold">Live Workflow</h2>
+              <p className="mt-2 text-sm text-white/60">
+                Track requests from submission to manager review, board routing, dispatch, and completion.
+              </p>
+              <div className="mt-5 grid gap-3">
+                <Link
+                  href="/portal/owner/live-status"
+                  className="block rounded-2xl bg-yellow-400 px-5 py-3 text-center text-sm font-bold text-slate-950 hover:bg-yellow-300 transition"
+                >
+                  Open Live Status
+                </Link>
+                <Link
+                  href="/portal/owner/request-history"
+                  className="block rounded-2xl border border-white/10 px-5 py-3 text-center text-sm font-semibold text-white/80 hover:border-yellow-400 hover:text-white transition"
+                >
+                  View Request History
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
               <h2 className="text-2xl font-bold">Need Help?</h2>
               <p className="mt-2 text-sm text-white/60">
                 Send a question to management or open a support ticket from the owner portal.
               </p>
               <Link
                 href="/portal/owner/support"
-                className="mt-5 block rounded-2xl bg-yellow-400 px-5 py-3 text-center text-sm font-bold text-slate-950 hover:bg-yellow-300 transition"
+                className="mt-5 block rounded-2xl border border-white/10 px-5 py-3 text-center text-sm font-semibold text-white/80 hover:border-yellow-400 hover:text-white transition"
               >
                 Open Support
               </Link>
@@ -237,3 +313,4 @@ export default function OwnerDashboard() {
     </div>
   );
 }
+
