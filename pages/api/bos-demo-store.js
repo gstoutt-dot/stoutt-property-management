@@ -63,12 +63,13 @@ function createNotification({ title, message, requestId, type = "system" }) {
   return notification;
 }
 
-function createHistory({ requestId, action, details }) {
+function createHistory({ requestId, action, details, managerNote = "" }) {
   const historyItem = {
     id: makeId("HIST"),
     requestId: requestId || null,
     action,
     details,
+    managerNote,
     createdAt: nowISO(),
   };
 
@@ -87,58 +88,64 @@ function buildSubmittedNotification(request) {
   };
 }
 
-function buildStatusNotification(request, previousStatus, newStatus) {
+function buildStatusNotification(request, previousStatus, newStatus, managerNote) {
   const subject = normalizeTitle(request.subject);
   const unit = cleanText(request.unit, "your property");
+  const noteText = cleanText(managerNote, "");
+
+  const noteSuffix = noteText ? ` Manager note: ${noteText}` : "";
 
   if (newStatus === "In Review") {
     return {
       title: `${subject} In Review`,
-      message: `Your request for "${subject}" at ${unit} is now in review by management.`,
+      message: `Your request for "${subject}" at ${unit} is now in review by management.${noteSuffix}`,
     };
   }
 
   if (newStatus === "Approved") {
     return {
       title: `${subject} Approved`,
-      message: `Your request for "${subject}" at ${unit} has been approved and is moving forward.`,
+      message: `Your request for "${subject}" at ${unit} has been approved and is moving forward.${noteSuffix}`,
     };
   }
 
   if (newStatus === "Work Scheduled") {
     return {
       title: `${subject} Work Scheduled`,
-      message: `Work has been scheduled for your request "${subject}" at ${unit}.`,
+      message: `Work has been scheduled for your request "${subject}" at ${unit}.${noteSuffix}`,
     };
   }
 
   if (newStatus === "Completed") {
     return {
       title: `${subject} Completed`,
-      message: `Your request for "${subject}" at ${unit} has been completed.`,
+      message: `Your request for "${subject}" at ${unit} has been completed.${noteSuffix}`,
     };
   }
 
   if (newStatus === "Denied") {
     return {
       title: `${subject} Denied`,
-      message: `Your request for "${subject}" at ${unit} has been denied. Please contact management for details.`,
+      message: `Your request for "${subject}" at ${unit} has been denied.${noteSuffix}`,
     };
   }
 
   return {
     title: `${subject} Status Updated`,
-    message: `Your request for "${subject}" at ${unit} changed from "${previousStatus}" to "${newStatus}".`,
+    message: `Your request for "${subject}" at ${unit} changed from "${previousStatus}" to "${newStatus}".${noteSuffix}`,
   };
 }
 
-function buildUpdatedNotification(request) {
+function buildUpdatedNotification(request, managerNote) {
   const subject = normalizeTitle(request.subject);
   const unit = cleanText(request.unit, "your property");
+  const noteText = cleanText(managerNote, "");
 
   return {
     title: `${subject} Updated`,
-    message: `A management update was recorded for your request "${subject}" at ${unit}.`,
+    message: noteText
+      ? `Management added an update to your request "${subject}" at ${unit}: ${noteText}`
+      : `A management update was recorded for your request "${subject}" at ${unit}.`,
   };
 }
 
@@ -242,6 +249,8 @@ export default function handler(req, res) {
         ),
         priority: cleanText(firstValue(body.priority, body.urgency), "Normal"),
         status: cleanText(firstValue(body.status), "Submitted"),
+        managerNote: "",
+        ownerVisibleNotes: [],
         source: cleanText(firstValue(body.source), "Owner Portal"),
         createdAt: nowISO(),
         updatedAt: nowISO(),
@@ -321,6 +330,10 @@ export default function handler(req, res) {
 
       const previousStatus = request.status;
       const updatedStatus = cleanText(firstValue(body.status), request.status);
+      const managerNote = cleanText(
+        firstValue(body.managerNote, body.note, body.updateNote),
+        ""
+      );
 
       const updatedSubject = cleanText(
         firstValue(
@@ -333,6 +346,16 @@ export default function handler(req, res) {
         request.subject
       );
 
+      const newOwnerVisibleNote = managerNote
+        ? {
+            id: makeId("NOTE"),
+            note: managerNote,
+            status: updatedStatus,
+            createdAt: nowISO(),
+            visibleToOwner: true,
+          }
+        : null;
+
       Object.assign(request, {
         ...request,
         ...body,
@@ -341,6 +364,10 @@ export default function handler(req, res) {
         subject: updatedSubject,
         title: updatedSubject,
         status: updatedStatus,
+        managerNote,
+        ownerVisibleNotes: newOwnerVisibleNote
+          ? [newOwnerVisibleNote, ...(request.ownerVisibleNotes || [])]
+          : request.ownerVisibleNotes || [],
         updatedAt: nowISO(),
       });
 
@@ -349,13 +376,15 @@ export default function handler(req, res) {
           requestId: request.requestId,
           action: "Status Updated",
           details: `"${request.subject}" changed from ${previousStatus} to ${updatedStatus}.`,
+          managerNote,
         });
 
         if (OWNER_VISIBLE_STATUSES.has(updatedStatus)) {
           const statusAlert = buildStatusNotification(
             request,
             previousStatus,
-            updatedStatus
+            updatedStatus,
+            managerNote
           );
 
           createNotification({
@@ -365,20 +394,27 @@ export default function handler(req, res) {
             type: "status_updated",
           });
         }
-      } else {
+      } else if (managerNote) {
         createHistory({
           requestId: request.requestId,
-          action: "Request Updated",
-          details: `Management updated "${request.subject}" for ${request.unit}.`,
+          action: "Manager Note Added",
+          details: `Management added a note to "${request.subject}".`,
+          managerNote,
         });
 
-        const updatedAlert = buildUpdatedNotification(request);
+        const updatedAlert = buildUpdatedNotification(request, managerNote);
 
         createNotification({
           title: updatedAlert.title,
           message: updatedAlert.message,
           requestId: request.requestId,
-          type: "request_updated",
+          type: "manager_note",
+        });
+      } else {
+        createHistory({
+          requestId: request.requestId,
+          action: "Request Updated",
+          details: `Management updated "${request.subject}" for ${request.unit}.`,
         });
       }
 
