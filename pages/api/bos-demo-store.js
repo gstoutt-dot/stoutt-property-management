@@ -10,6 +10,15 @@ if (!bosStore) {
   global.bosStore = bosStore;
 }
 
+const OWNER_VISIBLE_STATUSES = new Set([
+  "Submitted",
+  "In Review",
+  "Approved",
+  "Work Scheduled",
+  "Completed",
+  "Denied",
+]);
+
 function nowISO() {
   return new Date().toISOString();
 }
@@ -81,6 +90,41 @@ function buildSubmittedNotification(request) {
 function buildStatusNotification(request, previousStatus, newStatus) {
   const subject = normalizeTitle(request.subject);
   const unit = cleanText(request.unit, "your property");
+
+  if (newStatus === "In Review") {
+    return {
+      title: `${subject} In Review`,
+      message: `Your request for "${subject}" at ${unit} is now in review by management.`,
+    };
+  }
+
+  if (newStatus === "Approved") {
+    return {
+      title: `${subject} Approved`,
+      message: `Your request for "${subject}" at ${unit} has been approved and is moving forward.`,
+    };
+  }
+
+  if (newStatus === "Work Scheduled") {
+    return {
+      title: `${subject} Work Scheduled`,
+      message: `Work has been scheduled for your request "${subject}" at ${unit}.`,
+    };
+  }
+
+  if (newStatus === "Completed") {
+    return {
+      title: `${subject} Completed`,
+      message: `Your request for "${subject}" at ${unit} has been completed.`,
+    };
+  }
+
+  if (newStatus === "Denied") {
+    return {
+      title: `${subject} Denied`,
+      message: `Your request for "${subject}" at ${unit} has been denied. Please contact management for details.`,
+    };
+  }
 
   return {
     title: `${subject} Status Updated`,
@@ -276,7 +320,6 @@ export default function handler(req, res) {
       }
 
       const previousStatus = request.status;
-
       const updatedStatus = cleanText(firstValue(body.status), request.status);
 
       const updatedSubject = cleanText(
@@ -308,18 +351,20 @@ export default function handler(req, res) {
           details: `"${request.subject}" changed from ${previousStatus} to ${updatedStatus}.`,
         });
 
-        const statusAlert = buildStatusNotification(
-          request,
-          previousStatus,
-          updatedStatus
-        );
+        if (OWNER_VISIBLE_STATUSES.has(updatedStatus)) {
+          const statusAlert = buildStatusNotification(
+            request,
+            previousStatus,
+            updatedStatus
+          );
 
-        createNotification({
-          title: statusAlert.title,
-          message: statusAlert.message,
-          requestId: request.requestId,
-          type: "status_updated",
-        });
+          createNotification({
+            title: statusAlert.title,
+            message: statusAlert.message,
+            requestId: request.requestId,
+            type: "status_updated",
+          });
+        }
       } else {
         createHistory({
           requestId: request.requestId,
@@ -360,5 +405,4 @@ export default function handler(req, res) {
     });
   }
 }
-
 
