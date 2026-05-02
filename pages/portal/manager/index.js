@@ -22,6 +22,16 @@ export default function ManagerDashboard() {
     localStorage.setItem('bos_manager_workflow', JSON.stringify(nextWorkflow))
   }
 
+  function getStatusLabel(status) {
+    if (status === 'open') return 'Request received'
+    if (status === 'in_progress') return 'Management review'
+    if (status === 'board_review') return 'Board review if needed'
+    if (status === 'approved') return 'Approved / scheduled'
+    if (status === 'completed') return 'Completed'
+    if (status === 'rejected') return 'Rejected'
+    return 'Request received'
+  }
+
   function syncBoardDecisions(data) {
     const saved = JSON.parse(localStorage.getItem('bos_manager_workflow') || '{}')
 
@@ -79,7 +89,7 @@ export default function ManagerDashboard() {
   async function updateStatus(id, status) {
     await supabase.from('bos_actions').update({ status }).eq('id', id)
 
-    addTimeline(id, `Status changed to ${status.replace('_', ' ')}`)
+    addTimeline(id, getStatusLabel(status))
     fetchData()
   }
 
@@ -192,8 +202,8 @@ export default function ManagerDashboard() {
         <div className="mb-8 grid gap-4 md:grid-cols-7">
           {[
             ['all', 'Total'],
-            ['open', 'Open'],
-            ['in_progress', 'In Progress'],
+            ['open', 'Received'],
+            ['in_progress', 'Mgmt Review'],
             ['board_review', 'Board Review'],
             ['approved', 'Approved'],
             ['rejected', 'Rejected'],
@@ -241,7 +251,7 @@ export default function ManagerDashboard() {
                               statusStyles[item.status] || 'border-white/10 bg-white/5 text-slate-300'
                             }`}
                           >
-                            {String(item.status || 'open').replace('_', ' ')}
+                            {getStatusLabel(item.status)}
                           </span>
 
                           <span
@@ -315,33 +325,40 @@ export default function ManagerDashboard() {
                       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                         <h4 className="font-semibold">Workflow Controls</h4>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="mt-4 grid gap-2">
                           <button
                             onClick={() => updateStatus(item.id, 'open')}
-                            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+                            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm hover:bg-white/10"
                           >
-                            Reopen
+                            Request Received
                           </button>
 
                           <button
                             onClick={() => updateStatus(item.id, 'in_progress')}
-                            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm text-yellow-300 hover:bg-yellow-400/20"
+                            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-left text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
                           >
-                            Start
+                            Management Review
                           </button>
 
                           <button
                             onClick={() => updateStatus(item.id, 'board_review')}
-                            className="rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 py-2 text-sm text-purple-300 hover:bg-purple-400/20"
+                            className="rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 py-3 text-left text-sm font-medium text-purple-300 hover:bg-purple-400/20"
                           >
-                            Send to Board
+                            Board Review If Needed
+                          </button>
+
+                          <button
+                            onClick={() => updateStatus(item.id, 'approved')}
+                            className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-left text-sm font-medium text-emerald-300 hover:bg-emerald-500/20"
+                          >
+                            Approved / Scheduled
                           </button>
 
                           <button
                             onClick={() => updateStatus(item.id, 'completed')}
-                            className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-400/20"
+                            className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-left text-sm font-medium text-emerald-300 hover:bg-emerald-400/20"
                           >
-                            Complete
+                            Completed
                           </button>
                         </div>
 
