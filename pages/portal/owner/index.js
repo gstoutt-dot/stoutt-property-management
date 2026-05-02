@@ -1,381 +1,409 @@
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
-
-const STATUS_FLOW = [
-  "Request received",
-  "Management review",
-  "Board review if needed",
-  "Approved / scheduled",
-];
-
-function normalizeStatus(status) {
-  if (!status) return "Request received";
-
-  const value = String(status).toLowerCase();
-
-  if (value.includes("approved") || value.includes("scheduled") || value.includes("complete")) {
-    return "Approved / scheduled";
-  }
-
-  if (value.includes("board")) {
-    return "Board review if needed";
-  }
-
-  if (value.includes("manager") || value.includes("management") || value.includes("review")) {
-    return "Management review";
-  }
-
-  return "Request received";
-}
-
-function getStatusIndex(status) {
-  const normalized = normalizeStatus(status);
-  return STATUS_FLOW.indexOf(normalized);
-}
+import { useEffect, useMemo, useState } from 'react'
+import { supabase } from '../../../lib/supabaseClient'
 
 export default function OwnerPortal() {
-  const [requests, setRequests] = useState([]);
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
   const [form, setForm] = useState({
-    request_type: "Maintenance Request",
-    title: "",
-    description: "",
-    unit: "",
-    owner_name: "",
-  });
-  const [loading, setLoading] = useState(false);
-
-  async function loadRequests() {
-    if (!supabase) return;
-
-    const { data, error } = await supabase
-      .from("owner_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!error && data) {
-      setRequests(data);
-    }
-  }
+    request_type: 'maintenance',
+    title: '',
+    description: '',
+    priority: 'medium',
+  })
 
   useEffect(() => {
-    loadRequests();
-  }, []);
+    fetchItems()
+  }, [])
 
-  async function submitRequest(e) {
-    e.preventDefault();
-    setLoading(true);
+  async function fetchItems() {
+    setLoading(true)
 
-    const payload = {
-      request_type: form.request_type,
-      title: form.title,
-      description: form.description,
-      unit: form.unit,
-      owner_name: form.owner_name,
-      status: "Request received",
-      manager_note: "",
-      board_note: "",
-      created_at: new Date().toISOString(),
-    };
+    const { data, error } = await supabase
+      .from('bos_actions')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-    if (supabase) {
-      const { error } = await supabase.from("owner_requests").insert([payload]);
-
-      if (!error) {
-        setForm({
-          request_type: "Maintenance Request",
-          title: "",
-          description: "",
-          unit: "",
-          owner_name: "",
-        });
-        await loadRequests();
-      } else {
-        alert("Request could not be submitted. Please check Supabase.");
-      }
-    }
-
-    setLoading(false);
+    if (!error) setItems(data || [])
+    setLoading(false)
   }
 
-  const liveRequests = useMemo(() => requests || [], [requests]);
+  async function submitRequest(e) {
+    e.preventDefault()
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    if (!form.title.trim() || !form.description.trim()) {
+      setErrorMessage('Please enter both a title and description.')
+      return
+    }
+
+    setSubmitting(true)
+
+    const { error } = await supabase.from('bos_actions').insert([
+      {
+        request_type: form.request_type,
+        title: form.title.trim(),
+        description: form.description.trim(),
+        priority: form.priority,
+        status: 'open',
+        source: 'Owner Portal',
+      },
+    ])
+
+    if (error) {
+      setErrorMessage(error.message || 'Request could not be submitted.')
+      setSubmitting(false)
+      return
+    }
+
+    setForm({
+      request_type: 'maintenance',
+      title: '',
+      description: '',
+      priority: 'medium',
+    })
+
+    setSuccessMessage('Request submitted successfully.')
+    await fetchItems()
+    setSubmitting(false)
+  }
+
+  const visibleItems = useMemo(() => {
+    return items.filter((item) => item.status !== 'rejected')
+  }, [items])
+
+  const requestTypeLabels = {
+    maintenance: 'Maintenance Request',
+    architectural: 'Architectural Review',
+    amenity: 'Amenity Reservation',
+    financial: 'Financial / Account Request',
+    violation: 'Violation Question',
+    documents: 'Document Request',
+    general: 'General Request',
+  }
+
+  const statusCopy = {
+    open: 'Received',
+    in_progress: 'In Review',
+    board_review: 'Board Review',
+    approved: 'Approved',
+    completed: 'Completed',
+  }
+
+  function getProgress(status) {
+    if (status === 'open') return 20
+    if (status === 'in_progress') return 40
+    if (status === 'board_review') return 60
+    if (status === 'approved') return 80
+    if (status === 'completed') return 100
+    return 20
+  }
+
+  function getNextStep(item) {
+    if (item.status === 'completed') return 'No further action needed'
+    if (item.status === 'board_review') return 'Awaiting Board decision'
+    if (item.status === 'approved') return 'Management execution'
+    if (item.request_type === 'architectural') return 'Architectural review'
+    if (item.request_type === 'amenity') return 'Amenity scheduling review'
+    if (item.request_type === 'financial') return 'Account review'
+    if (item.request_type === 'documents') return 'Document review'
+    return 'Management review'
+  }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.18),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.12),transparent_35%)]" />
+    <div className="min-h-screen bg-[#020617] text-white">
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
+              Owner Request Portal
+            </div>
 
-      <header className="border-b border-white/10 bg-slate-950/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-lg font-semibold tracking-wide text-white">
-            Stoutt Property Management
-          </Link>
+            <h1 className="text-4xl font-semibold tracking-tight">
+              Request Status Center
+            </h1>
 
-          <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/" className="hover:text-yellow-300">
-              Home
-            </Link>
-            <Link href="/portal/manager" className="hover:text-yellow-300">
-              Manager Portal
-            </Link>
-            <Link href="/portal/board" className="hover:text-yellow-300">
-              Board Portal
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-10">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-300">
-            Owner Portal
-          </p>
-          <h1 className="max-w-4xl text-4xl font-bold tracking-tight text-white md:text-6xl">
-            Submit requests and track every step through management review.
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            Owners can submit requests, see live status updates, and review notes as the item moves
-            from intake to manager review, board review if needed, and final approval or scheduling.
-          </p>
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
-            <h2 className="text-2xl font-semibold text-white">Submit a Request</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
-              This request will enter the property manager intake queue first.
+            <p className="mt-3 max-w-2xl text-slate-400">
+              Submit a request and stay informed as it moves through management review, approval, and completion.
             </p>
+          </div>
 
-            <form onSubmit={submitRequest} className="mt-6 space-y-5">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-300">
-                  Request Type
-                </label>
-                <select
-                  value={form.request_type}
-                  onChange={(e) => setForm({ ...form, request_type: e.target.value })}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none ring-yellow-300/40 focus:ring-2"
-                >
-                  <option>Maintenance Request</option>
-                  <option>Clubhouse Rental</option>
-                  <option>Architectural Review</option>
-                  <option>Amenity Request</option>
-                  <option>Violation Question</option>
-                  <option>General Owner Request</option>
-                </select>
-              </div>
+          <button
+            onClick={fetchItems}
+            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+          >
+            Refresh Status
+          </button>
+        </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-300">
-                  Request Title
-                </label>
-                <input
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  required
-                  placeholder="Example: Pool light is out"
-                  className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 ring-yellow-300/40 focus:ring-2"
-                />
-              </div>
+        <div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6 shadow-2xl">
+          <div className="mb-5">
+            <h2 className="text-2xl font-semibold">Submit a Request</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Choose the request type so the system can route it to the proper workflow.
+            </p>
+          </div>
 
-              <div className="grid gap-5 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Owner Name
-                  </label>
-                  <input
-                    value={form.owner_name}
-                    onChange={(e) => setForm({ ...form, owner_name: e.target.value })}
-                    placeholder="Owner name"
-                    className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 ring-yellow-300/40 focus:ring-2"
-                  />
-                </div>
+          {errorMessage && (
+            <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">
+              {errorMessage}
+            </div>
+          )}
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Unit / Address
-                  </label>
-                  <input
-                    value={form.unit}
-                    onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                    placeholder="Unit 204"
-                    className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 ring-yellow-300/40 focus:ring-2"
-                  />
-                </div>
-              </div>
+          {successMessage && (
+            <div className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
+              {successMessage}
+            </div>
+          )}
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-300">
-                  Description
-                </label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  required
-                  rows={5}
-                  placeholder="Describe the request or issue..."
-                  className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 ring-yellow-300/40 focus:ring-2"
-                />
-              </div>
+          <form onSubmit={submitRequest} className="grid gap-4">
+            <select
+              value={form.request_type}
+              onChange={(e) => setForm({ ...form, request_type: e.target.value })}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+            >
+              <option value="maintenance">Maintenance Request</option>
+              <option value="architectural">Architectural Review</option>
+              <option value="amenity">Amenity Reservation</option>
+              <option value="financial">Financial / Account Request</option>
+              <option value="violation">Violation Question</option>
+              <option value="documents">Document Request</option>
+              <option value="general">General Request</option>
+            </select>
+
+            <input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Short request title"
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+            />
+
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Describe what you need help with..."
+              rows={4}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+            />
+
+            <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+              <select
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full rounded-2xl bg-yellow-300 px-5 py-4 font-semibold text-slate-950 shadow-lg shadow-yellow-300/20 transition hover:bg-yellow-200 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={submitting}
+                className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-6 py-3 text-sm font-medium text-yellow-300 transition hover:bg-yellow-400/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? "Submitting..." : "Submit Request"}
+                {submitting ? 'Submitting...' : 'Submit Request'}
               </button>
-            </form>
-          </section>
-
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-white">Live Owner Requests</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Each request keeps the full status path visible on the right side.
-                </p>
-              </div>
-
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-emerald-300">
-                Live
-              </span>
             </div>
+          </form>
+        </div>
 
-            <div className="mt-6 space-y-5">
-              {liveRequests.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-white/15 bg-slate-900/60 p-8 text-center">
-                  <p className="text-lg font-semibold text-white">No owner requests yet.</p>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Submit a request and it will appear here with its status tracker.
-                  </p>
-                </div>
-              ) : (
-                liveRequests.map((request) => {
-                  const activeIndex = getStatusIndex(request.status);
+        <div className="mb-8 grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-sm text-slate-400">Active Requests</div>
+            <div className="mt-2 text-3xl font-semibold">{visibleItems.length}</div>
+          </div>
 
-                  return (
-                    <article
-                      key={request.id}
-                      className="grid gap-6 rounded-3xl border border-white/10 bg-slate-900/70 p-5 md:grid-cols-[1fr_260px]"
-                    >
+          <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-5">
+            <div className="text-sm text-yellow-300">Service Visibility</div>
+            <div className="mt-2 text-xl font-semibold">Live Updates</div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-sm text-slate-400">Managed By</div>
+            <div className="mt-2 text-xl font-semibold">Stoutt Property Management</div>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl">
+          <div className="border-b border-white/10 px-6 py-5">
+            <h2 className="text-xl font-semibold">My Requests</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Simple visibility into what is happening and where things stand.
+            </p>
+          </div>
+
+          <div className="divide-y divide-white/10">
+            {loading && (
+              <div className="px-6 py-10 text-slate-400">
+                Loading request updates...
+              </div>
+            )}
+
+            {!loading && visibleItems.length === 0 && (
+              <div className="px-6 py-10 text-slate-400">
+                No active requests are currently visible.
+              </div>
+            )}
+
+            {!loading &&
+              visibleItems.map((item) => {
+                const progress = getProgress(item.status)
+                const ownerStatus = statusCopy[item.status] || 'Received'
+                const typeLabel =
+                  requestTypeLabels[item.request_type] || 'General Request'
+
+                return (
+                  <div key={item.id} className="px-6 py-6">
+                    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
                       <div>
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-yellow-300/10 px-3 py-1 text-xs font-semibold text-yellow-300">
-                            {request.request_type || "Owner Request"}
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          <span className="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-3 py-1 text-xs font-medium text-yellow-300">
+                            {ownerStatus}
                           </span>
 
-                          <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
-                            {normalizeStatus(request.status)}
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
+                            {typeLabel}
                           </span>
                         </div>
 
-                        <h3 className="text-xl font-semibold text-white">
-                          {request.title || "Untitled Request"}
+                        <h3 className="text-xl font-semibold">
+                          {item.title || 'Association Request'}
                         </h3>
 
-                        <p className="mt-3 text-sm leading-6 text-slate-300">
-                          {request.description || "No description provided."}
-                        </p>
-
-                        <div className="mt-5 grid gap-3 text-sm text-slate-400 md:grid-cols-2">
-                          <p>
-                            <span className="text-slate-500">Owner:</span>{" "}
-                            {request.owner_name || "Not provided"}
+                        {item.description && (
+                          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+                            {item.description}
                           </p>
-                          <p>
-                            <span className="text-slate-500">Unit:</span>{" "}
-                            {request.unit || "Not provided"}
-                          </p>
-                        </div>
-
-                        {request.manager_note && (
-                          <div className="mt-5 rounded-2xl border border-yellow-300/20 bg-yellow-300/10 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-widest text-yellow-300">
-                              Manager Note
-                            </p>
-                            <p className="mt-2 text-sm leading-6 text-slate-200">
-                              {request.manager_note}
-                            </p>
-                          </div>
                         )}
 
-                        {request.board_note && (
-                          <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">
-                              Board Note
-                            </p>
-                            <p className="mt-2 text-sm leading-6 text-slate-200">
-                              {request.board_note}
-                            </p>
+                        <div className="mt-5">
+                          <div className="mb-2 flex justify-between text-xs text-slate-400">
+                            <span>Progress</span>
+                            <span>{progress}%</span>
                           </div>
-                        )}
-                      </div>
 
-                      <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
-                        <p className="mb-5 text-sm font-semibold text-white">Status Flow</p>
+                          <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full rounded-full bg-yellow-400"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
 
-                        <div className="space-y-4">
-                          {STATUS_FLOW.map((step, index) => {
-                            const isComplete = index <= activeIndex;
+                        <div className="mt-5 grid gap-3 md:grid-cols-3">
+                          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                            <div className="text-xs uppercase tracking-wide text-slate-500">
+                              Request Type
+                            </div>
+                            <div className="mt-1 text-sm text-slate-300">
+                              {typeLabel}
+                            </div>
+                          </div>
 
-                            return (
-                              <div key={step} className="flex gap-3">
-                                <div className="flex flex-col items-center">
-                                  <div
-                                    className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-bold ${
-                                      isComplete
-                                        ? "border-yellow-300 bg-yellow-300 text-slate-950"
-                                        : "border-white/15 bg-white/5 text-slate-500"
-                                    }`}
-                                  >
-                                    {index + 1}
-                                  </div>
+                          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                            <div className="text-xs uppercase tracking-wide text-slate-500">
+                              Submitted
+                            </div>
+                            <div className="mt-1 text-sm text-slate-300">
+                              {item.created_at
+                                ? new Date(item.created_at).toLocaleDateString()
+                                : '—'}
+                            </div>
+                          </div>
 
-                                  {index < STATUS_FLOW.length - 1 && (
-                                    <div
-                                      className={`mt-2 h-8 w-px ${
-                                        index < activeIndex
-                                          ? "bg-yellow-300"
-                                          : "bg-white/10"
-                                      }`}
-                                    />
-                                  )}
-                                </div>
-
-                                <div>
-                                  <p
-                                    className={`text-sm font-medium ${
-                                      isComplete ? "text-white" : "text-slate-500"
-                                    }`}
-                                  >
-                                    {step}
-                                  </p>
-                                  <p className="mt-1 text-xs text-slate-500">
-                                    {isComplete ? "Active / completed" : "Pending"}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
+                          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                            <div className="text-xs uppercase tracking-wide text-slate-500">
+                              Next Step
+                            </div>
+                            <div className="mt-1 text-sm text-slate-300">
+                              {getNextStep(item)}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </article>
-                  );
-                })
-              )}
-            </div>
-          </section>
+
+                      <div className="rounded-2xl border border-yellow-400/20 bg-black/30 p-5">
+                        <div className="mb-5 flex items-center justify-between">
+                          <h4 className="font-semibold text-white">Status Timeline</h4>
+                          <span className="text-xs font-medium text-yellow-300">
+                            {progress}%
+                          </span>
+                        </div>
+
+                        <div className="space-y-0">
+                          <TimelineStep
+                            active
+                            complete={progress >= 20}
+                            label="Request received"
+                            isLast={false}
+                          />
+                          <TimelineStep
+                            active={progress >= 40}
+                            complete={progress >= 40}
+                            label="Management review"
+                            isLast={false}
+                          />
+                          <TimelineStep
+                            active={progress >= 60}
+                            complete={progress >= 60}
+                            label="Board review if needed"
+                            isLast={false}
+                          />
+                          <TimelineStep
+                            active={progress >= 80}
+                            complete={progress >= 80}
+                            label="Approved / scheduled"
+                            isLast={false}
+                          />
+                          <TimelineStep
+                            active={progress >= 100}
+                            complete={progress >= 100}
+                            label="Completed"
+                            isLast
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
         </div>
-      </section>
-    </main>
-  );
+      </div>
+    </div>
+  )
+}
+
+function TimelineStep({ active, complete, label, isLast }) {
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center">
+        <div
+          className={`h-4 w-4 rounded-full border ${
+            active
+              ? 'border-yellow-400 bg-yellow-400 shadow-[0_0_18px_rgba(250,204,21,0.45)]'
+              : 'border-white/20 bg-white/10'
+          }`}
+        />
+
+        {!isLast && (
+          <div
+            className={`h-8 w-px ${
+              complete ? 'bg-yellow-400' : 'bg-white/15'
+            }`}
+          />
+        )}
+      </div>
+
+      <div className={active ? 'pb-4 text-sm text-slate-200' : 'pb-4 text-sm text-slate-500'}>
+        {label}
+      </div>
+    </div>
+  )
 }
 
