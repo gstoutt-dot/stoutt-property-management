@@ -22,6 +22,43 @@ export default function ManagerDashboard() {
     localStorage.setItem('bos_manager_workflow', JSON.stringify(nextWorkflow))
   }
 
+  function syncBoardDecisions(data) {
+    const saved = JSON.parse(localStorage.getItem('bos_manager_workflow') || '{}')
+
+    data.forEach((item) => {
+      const currentTimeline = saved[item.id]?.timeline || []
+
+      if (
+        item.status === 'approved' &&
+        !currentTimeline.some((entry) => entry.text === 'Board approved request')
+      ) {
+        saved[item.id] = {
+          ...(saved[item.id] || {}),
+          timeline: [
+            { text: 'Board approved request', date: new Date().toLocaleString() },
+            ...currentTimeline,
+          ],
+        }
+      }
+
+      if (
+        item.status === 'rejected' &&
+        !currentTimeline.some((entry) => entry.text === 'Board rejected request')
+      ) {
+        saved[item.id] = {
+          ...(saved[item.id] || {}),
+          timeline: [
+            { text: 'Board rejected request', date: new Date().toLocaleString() },
+            ...currentTimeline,
+          ],
+        }
+      }
+    })
+
+    localStorage.setItem('bos_manager_workflow', JSON.stringify(saved))
+    setWorkflow(saved)
+  }
+
   async function fetchData() {
     setLoading(true)
 
@@ -30,18 +67,25 @@ export default function ManagerDashboard() {
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (!error) setItems(data || [])
+    if (!error) {
+      const safeData = data || []
+      setItems(safeData)
+      syncBoardDecisions(safeData)
+    }
+
     setLoading(false)
   }
 
   async function updateStatus(id, status) {
     await supabase.from('bos_actions').update({ status }).eq('id', id)
+
     addTimeline(id, `Status changed to ${status.replace('_', ' ')}`)
     fetchData()
   }
 
   function updateWorkflowField(id, field, value) {
     const current = workflow[id] || {}
+
     saveWorkflow({
       ...workflow,
       [id]: {
@@ -99,6 +143,8 @@ export default function ManagerDashboard() {
     open: items.filter((i) => i.status === 'open').length,
     in_progress: items.filter((i) => i.status === 'in_progress').length,
     board_review: items.filter((i) => i.status === 'board_review').length,
+    approved: items.filter((i) => i.status === 'approved').length,
+    rejected: items.filter((i) => i.status === 'rejected').length,
     completed: items.filter((i) => i.status === 'completed').length,
   }
 
@@ -106,6 +152,8 @@ export default function ManagerDashboard() {
     open: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
     in_progress: 'bg-yellow-400/10 text-yellow-300 border-yellow-400/30',
     board_review: 'bg-purple-400/10 text-purple-300 border-purple-400/30',
+    approved: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    rejected: 'bg-red-500/10 text-red-300 border-red-500/30',
     completed: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30',
   }
 
@@ -129,7 +177,7 @@ export default function ManagerDashboard() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-400">
-              Review, document, assign, and route items to the Board when approval is required.
+              Review, document, assign, and route items through the full BOS workflow.
             </p>
           </div>
 
@@ -141,12 +189,14 @@ export default function ManagerDashboard() {
           </button>
         </div>
 
-        <div className="mb-8 grid gap-4 md:grid-cols-5">
+        <div className="mb-8 grid gap-4 md:grid-cols-7">
           {[
             ['all', 'Total'],
             ['open', 'Open'],
             ['in_progress', 'In Progress'],
             ['board_review', 'Board Review'],
+            ['approved', 'Approved'],
+            ['rejected', 'Rejected'],
             ['completed', 'Completed'],
           ].map(([key, label]) => (
             <button
@@ -173,7 +223,9 @@ export default function ManagerDashboard() {
           </div>
 
           <div className="divide-y divide-white/10">
-            {loading && <div className="px-6 py-10 text-slate-400">Loading...</div>}
+            {loading && (
+              <div className="px-6 py-10 text-slate-400">Loading...</div>
+            )}
 
             {!loading &&
               filtered.map((item) => {
@@ -184,11 +236,19 @@ export default function ManagerDashboard() {
                     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
                       <div>
                         <div className="mb-3 flex flex-wrap gap-2">
-                          <span className={`rounded-full border px-3 py-1 text-xs ${statusStyles[item.status] || 'border-white/10'}`}>
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs ${
+                              statusStyles[item.status] || 'border-white/10 bg-white/5 text-slate-300'
+                            }`}
+                          >
                             {String(item.status || 'open').replace('_', ' ')}
                           </span>
 
-                          <span className={`rounded-full border px-3 py-1 text-xs ${priorityStyles[item.priority] || 'border-white/10'}`}>
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs ${
+                              priorityStyles[item.priority] || 'border-white/10 bg-white/5 text-slate-300'
+                            }`}
+                          >
                             {item.priority || 'normal'} priority
                           </span>
                         </div>
@@ -256,19 +316,31 @@ export default function ManagerDashboard() {
                         <h4 className="font-semibold">Workflow Controls</h4>
 
                         <div className="mt-4 flex flex-wrap gap-2">
-                          <button onClick={() => updateStatus(item.id, 'open')} className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10">
+                          <button
+                            onClick={() => updateStatus(item.id, 'open')}
+                            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+                          >
                             Reopen
                           </button>
 
-                          <button onClick={() => updateStatus(item.id, 'in_progress')} className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm text-yellow-300 hover:bg-yellow-400/20">
+                          <button
+                            onClick={() => updateStatus(item.id, 'in_progress')}
+                            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm text-yellow-300 hover:bg-yellow-400/20"
+                          >
                             Start
                           </button>
 
-                          <button onClick={() => updateStatus(item.id, 'board_review')} className="rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 py-2 text-sm text-purple-300 hover:bg-purple-400/20">
+                          <button
+                            onClick={() => updateStatus(item.id, 'board_review')}
+                            className="rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 py-2 text-sm text-purple-300 hover:bg-purple-400/20"
+                          >
                             Send to Board
                           </button>
 
-                          <button onClick={() => updateStatus(item.id, 'completed')} className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-400/20">
+                          <button
+                            onClick={() => updateStatus(item.id, 'completed')}
+                            className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-400/20"
+                          >
                             Complete
                           </button>
                         </div>
@@ -307,4 +379,3 @@ export default function ManagerDashboard() {
     </div>
   )
 }
-
