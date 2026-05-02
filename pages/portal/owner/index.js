@@ -6,6 +6,7 @@ export default function OwnerPortal() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
+    request_type: 'maintenance',
     title: '',
     description: '',
     priority: 'medium',
@@ -36,6 +37,7 @@ export default function OwnerPortal() {
 
     const { error } = await supabase.from('bos_actions').insert([
       {
+        request_type: form.request_type,
         title: form.title.trim(),
         description: form.description.trim(),
         priority: form.priority,
@@ -46,6 +48,7 @@ export default function OwnerPortal() {
 
     if (!error) {
       setForm({
+        request_type: 'maintenance',
         title: '',
         description: '',
         priority: 'medium',
@@ -60,6 +63,16 @@ export default function OwnerPortal() {
   const visibleItems = useMemo(() => {
     return items.filter((item) => item.status !== 'rejected')
   }, [items])
+
+  const requestTypeLabels = {
+    maintenance: 'Maintenance Request',
+    architectural: 'Architectural Review',
+    amenity: 'Amenity Reservation',
+    financial: 'Financial / Account Request',
+    violation: 'Violation Question',
+    documents: 'Document Request',
+    general: 'General Request',
+  }
 
   const statusCopy = {
     open: 'Received',
@@ -77,6 +90,16 @@ export default function OwnerPortal() {
     completed: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
   }
 
+  const typeStyles = {
+    maintenance: 'border-blue-400/30 bg-blue-400/10 text-blue-300',
+    architectural: 'border-purple-400/30 bg-purple-400/10 text-purple-300',
+    amenity: 'border-pink-400/30 bg-pink-400/10 text-pink-300',
+    financial: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
+    violation: 'border-red-400/30 bg-red-400/10 text-red-300',
+    documents: 'border-slate-400/30 bg-slate-400/10 text-slate-300',
+    general: 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300',
+  }
+
   function getProgress(status) {
     if (status === 'open') return 20
     if (status === 'in_progress') return 40
@@ -84,6 +107,17 @@ export default function OwnerPortal() {
     if (status === 'approved') return 80
     if (status === 'completed') return 100
     return 20
+  }
+
+  function getNextStep(item) {
+    if (item.status === 'completed') return 'No further action needed'
+    if (item.status === 'board_review') return 'Awaiting Board decision'
+    if (item.status === 'approved') return 'Management execution'
+    if (item.request_type === 'architectural') return 'Architectural review'
+    if (item.request_type === 'amenity') return 'Amenity scheduling review'
+    if (item.request_type === 'financial') return 'Account review'
+    if (item.request_type === 'documents') return 'Document review'
+    return 'Management review'
   }
 
   return (
@@ -117,15 +151,29 @@ export default function OwnerPortal() {
           <div className="mb-5">
             <h2 className="text-2xl font-semibold">Submit a Request</h2>
             <p className="mt-2 text-sm text-slate-400">
-              Send a maintenance, association, architectural, amenity, or general request directly to management.
+              Choose the request type so the system can route it to the proper workflow.
             </p>
           </div>
 
           <form onSubmit={submitRequest} className="grid gap-4">
+            <select
+              value={form.request_type}
+              onChange={(e) => setForm({ ...form, request_type: e.target.value })}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+            >
+              <option value="maintenance">Maintenance Request</option>
+              <option value="architectural">Architectural Review</option>
+              <option value="amenity">Amenity Reservation</option>
+              <option value="financial">Financial / Account Request</option>
+              <option value="violation">Violation Question</option>
+              <option value="documents">Document Request</option>
+              <option value="general">General Request</option>
+            </select>
+
             <input
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Request title"
+              placeholder="Short request title"
               className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
             />
 
@@ -201,6 +249,8 @@ export default function OwnerPortal() {
               visibleItems.map((item) => {
                 const progress = getProgress(item.status)
                 const ownerStatus = statusCopy[item.status] || 'Received'
+                const typeLabel =
+                  requestTypeLabels[item.request_type] || 'General Request'
 
                 return (
                   <div key={item.id} className="px-6 py-6">
@@ -217,8 +267,13 @@ export default function OwnerPortal() {
                             {ownerStatus}
                           </span>
 
-                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
-                            Request received
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                              typeStyles[item.request_type] ||
+                              'border-yellow-400/30 bg-yellow-400/10 text-yellow-300'
+                            }`}
+                          >
+                            {typeLabel}
                           </span>
                         </div>
 
@@ -249,10 +304,10 @@ export default function OwnerPortal() {
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
                           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
                             <div className="text-xs uppercase tracking-wide text-slate-500">
-                              Current Stage
+                              Request Type
                             </div>
                             <div className="mt-1 text-sm text-slate-300">
-                              {ownerStatus}
+                              {typeLabel}
                             </div>
                           </div>
 
@@ -272,13 +327,7 @@ export default function OwnerPortal() {
                               Next Step
                             </div>
                             <div className="mt-1 text-sm text-slate-300">
-                              {item.status === 'completed'
-                                ? 'No further action needed'
-                                : item.status === 'board_review'
-                                ? 'Awaiting Board decision'
-                                : item.status === 'approved'
-                                ? 'Management execution'
-                                : 'Management review'}
+                              {getNextStep(item)}
                             </div>
                           </div>
                         </div>
