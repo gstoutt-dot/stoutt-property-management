@@ -5,6 +5,9 @@ export default function OwnerPortal() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
   const [form, setForm] = useState({
     request_type: 'maintenance',
     title: '',
@@ -30,8 +33,13 @@ export default function OwnerPortal() {
 
   async function submitRequest(e) {
     e.preventDefault()
+    setErrorMessage('')
+    setSuccessMessage('')
 
-    if (!form.title.trim() || !form.description.trim()) return
+    if (!form.title.trim() || !form.description.trim()) {
+      setErrorMessage('Please enter both a title and description.')
+      return
+    }
 
     setSubmitting(true)
 
@@ -46,17 +54,21 @@ export default function OwnerPortal() {
       },
     ])
 
-    if (!error) {
-      setForm({
-        request_type: 'maintenance',
-        title: '',
-        description: '',
-        priority: 'medium',
-      })
-
-      fetchItems()
+    if (error) {
+      setErrorMessage(error.message || 'Request could not be submitted.')
+      setSubmitting(false)
+      return
     }
 
+    setForm({
+      request_type: 'maintenance',
+      title: '',
+      description: '',
+      priority: 'medium',
+    })
+
+    setSuccessMessage('Request submitted successfully.')
+    await fetchItems()
     setSubmitting(false)
   }
 
@@ -82,24 +94,6 @@ export default function OwnerPortal() {
     completed: 'Completed',
   }
 
-  const statusStyles = {
-    open: 'border-amber-400/30 bg-amber-400/10 text-amber-300',
-    in_progress: 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300',
-    board_review: 'border-purple-400/30 bg-purple-400/10 text-purple-300',
-    approved: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
-    completed: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-  }
-
-  const typeStyles = {
-    maintenance: 'border-blue-400/30 bg-blue-400/10 text-blue-300',
-    architectural: 'border-purple-400/30 bg-purple-400/10 text-purple-300',
-    amenity: 'border-pink-400/30 bg-pink-400/10 text-pink-300',
-    financial: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
-    violation: 'border-red-400/30 bg-red-400/10 text-red-300',
-    documents: 'border-slate-400/30 bg-slate-400/10 text-slate-300',
-    general: 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300',
-  }
-
   function getProgress(status) {
     if (status === 'open') return 20
     if (status === 'in_progress') return 40
@@ -123,7 +117,6 @@ export default function OwnerPortal() {
   return (
     <div className="min-h-screen bg-[#020617] text-white">
       <div className="mx-auto max-w-6xl px-6 py-8">
-
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
@@ -154,6 +147,18 @@ export default function OwnerPortal() {
               Choose the request type so the system can route it to the proper workflow.
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">
+              {errorMessage}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
+              {successMessage}
+            </div>
+          )}
 
           <form onSubmit={submitRequest} className="grid gap-4">
             <select
@@ -255,24 +260,13 @@ export default function OwnerPortal() {
                 return (
                   <div key={item.id} className="px-6 py-6">
                     <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-
                       <div>
                         <div className="mb-3 flex flex-wrap gap-2">
-                          <span
-                            className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                              statusStyles[item.status] ||
-                              'border-white/10 bg-white/5 text-slate-300'
-                            }`}
-                          >
+                          <span className="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-3 py-1 text-xs font-medium text-yellow-300">
                             {ownerStatus}
                           </span>
 
-                          <span
-                            className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                              typeStyles[item.request_type] ||
-                              'border-yellow-400/30 bg-yellow-400/10 text-yellow-300'
-                            }`}
-                          >
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
                             {typeLabel}
                           </span>
                         </div>
@@ -344,14 +338,12 @@ export default function OwnerPortal() {
                           <TimelineStep active={progress >= 100} label="Completed" />
                         </div>
                       </div>
-
                     </div>
                   </div>
                 )
               })}
           </div>
         </div>
-
       </div>
     </div>
   )
