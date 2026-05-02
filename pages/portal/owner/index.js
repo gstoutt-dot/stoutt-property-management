@@ -1,6 +1,97 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 
+const REQUEST_TYPES_THAT_MAY_NEED_BOARD = ['architectural', 'amenity', 'financial']
+
+const statusFlow = [
+  {
+    key: 'open',
+    label: 'Request received',
+    progress: 20,
+  },
+  {
+    key: 'in_progress',
+    label: 'Management review',
+    progress: 40,
+  },
+  {
+    key: 'board_review',
+    label: 'Board review if needed',
+    progress: 60,
+  },
+  {
+    key: 'approved',
+    label: 'Approved / scheduled',
+    progress: 80,
+  },
+  {
+    key: 'completed',
+    label: 'Completed',
+    progress: 100,
+  },
+]
+
+function normalizeStatus(status) {
+  if (!status) return 'open'
+
+  const cleanStatus = String(status).toLowerCase().trim()
+
+  if (cleanStatus === 'open') return 'open'
+  if (cleanStatus === 'in_progress') return 'in_progress'
+  if (cleanStatus === 'board_review') return 'board_review'
+  if (cleanStatus === 'approved') return 'approved'
+  if (cleanStatus === 'completed') return 'completed'
+
+  if (cleanStatus.includes('complete')) return 'completed'
+  if (cleanStatus.includes('approved') || cleanStatus.includes('scheduled')) return 'approved'
+  if (cleanStatus.includes('board')) return 'board_review'
+  if (cleanStatus.includes('review') || cleanStatus.includes('progress')) return 'in_progress'
+
+  return 'open'
+}
+
+function needsBoardReview(item) {
+  if (!item) return false
+
+  const status = normalizeStatus(item.status)
+
+  if (status === 'board_review') return true
+  if (item.board_note) return true
+  if (item.board_required === true) return true
+  if (item.requires_board_review === true) return true
+
+  return REQUEST_TYPES_THAT_MAY_NEED_BOARD.includes(item.request_type)
+}
+
+function getFlowForItem(item) {
+  if (needsBoardReview(item)) return statusFlow
+
+  return statusFlow.filter((step) => step.key !== 'board_review')
+}
+
+function getCurrentStepIndex(item) {
+  const status = normalizeStatus(item.status)
+  const flow = getFlowForItem(item)
+
+  const index = flow.findIndex((step) => step.key === status)
+
+  if (index >= 0) return index
+
+  if (status === 'board_review') {
+    return flow.findIndex((step) => step.key === 'approved')
+  }
+
+  return 0
+}
+
+function getProgress(item) {
+  const flow = getFlowForItem(item)
+  const currentIndex = getCurrentStepIndex(item)
+  const currentStep = flow[currentIndex]
+
+  return currentStep?.progress || 20
+}
+
 export default function OwnerPortal() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -94,23 +185,19 @@ export default function OwnerPortal() {
     completed: 'Completed',
   }
 
-  function getProgress(status) {
-    if (status === 'open') return 20
-    if (status === 'in_progress') return 40
-    if (status === 'board_review') return 60
-    if (status === 'approved') return 80
-    if (status === 'completed') return 100
-    return 20
-  }
-
   function getNextStep(item) {
-    if (item.status === 'completed') return 'No further action needed'
-    if (item.status === 'board_review') return 'Awaiting Board decision'
-    if (item.status === 'approved') return 'Management execution'
+    const status = normalizeStatus(item.status)
+
+    if (status === 'completed') return 'No further action needed'
+    if (status === 'board_review') return 'Awaiting Board decision'
+    if (status === 'approved') return 'Management execution'
+    if (status === 'in_progress' && needsBoardReview(item)) return 'Board review if needed'
+    if (status === 'in_progress') return 'Approval or scheduling'
     if (item.request_type === 'architectural') return 'Architectural review'
     if (item.request_type === 'amenity') return 'Amenity scheduling review'
     if (item.request_type === 'financial') return 'Account review'
     if (item.request_type === 'documents') return 'Document review'
+
     return 'Management review'
   }
 
@@ -252,8 +339,11 @@ export default function OwnerPortal() {
 
             {!loading &&
               visibleItems.map((item) => {
-                const progress = getProgress(item.status)
-                const ownerStatus = statusCopy[item.status] || 'Received'
+                const normalizedStatus = normalizeStatus(item.status)
+                const flow = getFlowForItem(item)
+                const currentIndex = getCurrentStepIndex(item)
+                const progress = getProgress(item)
+                const ownerStatus = statusCopy[normalizedStatus] || 'Received'
                 const typeLabel =
                   requestTypeLabels[item.request_type] || 'General Request'
 
@@ -336,37 +426,22 @@ export default function OwnerPortal() {
                         </div>
 
                         <div className="space-y-0">
-                          <TimelineStep
-                            active
-                            complete={progress >= 20}
-                            label="Request received"
-                            isLast={false}
-                          />
-                          <TimelineStep
-                            active={progress >= 40}
-                            complete={progress >= 40}
-                            label="Management review"
-                            isLast={false}
-                          />
-                          <TimelineStep
-                            active={progress >= 60}
-                            complete={progress >= 60}
-                            label="Board review if needed"
-                            isLast={false}
-                          />
-                          <TimelineStep
-                            active={progress >= 80}
-                            complete={progress >= 80}
-                            label="Approved / scheduled"
-                            isLast={false}
-                          />
-                          <TimelineStep
-                            active={progress >= 100}
-                            complete={progress >= 100}
-                            label="Completed"
-                            isLast
-                          />
+                          {flow.map((step, index) => (
+                            <TimelineStep
+                              key={step.key}
+                              active={index <= currentIndex}
+                              complete={index < currentIndex}
+                              label={step.label}
+                              isLast={index === flow.length - 1}
+                            />
+                          ))}
                         </div>
+
+                        {!needsBoardReview(item) && (
+                          <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-5 text-slate-400">
+                            Board review is not required for this request unless management escalates it.
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
