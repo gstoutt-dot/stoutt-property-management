@@ -32,21 +32,115 @@ export default function ManagerDashboard() {
     return 'Request received'
   }
 
+  function syncBoardDecisions(data) {
+    const saved = JSON.parse(localStorage.getItem('bos_manager_workflow') || '{}')
+
+    data.forEach((item) => {
+      const currentTimeline = saved[item.id]?.timeline || []
+
+      if (
+        item.status === 'approved' &&
+        !currentTimeline.some((entry) => entry.text === 'Board approved request')
+      ) {
+        saved[item.id] = {
+          ...(saved[item.id] || {}),
+          timeline: [
+            { text: 'Board approved request', date: new Date().toLocaleString() },
+            ...currentTimeline,
+          ],
+        }
+      }
+
+      if (
+        item.status === 'rejected' &&
+        !currentTimeline.some((entry) => entry.text === 'Board rejected request')
+      ) {
+        saved[item.id] = {
+          ...(saved[item.id] || {}),
+          timeline: [
+            { text: 'Board rejected request', date: new Date().toLocaleString() },
+            ...currentTimeline,
+          ],
+        }
+      }
+    })
+
+    localStorage.setItem('bos_manager_workflow', JSON.stringify(saved))
+    setWorkflow(saved)
+  }
+
   async function fetchData() {
     setLoading(true)
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('bos_actions')
       .select('*')
       .order('created_at', { ascending: false })
 
-    setItems(data || [])
+    if (!error) {
+      const safeData = data || []
+      setItems(safeData)
+      syncBoardDecisions(safeData)
+    }
+
     setLoading(false)
   }
 
   async function updateStatus(id, status) {
     await supabase.from('bos_actions').update({ status }).eq('id', id)
+
+    addTimeline(id, getStatusLabel(status))
     fetchData()
+  }
+
+  function updateWorkflowField(id, field, value) {
+    const current = workflow[id] || {}
+
+    saveWorkflow({
+      ...workflow,
+      [id]: {
+        ...current,
+        [field]: value,
+      },
+    })
+  }
+
+  function addTimeline(id, text) {
+    const current = workflow[id] || {}
+
+    saveWorkflow({
+      ...workflow,
+      [id]: {
+        ...current,
+        timeline: [
+          { text, date: new Date().toLocaleString() },
+          ...(current.timeline || []),
+        ],
+      },
+    })
+  }
+
+  function addNote(id) {
+    const current = workflow[id] || {}
+    const noteText = current.pendingNote
+
+    if (!noteText || !noteText.trim()) return
+
+    saveWorkflow({
+      ...workflow,
+      [id]: {
+        ...current,
+        pendingNote: '',
+        notes: [
+          { text: noteText.trim(), date: new Date().toLocaleString() },
+          ...(current.notes || []),
+        ],
+        timeline: [
+          { text: 'Manager note added', date: new Date().toLocaleString() },
+          ...(current.timeline || []),
+        ],
+      },
+    })
   }
 
   const filtered = useMemo(() => {
@@ -54,130 +148,299 @@ export default function ManagerDashboard() {
     return items.filter((item) => item.status === filter)
   }, [items, filter])
 
+  const counts = {
+    all: items.length,
+    open: items.filter((i) => i.status === 'open').length,
+    in_progress: items.filter((i) => i.status === 'in_progress').length,
+    board_review: items.filter((i) => i.status === 'board_review').length,
+    approved: items.filter((i) => i.status === 'approved').length,
+    rejected: items.filter((i) => i.status === 'rejected').length,
+    completed: items.filter((i) => i.status === 'completed').length,
+  }
+
+  const statusStyles = {
+    open: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
+    in_progress: 'bg-yellow-400/10 text-yellow-300 border-yellow-400/30',
+    board_review: 'bg-purple-400/10 text-purple-300 border-purple-400/30',
+    approved: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    rejected: 'bg-red-500/10 text-red-300 border-red-500/30',
+    completed: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30',
+  }
+
+  const priorityStyles = {
+    high: 'bg-red-400/10 text-red-300 border-red-400/30',
+    medium: 'bg-orange-400/10 text-orange-300 border-orange-400/30',
+    low: 'bg-slate-400/10 text-slate-300 border-slate-400/30',
+  }
+
   return (
     <div className="min-h-screen bg-[#020617] text-white">
       <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
+              BOS Manager Intake Layer
+            </div>
 
-        <h1 className="text-4xl font-semibold mb-8">
-          Manager Command Center
-        </h1>
+            <h1 className="text-4xl font-semibold tracking-tight">
+              Manager Command Center
+            </h1>
 
-        <div className="space-y-6">
-          {loading && <div>Loading...</div>}
+            <p className="mt-3 max-w-2xl text-slate-400">
+              Review, document, assign, and route items through the full BOS workflow.
+            </p>
+          </div>
 
-          {!loading &&
-            filtered.map((item) => (
-              <div
-                key={item.id}
-                className="grid lg:grid-cols-[1fr_360px] gap-6 border border-white/10 p-6 rounded-2xl"
-              >
-                {/* LEFT SIDE */}
-                <div>
-                  <h3 className="text-xl font-semibold">
-                    {item.title}
-                  </h3>
+          <button
+            onClick={fetchData}
+            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+          >
+            Refresh Live Data
+          </button>
+        </div>
 
-                  <p className="text-slate-400 mt-2">
-                    {item.description}
-                  </p>
+        <div className="mb-8 grid gap-4 md:grid-cols-7">
+          {[
+            ['all', 'Total'],
+            ['open', 'Received'],
+            ['in_progress', 'Mgmt Review'],
+            ['board_review', 'Board Review'],
+            ['approved', 'Approved'],
+            ['rejected', 'Rejected'],
+            ['completed', 'Completed'],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`rounded-2xl border p-5 text-left transition ${
+                filter === key
+                  ? 'border-yellow-400/40 bg-yellow-400/10 shadow-xl shadow-yellow-900/20'
+                  : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07]'
+              }`}
+            >
+              <div className="text-sm text-slate-400">{label}</div>
+              <div className="mt-2 text-3xl font-semibold">{counts[key]}</div>
+            </button>
+          ))}
+        </div>
 
-                  {/* CORE INFO */}
-                  <div className="mt-5 grid md:grid-cols-2 gap-4 text-sm">
+        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl">
+          <div className="border-b border-white/10 px-6 py-5">
+            <h2 className="text-xl font-semibold">Live Intake Queue</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Showing {filtered.length} item{filtered.length === 1 ? '' : 's'}
+            </p>
+          </div>
 
-                    <Info label="Association" value={item.association_name} />
-                    <Info label="Owner" value={item.owner_name} />
-                    <Info label="Address / Unit" value={item.property_address} />
-                    <Info label="Phone" value={item.owner_phone} />
-                    <Info label="Best Contact Time" value={item.best_contact_time} />
+          <div className="divide-y divide-white/10">
+            {loading && (
+              <div className="px-6 py-10 text-slate-400">Loading...</div>
+            )}
 
-                    {/* CONDITIONAL AMENITY */}
-                    {item.request_type === 'amenity' && (
-                      <>
-                        <Info label="Amenity" value={item.amenity_selected} />
-                        <Info
-                          label="Reservation Date"
-                          value={
-                            item.amenity_date
-                              ? new Date(item.amenity_date).toLocaleDateString()
-                              : null
-                          }
-                        />
-                      </>
-                    )}
-                  </div>
+            {!loading &&
+              filtered.map((item) => {
+                const wf = workflow[item.id] || {}
 
-                  {/* STATUS */}
-                  <div className="mt-6">
-                    <div className="text-xs text-slate-400 mb-2">
-                      Status
+                return (
+                  <div key={item.id} className="px-6 py-6 transition hover:bg-white/[0.03]">
+                    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+                      <div>
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs ${
+                              statusStyles[item.status] || 'border-white/10 bg-white/5 text-slate-300'
+                            }`}
+                          >
+                            {getStatusLabel(item.status)}
+                          </span>
+
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs ${
+                              priorityStyles[item.priority] || 'border-white/10 bg-white/5 text-slate-300'
+                            }`}
+                          >
+                            {item.priority || 'normal'} priority
+                          </span>
+
+                          {item.association_name && (
+                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+                              {item.association_name}
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-xl font-semibold">
+                          {item.title || 'Untitled Request'}
+                        </h3>
+
+                        {item.description && (
+                          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+                            {item.description}
+                          </p>
+                        )}
+
+                        <div className="mt-5 grid gap-3 md:grid-cols-3">
+                          <InfoBox label="Association" value={item.association_name || '—'} />
+                          <InfoBox label="Owner" value={item.owner_name || '—'} />
+                          <InfoBox label="Phone" value={item.owner_phone || '—'} />
+                          <InfoBox label="Address / Unit" value={item.property_address || '—'} />
+                          <InfoBox label="Best Contact Time" value={item.best_contact_time || '—'} />
+                          <InfoBox
+                            label="Submitted"
+                            value={
+                              item.created_at
+                                ? new Date(item.created_at).toLocaleDateString()
+                                : 'No date'
+                            }
+                          />
+
+                          {item.request_type === 'amenity' && (
+                            <>
+                              <InfoBox label="Amenity Chosen" value={item.amenity_selected || '—'} />
+                              <InfoBox
+                                label="Amenity Date"
+                                value={
+                                  item.amenity_date
+                                    ? new Date(item.amenity_date).toLocaleDateString()
+                                    : '—'
+                                }
+                              />
+                            </>
+                          )}
+                        </div>
+
+                        <div className="mt-5 grid gap-3 md:grid-cols-3">
+                          <input
+                            value={wf.vendor || ''}
+                            onChange={(e) => updateWorkflowField(item.id, 'vendor', e.target.value)}
+                            placeholder="Assign vendor"
+                            className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+                          />
+
+                          <input
+                            type="date"
+                            value={wf.dueDate || ''}
+                            onChange={(e) => updateWorkflowField(item.id, 'dueDate', e.target.value)}
+                            className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+                          />
+
+                          <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
+                            Manager follow-up
+                          </div>
+                        </div>
+
+                        <div className="mt-5">
+                          <textarea
+                            value={wf.pendingNote || ''}
+                            onChange={(e) => updateWorkflowField(item.id, 'pendingNote', e.target.value)}
+                            placeholder="Add manager note..."
+                            rows={3}
+                            className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+                          />
+
+                          <button
+                            onClick={() => addNote(item.id)}
+                            className="mt-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+                          >
+                            Save Note
+                          </button>
+                        </div>
+
+                        {wf.notes && wf.notes.length > 0 && (
+                          <div className="mt-5 space-y-3">
+                            {wf.notes.map((note, index) => (
+                              <div key={index} className="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <div className="text-sm text-slate-300">{note.text}</div>
+                                <div className="mt-2 text-xs text-slate-500">{note.date}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                        <h4 className="font-semibold">Workflow Controls</h4>
+
+                        <div className="mt-4 grid gap-2">
+                          <button
+                            onClick={() => updateStatus(item.id, 'open')}
+                            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm hover:bg-white/10"
+                          >
+                            Request Received
+                          </button>
+
+                          <button
+                            onClick={() => updateStatus(item.id, 'in_progress')}
+                            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-left text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+                          >
+                            Management Review
+                          </button>
+
+                          <button
+                            onClick={() => updateStatus(item.id, 'board_review')}
+                            className="rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 py-3 text-left text-sm font-medium text-purple-300 hover:bg-purple-400/20"
+                          >
+                            Board Review If Needed
+                          </button>
+
+                          <button
+                            onClick={() => updateStatus(item.id, 'approved')}
+                            className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-left text-sm font-medium text-emerald-300 hover:bg-emerald-500/20"
+                          >
+                            Approved / Scheduled
+                          </button>
+
+                          <button
+                            onClick={() => updateStatus(item.id, 'completed')}
+                            className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-left text-sm font-medium text-emerald-300 hover:bg-emerald-400/20"
+                          >
+                            Completed
+                          </button>
+                        </div>
+
+                        <div className="mt-6 border-t border-white/10 pt-5">
+                          <h4 className="font-semibold">Activity Timeline</h4>
+
+                          <div className="mt-4 space-y-4">
+                            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                              <div className="text-sm text-slate-300">Request received</div>
+                              <div className="mt-1 text-xs text-slate-500">
+                                {item.created_at ? new Date(item.created_at).toLocaleString() : '—'}
+                              </div>
+                            </div>
+
+                            {(wf.timeline || []).map((entry, index) => (
+                              <div key={index} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                                <div className="text-sm text-slate-300">{entry.text}</div>
+                                <div className="mt-1 text-xs text-slate-500">{entry.date}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="inline-block px-3 py-1 rounded-full bg-yellow-400/10 text-yellow-300 text-xs">
-                      {getStatusLabel(item.status)}
-                    </div>
                   </div>
-                </div>
+                )
+              })}
 
-                {/* RIGHT SIDE CONTROLS */}
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                  <h4 className="font-semibold mb-4">
-                    Workflow Controls
-                  </h4>
-
-                  <div className="grid gap-2">
-
-                    <button
-                      onClick={() => updateStatus(item.id, 'open')}
-                      className="btn"
-                    >
-                      Request Received
-                    </button>
-
-                    <button
-                      onClick={() => updateStatus(item.id, 'in_progress')}
-                      className="btn-yellow"
-                    >
-                      Management Review
-                    </button>
-
-                    <button
-                      onClick={() => updateStatus(item.id, 'board_review')}
-                      className="btn-purple"
-                    >
-                      Board Review
-                    </button>
-
-                    <button
-                      onClick={() => updateStatus(item.id, 'approved')}
-                      className="btn-green"
-                    >
-                      Approved / Scheduled
-                    </button>
-
-                    <button
-                      onClick={() => updateStatus(item.id, 'completed')}
-                      className="btn-green"
-                    >
-                      Completed
-                    </button>
-
-                  </div>
-                </div>
-              </div>
-            ))}
+            {!loading && filtered.length === 0 && (
+              <div className="px-6 py-10 text-slate-400">No items found.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function Info({ label, value }) {
+function InfoBox({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-      <div className="text-xs text-slate-500 uppercase">
+      <div className="text-xs uppercase tracking-wide text-slate-500">
         {label}
       </div>
-      <div className="text-sm text-slate-300 mt-1">
-        {value || '—'}
+      <div className="mt-1 text-sm text-slate-300">
+        {value}
       </div>
     </div>
   )
