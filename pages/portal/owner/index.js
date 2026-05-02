@@ -112,8 +112,11 @@ ${form.access_notes || 'None provided'}
   }
 
   const visibleItems = useMemo(() => {
-    return items.filter((item) => item.status !== 'rejected')
-  }, [items])
+  return items.filter((item) => {
+    const hiddenStatuses = ['rejected', 'cancelled', 'deleted']
+    return !hiddenStatuses.includes(item.status)
+  })
+}, [items])
 
   const requestTypeLabels = {
     maintenance: 'Maintenance Request',
