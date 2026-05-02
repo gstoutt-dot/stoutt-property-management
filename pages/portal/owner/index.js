@@ -4,6 +4,12 @@ import { supabase } from '../../../lib/supabaseClient'
 export default function OwnerPortal() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    priority: 'medium',
+  })
 
   useEffect(() => {
     fetchItems()
@@ -19,6 +25,36 @@ export default function OwnerPortal() {
 
     if (!error) setItems(data || [])
     setLoading(false)
+  }
+
+  async function submitRequest(e) {
+    e.preventDefault()
+
+    if (!form.title.trim() || !form.description.trim()) return
+
+    setSubmitting(true)
+
+    const { error } = await supabase.from('bos_actions').insert([
+      {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        priority: form.priority,
+        status: 'open',
+        source: 'Owner Portal',
+      },
+    ])
+
+    if (!error) {
+      setForm({
+        title: '',
+        description: '',
+        priority: 'medium',
+      })
+
+      fetchItems()
+    }
+
+    setSubmitting(false)
   }
 
   const visibleItems = useMemo(() => {
@@ -65,7 +101,7 @@ export default function OwnerPortal() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-400">
-              Stay informed as your association request moves through review, approval, and completion.
+              Submit a request and stay informed as it moves through management review, approval, and completion.
             </p>
           </div>
 
@@ -75,6 +111,52 @@ export default function OwnerPortal() {
           >
             Refresh Status
           </button>
+        </div>
+
+        <div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6 shadow-2xl">
+          <div className="mb-5">
+            <h2 className="text-2xl font-semibold">Submit a Request</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Send a maintenance, association, architectural, amenity, or general request directly to management.
+            </p>
+          </div>
+
+          <form onSubmit={submitRequest} className="grid gap-4">
+            <input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Request title"
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+            />
+
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Describe what you need help with..."
+              rows={4}
+              className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+            />
+
+            <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+              <select
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-6 py-3 text-sm font-medium text-yellow-300 transition hover:bg-yellow-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </form>
         </div>
 
         <div className="mb-8 grid gap-4 md:grid-cols-3">
