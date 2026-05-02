@@ -115,11 +115,15 @@ export default function OwnerPortal() {
   }
 
   function fullAddress(profile) {
-    if (!profile) return ''
-    return [profile.property_address, profile.city, profile.state, profile.zip_code]
-      .filter(Boolean)
-      .join(', ')
-  }
+  if (!profile) return ''
+
+  const street = profile.streetAddress || ''
+  const city = profile.city || ''
+  const state = profile.state || ''
+  const zip = profile.zip || ''
+
+  return [street, city, state, zip].filter(Boolean).join(', ')
+}
 
   async function submitRequest(e) {
     e.preventDefault()
