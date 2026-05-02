@@ -13,6 +13,12 @@ export default function OwnerPortal() {
     title: '',
     description: '',
     priority: 'medium',
+    maintenance_category: 'plumbing',
+    maintenance_location: '',
+    access_permission: 'yes',
+    preferred_time: 'anytime',
+    impact_level: 'normal',
+    access_notes: '',
   })
 
   useEffect(() => {
@@ -31,6 +37,28 @@ export default function OwnerPortal() {
     setLoading(false)
   }
 
+  function buildDescription() {
+    if (form.request_type !== 'maintenance') {
+      return form.description.trim()
+    }
+
+    return `
+MAINTENANCE MODULE DETAILS
+
+Category: ${form.maintenance_category}
+Location: ${form.maintenance_location || 'Not provided'}
+Impact Level: ${form.impact_level}
+Permission to Enter: ${form.access_permission}
+Preferred Service Time: ${form.preferred_time}
+
+Owner Description:
+${form.description.trim()}
+
+Access Notes:
+${form.access_notes || 'None provided'}
+    `.trim()
+  }
+
   async function submitRequest(e) {
     e.preventDefault()
     setErrorMessage('')
@@ -41,13 +69,18 @@ export default function OwnerPortal() {
       return
     }
 
+    if (form.request_type === 'maintenance' && !form.maintenance_location.trim()) {
+      setErrorMessage('Please enter the maintenance location.')
+      return
+    }
+
     setSubmitting(true)
 
     const { error } = await supabase.from('bos_actions').insert([
       {
         request_type: form.request_type,
         title: form.title.trim(),
-        description: form.description.trim(),
+        description: buildDescription(),
         priority: form.priority,
         status: 'open',
         source: 'Owner Portal',
@@ -65,9 +98,15 @@ export default function OwnerPortal() {
       title: '',
       description: '',
       priority: 'medium',
+      maintenance_category: 'plumbing',
+      maintenance_location: '',
+      access_permission: 'yes',
+      preferred_time: 'anytime',
+      impact_level: 'normal',
+      access_notes: '',
     })
 
-    setSuccessMessage('Request submitted successfully.')
+    setSuccessMessage('Maintenance request submitted successfully.')
     await fetchItems()
     setSubmitting(false)
   }
@@ -107,12 +146,15 @@ export default function OwnerPortal() {
     if (item.status === 'completed') return 'No further action needed'
     if (item.status === 'board_review') return 'Awaiting Board decision'
     if (item.status === 'approved') return 'Management execution'
+    if (item.request_type === 'maintenance') return 'Maintenance intake review'
     if (item.request_type === 'architectural') return 'Architectural review'
     if (item.request_type === 'amenity') return 'Amenity scheduling review'
     if (item.request_type === 'financial') return 'Account review'
     if (item.request_type === 'documents') return 'Document review'
     return 'Management review'
   }
+
+  const isMaintenance = form.request_type === 'maintenance'
 
   return (
     <div className="min-h-screen bg-[#020617] text-white">
@@ -144,7 +186,7 @@ export default function OwnerPortal() {
           <div className="mb-5">
             <h2 className="text-2xl font-semibold">Submit a Request</h2>
             <p className="mt-2 text-sm text-slate-400">
-              Choose the request type so the system can route it to the proper workflow.
+              Maintenance requests now collect location, access, impact, and scheduling details for better routing.
             </p>
           </div>
 
@@ -175,17 +217,112 @@ export default function OwnerPortal() {
               <option value="general">General Request</option>
             </select>
 
+            {isMaintenance && (
+              <div className="rounded-2xl border border-yellow-400/20 bg-black/20 p-5">
+                <div className="mb-4 flex flex-col gap-1">
+                  <h3 className="text-lg font-semibold text-yellow-300">
+                    Maintenance Details
+                  </h3>
+                  <p className="text-sm text-slate-400">
+                    These details help management determine urgency, access, and vendor routing.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <select
+                    value={form.maintenance_category}
+                    onChange={(e) =>
+                      setForm({ ...form, maintenance_category: e.target.value })
+                    }
+                    className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+                  >
+                    <option value="plumbing">Plumbing</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="hvac">HVAC / Air Conditioning</option>
+                    <option value="pool">Pool / Amenity Area</option>
+                    <option value="landscaping">Landscaping</option>
+                    <option value="gate_access">Gate / Access Control</option>
+                    <option value="lighting">Lighting</option>
+                    <option value="general_repair">General Repair</option>
+                  </select>
+
+                  <input
+                    value={form.maintenance_location}
+                    onChange={(e) =>
+                      setForm({ ...form, maintenance_location: e.target.value })
+                    }
+                    placeholder="Location: unit, building, clubhouse, pool, gate..."
+                    className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+                  />
+
+                  <select
+                    value={form.impact_level}
+                    onChange={(e) =>
+                      setForm({ ...form, impact_level: e.target.value })
+                    }
+                    className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+                  >
+                    <option value="normal">Normal Impact</option>
+                    <option value="inconvenience">Inconvenience</option>
+                    <option value="safety">Safety Concern</option>
+                    <option value="water_damage">Possible Water Damage</option>
+                    <option value="urgent">Urgent / Time Sensitive</option>
+                  </select>
+
+                  <select
+                    value={form.access_permission}
+                    onChange={(e) =>
+                      setForm({ ...form, access_permission: e.target.value })
+                    }
+                    className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+                  >
+                    <option value="yes">Permission to Enter: Yes</option>
+                    <option value="call_first">Call First</option>
+                    <option value="no">Permission to Enter: No</option>
+                    <option value="common_area">Common Area / No Unit Access Needed</option>
+                  </select>
+
+                  <select
+                    value={form.preferred_time}
+                    onChange={(e) =>
+                      setForm({ ...form, preferred_time: e.target.value })
+                    }
+                    className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+                  >
+                    <option value="anytime">Anytime</option>
+                    <option value="morning">Morning Preferred</option>
+                    <option value="afternoon">Afternoon Preferred</option>
+                    <option value="weekday">Weekday Preferred</option>
+                    <option value="call_to_schedule">Call to Schedule</option>
+                  </select>
+
+                  <input
+                    value={form.access_notes}
+                    onChange={(e) =>
+                      setForm({ ...form, access_notes: e.target.value })
+                    }
+                    placeholder="Access notes, gate code, pets, special instructions..."
+                    className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+                  />
+                </div>
+              </div>
+            )}
+
             <input
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Short request title"
+              placeholder={isMaintenance ? 'Example: Pool light is out' : 'Short request title'}
               className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
             />
 
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Describe what you need help with..."
+              placeholder={
+                isMaintenance
+                  ? 'Describe the maintenance issue in detail...'
+                  : 'Describe what you need help with...'
+              }
               rows={4}
               className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
             />
@@ -219,8 +356,8 @@ export default function OwnerPortal() {
           </div>
 
           <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-5">
-            <div className="text-sm text-yellow-300">Service Visibility</div>
-            <div className="mt-2 text-xl font-semibold">Live Updates</div>
+            <div className="text-sm text-yellow-300">Maintenance Module</div>
+            <div className="mt-2 text-xl font-semibold">Enhanced Intake</div>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
@@ -276,7 +413,7 @@ export default function OwnerPortal() {
                         </h3>
 
                         {item.description && (
-                          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+                          <p className="mt-2 max-w-3xl whitespace-pre-line text-sm leading-6 text-slate-400">
                             {item.description}
                           </p>
                         )}
