@@ -88,7 +88,6 @@ export default function ManagerDashboard() {
 
   async function updateStatus(id, status) {
     await supabase.from('bos_actions').update({ status }).eq('id', id)
-
     addTimeline(id, getStatusLabel(status))
     fetchData()
   }
@@ -143,6 +142,51 @@ export default function ManagerDashboard() {
     })
   }
 
+  async function saveVendor(item) {
+    const wf = workflow[item.id] || {}
+
+    await supabase
+      .from('bos_actions')
+      .update({
+        vendor_name: wf.vendor_name ?? item.vendor_name ?? '',
+        vendor_phone: wf.vendor_phone ?? item.vendor_phone ?? '',
+        vendor_email: wf.vendor_email ?? item.vendor_email ?? '',
+        dispatch_note: wf.dispatch_note ?? item.dispatch_note ?? '',
+      })
+      .eq('id', item.id)
+
+    addTimeline(item.id, 'Vendor details saved')
+    fetchData()
+  }
+
+  async function dispatchVendor(item) {
+    const wf = workflow[item.id] || {}
+
+    const vendorName = wf.vendor_name ?? item.vendor_name
+    const vendorPhone = wf.vendor_phone ?? item.vendor_phone
+    const vendorEmail = wf.vendor_email ?? item.vendor_email
+    const dispatchNote = wf.dispatch_note ?? item.dispatch_note
+
+    if (!vendorName || !vendorPhone) {
+      alert('Please enter at least vendor name and vendor phone before dispatching.')
+      return
+    }
+
+    await supabase
+      .from('bos_actions')
+      .update({
+        vendor_name: vendorName,
+        vendor_phone: vendorPhone,
+        vendor_email: vendorEmail || '',
+        dispatch_note: dispatchNote || '',
+        dispatched_at: new Date().toISOString(),
+      })
+      .eq('id', item.id)
+
+    addTimeline(item.id, 'Dispatched to vendor')
+    fetchData()
+  }
+
   const filtered = useMemo(() => {
     if (filter === 'all') return items
     return items.filter((item) => item.status === filter)
@@ -173,8 +217,11 @@ export default function ManagerDashboard() {
     low: 'bg-slate-400/10 text-slate-300 border-slate-400/30',
   }
 
+  const inputClass =
+    'rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40'
+
   return (
-    <div className="min-h-screen bg-[#020617] text-white">
+    <div className="min-h-screen bg-[#020617] pb-24 text-white md:pb-0">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -187,13 +234,13 @@ export default function ManagerDashboard() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-400">
-              Review, document, assign, and route items through the full BOS workflow.
+              Review, document, assign, dispatch vendors, and route items through the full BOS workflow.
             </p>
           </div>
 
           <button
             onClick={fetchData}
-            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+            className="hidden rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20 md:block"
           >
             Refresh Live Data
           </button>
@@ -240,6 +287,10 @@ export default function ManagerDashboard() {
             {!loading &&
               filtered.map((item) => {
                 const wf = workflow[item.id] || {}
+                const vendorName = wf.vendor_name ?? item.vendor_name ?? ''
+                const vendorPhone = wf.vendor_phone ?? item.vendor_phone ?? ''
+                const vendorEmail = wf.vendor_email ?? item.vendor_email ?? ''
+                const dispatchNote = wf.dispatch_note ?? item.dispatch_note ?? ''
 
                 return (
                   <div key={item.id} className="px-6 py-6 transition hover:bg-white/[0.03]">
@@ -282,7 +333,18 @@ export default function ManagerDashboard() {
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
                           <InfoBox label="Association" value={item.association_name || '—'} />
                           <InfoBox label="Owner" value={item.owner_name || '—'} />
-                          <InfoBox label="Phone" value={item.owner_phone || '—'} />
+                          <InfoBox
+                            label="Owner Phone"
+                            value={
+                              item.owner_phone ? (
+                                <a href={`tel:${item.owner_phone}`} className="text-yellow-300 hover:underline">
+                                  {item.owner_phone}
+                                </a>
+                              ) : (
+                                '—'
+                              )
+                            }
+                          />
                           <InfoBox label="Address / Unit" value={item.property_address || '—'} />
                           <InfoBox label="Best Contact Time" value={item.best_contact_time || '—'} />
                           <InfoBox
@@ -309,19 +371,105 @@ export default function ManagerDashboard() {
                           )}
                         </div>
 
+                        <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.05] p-5">
+                          <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                            <div>
+                              <h4 className="font-semibold text-white">Vendor Dispatch</h4>
+                              <p className="mt-1 text-sm text-slate-400">
+                                Assign the preferred vendor and dispatch the request when ready.
+                              </p>
+                            </div>
+
+                            {item.dispatched_at && (
+                              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+                                Dispatched
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid gap-3 md:grid-cols-3">
+                            <input
+                              value={vendorName}
+                              onChange={(e) => updateWorkflowField(item.id, 'vendor_name', e.target.value)}
+                              placeholder="Vendor name"
+                              className={inputClass}
+                            />
+
+                            <input
+                              value={vendorPhone}
+                              onChange={(e) => updateWorkflowField(item.id, 'vendor_phone', e.target.value)}
+                              placeholder="Vendor phone"
+                              className={inputClass}
+                            />
+
+                            <input
+                              value={vendorEmail}
+                              onChange={(e) => updateWorkflowField(item.id, 'vendor_email', e.target.value)}
+                              placeholder="Vendor email"
+                              className={inputClass}
+                            />
+                          </div>
+
+                          <textarea
+                            value={dispatchNote}
+                            onChange={(e) => updateWorkflowField(item.id, 'dispatch_note', e.target.value)}
+                            placeholder="Dispatch note for vendor..."
+                            rows={3}
+                            className={`${inputClass} mt-3 w-full`}
+                          />
+
+                          <div className="mt-4 grid gap-3 md:grid-cols-3">
+                            <button
+                              onClick={() => saveVendor(item)}
+                              className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
+                            >
+                              Save Vendor
+                            </button>
+
+                            {vendorPhone ? (
+                              <a
+                                href={`tel:${vendorPhone}`}
+                                className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-center text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+                              >
+                                Call Vendor
+                              </a>
+                            ) : (
+                              <button
+                                disabled
+                                className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-500"
+                              >
+                                Call Vendor
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => dispatchVendor(item)}
+                              className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-300 hover:bg-emerald-400/20"
+                            >
+                              Dispatch to Vendor
+                            </button>
+                          </div>
+
+                          {item.dispatched_at && (
+                            <div className="mt-3 text-xs text-slate-400">
+                              Dispatched: {new Date(item.dispatched_at).toLocaleString()}
+                            </div>
+                          )}
+                        </div>
+
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
                           <input
                             value={wf.vendor || ''}
                             onChange={(e) => updateWorkflowField(item.id, 'vendor', e.target.value)}
-                            placeholder="Assign vendor"
-                            className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
+                            placeholder="Internal assignment"
+                            className={inputClass}
                           />
 
                           <input
                             type="date"
                             value={wf.dueDate || ''}
                             onChange={(e) => updateWorkflowField(item.id, 'dueDate', e.target.value)}
-                            className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/40"
+                            className={inputClass}
                           />
 
                           <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
@@ -428,6 +576,15 @@ export default function ManagerDashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#020617]/95 p-3 backdrop-blur md:hidden">
+        <button
+          onClick={fetchData}
+          className="w-full rounded-xl border border-yellow-400/30 bg-yellow-400 px-5 py-4 text-sm font-semibold text-slate-950"
+        >
+          Refresh Live Data
+        </button>
       </div>
     </div>
   )
