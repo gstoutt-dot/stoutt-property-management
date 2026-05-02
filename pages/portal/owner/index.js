@@ -126,21 +126,29 @@ ${form.access_notes || 'None provided'}
   }
 
   const statusCopy = {
-    open: 'Received',
-    in_progress: 'In Review',
-    board_review: 'Board Review',
-    approved: 'Approved',
-    completed: 'Completed',
-  }
+  open: 'Received',
+  in_progress: 'Management Review',
+  board_review: 'Board Review',
+  board_in_review: 'Board Review',
+  accepted: 'Board Approved',
+  approved: 'Approved',
+  started: 'Work Started',
+  manager_started: 'Work Started',
+  completed: 'Completed',
+}
 
   function getProgress(status) {
-    if (status === 'open') return 20
-    if (status === 'in_progress') return 40
-    if (status === 'board_review') return 60
-    if (status === 'approved') return 80
-    if (status === 'completed') return 100
-    return 20
-  }
+  if (status === 'open') return 20
+  if (status === 'in_progress') return 40
+  if (status === 'board_review') return 60
+  if (status === 'board_in_review') return 60
+  if (status === 'accepted') return 80
+  if (status === 'approved') return 80
+  if (status === 'started') return 90
+  if (status === 'manager_started') return 90
+  if (status === 'completed') return 100
+  return 20
+}
 
   function getNextStep(item) {
     if (item.status === 'completed') return 'No further action needed'
