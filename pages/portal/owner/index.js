@@ -1,9 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 
-const DEMO_OWNER_EMAIL = 'demo.owner1@stouttpm.com'
-
 const REQUEST_TYPES_THAT_MAY_NEED_BOARD = ['architectural', 'amenity', 'financial']
+
+const DEMO_OWNER_PROFILE = {
+  associationName: 'Royal Palm Villas HOA',
+  ownerName: 'Michael Bennett',
+  streetAddress: '1842 Palm Ridge Drive',
+  city: 'Hollywood',
+  state: 'FL',
+  zip: '33021',
+  phone: '(954) 555-0148',
+  email: 'demo.owner1@stouttpm.com',
+  unitNumber: '',
+}
 
 const statusFlow = [
   { key: 'open', label: 'Request received', progress: 20 },
@@ -64,9 +74,9 @@ function getProgress(item) {
 
 export default function OwnerPortal() {
   const [items, setItems] = useState([])
-  const [ownerProfile, setOwnerProfile] = useState(null)
+  const [ownerProfile, setOwnerProfile] = useState(DEMO_OWNER_PROFILE)
   const [loading, setLoading] = useState(true)
-  const [profileLoading, setProfileLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -89,15 +99,7 @@ export default function OwnerPortal() {
   async function fetchOwnerProfile() {
     setProfileLoading(true)
 
-    const { data, error } = await supabase
-      .from('owner_profiles')
-      .select('*')
-      .eq('user_email', DEMO_OWNER_EMAIL)
-      .single()
-
-    if (!error && data) {
-      setOwnerProfile(data)
-    }
+    setOwnerProfile(DEMO_OWNER_PROFILE)
 
     setProfileLoading(false)
   }
@@ -114,26 +116,20 @@ export default function OwnerPortal() {
     setLoading(false)
   }
 
-  async function fetchOwnerProfile() {
-  setProfileLoading(true)
+  function fullAddress(profile) {
+    if (!profile) return ''
 
-  setOwnerProfile({
-    associationName: 'Royal Palm Villas HOA',
-    ownerName: 'Michael Bennett',
-    streetAddress: '1842 Palm Ridge Drive',
-    city: 'Hollywood',
-    state: 'FL',
-    zip: '33021',
-    phone: '(954) 555-0148',
-    email: 'demo.owner1@stouttpm.com',
-    unitNumber: '',
-  })
+    const address = [
+      profile.streetAddress,
+      profile.city,
+      profile.state,
+      profile.zip,
+    ]
+      .filter(Boolean)
+      .join(', ')
 
-  setProfileLoading(false)
-}
-
-  setProfileLoading(false)
-}
+    return profile.unitNumber ? `${address} | Unit ${profile.unitNumber}` : address
+  }
 
   async function submitRequest(e) {
     e.preventDefault()
@@ -168,16 +164,15 @@ export default function OwnerPortal() {
         title: form.title.trim(),
         description: form.description.trim(),
         priority: form.priority,
-        association_name: ownerProfile.association_name,
-        owner_name: ownerProfile.owner_name,
-        owner_email: ownerProfile.user_email,
+        association_name: ownerProfile.associationName,
+        owner_name: ownerProfile.ownerName,
+        owner_email: ownerProfile.email,
         property_address: fullAddress(ownerProfile),
-        owner_phone: ownerProfile.owner_phone,
+        owner_phone: ownerProfile.phone,
         best_contact_time: form.best_contact_time.trim(),
         amenity_selected:
           form.request_type === 'amenity' ? form.amenity_selected.trim() : '',
-        amenity_date:
-          form.request_type === 'amenity' ? form.amenity_date : null,
+        amenity_date: form.request_type === 'amenity' ? form.amenity_date : null,
         status: 'open',
         source: 'Owner Portal',
       },
@@ -315,10 +310,10 @@ export default function OwnerPortal() {
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
-                  <ProfileCard label="Association" value={ownerProfile?.association_name} />
-                  <ProfileCard label="Owner Name" value={ownerProfile?.owner_name} />
-                  <ProfileCard label="Email" value={ownerProfile?.user_email} />
-                  <ProfileCard label="Phone" value={ownerProfile?.owner_phone} />
+                  <ProfileCard label="Association" value={ownerProfile?.associationName} />
+                  <ProfileCard label="Owner Name" value={ownerProfile?.ownerName} />
+                  <ProfileCard label="Email" value={ownerProfile?.email} />
+                  <ProfileCard label="Phone" value={ownerProfile?.phone} />
                   <ProfileCard label="Property Address" value={fullAddress(ownerProfile)} wide />
                 </div>
               )}
