@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 
-const REQUEST_TYPES_THAT_MAY_NEED_BOARD = ['architectural', 'amenity', 'financial']
+const DEMO_OWNER_EMAIL = 'demo.owner1@stouttpm.com'
 
-const ASSOCIATIONS = [
-  'Sunset Lakes HOA',
-  'Palm Grove Condominium',
-  'Oceanview Towers',
-  'Lakeside Village',
-  'Custom / Other',
-]
+const REQUEST_TYPES_THAT_MAY_NEED_BOARD = ['architectural', 'amenity', 'financial']
 
 const statusFlow = [
   { key: 'open', label: 'Request received', progress: 20 },
@@ -21,7 +15,6 @@ const statusFlow = [
 
 function normalizeStatus(status) {
   if (!status) return 'open'
-
   const cleanStatus = String(status).toLowerCase().trim()
 
   if (cleanStatus === 'open') return 'open'
@@ -59,24 +52,21 @@ function getFlowForItem(item) {
 function getCurrentStepIndex(item) {
   const status = normalizeStatus(item.status)
   const flow = getFlowForItem(item)
-
   const index = flow.findIndex((step) => step.key === status)
-  if (index >= 0) return index
-
-  return 0
+  return index >= 0 ? index : 0
 }
 
 function getProgress(item) {
   const flow = getFlowForItem(item)
   const currentIndex = getCurrentStepIndex(item)
-  const currentStep = flow[currentIndex]
-
-  return currentStep?.progress || 20
+  return flow[currentIndex]?.progress || 20
 }
 
 export default function OwnerPortal() {
   const [items, setItems] = useState([])
+  const [ownerProfile, setOwnerProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -86,16 +76,31 @@ export default function OwnerPortal() {
     title: '',
     description: '',
     priority: 'medium',
-    association_name: '',
-    owner_name: '',
-    property_address: '',
-    owner_phone: '',
     best_contact_time: '',
+    amenity_selected: '',
+    amenity_date: '',
   })
 
   useEffect(() => {
+    fetchOwnerProfile()
     fetchItems()
   }, [])
+
+  async function fetchOwnerProfile() {
+    setProfileLoading(true)
+
+    const { data, error } = await supabase
+      .from('owner_profiles')
+      .select('*')
+      .eq('user_email', DEMO_OWNER_EMAIL)
+      .single()
+
+    if (!error && data) {
+      setOwnerProfile(data)
+    }
+
+    setProfileLoading(false)
+  }
 
   async function fetchItems() {
     setLoading(true)
@@ -109,33 +114,35 @@ export default function OwnerPortal() {
     setLoading(false)
   }
 
+  function fullAddress(profile) {
+    if (!profile) return ''
+    return [profile.property_address, profile.city, profile.state, profile.zip_code]
+      .filter(Boolean)
+      .join(', ')
+  }
+
   async function submitRequest(e) {
     e.preventDefault()
     setErrorMessage('')
     setSuccessMessage('')
 
-    if (!form.association_name.trim()) {
-      setErrorMessage('Please select the association.')
-      return
-    }
-
-    if (!form.owner_name.trim()) {
-      setErrorMessage('Please enter the owner name.')
-      return
-    }
-
-    if (!form.property_address.trim()) {
-      setErrorMessage('Please enter the property address.')
-      return
-    }
-
-    if (!form.owner_phone.trim()) {
-      setErrorMessage('Please enter a phone number.')
+    if (!ownerProfile) {
+      setErrorMessage('Owner profile could not be loaded.')
       return
     }
 
     if (!form.title.trim() || !form.description.trim()) {
       setErrorMessage('Please enter both a title and description.')
+      return
+    }
+
+    if (form.request_type === 'amenity' && !form.amenity_selected.trim()) {
+      setErrorMessage('Please enter the amenity requested.')
+      return
+    }
+
+    if (form.request_type === 'amenity' && !form.amenity_date) {
+      setErrorMessage('Please select the amenity reservation date.')
       return
     }
 
@@ -147,11 +154,16 @@ export default function OwnerPortal() {
         title: form.title.trim(),
         description: form.description.trim(),
         priority: form.priority,
-        association_name: form.association_name,
-        owner_name: form.owner_name.trim(),
-        property_address: form.property_address.trim(),
-        owner_phone: form.owner_phone.trim(),
+        association_name: ownerProfile.association_name,
+        owner_name: ownerProfile.owner_name,
+        owner_email: ownerProfile.user_email,
+        property_address: fullAddress(ownerProfile),
+        owner_phone: ownerProfile.owner_phone,
         best_contact_time: form.best_contact_time.trim(),
+        amenity_selected:
+          form.request_type === 'amenity' ? form.amenity_selected.trim() : '',
+        amenity_date:
+          form.request_type === 'amenity' ? form.amenity_date : null,
         status: 'open',
         source: 'Owner Portal',
       },
@@ -168,11 +180,9 @@ export default function OwnerPortal() {
       title: '',
       description: '',
       priority: 'medium',
-      association_name: '',
-      owner_name: '',
-      property_address: '',
-      owner_phone: '',
       best_contact_time: '',
+      amenity_selected: '',
+      amenity_date: '',
     })
 
     setSuccessMessage('Request submitted successfully.')
@@ -238,7 +248,7 @@ export default function OwnerPortal() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-slate-400">
-              Submit a request, work order, architectural review, amenity request, or account question with the information management needs to route it properly.
+              Submit a request using your preloaded owner profile, association, address, and contact information.
             </p>
           </div>
 
@@ -254,7 +264,7 @@ export default function OwnerPortal() {
           <div className="mb-6">
             <h2 className="text-2xl font-semibold">Submit a Request</h2>
             <p className="mt-2 text-sm text-slate-400">
-              This captures the owner, association, contact, and request details needed for management review and vendor coordination.
+              Owner and property information is prepopulated from the account profile.
             </p>
           </div>
 
@@ -272,77 +282,39 @@ export default function OwnerPortal() {
 
           <form onSubmit={submitRequest} className="space-y-6">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold">Owner & Association Information</h3>
-                <p className="mt-1 text-sm text-slate-400">
-                  Used by management to identify the correct community, unit, and contact preference.
-                </p>
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Prepopulated Owner Profile</h3>
+                  <p className="mt-1 text-sm text-slate-400">
+                    These fields come from the owner account record and travel with every request.
+                  </p>
+                </div>
+
+                <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                  Locked
+                </span>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className={labelClass}>Association</label>
-                  <select
-                    value={form.association_name}
-                    onChange={(e) => setForm({ ...form, association_name: e.target.value })}
-                    className={inputClass}
-                  >
-                    <option value="">Select Association</option>
-                    {ASSOCIATIONS.map((association) => (
-                      <option key={association} value={association}>
-                        {association}
-                      </option>
-                    ))}
-                  </select>
+              {profileLoading ? (
+                <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-400">
+                  Loading owner profile...
                 </div>
-
-                <div>
-                  <label className={labelClass}>Owner Name</label>
-                  <input
-                    value={form.owner_name}
-                    onChange={(e) => setForm({ ...form, owner_name: e.target.value })}
-                    placeholder="Owner name"
-                    className={inputClass}
-                  />
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <ProfileCard label="Association" value={ownerProfile?.association_name} />
+                  <ProfileCard label="Owner Name" value={ownerProfile?.owner_name} />
+                  <ProfileCard label="Email" value={ownerProfile?.user_email} />
+                  <ProfileCard label="Phone" value={ownerProfile?.owner_phone} />
+                  <ProfileCard label="Property Address" value={fullAddress(ownerProfile)} wide />
                 </div>
-
-                <div className="md:col-span-2">
-                  <label className={labelClass}>Property Address / Unit</label>
-                  <input
-                    value={form.property_address}
-                    onChange={(e) => setForm({ ...form, property_address: e.target.value })}
-                    placeholder="Property address, unit, or building number"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className={labelClass}>Phone Number</label>
-                  <input
-                    value={form.owner_phone}
-                    onChange={(e) => setForm({ ...form, owner_phone: e.target.value })}
-                    placeholder="Best contact number"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className={labelClass}>Best Time to Contact</label>
-                  <input
-                    value={form.best_contact_time}
-                    onChange={(e) => setForm({ ...form, best_contact_time: e.target.value })}
-                    placeholder="Example: Weekdays after 3 PM"
-                    className={inputClass}
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold">Request Details</h3>
                 <p className="mt-1 text-sm text-slate-400">
-                  Choose the request type so the system can route it through the correct workflow.
+                  Choose the request type and describe what needs to be reviewed or completed.
                 </p>
               </div>
 
@@ -377,7 +349,41 @@ export default function OwnerPortal() {
                   </select>
                 </div>
 
-                <div className="md:col-span-2">
+                {form.request_type === 'amenity' && (
+                  <>
+                    <div>
+                      <label className={labelClass}>Amenity Requested</label>
+                      <input
+                        value={form.amenity_selected}
+                        onChange={(e) => setForm({ ...form, amenity_selected: e.target.value })}
+                        placeholder="Example: Clubhouse, pool deck, meeting room"
+                        className={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={labelClass}>Amenity Date</label>
+                      <input
+                        type="date"
+                        value={form.amenity_date}
+                        onChange={(e) => setForm({ ...form, amenity_date: e.target.value })}
+                        className={inputClass}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className={labelClass}>Best Time to Contact</label>
+                  <input
+                    value={form.best_contact_time}
+                    onChange={(e) => setForm({ ...form, best_contact_time: e.target.value })}
+                    placeholder="Example: Weekdays after 3 PM"
+                    className={inputClass}
+                  />
+                </div>
+
+                <div>
                   <label className={labelClass}>Request Title</label>
                   <input
                     value={form.title}
@@ -402,7 +408,7 @@ export default function OwnerPortal() {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || profileLoading || !ownerProfile}
               className="w-full rounded-xl border border-yellow-400/30 bg-yellow-400 px-6 py-4 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? 'Submitting Request...' : 'Submit Request'}
@@ -491,6 +497,7 @@ export default function OwnerPortal() {
                         <div className="mt-5 grid gap-3 md:grid-cols-2">
                           <InfoCard label="Owner" value={item.owner_name || 'Not provided'} />
                           <InfoCard label="Phone" value={item.owner_phone || 'Not provided'} />
+                          <InfoCard label="Email" value={item.owner_email || 'Not provided'} />
                           <InfoCard label="Address / Unit" value={item.property_address || 'Not provided'} />
                           <InfoCard label="Best Contact Time" value={item.best_contact_time || 'Not provided'} />
                         </div>
@@ -555,6 +562,19 @@ export default function OwnerPortal() {
               })}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ProfileCard({ label, value, wide }) {
+  return (
+    <div className={`rounded-xl border border-white/10 bg-black/20 p-4 ${wide ? 'md:col-span-2' : ''}`}>
+      <div className="text-xs uppercase tracking-wide text-slate-500">
+        {label}
+      </div>
+      <div className="mt-1 text-sm text-slate-300">
+        {value || 'Not available'}
       </div>
     </div>
   )
