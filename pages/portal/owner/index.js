@@ -114,15 +114,21 @@ export default function OwnerPortal() {
     setLoading(false)
   }
 
-  function fullAddress(profile) {
-  if (!profile) return ''
+  async function fetchOwnerProfile() {
+  setProfileLoading(true)
 
-  const street = profile.streetAddress || ''
-  const city = profile.city || ''
-  const state = profile.state || ''
-  const zip = profile.zip || ''
+  setOwnerProfile({
+    associationName: 'Royal Palm Villas HOA',
+    ownerName: 'Michael Bennett',
+    streetAddress: '1842 Palm Ridge Drive',
+    city: 'Hollywood',
+    state: 'FL',
+    zip: '33021',
+    phone: '(954) 555-0148',
+    email: 'demo.owner1@stouttpm.com',
+  })
 
-  return [street, city, state, zip].filter(Boolean).join(', ')
+  setProfileLoading(false)
 }
 
   async function submitRequest(e) {
