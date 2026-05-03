@@ -6,7 +6,8 @@ export default function ManagerDashboard() {
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [workflow, setWorkflow] = useState({})
-
+const [dispatchFeedback, setDispatchFeedback] = useState({})
+  
   useEffect(() => {
     fetchData()
     loadWorkflow()
@@ -178,6 +179,13 @@ export default function ManagerDashboard() {
     }
 
     try {
+  setDispatchFeedback({
+    ...dispatchFeedback,
+    [item.id]: {
+      type: 'loading',
+      message: 'Preparing simulated vendor dispatch...',
+    },
+  })
       const response = await fetch('/api/send-vendor-dispatch', {
         method: 'POST',
         headers: {
@@ -215,12 +223,27 @@ export default function ManagerDashboard() {
         })
         .eq('id', item.id)
 
-      addTimeline(item.id, 'Vendor dispatch simulated successfully')
-      alert('Vendor dispatch simulated successfully.')
-      fetchData()
+     addTimeline(item.id, 'Vendor dispatch simulated successfully')
+
+setDispatchFeedback({
+  ...dispatchFeedback,
+  [item.id]: {
+    type: 'success',
+    message: 'Vendor dispatch simulated successfully. Vendor email will be restored when Resend is reconnected.',
+  },
+})
+
+fetchData()
     } catch (error) {
       console.error('Vendor dispatch error:', error)
-      alert(error.message || 'There was an error sending it.')
+
+setDispatchFeedback({
+  ...dispatchFeedback,
+  [item.id]: {
+    type: 'error',
+    message: error.message || 'There was an error sending it.',
+  },
+})
     }
   }
 
@@ -480,18 +503,36 @@ export default function ManagerDashboard() {
                             )}
 
                             <button
-                              onClick={() => dispatchVendor(item)}
-                              className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-300 hover:bg-emerald-400/20"
-                            >
-                              Dispatch to Vendor
-                            </button>
+  onClick={() => dispatchVendor(item)}
+  className="rounded-xl border border-yellow-400/40 bg-yellow-400 px-4 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
+>
+  {dispatchFeedback[item.id]?.type === 'loading'
+    ? 'Dispatching...'
+    : item.dispatched_at
+      ? 'Dispatch Again'
+      : 'Send Vendor Dispatch'}
+</button>
                           </div>
 
-                          {item.dispatched_at && (
-                            <div className="mt-3 text-xs text-slate-400">
-                              Dispatched: {new Date(item.dispatched_at).toLocaleString()}
-                            </div>
-                          )}
+                          {dispatchFeedback[item.id] && (
+  <div
+    className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${
+      dispatchFeedback[item.id].type === 'error'
+        ? 'border-red-400/30 bg-red-400/10 text-red-300'
+        : dispatchFeedback[item.id].type === 'loading'
+          ? 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300'
+          : 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+    }`}
+  >
+    {dispatchFeedback[item.id].message}
+  </div>
+)}
+
+{item.dispatched_at && (
+  <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3 text-xs text-emerald-300">
+    Dispatched: {new Date(item.dispatched_at).toLocaleString()}
+  </div>
+)}
                         </div>
 
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
