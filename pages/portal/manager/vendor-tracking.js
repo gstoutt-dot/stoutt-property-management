@@ -179,7 +179,7 @@ export default function VendorTracking() {
               </Link>
 
               <Link
-                href="/portal/manager/vendor-invoices"
+                href="/vendor/invoices"
                 className={bosTheme.primaryButton}
               >
                 Invoice Review
@@ -330,7 +330,7 @@ export default function VendorTracking() {
                   </button>
 
                   <Link
-                    href="/portal/manager/vendor-invoices"
+                    href="/vendor/invoices"
                     className={`${bosTheme.outlineButton} block text-center`}
                   >
                     Open Invoice Review →
