@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useState } from "react";
 import bosTheme from "../../../styles/bos-theme";
 
-const jobs = [
+const initialJobs = [
   {
     id: "WO-2048",
     vendor: "Elite Electrical Solutions",
@@ -39,7 +39,9 @@ const jobs = [
 ];
 
 export default function VendorTracking() {
+  const [jobs, setJobs] = useState(initialJobs);
   const [activeStatus, setActiveStatus] = useState("All");
+  const [selectedId, setSelectedId] = useState(initialJobs[0].id);
 
   const statuses = ["All", "Dispatched", "In Progress", "Completed"];
 
@@ -47,6 +49,29 @@ export default function VendorTracking() {
     activeStatus === "All"
       ? jobs
       : jobs.filter((job) => job.status === activeStatus);
+
+  const selected = jobs.find((j) => j.id === selectedId) || jobs[0];
+
+  function updateStatus(id, status) {
+    setJobs((current) =>
+      current.map((job) =>
+        job.id === id
+          ? {
+              ...job,
+              status,
+              manager: getManagerNote(status),
+            }
+          : job
+      )
+    );
+  }
+
+  function getManagerNote(status) {
+    if (status === "In Progress") return "Vendor currently on-site";
+    if (status === "Completed") return "Work completed — awaiting verification";
+    if (status === "Verified") return "Manager verified — ready for invoice";
+    return "Pending vendor arrival";
+  }
 
   return (
     <main className={bosTheme.page}>
@@ -62,149 +87,141 @@ export default function VendorTracking() {
               <p className={bosTheme.eyebrow}>Vendor Operations</p>
               <h1 className={bosTheme.title}>Vendor Tracking</h1>
               <p className={bosTheme.subtitle}>
-                Monitor dispatched work orders, vendor progress, completion
-                notes, and manager verification before closing or forwarding for
-                payment approval.
+                Execute vendor work orders, monitor progress, verify completion,
+                and route clean jobs into invoice review.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/portal/manager/assign-dispatch"
+                href="/portal/manager"
                 className={bosTheme.secondaryButton}
               >
-                Assign Dispatch
+                Command Center
               </Link>
 
               <Link
-                href="/portal/manager/vendor-invoices"
+                href="/vendor/invoices"
                 className={bosTheme.primaryButton}
               >
-                Vendor Invoices
+                Invoice Review
               </Link>
             </div>
           </div>
         </header>
 
         <section className="grid gap-4 md:grid-cols-4">
-          {[
-            ["Open Jobs", "14", "Active vendor work"],
-            ["Dispatched", "5", "Awaiting arrival"],
-            ["In Progress", "6", "Currently active"],
-            ["Needs Verification", "3", "Before payment"],
-          ].map(([label, value, detail]) => (
-            <div key={label} className={bosTheme.statCard}>
-              <p className="text-sm text-slate-400">{label}</p>
-              <div className="mt-3 flex items-end justify-between">
-                <h2 className="text-4xl font-semibold">{value}</h2>
-                <span className={bosTheme.statDot} />
-              </div>
-              <p className="mt-3 text-xs text-slate-500">{detail}</p>
-            </div>
-          ))}
+          <Stat label="Open Jobs" value={jobs.length} />
+          <Stat label="Dispatched" value={jobs.filter(j => j.status === "Dispatched").length} />
+          <Stat label="In Progress" value={jobs.filter(j => j.status === "In Progress").length} />
+          <Stat label="Awaiting Verification" value={jobs.filter(j => j.status === "Completed").length} />
         </section>
 
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Active Vendor Queue</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Track where each job stands after manager dispatch.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {statuses.map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setActiveStatus(status)}
-                  className={`rounded-2xl px-4 py-2 text-sm transition ${
-                    activeStatus === status
-                      ? bosTheme.filterActive
-                      : bosTheme.filterInactive
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {statuses.map((status) => (
+              <button
+                key={status}
+                onClick={() => setActiveStatus(status)}
+                className={`rounded-2xl px-4 py-2 text-sm transition ${
+                  activeStatus === status
+                    ? bosTheme.filterActive
+                    : bosTheme.filterInactive
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
         </section>
 
-        <section className="mt-5 space-y-4">
-          {filteredJobs.map((job) => (
-            <article
-              key={job.id}
-              className={`${bosTheme.card} ${bosTheme.cardHover}`}
-            >
-              <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                <div className="flex-1">
-                  <div className="flex flex-wrap gap-2">
-                    <span className={bosTheme.badgeNeutral}>{job.id}</span>
-                    <span className={bosTheme.badgeGold}>{job.status}</span>
-                    <span className={bosTheme.badgeAmber}>
-                      {job.priority} Priority
-                    </span>
-                  </div>
-
-                  <h3 className="mt-4 text-2xl font-semibold">{job.issue}</h3>
-
-                  <p className="mt-3 text-sm leading-6 text-slate-300">
-                    Vendor assigned:{" "}
-                    <span className="font-medium text-white">{job.vendor}</span>
-                  </p>
-
-                  <div className="mt-5 grid gap-3 md:grid-cols-4">
-                    <div className={bosTheme.detailBox}>
-                      <p className={bosTheme.detailLabel}>Association</p>
-                      <p className={bosTheme.detailValue}>{job.association}</p>
-                    </div>
-
-                    <div className={bosTheme.detailBox}>
-                      <p className={bosTheme.detailLabel}>Location</p>
-                      <p className={bosTheme.detailValue}>{job.unit}</p>
-                    </div>
-
-                    <div className={bosTheme.detailBox}>
-                      <p className={bosTheme.detailLabel}>ETA / Timing</p>
-                      <p className={bosTheme.detailValue}>{job.eta}</p>
-                    </div>
-
-                    <div className={bosTheme.detailBox}>
-                      <p className={bosTheme.detailLabel}>Manager Note</p>
-                      <p className={bosTheme.detailValue}>{job.manager}</p>
-                    </div>
-                  </div>
+        <section className="mt-5 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="space-y-4">
+            {filteredJobs.map((job) => (
+              <button
+                key={job.id}
+                onClick={() => setSelectedId(job.id)}
+                className={`${bosTheme.card} ${bosTheme.cardHover} ${
+                  selectedId === job.id ? "border-[#D4AF37]/50" : ""
+                }`}
+              >
+                <div className="flex flex-wrap gap-2">
+                  <span className={bosTheme.badgeNeutral}>{job.id}</span>
+                  <span className={bosTheme.badgeGold}>{job.status}</span>
+                  <span className={bosTheme.badgeAmber}>{job.priority}</span>
                 </div>
 
-                <aside className={bosTheme.actionPanel}>
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                    Job Actions
-                  </p>
+                <h3 className="mt-3 text-xl font-semibold">{job.issue}</h3>
+                <p className="text-sm text-slate-400">{job.vendor}</p>
+              </button>
+            ))}
+          </div>
 
-                  <div className="mt-5 space-y-3">
-                    <button className={bosTheme.goldButton}>
-                      Verify Completion
-                    </button>
+          <aside className={bosTheme.actionPanel}>
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+              Execution Console
+            </p>
 
-                    <button className={bosTheme.whiteButton}>
-                      View Vendor Notes
-                    </button>
+            <h2 className="mt-3 text-xl font-semibold">{selected.issue}</h2>
 
-                    <button className={bosTheme.outlineButton}>
-                      Upload Photos
-                    </button>
+            <div className="mt-4 space-y-3 text-sm">
+              <Detail label="Vendor" value={selected.vendor} />
+              <Detail label="Association" value={selected.association} />
+              <Detail label="Location" value={selected.unit} />
+              <Detail label="ETA" value={selected.eta} />
+              <Detail label="Status" value={selected.status} />
+            </div>
 
-                    <button className={bosTheme.outlineButton}>
-                      Move to Invoice Review
-                    </button>
-                  </div>
-                </aside>
-              </div>
-            </article>
-          ))}
+            <div className="mt-6 space-y-3">
+              <button
+                onClick={() => updateStatus(selected.id, "In Progress")}
+                className={bosTheme.goldButton}
+              >
+                Mark In Progress
+              </button>
+
+              <button
+                onClick={() => updateStatus(selected.id, "Completed")}
+                className={bosTheme.whiteButton}
+              >
+                Mark Completed
+              </button>
+
+              <button
+                onClick={() => updateStatus(selected.id, "Verified")}
+                className={bosTheme.outlineButton}
+              >
+                Verify Completion
+              </button>
+
+              <Link
+                href="/vendor/invoices"
+                className={`${bosTheme.outlineButton} block text-center`}
+              >
+                Move to Invoice Review →
+              </Link>
+            </div>
+          </aside>
         </section>
       </div>
     </main>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className={bosTheme.statCard}>
+      <p className="text-sm text-slate-400">{label}</p>
+      <h2 className="mt-3 text-4xl font-semibold">{value}</h2>
+    </div>
+  );
+}
+
+function Detail({ label, value }) {
+  return (
+    <div className="flex justify-between border-b border-white/10 pb-2">
+      <span className="text-slate-400">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
   );
 }
