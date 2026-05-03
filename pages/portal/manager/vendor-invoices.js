@@ -7,7 +7,8 @@ export default function ManagerVendorInvoices() {
   const [invoices, setInvoices] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [notes, setNotes] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchInvoices();
@@ -29,11 +30,7 @@ export default function ManagerVendorInvoices() {
         description: "Monthly landscape maintenance",
         amount: 4200,
         status: "Needs Verification",
-        priority: "Medium",
         association: "Demo Lakes Association",
-        work_order_id: "WO-1187",
-        submitted_at: new Date().toISOString(),
-        manager_note: "",
       },
       {
         id: "2",
@@ -42,11 +39,7 @@ export default function ManagerVendorInvoices() {
         description: "Pool repair - lighting replacement",
         amount: 850,
         status: "Ready for Board",
-        priority: "High",
         association: "Demo Lakes Association",
-        work_order_id: "WO-1191",
-        submitted_at: new Date().toISOString(),
-        manager_note: "",
       },
       {
         id: "3",
@@ -55,11 +48,7 @@ export default function ManagerVendorInvoices() {
         description: "Quarterly elevator maintenance",
         amount: 2100,
         status: "Needs Documentation",
-        priority: "Normal",
         association: "Demo Towers Association",
-        work_order_id: "WO-1204",
-        submitted_at: new Date().toISOString(),
-        manager_note: "",
       },
     ];
 
@@ -76,7 +65,9 @@ export default function ManagerVendorInvoices() {
   }
 
   const selected =
-    invoices.find((i) => i.id === selectedId) || invoices[0] || null;
+    invoices.find((i) => String(i.id) === String(selectedId)) ||
+    invoices[0] ||
+    null;
 
   const stats = useMemo(() => {
     return {
@@ -89,15 +80,26 @@ export default function ManagerVendorInvoices() {
   }, [invoices]);
 
   async function updateStatus(id, status) {
-    await supabase
-      .from("vendor_invoices")
-      .update({
-        status,
-        manager_note: notes[id] || "",
-      })
-      .eq("id", id);
+    if (!id) return;
 
-    await fetchInvoices();
+    setSaving(true);
+
+    try {
+      await supabase
+        .from("vendor_invoices")
+        .update({
+          status: status,
+          manager_note: notes[id] || "",
+        })
+        .eq("id", id);
+
+      // force refresh from DB
+      await fetchInvoices();
+    } catch (e) {
+      console.error(e);
+    }
+
+    setSaving(false);
   }
 
   function formatAmount(a) {
@@ -111,6 +113,7 @@ export default function ManagerVendorInvoices() {
           <h1 className="text-4xl font-semibold">
             Verify before payment approval.
           </h1>
+
           <div className="flex gap-3">
             <button
               onClick={() => router.push("/portal/manager")}
@@ -118,6 +121,7 @@ export default function ManagerVendorInvoices() {
             >
               Manager Command Center
             </button>
+
             <button
               onClick={() => router.push("/portal/manager/vendor-tracking")}
               className="px-5 py-3 bg-yellow-400 text-black rounded-xl"
@@ -139,6 +143,7 @@ export default function ManagerVendorInvoices() {
           <div>
             <div className="mb-4 flex justify-between">
               <h2 className="text-2xl">Invoice Queue</h2>
+
               <button
                 onClick={fetchInvoices}
                 className="px-4 py-2 bg-yellow-400 text-black rounded-lg"
@@ -152,7 +157,9 @@ export default function ManagerVendorInvoices() {
                 key={i.id}
                 onClick={() => setSelectedId(i.id)}
                 className={`p-5 mb-4 border rounded-xl cursor-pointer ${
-                  selectedId === i.id ? "border-yellow-400" : "border-white/10"
+                  String(selectedId) === String(i.id)
+                    ? "border-yellow-400"
+                    : "border-white/10"
                 }`}
               >
                 <div className="text-sm opacity-60">{i.invoice_number}</div>
@@ -191,15 +198,17 @@ export default function ManagerVendorInvoices() {
                     onClick={() =>
                       updateStatus(selected.id, "Approved for Payment")
                     }
+                    disabled={saving}
                     className="bg-yellow-400 text-black p-3 rounded-lg"
                   >
-                    Approve
+                    {saving ? "Saving..." : "Approve"}
                   </button>
 
                   <button
                     onClick={() =>
                       updateStatus(selected.id, "Ready for Board")
                     }
+                    disabled={saving}
                     className="border border-white/10 p-3 rounded-lg"
                   >
                     Board
@@ -209,6 +218,7 @@ export default function ManagerVendorInvoices() {
                     onClick={() =>
                       updateStatus(selected.id, "Needs Documentation")
                     }
+                    disabled={saving}
                     className="border border-white/10 p-3 rounded-lg"
                   >
                     Docs
@@ -216,6 +226,7 @@ export default function ManagerVendorInvoices() {
 
                   <button
                     onClick={() => updateStatus(selected.id, "Rejected")}
+                    disabled={saving}
                     className="border border-red-400 p-3 rounded-lg"
                   >
                     Reject
