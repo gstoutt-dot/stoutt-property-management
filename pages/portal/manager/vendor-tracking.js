@@ -8,8 +8,8 @@ export default function VendorTracking() {
   const [activeStatus, setActiveStatus] = useState("All");
   const [selectedId, setSelectedId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState({});
+  const [savingId, setSavingId] = useState(null);
+  const [feedback, setFeedback] = useState("");
 
   const statuses = ["All", "Dispatched", "In Progress", "Completed", "Verified"];
 
@@ -27,55 +27,21 @@ export default function VendorTracking() {
 
     if (error) {
       console.error(error);
+      setJobs([]);
       setLoading(false);
       return;
     }
 
-    const safeData = data && data.length > 0 ? data : [
-      {
-        id: "1",
-        work_order_id: "WO-2048",
-        issue: "Pool light out",
-        vendor: "Elite Electrical",
-        status: "Dispatched",
-        association: "Demo HOA",
-        unit: "Common Area",
-        eta: "Today",
-        manager_note: "",
-      },
-      {
-        id: "2",
-        work_order_id: "WO-2047",
-        issue: "Pool pressure issue",
-        vendor: "AquaTech",
-        status: "In Progress",
-        association: "Demo HOA",
-        unit: "Pump Room",
-        eta: "On Site",
-        manager_note: "",
-      },
-      {
-        id: "3",
-        work_order_id: "WO-2046",
-        issue: "Irrigation broken",
-        vendor: "Brightscape",
-        status: "Completed",
-        association: "Demo HOA",
-        unit: "Grounds",
-        eta: "Completed",
-        manager_note: "",
-      },
-    ];
-
-    setJobs(safeData);
-    setSelectedId(safeData[0]?.id || null);
+    const safe = data || [];
+    setJobs(safe);
+    setSelectedId(safe[0]?.id || null);
     setLoading(false);
   }
 
   const filteredJobs =
     activeStatus === "All"
       ? jobs
-      : jobs.filter((job) => job.status === activeStatus);
+      : jobs.filter((j) => j.status === activeStatus);
 
   const selected =
     jobs.find((j) => String(j.id) === String(selectedId)) ||
@@ -92,36 +58,15 @@ export default function VendorTracking() {
     };
   }, [jobs]);
 
-  function getManagerNote(status) {
-    if (status === "In Progress") return "Vendor on site";
-    if (status === "Completed") return "Awaiting verification";
-    if (status === "Verified") return "Verified and ready for invoice";
-    return "Pending dispatch";
-  }
-
-  async function updateLinkedInvoice(job) {
-    if (!job?.work_order_id) return;
-
-    await supabase
-      .from("vendor_invoices")
-      .update({
-        status: "Needs Verification",
-        manager_note: `Verified from tracking: ${job.work_order_id}`,
-      })
-      .eq("work_order_id", job.work_order_id);
-  }
-
   async function updateStatus(id, status) {
     if (!id) return;
 
-    setSaving(true);
-    setFeedback({});
-
-    const job = jobs.find((j) => String(j.id) === String(id));
+    setSavingId(id);
+    setFeedback("");
 
     const payload = {
       status,
-      manager_note: getManagerNote(status),
+      manager_note: `Updated to ${status}`,
       verified_at: status === "Verified" ? new Date().toISOString() : null,
     };
 
@@ -132,18 +77,14 @@ export default function VendorTracking() {
 
     if (error) {
       console.error(error);
-      setFeedback({ type: "error", message: "Update failed" });
-      setSaving(false);
+      setFeedback("Update failed");
+      setSavingId(null);
       return;
     }
 
-    if (status === "Verified" && job) {
-      await updateLinkedInvoice(job);
-      setFeedback({ type: "success", message: "Verified + invoice updated" });
-    }
-
+    setFeedback("Updated");
     await fetchJobs();
-    setSaving(false);
+    setSavingId(null);
   }
 
   function formatDate(date) {
@@ -156,10 +97,12 @@ export default function VendorTracking() {
       <div className={bosTheme.container}>
         <header className={bosTheme.header}>
           <h1 className={bosTheme.title}>Vendor Tracking</h1>
+
           <div className="flex gap-3">
             <Link href="/portal/manager" className={bosTheme.secondaryButton}>
               Command Center
             </Link>
+
             <Link href="/vendor/invoices" className={bosTheme.primaryButton}>
               Invoice Review
             </Link>
@@ -174,58 +117,93 @@ export default function VendorTracking() {
           <Stat label="Verified" value={stats.verified} />
         </section>
 
-        {feedback.message && (
-          <div className="mt-4 text-sm">{feedback.message}</div>
+        {feedback && (
+          <div className="mt-4 text-sm text-green-400">{feedback}</div>
         )}
+
+        <section className="mt-6 rounded-2xl border border-white/10 p-5">
+          <div className="flex gap-2 flex-wrap">
+            {statuses.map((s) => (
+              <button
+                key={s}
+                onClick={() => setActiveStatus(s)}
+                className={`px-4 py-2 rounded ${
+                  activeStatus === s ? "bg-yellow-400 text-black" : "bg-white/10"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div>
-            {filteredJobs.map((job) => (
-              <div
-                key={job.id}
-                onClick={() => setSelectedId(job.id)}
-                className={`p-4 border mb-3 cursor-pointer ${
-                  selectedId === job.id ? "border-yellow-400" : "border-white/10"
-                }`}
-              >
-                <div>{job.work_order_id}</div>
-                <div>{job.issue}</div>
-                <div>{job.vendor}</div>
-                <div>{job.status}</div>
-              </div>
-            ))}
+            {!loading &&
+              filteredJobs.map((job) => (
+                <div
+                  key={job.id}
+                  onClick={() => setSelectedId(job.id)}
+                  className={`p-4 mb-3 border cursor-pointer ${
+                    selectedId === job.id
+                      ? "border-yellow-400"
+                      : "border-white/10"
+                  }`}
+                >
+                  <div className="text-sm opacity-60">
+                    {job.work_order_id}
+                  </div>
+                  <div className="text-lg">{job.issue}</div>
+                  <div className="text-sm">{job.vendor}</div>
+                  <div className="text-xs mt-1">{job.status}</div>
+                </div>
+              ))}
           </div>
 
           <div>
             {!selected ? (
               <div>Select job</div>
             ) : (
-              <div className="p-4 border border-yellow-400">
-                <h2>{selected.issue}</h2>
+              <div className="p-4 border border-yellow-400 rounded-xl">
+                <h2 className="text-xl">{selected.issue}</h2>
 
                 <div className="mt-4 space-y-2">
                   <button
-                    onClick={() => updateStatus(selected.id, "In Progress")}
-                    disabled={saving}
+                    onClick={() =>
+                      updateStatus(selected.id, "In Progress")
+                    }
+                    disabled={savingId === selected.id}
+                    className="w-full bg-yellow-400 text-black p-2 rounded"
                   >
-                    In Progress
+                    {savingId === selected.id ? "Saving..." : "In Progress"}
                   </button>
 
                   <button
-                    onClick={() => updateStatus(selected.id, "Completed")}
-                    disabled={saving}
+                    onClick={() =>
+                      updateStatus(selected.id, "Completed")
+                    }
+                    disabled={savingId === selected.id}
+                    className="w-full border border-white/10 p-2 rounded"
                   >
                     Completed
                   </button>
 
                   <button
-                    onClick={() => updateStatus(selected.id, "Verified")}
-                    disabled={saving}
+                    onClick={() =>
+                      updateStatus(selected.id, "Verified")
+                    }
+                    disabled={savingId === selected.id}
+                    className="w-full border border-white/10 p-2 rounded"
                   >
-                    Verify
+                    Verified
                   </button>
 
-                  <button onClick={fetchJobs}>Refresh</button>
+                  <button
+                    onClick={fetchJobs}
+                    className="w-full border border-white/10 p-2 rounded"
+                  >
+                    Refresh
+                  </button>
                 </div>
 
                 <div className="mt-4 text-xs">
@@ -242,7 +220,7 @@ export default function VendorTracking() {
 
 function Stat({ label, value }) {
   return (
-    <div className="p-4 border border-white/10">
+    <div className="p-4 border border-white/10 rounded">
       <div className="text-sm">{label}</div>
       <div className="text-2xl">{value}</div>
     </div>
