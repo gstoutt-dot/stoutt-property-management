@@ -504,13 +504,20 @@ setDispatchFeedback({
                             )}
 
                             <button
-  onClick={() => dispatchVendor(item)}
-  className="rounded-xl border border-yellow-400/40 bg-yellow-400 px-4 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
+  onClick={() => {
+    if (!item.dispatched_at) dispatchVendor(item)
+  }}
+  disabled={!!item.dispatched_at}
+  className={`rounded-xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
+    item.dispatched_at
+      ? 'cursor-not-allowed border-emerald-400/30 bg-emerald-400/10 text-emerald-300 shadow-none'
+      : 'border-yellow-400/40 bg-yellow-400 text-slate-950 shadow-yellow-900/20 hover:bg-yellow-300'
+  }`}
 >
   {dispatchFeedback[item.id]?.type === 'loading'
     ? 'Dispatching...'
     : item.dispatched_at
-      ? 'Dispatch Again'
+      ? 'Dispatch Locked'
       : 'Send Vendor Dispatch'}
 </button>
                           </div>
