@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '../../../lib/supabaseClient'
 
 export default function ManagerDashboard() {
@@ -6,8 +7,8 @@ export default function ManagerDashboard() {
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [workflow, setWorkflow] = useState({})
-const [dispatchFeedback, setDispatchFeedback] = useState({})
-  
+  const [dispatchFeedback, setDispatchFeedback] = useState({})
+
   useEffect(() => {
     fetchData()
     loadWorkflow()
@@ -179,21 +180,22 @@ const [dispatchFeedback, setDispatchFeedback] = useState({})
     }
 
     try {
-  setDispatchFeedback({
-    ...dispatchFeedback,
-    [item.id]: {
-      type: 'loading',
-      message: 'Preparing simulated vendor dispatch...',
-    },
-  })
+      setDispatchFeedback({
+        ...dispatchFeedback,
+        [item.id]: {
+          type: 'loading',
+          message: 'Preparing simulated vendor dispatch...',
+        },
+      })
+
       const response = await fetch('/api/send-vendor-dispatch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-  action_id: item.id,
-  requestId: item.id,
+          action_id: item.id,
+          requestId: item.id,
           vendorName,
           vendorPhone,
           vendorEmail,
@@ -224,27 +226,28 @@ const [dispatchFeedback, setDispatchFeedback] = useState({})
         })
         .eq('id', item.id)
 
-     addTimeline(item.id, 'Vendor dispatch simulated successfully')
+      addTimeline(item.id, 'Vendor dispatch simulated successfully')
 
-setDispatchFeedback({
-  ...dispatchFeedback,
-  [item.id]: {
-    type: 'success',
-    message: 'Vendor dispatch simulated successfully. Vendor email will be restored when Resend is reconnected.',
-  },
-})
+      setDispatchFeedback({
+        ...dispatchFeedback,
+        [item.id]: {
+          type: 'success',
+          message:
+            'Vendor dispatch simulated successfully. Vendor email will be restored when Resend is reconnected.',
+        },
+      })
 
-fetchData()
+      fetchData()
     } catch (error) {
       console.error('Vendor dispatch error:', error)
 
-setDispatchFeedback({
-  ...dispatchFeedback,
-  [item.id]: {
-    type: 'error',
-    message: error.message || 'There was an error sending it.',
-  },
-})
+      setDispatchFeedback({
+        ...dispatchFeedback,
+        [item.id]: {
+          type: 'error',
+          message: error.message || 'There was an error sending it.',
+        },
+      })
     }
   }
 
@@ -262,6 +265,14 @@ setDispatchFeedback({
     rejected: items.filter((i) => i.status === 'rejected').length,
     completed: items.filter((i) => i.status === 'completed').length,
   }
+
+  const dispatchReadyCount = items.filter(
+    (i) => i.status === 'approved' && !i.dispatched_at
+  ).length
+
+  const dispatchedCount = items.filter((i) => i.dispatched_at).length
+
+  const highPriorityCount = items.filter((i) => i.priority === 'high').length
 
   const statusStyles = {
     open: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
@@ -284,27 +295,109 @@ setDispatchFeedback({
   return (
     <div className="min-h-screen bg-[#020617] pb-24 text-white md:pb-0">
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
-              BOS Manager Intake Layer
+        <div className="mb-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/40">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
+                BOS Manager Command Layer
+              </div>
+
+              <h1 className="text-4xl font-semibold tracking-tight">
+                Manager Command Center
+              </h1>
+
+              <p className="mt-3 max-w-3xl text-slate-400">
+                Live operational overview of manager-reviewed items, board-ready
+                approvals, vendor dispatch activity, AI intake, and priority issues.
+                The Action Center processes decisions; this Command Center shows the
+                current operational picture.
+              </p>
             </div>
 
-            <h1 className="text-4xl font-semibold tracking-tight">
-              Manager Command Center
-            </h1>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/portal/manager/action-center"
+                className="rounded-xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
+              >
+                Open Action Center
+              </Link>
 
-            <p className="mt-3 max-w-2xl text-slate-400">
-              Review, document, assign, dispatch vendors, and route items through the full BOS workflow.
-            </p>
+              <Link
+                href="/portal/manager/vendor-dispatch"
+                className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+              >
+                Vendor Dispatch
+              </Link>
+
+              <button
+                onClick={fetchData}
+                className="hidden rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 md:block"
+              >
+                Refresh Live Data
+              </button>
+            </div>
           </div>
 
-          <button
-            onClick={fetchData}
-            className="hidden rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20 md:block"
-          >
-            Refresh Live Data
-          </button>
+          <div className="mt-6 grid gap-4 md:grid-cols-4">
+            <CommandMetric
+              label="Needs Manager Review"
+              value={counts.open + counts.in_progress}
+              text="New intake and items still requiring manager decision."
+            />
+            <CommandMetric
+              label="Board Review"
+              value={counts.board_review}
+              text="Items routed for board approval or authorization."
+            />
+            <CommandMetric
+              label="Ready for Vendor"
+              value={dispatchReadyCount}
+              text="Approved items not yet dispatched to vendor."
+            />
+            <CommandMetric
+              label="High Priority"
+              value={highPriorityCount}
+              text="Items marked high priority across the live queue."
+            />
+          </div>
+        </div>
+
+        <div className="mb-8 grid gap-4 lg:grid-cols-3">
+          <CommandPanel
+            title="Action Center Output"
+            description="Manager decisions feed this Command Center after review, approval, escalation, rejection, or routing."
+            href="/portal/manager/action-center"
+            cta="Process Items"
+            lines={[
+              `${counts.open} request received`,
+              `${counts.in_progress} under management review`,
+              `${counts.approved} approved or scheduled`,
+            ]}
+          />
+
+          <CommandPanel
+            title="Vendor Dispatch Readiness"
+            description="Approved work orders can be assigned, dispatched, tracked, and closed from the vendor workflow."
+            href="/portal/manager/vendor-dispatch"
+            cta="Open Vendor Dispatch"
+            lines={[
+              `${dispatchReadyCount} ready for vendor assignment`,
+              `${dispatchedCount} already dispatched`,
+              `${counts.completed} completed items`,
+            ]}
+          />
+
+          <CommandPanel
+            title="Board Approval Queue"
+            description="Items requiring board review remain visible here while the detailed action record stays below."
+            href="#live-queue"
+            cta="View Live Queue"
+            lines={[
+              `${counts.board_review} awaiting board review`,
+              `${counts.rejected} rejected items`,
+              `${counts.all} total live records`,
+            ]}
+          />
         </div>
 
         <div className="mb-8 grid gap-4 md:grid-cols-7">
@@ -332,7 +425,10 @@ setDispatchFeedback({
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl">
+        <div
+          id="live-queue"
+          className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl"
+        >
           <div className="border-b border-white/10 px-6 py-5">
             <h2 className="text-xl font-semibold">Live Intake Queue</h2>
             <p className="mt-1 text-sm text-slate-400">
@@ -354,13 +450,17 @@ setDispatchFeedback({
                 const dispatchNote = wf.dispatch_note ?? item.dispatch_note ?? ''
 
                 return (
-                  <div key={item.id} className="px-6 py-6 transition hover:bg-white/[0.03]">
+                  <div
+                    key={item.id}
+                    className="px-6 py-6 transition hover:bg-white/[0.03]"
+                  >
                     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
                       <div>
                         <div className="mb-3 flex flex-wrap gap-2">
                           <span
                             className={`rounded-full border px-3 py-1 text-xs ${
-                              statusStyles[item.status] || 'border-white/10 bg-white/5 text-slate-300'
+                              statusStyles[item.status] ||
+                              'border-white/10 bg-white/5 text-slate-300'
                             }`}
                           >
                             {getStatusLabel(item.status)}
@@ -368,7 +468,8 @@ setDispatchFeedback({
 
                           <span
                             className={`rounded-full border px-3 py-1 text-xs ${
-                              priorityStyles[item.priority] || 'border-white/10 bg-white/5 text-slate-300'
+                              priorityStyles[item.priority] ||
+                              'border-white/10 bg-white/5 text-slate-300'
                             }`}
                           >
                             {item.priority || 'normal'} priority
@@ -392,13 +493,19 @@ setDispatchFeedback({
                         )}
 
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
-                          <InfoBox label="Association" value={item.association_name || '—'} />
+                          <InfoBox
+                            label="Association"
+                            value={item.association_name || '—'}
+                          />
                           <InfoBox label="Owner" value={item.owner_name || '—'} />
                           <InfoBox
                             label="Owner Phone"
                             value={
                               item.owner_phone ? (
-                                <a href={`tel:${item.owner_phone}`} className="text-yellow-300 hover:underline">
+                                <a
+                                  href={`tel:${item.owner_phone}`}
+                                  className="text-yellow-300 hover:underline"
+                                >
                                   {item.owner_phone}
                                 </a>
                               ) : (
@@ -406,8 +513,14 @@ setDispatchFeedback({
                               )
                             }
                           />
-                          <InfoBox label="Address / Unit" value={item.property_address || '—'} />
-                          <InfoBox label="Best Contact Time" value={item.best_contact_time || '—'} />
+                          <InfoBox
+                            label="Address / Unit"
+                            value={item.property_address || '—'}
+                          />
+                          <InfoBox
+                            label="Best Contact Time"
+                            value={item.best_contact_time || '—'}
+                          />
                           <InfoBox
                             label="Submitted"
                             value={
@@ -419,7 +532,10 @@ setDispatchFeedback({
 
                           {item.request_type === 'amenity' && (
                             <>
-                              <InfoBox label="Amenity Chosen" value={item.amenity_selected || '—'} />
+                              <InfoBox
+                                label="Amenity Chosen"
+                                value={item.amenity_selected || '—'}
+                              />
                               <InfoBox
                                 label="Amenity Date"
                                 value={
@@ -435,7 +551,9 @@ setDispatchFeedback({
                         <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.05] p-5">
                           <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <div>
-                              <h4 className="font-semibold text-white">Vendor Dispatch</h4>
+                              <h4 className="font-semibold text-white">
+                                Vendor Dispatch
+                              </h4>
                               <p className="mt-1 text-sm text-slate-400">
                                 Assign the preferred vendor and dispatch the request when ready.
                               </p>
@@ -451,21 +569,27 @@ setDispatchFeedback({
                           <div className="grid gap-3 md:grid-cols-3">
                             <input
                               value={vendorName}
-                              onChange={(e) => updateWorkflowField(item.id, 'vendor_name', e.target.value)}
+                              onChange={(e) =>
+                                updateWorkflowField(item.id, 'vendor_name', e.target.value)
+                              }
                               placeholder="Vendor name"
                               className={inputClass}
                             />
 
                             <input
                               value={vendorPhone}
-                              onChange={(e) => updateWorkflowField(item.id, 'vendor_phone', e.target.value)}
+                              onChange={(e) =>
+                                updateWorkflowField(item.id, 'vendor_phone', e.target.value)
+                              }
                               placeholder="Vendor phone"
                               className={inputClass}
                             />
 
                             <input
                               value={vendorEmail}
-                              onChange={(e) => updateWorkflowField(item.id, 'vendor_email', e.target.value)}
+                              onChange={(e) =>
+                                updateWorkflowField(item.id, 'vendor_email', e.target.value)
+                              }
                               placeholder="Vendor email"
                               className={inputClass}
                             />
@@ -473,7 +597,9 @@ setDispatchFeedback({
 
                           <textarea
                             value={dispatchNote}
-                            onChange={(e) => updateWorkflowField(item.id, 'dispatch_note', e.target.value)}
+                            onChange={(e) =>
+                              updateWorkflowField(item.id, 'dispatch_note', e.target.value)
+                            }
                             placeholder="Dispatch note for vendor..."
                             rows={3}
                             className={`${inputClass} mt-3 w-full`}
@@ -504,49 +630,51 @@ setDispatchFeedback({
                             )}
 
                             <button
-  onClick={() => {
-    if (!item.dispatched_at) dispatchVendor(item)
-  }}
-  disabled={!!item.dispatched_at}
-  className={`rounded-xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
-    item.dispatched_at
-      ? 'cursor-not-allowed border-emerald-400/30 bg-emerald-400/10 text-emerald-300 shadow-none'
-      : 'border-yellow-400/40 bg-yellow-400 text-slate-950 shadow-yellow-900/20 hover:bg-yellow-300'
-  }`}
->
-  {dispatchFeedback[item.id]?.type === 'loading'
-    ? 'Dispatching...'
-    : item.dispatched_at
-      ? 'Dispatch Locked'
-      : 'Send Vendor Dispatch'}
-</button>
+                              onClick={() => {
+                                if (!item.dispatched_at) dispatchVendor(item)
+                              }}
+                              disabled={!!item.dispatched_at}
+                              className={`rounded-xl border px-4 py-3 text-sm font-semibold shadow-lg transition ${
+                                item.dispatched_at
+                                  ? 'cursor-not-allowed border-emerald-400/30 bg-emerald-400/10 text-emerald-300 shadow-none'
+                                  : 'border-yellow-400/40 bg-yellow-400 text-slate-950 shadow-yellow-900/20 hover:bg-yellow-300'
+                              }`}
+                            >
+                              {dispatchFeedback[item.id]?.type === 'loading'
+                                ? 'Dispatching...'
+                                : item.dispatched_at
+                                  ? 'Dispatch Locked'
+                                  : 'Send Vendor Dispatch'}
+                            </button>
                           </div>
 
                           {dispatchFeedback[item.id] && (
-  <div
-    className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${
-      dispatchFeedback[item.id].type === 'error'
-        ? 'border-red-400/30 bg-red-400/10 text-red-300'
-        : dispatchFeedback[item.id].type === 'loading'
-          ? 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300'
-          : 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
-    }`}
-  >
-    {dispatchFeedback[item.id].message}
-  </div>
-)}
+                            <div
+                              className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${
+                                dispatchFeedback[item.id].type === 'error'
+                                  ? 'border-red-400/30 bg-red-400/10 text-red-300'
+                                  : dispatchFeedback[item.id].type === 'loading'
+                                    ? 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300'
+                                    : 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                              }`}
+                            >
+                              {dispatchFeedback[item.id].message}
+                            </div>
+                          )}
 
-{item.dispatched_at && (
-  <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3 text-xs text-emerald-300">
-    Dispatched: {new Date(item.dispatched_at).toLocaleString()}
-  </div>
-)}
+                          {item.dispatched_at && (
+                            <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3 text-xs text-emerald-300">
+                              Dispatched: {new Date(item.dispatched_at).toLocaleString()}
+                            </div>
+                          )}
                         </div>
 
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
                           <input
                             value={wf.vendor || ''}
-                            onChange={(e) => updateWorkflowField(item.id, 'vendor', e.target.value)}
+                            onChange={(e) =>
+                              updateWorkflowField(item.id, 'vendor', e.target.value)
+                            }
                             placeholder="Internal assignment"
                             className={inputClass}
                           />
@@ -554,7 +682,9 @@ setDispatchFeedback({
                           <input
                             type="date"
                             value={wf.dueDate || ''}
-                            onChange={(e) => updateWorkflowField(item.id, 'dueDate', e.target.value)}
+                            onChange={(e) =>
+                              updateWorkflowField(item.id, 'dueDate', e.target.value)
+                            }
                             className={inputClass}
                           />
 
@@ -566,7 +696,9 @@ setDispatchFeedback({
                         <div className="mt-5">
                           <textarea
                             value={wf.pendingNote || ''}
-                            onChange={(e) => updateWorkflowField(item.id, 'pendingNote', e.target.value)}
+                            onChange={(e) =>
+                              updateWorkflowField(item.id, 'pendingNote', e.target.value)
+                            }
                             placeholder="Add manager note..."
                             rows={3}
                             className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
@@ -583,9 +715,14 @@ setDispatchFeedback({
                         {wf.notes && wf.notes.length > 0 && (
                           <div className="mt-5 space-y-3">
                             {wf.notes.map((note, index) => (
-                              <div key={index} className="rounded-xl border border-white/10 bg-black/20 p-4">
+                              <div
+                                key={index}
+                                className="rounded-xl border border-white/10 bg-black/20 p-4"
+                              >
                                 <div className="text-sm text-slate-300">{note.text}</div>
-                                <div className="mt-2 text-xs text-slate-500">{note.date}</div>
+                                <div className="mt-2 text-xs text-slate-500">
+                                  {note.date}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -637,16 +774,27 @@ setDispatchFeedback({
 
                           <div className="mt-4 space-y-4">
                             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                              <div className="text-sm text-slate-300">Request received</div>
+                              <div className="text-sm text-slate-300">
+                                Request received
+                              </div>
                               <div className="mt-1 text-xs text-slate-500">
-                                {item.created_at ? new Date(item.created_at).toLocaleString() : '—'}
+                                {item.created_at
+                                  ? new Date(item.created_at).toLocaleString()
+                                  : '—'}
                               </div>
                             </div>
 
                             {(wf.timeline || []).map((entry, index) => (
-                              <div key={index} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                                <div className="text-sm text-slate-300">{entry.text}</div>
-                                <div className="mt-1 text-xs text-slate-500">{entry.date}</div>
+                              <div
+                                key={index}
+                                className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+                              >
+                                <div className="text-sm text-slate-300">
+                                  {entry.text}
+                                </div>
+                                <div className="mt-1 text-xs text-slate-500">
+                                  {entry.date}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -676,15 +824,50 @@ setDispatchFeedback({
   )
 }
 
+function CommandMetric({ label, value, text }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+      <div className="text-sm text-slate-400">{label}</div>
+      <div className="mt-2 text-3xl font-semibold text-yellow-300">{value}</div>
+      <p className="mt-2 text-xs leading-5 text-slate-500">{text}</p>
+    </div>
+  )
+}
+
+function CommandPanel({ title, description, lines, href, cta }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+
+      <div className="mt-5 space-y-3">
+        {lines.map((line) => (
+          <div
+            key={line}
+            className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300"
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+
+      <Link
+        href={href}
+        className="mt-5 inline-flex rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+      >
+        {cta}
+      </Link>
+    </div>
+  )
+}
+
 function InfoBox({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-4">
       <div className="text-xs uppercase tracking-wide text-slate-500">
         {label}
       </div>
-      <div className="mt-1 text-sm text-slate-300">
-        {value}
-      </div>
+      <div className="mt-1 text-sm text-slate-300">{value}</div>
     </div>
   )
 }
