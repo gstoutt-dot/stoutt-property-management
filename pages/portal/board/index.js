@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function BoardPortal() {
   const [actions, setActions] = useState([]);
+  const [loadingId, setLoadingId] = useState(null);
+  const [successId, setSuccessId] = useState(null);
+  const [errorId, setErrorId] = useState(null);
 
   useEffect(() => {
     loadActions();
@@ -10,6 +13,54 @@ export default function BoardPortal() {
   function loadActions() {
     const stored = JSON.parse(localStorage.getItem("bos_actions") || "[]");
     setActions(stored);
+  }
+
+  async function handleApproveAndDispatch(action) {
+    if (action.dispatched) return;
+
+    setLoadingId(action.id);
+    setSuccessId(null);
+    setErrorId(null);
+
+    try {
+      const res = await fetch("/api/board-approve-and-dispatch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data?.error || "Dispatch failed");
+      }
+
+      const stored = JSON.parse(localStorage.getItem("bos_actions") || "[]");
+
+      const updated = stored.map((item) =>
+        item.id === action.id
+          ? {
+              ...item,
+              status: "board_approved",
+              dispatched: true,
+              dispatchLocked: true,
+              boardDecisionAt: new Date().toISOString(),
+              dispatchedAt: new Date().toISOString(),
+            }
+          : item
+      );
+
+      localStorage.setItem("bos_actions", JSON.stringify(updated));
+      setActions(updated);
+      setSuccessId(action.id);
+    } catch (err) {
+      console.error("Board approval dispatch error:", err);
+      setErrorId(action.id);
+    } finally {
+      setLoadingId(null);
+    }
   }
 
   function updateStatus(id, status) {
@@ -54,9 +105,10 @@ export default function BoardPortal() {
   const stats = {
     awaiting: boardQueue.length,
     approved: actions.filter((item) => item.status === "board_approved").length,
-    rejected: actions.filter((item) => item.status === "board_rejected").length,
-    clarification: actions.filter((item) => item.status === "needs_clarification")
-      .length,
+    dispatched: actions.filter((item) => item.dispatched).length,
+    clarification: actions.filter(
+      (item) => item.status === "needs_clarification"
+    ).length,
   };
 
   return (
@@ -71,7 +123,8 @@ export default function BoardPortal() {
               Board Review Portal
             </h1>
             <p className="mt-2 max-w-2xl text-white/60">
-              Manager-reviewed BOS actions awaiting board decision.
+              Manager-reviewed BOS actions awaiting board decision and dispatch
+              release.
             </p>
           </div>
 
@@ -87,8 +140,8 @@ export default function BoardPortal() {
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard label="Awaiting Review" value={stats.awaiting} />
-          <StatCard label="Approved" value={stats.approved} />
-          <StatCard label="Rejected" value={stats.rejected} />
+          <StatCard label="Board Approved" value={stats.approved} />
+          <StatCard label="Dispatched" value={stats.dispatched} />
           <StatCard label="Clarification" value={stats.clarification} />
         </div>
       </section>
@@ -104,8 +157,8 @@ export default function BoardPortal() {
                 Items Awaiting Decision
               </h2>
               <p className="mt-2 text-white/55">
-                These items were reviewed by management and are ready for board
-                action.
+                These items have been reviewed by management and are ready for
+                board approval, rejection, or clarification.
               </p>
             </div>
           </div>
@@ -118,7 +171,10 @@ export default function BoardPortal() {
                 <ActionCard
                   key={item.id}
                   item={item}
-                  onApprove={() => updateStatus(item.id, "board_approved")}
+                  isLoading={loadingId === item.id}
+                  isSuccess={successId === item.id || item.dispatched}
+                  isError={errorId === item.id}
+                  onApprove={() => handleApproveAndDispatch(item)}
                   onReject={() => updateStatus(item.id, "board_rejected")}
                   onClarify={() => updateStatus(item.id, "needs_clarification")}
                 />
@@ -134,7 +190,12 @@ export default function BoardPortal() {
             <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
               Decision History
             </p>
-            <h2 className="mt-2 text-2xl font-semibold">Recent Board Actions</h2>
+            <h2 className="mt-2 text-2xl font-semibold">
+              Recent Board Actions
+            </h2>
+            <p className="mt-2 text-white/55">
+              Completed board decisions and dispatch outcomes are tracked here.
+            </p>
           </div>
 
           {decisionHistory.length === 0 ? (
@@ -152,13 +213,15 @@ export default function BoardPortal() {
                         {item.title || item.requestType || "BOS Action"}
                       </h3>
                       <p className="mt-1 text-sm text-white/55">
-                        {item.description || item.notes || "No description provided."}
+                        {item.description ||
+                          item.notes ||
+                          "No description provided."}
                       </p>
                     </div>
-                    <StatusBadge status={item.status} />
+                    <StatusBadge status={item.status} dispatched={item.dispatched} />
                   </div>
 
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-white/55">
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm text-white/55">
                     <Meta label="Association" value={item.association} />
                     <Meta label="Unit" value={item.unit} />
                     <Meta
@@ -167,6 +230,16 @@ export default function BoardPortal() {
                         item.boardDecisionAt
                           ? new Date(item.boardDecisionAt).toLocaleString()
                           : "Not recorded"
+                      }
+                    />
+                    <Meta
+                      label="Dispatch Date"
+                      value={
+                        item.dispatchedAt
+                          ? new Date(item.dispatchedAt).toLocaleString()
+                          : item.dispatched
+                          ? "Dispatched"
+                          : "Not dispatched"
                       }
                     />
                   </div>
@@ -189,7 +262,17 @@ function StatCard({ label, value }) {
   );
 }
 
-function ActionCard({ item, onApprove, onReject, onClarify }) {
+function ActionCard({
+  item,
+  isLoading,
+  isSuccess,
+  isError,
+  onApprove,
+  onReject,
+  onClarify,
+}) {
+  const locked = isLoading || isSuccess || item.dispatched;
+
   return (
     <article className="rounded-3xl border border-yellow-500/10 bg-[#020617]/80 p-6 hover:border-yellow-400/30 hover:bg-white/[0.035] transition">
       <div className="flex items-start justify-between gap-4">
@@ -201,7 +284,7 @@ function ActionCard({ item, onApprove, onReject, onClarify }) {
             {item.title || item.requestType || "BOS Action"}
           </h3>
         </div>
-        <StatusBadge status={item.status} />
+        <StatusBadge status={item.status} dispatched={item.dispatched} />
       </div>
 
       <p className="mt-4 text-white/70 leading-relaxed">
@@ -216,30 +299,58 @@ function ActionCard({ item, onApprove, onReject, onClarify }) {
       </div>
 
       <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.04] p-4">
-        <p className="text-sm font-medium text-yellow-300">Board Decision Needed</p>
+        <p className="text-sm font-medium text-yellow-300">
+          Board Decision Needed
+        </p>
         <p className="mt-1 text-sm text-white/55">
-          Review the manager-approved action and record the board direction.
+          Approving this item releases it into the dispatch workflow and locks
+          the approval action.
         </p>
       </div>
+
+      {isLoading && (
+        <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-sm text-yellow-200">
+          Processing board approval and vendor dispatch...
+        </div>
+      )}
+
+      {isSuccess && (
+        <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-200">
+          Approved and dispatched. This action is now locked.
+        </div>
+      )}
+
+      {isError && (
+        <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-200">
+          Dispatch failed. Please retry approval or review the dispatch API.
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
         <button
           onClick={onApprove}
-          className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20 transition"
+          disabled={locked}
+          className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20 transition disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Approve
+          {isLoading
+            ? "Dispatching..."
+            : isSuccess || item.dispatched
+            ? "Approved & Dispatched"
+            : "Approve & Dispatch"}
         </button>
 
         <button
           onClick={onReject}
-          className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-semibold text-red-300 hover:bg-red-400/20 transition"
+          disabled={locked}
+          className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-semibold text-red-300 hover:bg-red-400/20 transition disabled:cursor-not-allowed disabled:opacity-40"
         >
           Reject
         </button>
 
         <button
           onClick={onClarify}
-          className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
+          disabled={locked}
+          className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition disabled:cursor-not-allowed disabled:opacity-40"
         >
           Request Info
         </button>
@@ -259,13 +370,23 @@ function EmptyState({ message }) {
 function Meta({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-      <p className="text-xs uppercase tracking-[0.18em] text-white/35">{label}</p>
+      <p className="text-xs uppercase tracking-[0.18em] text-white/35">
+        {label}
+      </p>
       <p className="mt-1 text-white/75">{value || "N/A"}</p>
     </div>
   );
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, dispatched }) {
+  if (dispatched) {
+    return (
+      <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+        Dispatched
+      </span>
+    );
+  }
+
   const styles = {
     manager_approved: "border-yellow-400/30 bg-yellow-400/10 text-yellow-300",
     board_approved: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
