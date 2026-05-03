@@ -9,6 +9,7 @@ export default function VendorTracking() {
   const [selectedId, setSelectedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState({});
 
   const statuses = ["All", "Dispatched", "In Progress", "Completed", "Verified"];
 
@@ -64,8 +65,46 @@ export default function VendorTracking() {
     return "Pending vendor arrival";
   }
 
+  async function updateLinkedInvoice(job) {
+    if (!job.work_order_id) return;
+
+    const { data, error } = await supabase
+      .from("vendor_invoices")
+      .update({
+        status: "Needs Verification",
+        manager_note: `Work order ${job.work_order_id} was verified in Vendor Tracking. Invoice is ready for manager verification.`,
+      })
+      .eq("work_order_id", job.work_order_id)
+      .select();
+
+    if (error) {
+      console.error("Linked invoice update error:", error);
+      setFeedback({
+        type: "error",
+        message: "Job verified, but linked invoice update failed.",
+      });
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setFeedback({
+        type: "warning",
+        message: `Job verified, but no invoice was found for ${job.work_order_id}.`,
+      });
+      return;
+    }
+
+    setFeedback({
+      type: "success",
+      message: `Job verified and linked invoice updated for ${job.work_order_id}.`,
+    });
+  }
+
   async function updateStatus(id, status) {
     setSaving(true);
+    setFeedback({});
+
+    const job = jobs.find((j) => j.id === id);
 
     const updatePayload = {
       status,
@@ -83,20 +122,28 @@ export default function VendorTracking() {
 
     if (error) {
       console.error("Vendor status update error:", error);
+      setFeedback({
+        type: "error",
+        message: "Vendor tracking update failed.",
+      });
       setSaving(false);
       return;
     }
 
     setJobs((current) =>
-      current.map((job) =>
-        job.id === id
+      current.map((item) =>
+        item.id === id
           ? {
-              ...job,
+              ...item,
               ...updatePayload,
             }
-          : job
+          : item
       )
     );
+
+    if (status === "Verified" && job) {
+      await updateLinkedInvoice(job);
+    }
 
     setSaving(false);
   }
@@ -120,9 +167,9 @@ export default function VendorTracking() {
               <p className={bosTheme.eyebrow}>Vendor Operations</p>
               <h1 className={bosTheme.title}>Vendor Tracking</h1>
               <p className={bosTheme.subtitle}>
-                Live Supabase vendor execution console for dispatched work
-                orders, progress tracking, manager verification, and invoice
-                readiness.
+                Live vendor execution console connected to invoice review. Once
+                a job is verified, the matching invoice is flagged for manager
+                verification.
               </p>
             </div>
 
@@ -146,8 +193,22 @@ export default function VendorTracking() {
           <Stat label="Dispatched" value={stats.dispatched} detail="Awaiting arrival" />
           <Stat label="In Progress" value={stats.progress} detail="Currently active" />
           <Stat label="Completed" value={stats.completed} detail="Needs verification" />
-          <Stat label="Verified" value={stats.verified} detail="Ready for invoice" />
+          <Stat label="Verified" value={stats.verified} detail="Invoice-ready" />
         </section>
+
+        {feedback.message && (
+          <div
+            className={`mt-5 rounded-2xl border px-5 py-4 text-sm ${
+              feedback.type === "error"
+                ? "border-red-400/30 bg-red-400/10 text-red-300"
+                : feedback.type === "warning"
+                ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
+                : "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+            }`}
+          >
+            {feedback.message}
+          </div>
+        )}
 
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -218,12 +279,6 @@ export default function VendorTracking() {
                   </div>
                 </button>
               ))}
-
-            {!loading && filteredJobs.length === 0 && (
-              <div className={bosTheme.card}>
-                <p className="text-sm text-slate-400">No vendor jobs found.</p>
-              </div>
-            )}
           </div>
 
           <aside className={bosTheme.actionPanel}>
@@ -271,14 +326,14 @@ export default function VendorTracking() {
                     disabled={saving}
                     className={bosTheme.outlineButton}
                   >
-                    Verify Completion
+                    Verify + Flag Invoice
                   </button>
 
                   <Link
                     href="/portal/manager/vendor-invoices"
                     className={`${bosTheme.outlineButton} block text-center`}
                   >
-                    Move to Invoice Review →
+                    Open Invoice Review →
                   </Link>
 
                   <button
