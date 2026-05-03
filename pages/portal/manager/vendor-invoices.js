@@ -47,14 +47,13 @@ export default function ManagerVendorInvoices() {
   const selected =
     invoices.find((item) => item.id === selectedId) || invoices[0] || null;
 
-  const stats = useMemo(() => {
-    return {
-      open: invoices.length,
-      verification: invoices.filter((i) => i.status === "Needs Verification").length,
-      board: invoices.filter((i) => i.status === "Ready for Board").length,
-      payment: invoices.filter((i) => i.status === "Approved for Payment").length,
-    };
-  }, [invoices]);
+  <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+  <Stat label="Open Invoices" value={stats.open} />
+  <Stat label="Needs Verification" value={stats.verification} />
+  <Stat label="Ready for Board" value={stats.board} />
+  <Stat label="Needs Documentation" value={stats.documentation} />
+  <Stat label="Approved Payment" value={stats.payment} />
+</div>
 
   function getNextStep(status) {
     if (status === "Approved for Payment") return "Send to payment processing queue.";
