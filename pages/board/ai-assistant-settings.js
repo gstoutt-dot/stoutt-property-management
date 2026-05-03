@@ -1,4 +1,4 @@
-// pages/board/ai-assistant-settings.js
+// pages/board/ai-assistant-settings.js 
 
 import Link from 'next/link'
 
