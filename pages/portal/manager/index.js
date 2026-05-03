@@ -162,29 +162,66 @@ export default function ManagerDashboard() {
   async function dispatchVendor(item) {
     const wf = workflow[item.id] || {}
 
-    const vendorName = wf.vendor_name ?? item.vendor_name
-    const vendorPhone = wf.vendor_phone ?? item.vendor_phone
-    const vendorEmail = wf.vendor_email ?? item.vendor_email
-    const dispatchNote = wf.dispatch_note ?? item.dispatch_note
+    const vendorName = wf.vendor_name ?? item.vendor_name ?? ''
+    const vendorPhone = wf.vendor_phone ?? item.vendor_phone ?? ''
+    const vendorEmail = wf.vendor_email ?? item.vendor_email ?? ''
+    const dispatchNote = wf.dispatch_note ?? item.dispatch_note ?? ''
 
     if (!vendorName || !vendorPhone) {
       alert('Please enter at least vendor name and vendor phone before dispatching.')
       return
     }
 
-    await supabase
-      .from('bos_actions')
-      .update({
-        vendor_name: vendorName,
-        vendor_phone: vendorPhone,
-        vendor_email: vendorEmail || '',
-        dispatch_note: dispatchNote || '',
-        dispatched_at: new Date().toISOString(),
-      })
-      .eq('id', item.id)
+    if (!vendorEmail) {
+      alert('Please enter a vendor email before dispatching.')
+      return
+    }
 
-    addTimeline(item.id, 'Dispatched to vendor')
-    fetchData()
+    try {
+      const response = await fetch('/api/send-vendor-dispatch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requestId: item.id,
+          vendorName,
+          vendorPhone,
+          vendorEmail,
+          requestType: item.request_type || item.title || 'Manager Dispatch',
+          propertyName: item.association_name || 'Demo Association',
+          ownerName: item.owner_name || '',
+          ownerPhone: item.owner_phone || '',
+          propertyAddress: item.property_address || '',
+          description: item.description || '',
+          dispatchNote,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Vendor dispatch failed.')
+      }
+
+      await supabase
+        .from('bos_actions')
+        .update({
+          vendor_name: vendorName,
+          vendor_phone: vendorPhone,
+          vendor_email: vendorEmail,
+          dispatch_note: dispatchNote || '',
+          dispatched_at: new Date().toISOString(),
+        })
+        .eq('id', item.id)
+
+      addTimeline(item.id, 'Vendor dispatch simulated successfully')
+      alert('Vendor dispatch simulated successfully.')
+      fetchData()
+    } catch (error) {
+      console.error('Vendor dispatch error:', error)
+      alert(error.message || 'There was an error sending it.')
+    }
   }
 
   const filtered = useMemo(() => {
