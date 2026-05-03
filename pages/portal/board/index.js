@@ -1,202 +1,292 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabaseClient'
+import { useEffect, useMemo, useState } from "react";
 
-export default function BoardDecisionCenter() {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function BoardPortal() {
+  const [actions, setActions] = useState([]);
 
   useEffect(() => {
-    fetchBoardItems()
-  }, [])
+    loadActions();
+  }, []);
 
-  async function fetchBoardItems() {
-    setLoading(true)
-
-    const { data, error } = await supabase
-      .from('bos_actions')
-      .select('*')
-      .eq('status', 'board_review')
-      .order('created_at', { ascending: false })
-
-    if (!error) setItems(data || [])
-    setLoading(false)
+  function loadActions() {
+    const stored = JSON.parse(localStorage.getItem("bos_actions") || "[]");
+    setActions(stored);
   }
 
-  async function updateStatus(id, status) {
-    await supabase
-      .from('bos_actions')
-      .update({ status })
-      .eq('id', id)
+  function updateStatus(id, status) {
+    const stored = JSON.parse(localStorage.getItem("bos_actions") || "[]");
 
-    fetchBoardItems()
+    const updated = stored.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            status,
+            boardDecisionAt: new Date().toISOString(),
+          }
+        : item
+    );
+
+    localStorage.setItem("bos_actions", JSON.stringify(updated));
+    setActions(updated);
   }
+
+  const boardQueue = useMemo(
+    () =>
+      actions
+        .filter((item) => item.status === "manager_approved")
+        .slice()
+        .reverse(),
+    [actions]
+  );
+
+  const decisionHistory = useMemo(
+    () =>
+      actions
+        .filter((item) =>
+          ["board_approved", "board_rejected", "needs_clarification"].includes(
+            item.status
+          )
+        )
+        .slice()
+        .reverse(),
+    [actions]
+  );
+
+  const stats = {
+    awaiting: boardQueue.length,
+    approved: actions.filter((item) => item.status === "board_approved").length,
+    rejected: actions.filter((item) => item.status === "board_rejected").length,
+    clarification: actions.filter((item) => item.status === "needs_clarification")
+      .length,
+  };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-
-        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <main className="min-h-screen bg-[#020617] text-white">
+      <section className="border-b border-white/10 bg-[#020617]">
+        <div className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between">
           <div>
-            <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
-              BOS Board Decision Layer
-            </div>
-
-            <h1 className="text-4xl font-semibold tracking-tight">
-              Board Decision Center
+            <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
+              Stoutt Property Management
+            </p>
+            <h1 className="mt-2 text-3xl md:text-4xl font-semibold">
+              Board Review Portal
             </h1>
-
-            <p className="mt-3 max-w-2xl text-slate-400">
-              Review manager-routed items and make clean approval decisions without seeing the full manager workload.
+            <p className="mt-2 max-w-2xl text-white/60">
+              Manager-reviewed BOS actions awaiting board decision.
             </p>
           </div>
 
-          <button
-            onClick={fetchBoardItems}
-            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+          <a
+            href="/portal/manager"
+            className="hidden md:inline-flex rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/10 transition"
           >
-            Refresh Board Queue
-          </button>
+            Manager Portal
+          </a>
         </div>
+      </section>
 
-        <div className="mb-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-            <div className="text-sm text-slate-400">Pending Board Review</div>
-            <div className="mt-2 text-3xl font-semibold">{items.length}</div>
-          </div>
-
-          <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-5">
-            <div className="text-sm text-yellow-300">Decision Mode</div>
-            <div className="mt-2 text-xl font-semibold">Approve / Reject</div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-            <div className="text-sm text-slate-400">Routing Source</div>
-            <div className="mt-2 text-xl font-semibold">Manager Reviewed</div>
-          </div>
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <StatCard label="Awaiting Review" value={stats.awaiting} />
+          <StatCard label="Approved" value={stats.approved} />
+          <StatCard label="Rejected" value={stats.rejected} />
+          <StatCard label="Clarification" value={stats.clarification} />
         </div>
+      </section>
 
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl">
-          <div className="border-b border-white/10 px-6 py-5">
-            <h2 className="text-xl font-semibold">Board Approval Queue</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Only items sent to Board Review appear here.
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 md:p-8 shadow-2xl shadow-black/30">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
+                Board Queue
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold">
+                Items Awaiting Decision
+              </h2>
+              <p className="mt-2 text-white/55">
+                These items were reviewed by management and are ready for board
+                action.
+              </p>
+            </div>
+          </div>
+
+          {boardQueue.length === 0 ? (
+            <EmptyState message="No manager-approved items are currently waiting for board review." />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {boardQueue.map((item) => (
+                <ActionCard
+                  key={item.id}
+                  item={item}
+                  onApprove={() => updateStatus(item.id, "board_approved")}
+                  onReject={() => updateStatus(item.id, "board_rejected")}
+                  onClarify={() => updateStatus(item.id, "needs_clarification")}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-16">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.015] p-6 md:p-8">
+          <div className="mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
+              Decision History
             </p>
+            <h2 className="mt-2 text-2xl font-semibold">Recent Board Actions</h2>
           </div>
 
-          <div className="divide-y divide-white/10">
-            {loading && (
-              <div className="px-6 py-10 text-slate-400">
-                Loading board review items...
-              </div>
-            )}
-
-            {!loading && items.length === 0 && (
-              <div className="px-6 py-10 text-slate-400">
-                No items currently require Board review.
-              </div>
-            )}
-
-            {!loading &&
-              items.map((item) => (
-                <div key={item.id} className="px-6 py-6 transition hover:bg-white/[0.03]">
-                  <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-
+          {decisionHistory.length === 0 ? (
+            <EmptyState message="No board decisions have been recorded yet." />
+          ) : (
+            <div className="space-y-4">
+              {decisionHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-white/10 bg-[#020617]/80 p-5"
+                >
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                     <div>
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        <span className="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 text-xs text-purple-300">
-                          board review
-                        </span>
-
-                        <span className="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-3 py-1 text-xs text-yellow-300">
-                          manager routed
-                        </span>
-
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
-                          {item.priority || 'normal'} priority
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-semibold">
-                        {item.title || 'Untitled Request'}
+                      <h3 className="text-lg font-semibold">
+                        {item.title || item.requestType || "BOS Action"}
                       </h3>
-
-                      {item.description && (
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-                          {item.description}
-                        </p>
-                      )}
-
-                      <div className="mt-5 grid gap-3 md:grid-cols-3">
-                        <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                          <div className="text-xs uppercase tracking-wide text-slate-500">
-                            Created
-                          </div>
-                          <div className="mt-1 text-sm text-slate-300">
-                            {item.created_at
-                              ? new Date(item.created_at).toLocaleString()
-                              : '—'}
-                          </div>
-                        </div>
-
-                        <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                          <div className="text-xs uppercase tracking-wide text-slate-500">
-                            Current Status
-                          </div>
-                          <div className="mt-1 text-sm text-slate-300">
-                            {String(item.status || '').replace('_', ' ')}
-                          </div>
-                        </div>
-
-                        <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                          <div className="text-xs uppercase tracking-wide text-slate-500">
-                            Board Action
-                          </div>
-                          <div className="mt-1 text-sm text-slate-300">
-                            Decision Required
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                      <h4 className="font-semibold">Board Decision</h4>
-
-                      <p className="mt-2 text-sm leading-6 text-slate-400">
-                        Approving returns this item to active management for execution.
-                        Rejecting routes it back as declined.
+                      <p className="mt-1 text-sm text-white/55">
+                        {item.description || item.notes || "No description provided."}
                       </p>
-
-                      <div className="mt-5 space-y-3">
-                        <button
-                          onClick={() => updateStatus(item.id, 'approved')}
-                          className="w-full rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-300 hover:bg-emerald-400/20"
-                        >
-                          Approve
-                        </button>
-
-                        <button
-                          onClick={() => updateStatus(item.id, 'rejected')}
-                          className="w-full rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-medium text-red-300 hover:bg-red-400/20"
-                        >
-                          Reject
-                        </button>
-
-                        <button
-                          onClick={() => updateStatus(item.id, 'in_progress')}
-                          className="w-full rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
-                        >
-                          Return to Manager
-                        </button>
-                      </div>
                     </div>
+                    <StatusBadge status={item.status} />
+                  </div>
 
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-white/55">
+                    <Meta label="Association" value={item.association} />
+                    <Meta label="Unit" value={item.unit} />
+                    <Meta
+                      label="Decision Date"
+                      value={
+                        item.boardDecisionAt
+                          ? new Date(item.boardDecisionAt).toLocaleString()
+                          : "Not recorded"
+                      }
+                    />
                   </div>
                 </div>
               ))}
-          </div>
+            </div>
+          )}
         </div>
+      </section>
+    </main>
+  );
+}
 
-      </div>
+function StatCard({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-yellow-500/10 bg-white/[0.025] p-5">
+      <p className="text-sm text-white/55">{label}</p>
+      <p className="mt-3 text-3xl font-semibold text-yellow-300">{value}</p>
     </div>
-  )
+  );
+}
+
+function ActionCard({ item, onApprove, onReject, onClarify }) {
+  return (
+    <article className="rounded-3xl border border-yellow-500/10 bg-[#020617]/80 p-6 hover:border-yellow-400/30 hover:bg-white/[0.035] transition">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
+            Manager Approved
+          </p>
+          <h3 className="mt-2 text-xl font-semibold">
+            {item.title || item.requestType || "BOS Action"}
+          </h3>
+        </div>
+        <StatusBadge status={item.status} />
+      </div>
+
+      <p className="mt-4 text-white/70 leading-relaxed">
+        {item.description || item.notes || "No description provided."}
+      </p>
+
+      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <Meta label="Association" value={item.association} />
+        <Meta label="Owner" value={item.ownerName || item.owner} />
+        <Meta label="Unit" value={item.unit} />
+        <Meta label="Category" value={item.category || item.type} />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.04] p-4">
+        <p className="text-sm font-medium text-yellow-300">Board Decision Needed</p>
+        <p className="mt-1 text-sm text-white/55">
+          Review the manager-approved action and record the board direction.
+        </p>
+      </div>
+
+      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+        <button
+          onClick={onApprove}
+          className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20 transition"
+        >
+          Approve
+        </button>
+
+        <button
+          onClick={onReject}
+          className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm font-semibold text-red-300 hover:bg-red-400/20 transition"
+        >
+          Reject
+        </button>
+
+        <button
+          onClick={onClarify}
+          className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
+        >
+          Request Info
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function EmptyState({ message }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-yellow-500/20 bg-white/[0.015] p-10 text-center">
+      <p className="text-white/50">{message}</p>
+    </div>
+  );
+}
+
+function Meta({ label, value }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+      <p className="text-xs uppercase tracking-[0.18em] text-white/35">{label}</p>
+      <p className="mt-1 text-white/75">{value || "N/A"}</p>
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const styles = {
+    manager_approved: "border-yellow-400/30 bg-yellow-400/10 text-yellow-300",
+    board_approved: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+    board_rejected: "border-red-400/30 bg-red-400/10 text-red-300",
+    needs_clarification: "border-blue-400/30 bg-blue-400/10 text-blue-300",
+  };
+
+  const labels = {
+    manager_approved: "Manager Approved",
+    board_approved: "Board Approved",
+    board_rejected: "Board Rejected",
+    needs_clarification: "Needs Clarification",
+  };
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+        styles[status] || "border-white/10 bg-white/5 text-white/60"
+      }`}
+    >
+      {labels[status] || status || "Unknown"}
+    </span>
+  );
 }
