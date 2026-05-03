@@ -192,7 +192,8 @@ const [dispatchFeedback, setDispatchFeedback] = useState({})
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          requestId: item.id,
+  action_id: item.id,
+  requestId: item.id,
           vendorName,
           vendorPhone,
           vendorEmail,
