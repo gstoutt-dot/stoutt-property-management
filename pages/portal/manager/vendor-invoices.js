@@ -8,7 +8,6 @@ export default function ManagerVendorInvoices() {
   const [selectedId, setSelectedId] = useState(null);
   const [notes, setNotes] = useState({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchInvoices();
@@ -90,15 +89,15 @@ export default function ManagerVendorInvoices() {
   }, [invoices]);
 
   async function updateStatus(id, status) {
-    setSaving(true);
-
     await supabase
       .from("vendor_invoices")
-      .update({ status, manager_note: notes[id] || "" })
+      .update({
+        status,
+        manager_note: notes[id] || "",
+      })
       .eq("id", id);
 
-    fetchInvoices();
-    setSaving(false);
+    await fetchInvoices();
   }
 
   function formatAmount(a) {
