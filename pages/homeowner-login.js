@@ -17,7 +17,7 @@ export default function HomeownerLoginPage() {
             <Link href="/">Home</Link>
             <Link href="/services">Services</Link>
             <Link href="/why-switch">Why Switch</Link>
-            <Link href="/founder">https://www.glennstoutt.com/</Link>
+            <Link href="/founder">Founder</Link>
             <Link href="/collections">Collections</Link>
             <Link href="/coverage">Coverage</Link>
           </nav>
