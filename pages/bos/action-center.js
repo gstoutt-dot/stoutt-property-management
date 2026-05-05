@@ -1,36 +1,119 @@
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function BOSActionCenter() {
   const [actions, setActions] = useState([]);
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState("newest");
   const [selectedAction, setSelectedAction] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState("");
 
   useEffect(() => {
     loadActions();
+
+    const interval = setInterval(() => {
+      loadActions(false);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  function loadActions() {
-    const stored = JSON.parse(localStorage.getItem("bos_actions") || "[]");
-    setActions(stored);
+  async function loadActions(showLoading = true) {
+    if (showLoading) setLoading(true);
+
+    const { data, error } = await supabase
+      .from("bos_actions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("BOS load error:", error.message);
+      setLoading(false);
+      return;
+    }
+
+    const mapped = (data || []).map((item) => ({
+      id: item.id,
+      title: item.title || "Ava Intake Request",
+      description: item.description || "No description provided.",
+      notes: item.description || "",
+      association: item.association_name || "Unknown Association",
+      ownerName: item.owner_name || "Unknown Caller",
+      owner: item.owner_name || "Unknown Caller",
+      ownerPhone: item.owner_phone || "",
+      ownerEmail: item.owner_email || "",
+      unit: item.property_address || "",
+      category: item.request_type || "general",
+      type: item.request_type || "general",
+      status: mapStatus(item.status),
+      rawStatus: item.status,
+      priority: item.priority || "medium",
+      source: item.source || "Ava AI Phone Intake",
+      bestContactTime: item.best_contact_time || "",
+      createdAt: item.created_at,
+      managerUpdatedAt: item.updated_at,
+      boardDecisionAt:
+        item.status === "approved" || item.status === "rejected"
+          ? item.updated_at
+          : null,
+      dispatched: item.status === "completed",
+      dispatchedAt: item.status === "completed" ? item.updated_at : null,
+      vendorStatus: item.vendor_status || "",
+      vendorNote: item.vendor_note || "",
+      vendorUpdatedAt: item.vendor_updated_at || null,
+    }));
+
+    setActions(mapped);
+    setLastRefresh(new Date().toLocaleTimeString());
+    setLoading(false);
   }
 
   const filtered = useMemo(() => {
     let list = [...actions];
 
-    if (filter === "intake") list = list.filter((a) => a.status === "new");
-    if (filter === "manager") list = list.filter((a) => a.status === "manager_approved");
-    if (filter === "board") list = list.filter((a) => a.status === "board_approved");
-    if (filter === "dispatch") list = list.filter((a) => a.dispatched);
-    if (filter === "clarification") list = list.filter((a) => a.status === "needs_clarification");
-    if (filter === "vendor") list = list.filter((a) => a.vendorStatus);
+    if (filter === "intake") {
+      list = list.filter((a) => a.status === "new");
+    }
+
+    if (filter === "manager") {
+      list = list.filter(
+        (a) => a.status === "manager_approved" || a.status === "board_pending"
+      );
+    }
+
+    if (filter === "board") {
+      list = list.filter(
+        (a) =>
+          a.status === "board_pending" ||
+          a.status === "board_approved" ||
+          a.status === "board_rejected"
+      );
+    }
+
+    if (filter === "dispatch") {
+      list = list.filter((a) => a.dispatched);
+    }
+
+    if (filter === "clarification") {
+      list = list.filter((a) => a.status === "needs_clarification");
+    }
+
+    if (filter === "vendor") {
+      list = list.filter((a) => a.vendorStatus);
+    }
 
     if (sort === "newest") {
-      list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      list.sort(
+        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+      );
     }
 
     if (sort === "oldest") {
-      list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      list.sort(
+        (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+      );
     }
 
     if (sort === "priority") {
@@ -43,39 +126,71 @@ export default function BOSActionCenter() {
   const stats = {
     total: actions.length,
     intake: actions.filter((a) => a.status === "new").length,
-    manager: actions.filter((a) => a.status === "manager_approved").length,
-    board: actions.filter((a) => a.status === "board_approved").length,
+    manager: actions.filter(
+      (a) => a.status === "manager_approved" || a.status === "board_pending"
+    ).length,
+    board: actions.filter(
+      (a) =>
+        a.status === "board_pending" ||
+        a.status === "board_approved" ||
+        a.status === "board_rejected"
+    ).length,
     dispatched: actions.filter((a) => a.dispatched).length,
-    clarification: actions.filter((a) => a.status === "needs_clarification").length,
+    clarification: actions.filter((a) => a.status === "needs_clarification")
+      .length,
     vendor: actions.filter((a) => a.vendorStatus).length,
   };
 
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-7 flex items-center justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-7 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
               BOS SYSTEM
             </p>
-            <h1 className="mt-2 text-3xl md:text-4xl font-semibold">
+
+            <h1 className="mt-2 text-3xl font-semibold md:text-4xl">
               Action Center
             </h1>
+
             <p className="mt-2 text-white/60">
-              Lifecycle visibility from Ava intake through board approval, dispatch, and vendor response.
+              Live lifecycle visibility from Ava intake through management
+              review, board approval, dispatch, and vendor response.
+            </p>
+
+            <p className="mt-2 text-xs text-white/35">
+              Auto-refreshing every 5 seconds
+              {lastRefresh ? ` • Last refresh ${lastRefresh}` : ""}
             </p>
           </div>
 
-          <div className="hidden md:flex gap-3">
-            <a href="/portal/manager" className="navGold">Manager</a>
-            <a href="/portal/board" className="navBtn">Board</a>
-            <a href="/bos/dispatch-feed" className="navBtn">Dispatch</a>
+          <div className="flex flex-wrap gap-3">
+            <button onClick={() => loadActions()} className="navGold">
+              Refresh Now
+            </button>
+
+            <Link href="/software-dashboard" className="navBtn">
+              Dashboard
+            </Link>
+
+            <Link href="/portal/manager" className="navBtn">
+              Manager
+            </Link>
+
+            <Link href="/board" className="navBtn">
+              Board
+            </Link>
+
+            <Link href="/bos/dispatch-feed" className="navBtn">
+              Dispatch
+            </Link>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-7">
           <Stat label="Total" value={stats.total} />
           <Stat label="Intake" value={stats.intake} />
           <Stat label="Manager" value={stats.manager} />
@@ -87,9 +202,17 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex gap-3 flex-wrap">
-            {["all", "intake", "manager", "board", "dispatch", "clarification", "vendor"].map((f) => (
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap gap-3">
+            {[
+              "all",
+              "intake",
+              "manager",
+              "board",
+              "dispatch",
+              "clarification",
+              "vendor",
+            ].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -117,18 +240,29 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 md:p-8 shadow-2xl shadow-black/30">
+        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 shadow-2xl shadow-black/30 md:p-8">
           <div className="mb-6">
             <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
               OPERATING TIMELINE
             </p>
-            <h2 className="mt-2 text-2xl font-semibold">Request Progression</h2>
+
+            <h2 className="mt-2 text-2xl font-semibold">
+              Request Progression
+            </h2>
+
             <p className="mt-2 text-white/55">
-              Every action shows where it sits in the SPM/BOS approval chain.
+              Every Ava-created action shows where it sits in the SPM/BOS
+              approval chain.
             </p>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="rounded-3xl border border-dashed border-yellow-500/20 bg-white/[0.015] p-10 text-center">
+              <p className="text-xl font-semibold text-white/80">
+                Loading BOS actions...
+              </p>
+            </div>
+          ) : filtered.length === 0 ? (
             <Empty filter={filter} />
           ) : (
             <div className="space-y-5">
@@ -153,29 +287,32 @@ export default function BOSActionCenter() {
 
       <style jsx>{`
         .navBtn {
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 1rem;
           padding: 0.75rem 1.25rem;
           font-size: 0.875rem;
           font-weight: 600;
-          color: rgba(255,255,255,0.7);
+          color: rgba(255, 255, 255, 0.7);
           transition: all 0.2s ease;
         }
+
         .navBtn:hover {
-          border-color: rgba(250,204,21,0.3);
-          color: rgb(253,224,71);
+          border-color: rgba(250, 204, 21, 0.3);
+          color: rgb(253, 224, 71);
         }
+
         .navGold {
-          border: 1px solid rgba(250,204,21,0.3);
+          border: 1px solid rgba(250, 204, 21, 0.3);
           border-radius: 1rem;
           padding: 0.75rem 1.25rem;
           font-size: 0.875rem;
           font-weight: 600;
-          color: rgb(253,224,71);
+          color: rgb(253, 224, 71);
           transition: all 0.2s ease;
         }
+
         .navGold:hover {
-          background: rgba(250,204,21,0.1);
+          background: rgba(250, 204, 21, 0.1);
         }
       `}</style>
     </main>
@@ -186,35 +323,39 @@ function ActionRow({ item, onOpen }) {
   return (
     <article
       onClick={onOpen}
-      className="group cursor-pointer rounded-3xl border border-white/10 bg-[#020617]/80 p-6 hover:border-yellow-400/30 hover:bg-white/[0.025] transition"
+      className="group cursor-pointer rounded-3xl border border-white/10 bg-[#020617]/80 p-6 transition hover:border-yellow-400/30 hover:bg-white/[0.025]"
     >
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
-            BOS Action
+            {item.source || "BOS Action"}
           </p>
-          <h3 className="mt-2 text-xl font-semibold group-hover:text-yellow-100 transition">
+
+          <h3 className="mt-2 text-xl font-semibold transition group-hover:text-yellow-100">
             {item.title || item.requestType || "BOS Action"}
           </h3>
-          <p className="mt-3 text-white/65 leading-relaxed">
+
+          <p className="mt-3 leading-relaxed text-white/65">
             {item.description || item.notes || "No description provided."}
           </p>
         </div>
 
-        <div className="flex flex-col items-start lg:items-end gap-3">
+        <div className="flex flex-col items-start gap-3 lg:items-end">
           <Badge item={item} />
+          <PriorityBadge item={item} />
           <VendorBadge status={item.vendorStatus} />
-          <span className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-semibold text-yellow-300 group-hover:bg-yellow-400/20 transition">
+
+          <span className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-semibold text-yellow-300 transition group-hover:bg-yellow-400/20">
             View Details
           </span>
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
         <Meta label="Association" value={item.association} />
         <Meta label="Owner" value={item.ownerName || item.owner} />
-        <Meta label="Unit" value={item.unit} />
-        <Meta label="Category" value={item.category || item.type} />
+        <Meta label="Property / Unit" value={item.unit} />
+        <Meta label="Category" value={formatCategory(item.category || item.type)} />
       </div>
 
       <Timeline item={item} />
@@ -224,12 +365,18 @@ function ActionRow({ item, onOpen }) {
 
 function Timeline({ item }) {
   const steps = [
-    { key: "intake", label: "Ava Intake", complete: true, date: item.createdAt },
+    {
+      key: "intake",
+      label: "Ava Intake",
+      complete: true,
+      date: item.createdAt,
+    },
     {
       key: "manager",
       label: "Manager Review",
       complete:
         item.status === "manager_approved" ||
+        item.status === "board_pending" ||
         item.status === "board_approved" ||
         item.status === "board_rejected" ||
         item.status === "needs_clarification" ||
@@ -262,12 +409,12 @@ function Timeline({ item }) {
 
   return (
     <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         {steps.map((step, index) => (
           <div key={step.key} className="relative">
             <div className="flex items-center gap-3">
               <div
-                className={`h-9 w-9 rounded-full border flex items-center justify-center text-sm font-semibold ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold ${
                   step.complete
                     ? "border-yellow-400/40 bg-yellow-400/15 text-yellow-300"
                     : "border-white/10 bg-white/[0.03] text-white/35"
@@ -277,9 +424,14 @@ function Timeline({ item }) {
               </div>
 
               <div>
-                <p className={step.complete ? "text-white font-medium" : "text-white/40"}>
+                <p
+                  className={
+                    step.complete ? "font-medium text-white" : "text-white/40"
+                  }
+                >
                   {step.label}
                 </p>
+
                 <p className="text-xs text-white/40">
                   {step.date
                     ? new Date(step.date).toLocaleString()
@@ -291,7 +443,7 @@ function Timeline({ item }) {
             </div>
 
             {index < steps.length - 1 && (
-              <div className="hidden md:block absolute left-10 top-4 h-px w-[calc(100%-2.5rem)] bg-white/10" />
+              <div className="absolute left-10 top-4 hidden h-px w-[calc(100%-2.5rem)] bg-white/10 md:block" />
             )}
           </div>
         ))}
@@ -315,6 +467,7 @@ function DetailDrawer({ item, onClose }) {
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
               Action Detail
             </p>
+
             <h2 className="mt-2 text-2xl font-semibold">
               {item.title || item.requestType || "BOS Action"}
             </h2>
@@ -322,7 +475,7 @@ function DetailDrawer({ item, onClose }) {
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 transition hover:border-yellow-400/30 hover:text-yellow-300"
           >
             ✕
           </button>
@@ -330,25 +483,30 @@ function DetailDrawer({ item, onClose }) {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Badge item={item} />
-          <VendorBadge status={item.vendorStatus} />
           <PriorityBadge item={item} />
+          <VendorBadge status={item.vendorStatus} />
         </div>
 
         <div className="mt-6 rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-5">
           <p className="text-sm uppercase tracking-[0.25em] text-yellow-400/70">
             Request Summary
           </p>
-          <p className="mt-3 text-white/70 leading-relaxed">
+
+          <p className="mt-3 leading-relaxed text-white/70">
             {item.description || item.notes || "No description provided."}
           </p>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Meta label="Association" value={item.association} />
           <Meta label="Owner" value={item.ownerName || item.owner} />
-          <Meta label="Unit" value={item.unit} />
-          <Meta label="Category" value={item.category || item.type} />
+          <Meta label="Owner Phone" value={item.ownerPhone} />
+          <Meta label="Owner Email" value={item.ownerEmail} />
+          <Meta label="Property / Unit" value={item.unit} />
+          <Meta label="Category" value={formatCategory(item.category || item.type)} />
           <Meta label="Status" value={formatStatus(item.status)} />
+          <Meta label="Priority" value={item.priority || "Medium"} />
+          <Meta label="Best Contact Time" value={item.bestContactTime} />
           <Meta label="Vendor Status" value={formatVendorStatus(item.vendorStatus)} />
           <Meta
             label="Dispatch Lock"
@@ -373,7 +531,7 @@ function DetailDrawer({ item, onClose }) {
             <VendorBadge status={item.vendorStatus} />
           </div>
 
-          <p className="mt-4 text-white/70 leading-relaxed">
+          <p className="mt-4 leading-relaxed text-white/70">
             {item.vendorNote || "No vendor response has been recorded yet."}
           </p>
         </div>
@@ -390,19 +548,29 @@ function DetailDrawer({ item, onClose }) {
           <div className="mt-4 space-y-3 text-sm">
             <AuditLine
               label="Created"
-              value={item.createdAt ? new Date(item.createdAt).toLocaleString() : "Not recorded"}
+              value={
+                item.createdAt
+                  ? new Date(item.createdAt).toLocaleString()
+                  : "Not recorded"
+              }
             />
             <AuditLine
               label="Manager Updated"
               value={
                 item.managerUpdatedAt || item.managerDecisionAt
-                  ? new Date(item.managerUpdatedAt || item.managerDecisionAt).toLocaleString()
+                  ? new Date(
+                      item.managerUpdatedAt || item.managerDecisionAt
+                    ).toLocaleString()
                   : "Not recorded"
               }
             />
             <AuditLine
               label="Board Decision"
-              value={item.boardDecisionAt ? new Date(item.boardDecisionAt).toLocaleString() : "Not recorded"}
+              value={
+                item.boardDecisionAt
+                  ? new Date(item.boardDecisionAt).toLocaleString()
+                  : "Not recorded"
+              }
             />
             <AuditLine
               label="Dispatch"
@@ -418,7 +586,9 @@ function DetailDrawer({ item, onClose }) {
               label="Vendor Response"
               value={
                 item.vendorUpdatedAt
-                  ? `${formatVendorStatus(item.vendorStatus)} — ${new Date(item.vendorUpdatedAt).toLocaleString()}`
+                  ? `${formatVendorStatus(item.vendorStatus)} — ${new Date(
+                      item.vendorUpdatedAt
+                    ).toLocaleString()}`
                   : "Not recorded"
               }
             />
@@ -432,28 +602,25 @@ function DetailDrawer({ item, onClose }) {
 function Badge({ item }) {
   if (item.dispatched) return <Pill text="Dispatched" tone="green" />;
 
-  return (
-    <Pill
-      text={formatStatus(item.status)}
-      tone={statusTone(item.status)}
-    />
-  );
+  return <Pill text={formatStatus(item.status)} tone={statusTone(item.status)} />;
 }
 
 function VendorBadge({ status }) {
-  return (
-    <Pill
-      text={formatVendorStatus(status)}
-      tone={vendorTone(status)}
-    />
-  );
+  return <Pill text={formatVendorStatus(status)} tone={vendorTone(status)} />;
 }
 
 function PriorityBadge({ item }) {
+  const priority = String(item.priority || "").toLowerCase();
   const score = getPriorityScore(item);
 
-  if (score >= 4) return <Pill text="High Priority" tone="red" />;
-  if (score >= 2) return <Pill text="Medium Priority" tone="gold" />;
+  if (priority === "high" || score >= 4) {
+    return <Pill text="High Priority" tone="red" />;
+  }
+
+  if (priority === "medium" || score >= 2) {
+    return <Pill text="Medium Priority" tone="gold" />;
+  }
+
   return <Pill text="Standard Priority" tone="neutral" />;
 }
 
@@ -467,7 +634,11 @@ function Pill({ text, tone }) {
   };
 
   return (
-    <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${styles[tone] || styles.neutral}`}>
+    <span
+      className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${
+        styles[tone] || styles.neutral
+      }`}
+    >
       {text}
     </span>
   );
@@ -485,7 +656,9 @@ function Stat({ label, value }) {
 function Meta({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-      <p className="text-xs uppercase tracking-[0.18em] text-white/35">{label}</p>
+      <p className="text-xs uppercase tracking-[0.18em] text-white/35">
+        {label}
+      </p>
       <p className="mt-1 text-white/75">{value || "N/A"}</p>
     </div>
   );
@@ -505,10 +678,12 @@ function Empty({ filter }) {
     <div className="rounded-3xl border border-dashed border-yellow-500/20 bg-white/[0.015] p-10 text-center">
       <p className="text-xl font-semibold text-white/80">No actions found</p>
       <p className="mt-2 text-white/50">
-        There are no BOS actions in the <span className="text-yellow-300">{filter}</span> view yet.
+        There are no BOS actions in the{" "}
+        <span className="text-yellow-300">{filter}</span> view yet.
       </p>
       <p className="mt-4 text-sm text-white/35">
-        New activity will appear here as Ava, managers, board members, vendors, and dispatch events update the workflow.
+        New activity will appear here as Ava, managers, board members, vendors,
+        and dispatch events update the workflow.
       </p>
     </div>
   );
@@ -517,7 +692,8 @@ function Empty({ filter }) {
 function formatStatus(status) {
   const labels = {
     new: "New Intake",
-    manager_approved: "Manager Approved",
+    manager_approved: "Manager Review",
+    board_pending: "Board Review",
     board_approved: "Board Approved",
     board_rejected: "Board Rejected",
     needs_clarification: "Needs Clarification",
@@ -530,6 +706,7 @@ function statusTone(status) {
   const tones = {
     new: "blue",
     manager_approved: "gold",
+    board_pending: "gold",
     board_approved: "green",
     board_rejected: "red",
     needs_clarification: "blue",
@@ -558,11 +735,29 @@ function vendorTone(status) {
   return tones[status] || "neutral";
 }
 
+function formatCategory(category) {
+  const labels = {
+    maintenance: "Maintenance",
+    architectural: "Architectural",
+    amenity: "Amenity",
+    financial: "Financial",
+    violation: "Violation",
+    documents: "Documents",
+    general: "General",
+  };
+
+  return labels[category] || category || "General";
+}
+
 function getPriorityScore(item) {
-  const text = `${item.title || ""} ${item.description || ""} ${item.notes || ""} ${item.category || ""}`.toLowerCase();
+  const text = `${item.title || ""} ${item.description || ""} ${
+    item.notes || ""
+  } ${item.category || ""}`.toLowerCase();
 
   let score = 0;
 
+  if (String(item.priority || "").toLowerCase() === "high") score += 5;
+  if (String(item.priority || "").toLowerCase() === "medium") score += 2;
   if (text.includes("leak")) score += 4;
   if (text.includes("water")) score += 3;
   if (text.includes("electrical")) score += 4;
@@ -576,4 +771,14 @@ function getPriorityScore(item) {
   if (item.dispatched && !item.vendorStatus) score += 2;
 
   return score;
+}
+
+function mapStatus(status) {
+  if (status === "open") return "new";
+  if (status === "in_progress") return "manager_approved";
+  if (status === "board_review") return "board_pending";
+  if (status === "approved") return "board_approved";
+  if (status === "rejected") return "board_rejected";
+  if (status === "completed") return "board_approved";
+  return "new";
 }
