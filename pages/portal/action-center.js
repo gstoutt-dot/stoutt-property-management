@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 
-const ACTION_ITEMS = [
+const WORKFLOW_STAGES = [
+  "New",
+  "Manager Review",
+  "Approved",
+  "Sent to Board",
+  "Complete",
+];
+
+const INITIAL_ACTION_ITEMS = [
   {
     id: "AC-1001",
     type: "Work Order",
@@ -18,7 +26,7 @@ const ACTION_ITEMS = [
     title: "Landscaping maintenance issue",
     association: "Demo Association",
     submittedBy: "Manager Inspection",
-    status: "In Review",
+    status: "Manager Review",
     priority: "Medium",
     nextStep: "Confirm photo evidence and prepare notice",
   },
@@ -28,9 +36,9 @@ const ACTION_ITEMS = [
     title: "Fence installation request",
     association: "Demo Association",
     submittedBy: "Owner",
-    status: "Manager Review",
+    status: "Approved",
     priority: "Medium",
-    nextStep: "Check documents before board submission",
+    nextStep: "Route approved request to board",
   },
   {
     id: "AC-1004",
@@ -38,9 +46,9 @@ const ACTION_ITEMS = [
     title: "Landscape vendor monthly invoice",
     association: "Demo Association",
     submittedBy: "Vendor",
-    status: "Pending Approval",
+    status: "Sent to Board",
     priority: "High",
-    nextStep: "Review invoice and send to board",
+    nextStep: "Await board approval",
   },
 ];
 
@@ -50,6 +58,7 @@ export default function ActionCenter() {
   const router = useRouter();
   const [role, setRole] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [items, setItems] = useState(INITIAL_ACTION_ITEMS);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
@@ -68,10 +77,42 @@ export default function ActionCenter() {
     setRole(savedRole);
   }, [router]);
 
+  const moveForward = (id) => {
+    setItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== id) return item;
+
+        const currentIndex = WORKFLOW_STAGES.indexOf(item.status);
+        const nextStatus =
+          currentIndex < WORKFLOW_STAGES.length - 1
+            ? WORKFLOW_STAGES[currentIndex + 1]
+            : item.status;
+
+        return {
+          ...item,
+          status: nextStatus,
+          nextStep:
+            nextStatus === "Manager Review"
+              ? "Manager review in progress"
+              : nextStatus === "Approved"
+              ? "Ready to route for board decision or completion"
+              : nextStatus === "Sent to Board"
+              ? "Awaiting board approval"
+              : nextStatus === "Complete"
+              ? "Workflow completed"
+              : item.nextStep,
+        };
+      })
+    );
+  };
+
   const filteredItems = useMemo(() => {
-    if (activeFilter === "All") return ACTION_ITEMS;
-    return ACTION_ITEMS.filter((item) => item.type === activeFilter);
-  }, [activeFilter]);
+    if (activeFilter === "All") return items;
+    return items.filter((item) => item.type === activeFilter);
+  }, [activeFilter, items]);
+
+  const countByStatus = (status) =>
+    items.filter((item) => item.status === status).length;
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -98,9 +139,8 @@ export default function ActionCenter() {
               </h1>
 
               <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-300">
-                Manager-first operational intake for violations, work orders,
-                architectural requests, vendor invoices, and board approval
-                routing.
+                Operational workflow routing for violations, work orders,
+                architectural requests, vendor invoices, and board approvals.
               </p>
             </div>
 
@@ -117,26 +157,16 @@ export default function ActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">New Intake</p>
-            <p className="mt-2 text-3xl font-bold">4</p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">Manager Review</p>
-            <p className="mt-2 text-3xl font-bold">2</p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">Board Routing</p>
-            <p className="mt-2 text-3xl font-bold">1</p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">High Priority</p>
-            <p className="mt-2 text-3xl font-bold text-amber-300">2</p>
-          </div>
+        <div className="grid gap-4 md:grid-cols-5">
+          {WORKFLOW_STAGES.map((stage) => (
+            <div
+              key={stage}
+              className="rounded-3xl border border-white/10 bg-white/[0.06] p-5"
+            >
+              <p className="text-sm text-slate-400">{stage}</p>
+              <p className="mt-2 text-3xl font-bold">{countByStatus(stage)}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -144,7 +174,7 @@ export default function ActionCenter() {
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-              Operational Queue
+              Workflow Queue
             </p>
             <h2 className="mt-2 text-3xl font-bold">Items Requiring Action</h2>
           </div>
@@ -167,56 +197,94 @@ export default function ActionCenter() {
         </div>
 
         <div className="space-y-4">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-xl transition hover:border-amber-300/30 hover:bg-white/[0.085]"
-            >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-200">
-                      {item.type}
-                    </span>
+          {filteredItems.map((item) => {
+            const currentIndex = WORKFLOW_STAGES.indexOf(item.status);
+            const isComplete = item.status === "Complete";
 
-                    <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-slate-300">
-                      {item.id}
-                    </span>
+            return (
+              <div
+                key={item.id}
+                className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-xl transition hover:border-amber-300/30 hover:bg-white/[0.085]"
+              >
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-200">
+                          {item.type}
+                        </span>
 
-                    <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-slate-300">
-                      {item.status}
-                    </span>
+                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-slate-300">
+                          {item.id}
+                        </span>
+
+                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-slate-300">
+                          {item.status}
+                        </span>
+                      </div>
+
+                      <h3 className="text-2xl font-bold">{item.title}</h3>
+
+                      <p className="mt-2 text-slate-300">
+                        {item.association} • Submitted by {item.submittedBy}
+                      </p>
+
+                      <p className="mt-3 max-w-2xl leading-7 text-slate-400">
+                        Next step: {item.nextStep}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                      <div
+                        className={`rounded-2xl border px-4 py-3 text-center text-sm font-semibold ${
+                          item.priority === "High"
+                            ? "border-amber-300/30 bg-amber-300/10 text-amber-200"
+                            : "border-white/10 bg-white/[0.06] text-slate-300"
+                        }`}
+                      >
+                        {item.priority} Priority
+                      </div>
+
+                      <button
+                        onClick={() => moveForward(item.id)}
+                        disabled={isComplete}
+                        className={`rounded-2xl px-5 py-3 font-semibold transition ${
+                          isComplete
+                            ? "cursor-not-allowed border border-emerald-300/30 bg-emerald-300/10 text-emerald-200"
+                            : "bg-amber-300 text-slate-950 hover:bg-amber-200"
+                        }`}
+                      >
+                        {isComplete ? "Completed" : "Advance Workflow"}
+                      </button>
+                    </div>
                   </div>
 
-                  <h3 className="text-2xl font-bold">{item.title}</h3>
-
-                  <p className="mt-2 text-slate-300">
-                    {item.association} • Submitted by {item.submittedBy}
-                  </p>
-
-                  <p className="mt-3 max-w-2xl leading-7 text-slate-400">
-                    Next step: {item.nextStep}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                  <div
-                    className={`rounded-2xl border px-4 py-3 text-center text-sm font-semibold ${
-                      item.priority === "High"
-                        ? "border-amber-300/30 bg-amber-300/10 text-amber-200"
-                        : "border-white/10 bg-white/[0.06] text-slate-300"
-                    }`}
-                  >
-                    {item.priority} Priority
+                  <div className="grid gap-2 md:grid-cols-5">
+                    {WORKFLOW_STAGES.map((stage, index) => (
+                      <div key={stage} className="flex items-center gap-2">
+                        <div
+                          className={`h-2 flex-1 rounded-full ${
+                            index <= currentIndex
+                              ? "bg-amber-300"
+                              : "bg-white/10"
+                          }`}
+                        />
+                        <span
+                          className={`hidden text-xs md:block ${
+                            index <= currentIndex
+                              ? "text-amber-200"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {stage}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-
-                  <button className="rounded-2xl bg-amber-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-200">
-                    Review Item
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </main>
