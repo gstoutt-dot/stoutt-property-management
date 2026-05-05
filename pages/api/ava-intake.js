@@ -14,154 +14,200 @@ function normalizeRequestType(type, summary) {
   const clean = `${type || ''} ${summary || ''}`.toLowerCase()
 
   if (
+    clean.includes('maintenance') ||
+    clean.includes('repair') ||
     clean.includes('pool') ||
     clean.includes('light') ||
     clean.includes('gate') ||
     clean.includes('leak') ||
     clean.includes('broken') ||
-    clean.includes('repair') ||
-    clean.includes('maintenance') ||
     clean.includes('burned out') ||
     clean.includes('burnt out') ||
     clean.includes('clubhouse') ||
     clean.includes('landscape') ||
-    clean.includes('irrigation')
+    clean.includes('irrigation') ||
+    clean.includes('elevator') ||
+    clean.includes('electrical')
   ) {
     return 'maintenance'
   }
 
-  if (clean.includes('architectural') || clean.includes('arc') || clean.includes('paint') || clean.includes('roof') || clean.includes('fence')) {
-    return 'architectural'
-  }
-
-  if (clean.includes('amenity') || clean.includes('reservation') || clean.includes('access card') || clean.includes('fob')) {
-    return 'amenity'
-  }
-
-  if (clean.includes('financial') || clean.includes('account') || clean.includes('balance') || clean.includes('payment') || clean.includes('ledger')) {
-    return 'financial'
-  }
-
-  if (clean.includes('violation') || clean.includes('parking') || clean.includes('trash') || clean.includes('noise')) {
+  if (
+    clean.includes('violation') ||
+    clean.includes('parking') ||
+    clean.includes('trash') ||
+    clean.includes('noise') ||
+    clean.includes('pet') ||
+    clean.includes('rules')
+  ) {
     return 'violation'
   }
 
-  if (clean.includes('document') || clean.includes('estoppel') || clean.includes('questionnaire') || clean.includes('records')) {
+  if (
+    clean.includes('billing') ||
+    clean.includes('financial') ||
+    clean.includes('account') ||
+    clean.includes('balance') ||
+    clean.includes('payment') ||
+    clean.includes('ledger')
+  ) {
+    return 'financial'
+  }
+
+  if (
+    clean.includes('owner request') ||
+    clean.includes('management follow-up') ||
+    clean.includes('follow up') ||
+    clean.includes('message') ||
+    clean.includes('complaint')
+  ) {
+    return 'owner_request'
+  }
+
+  if (
+    clean.includes('proposal') ||
+    clean.includes('sales') ||
+    clean.includes('management quote') ||
+    clean.includes('new association')
+  ) {
+    return 'sales_opportunity'
+  }
+
+  if (
+    clean.includes('architectural') ||
+    clean.includes('arc') ||
+    clean.includes('paint') ||
+    clean.includes('roof') ||
+    clean.includes('fence')
+  ) {
+    return 'architectural'
+  }
+
+  if (
+    clean.includes('amenity') ||
+    clean.includes('reservation') ||
+    clean.includes('access card') ||
+    clean.includes('fob')
+  ) {
+    return 'amenity'
+  }
+
+  if (
+    clean.includes('document') ||
+    clean.includes('estoppel') ||
+    clean.includes('questionnaire') ||
+    clean.includes('records')
+  ) {
     return 'documents'
   }
 
   return 'general'
 }
 
-function normalizePriority(urgency, summary) {
-  const clean = `${urgency || ''} ${summary || ''}`.toLowerCase()
+function normalizePriority(priority, summary) {
+  const clean = `${priority || ''} ${summary || ''}`.toLowerCase()
 
   if (
     clean.includes('emergency') ||
+    clean.includes('urgent') ||
+    clean.includes('high') ||
     clean.includes('flood') ||
     clean.includes('active leak') ||
     clean.includes('no water') ||
     clean.includes('fire') ||
     clean.includes('danger') ||
     clean.includes('unsafe') ||
-    clean.includes('security gate stuck open') ||
+    clean.includes('electrical hazard') ||
+    clean.includes('elevator') ||
+    clean.includes('security concern') ||
     clean.includes('gate stuck open')
   ) {
     return 'high'
   }
 
   if (
-    clean.includes('burned out') ||
-    clean.includes('burnt out') ||
-    clean.includes('light') ||
-    clean.includes('clubhouse') ||
-    clean.includes('pool') ||
-    clean.includes('soon') ||
-    clean.includes('visibility')
+    clean.includes('low') ||
+    clean.includes('not urgent') ||
+    clean.includes('whenever') ||
+    clean.includes('general question')
   ) {
-    return 'medium'
-  }
-
-  if (clean.includes('low') || clean.includes('not urgent') || clean.includes('whenever')) {
     return 'low'
-  }
-
-  if (clean.includes('urgent') || clean.includes('high')) {
-    return 'high'
   }
 
   return 'medium'
 }
 
-function generateTitle(summary, requestType) {
-  const clean = cleanText(summary)
+function generateTitle(title, description, category) {
+  const providedTitle = cleanText(title)
+  const cleanDescription = cleanText(description)
+  const combined = `${providedTitle} ${cleanDescription} ${category || ''}`.toLowerCase()
 
-  if (!clean) return 'New Ava Intake Request'
+  if (providedTitle) {
+    return titleCase(providedTitle.length > 90 ? `${providedTitle.slice(0, 87)}...` : providedTitle)
+  }
 
-  const lower = clean.toLowerCase()
-
-  if ((lower.includes('pool') || lower.includes('clubhouse')) && (lower.includes('light') || lower.includes('burned') || lower.includes('burnt'))) {
+  if ((combined.includes('pool') || combined.includes('clubhouse')) && (combined.includes('light') || combined.includes('burned') || combined.includes('burnt'))) {
     return 'Pool Light Near Clubhouse Burned Out'
   }
 
-  if (lower.includes('gate')) return 'Gate Access Issue Reported'
-  if (lower.includes('leak')) return 'Water Leak Reported'
-  if (lower.includes('violation')) return 'Violation Concern Reported'
-  if (lower.includes('payment') || lower.includes('balance')) return 'Owner Account Question Reported'
+  if (combined.includes('gate')) return 'Gate Access Issue Reported'
+  if (combined.includes('leak')) return 'Water Leak Reported'
+  if (combined.includes('elevator')) return 'Elevator Service Issue Reported'
+  if (combined.includes('violation')) return 'Violation Concern Reported'
+  if (combined.includes('payment') || combined.includes('balance') || combined.includes('billing')) return 'Owner Billing Question Reported'
+  if (combined.includes('proposal') || combined.includes('sales')) return 'New Management Proposal Inquiry'
 
-  const shortened = clean.length > 80 ? `${clean.slice(0, 77)}...` : clean
-  return titleCase(shortened)
+  if (cleanDescription) {
+    return titleCase(cleanDescription.length > 90 ? `${cleanDescription.slice(0, 87)}...` : cleanDescription)
+  }
+
+  return 'New Ava Intake Request'
 }
 
 function generateDescription({
-  issue_summary,
-  caller_name,
-  association_name,
-  property_address,
-  request_type,
-  urgency,
-  best_contact_time,
+  description,
+  title,
+  callerName,
+  associationName,
+  unit,
+  category,
+  priority,
+  bestContactTime,
 }) {
-  const summary = cleanText(issue_summary)
-  const caller = cleanText(caller_name)
-  const association = cleanText(association_name)
-  const address = cleanText(property_address)
-  const category = cleanText(request_type)
-  const priority = cleanText(urgency)
-  const contactTime = cleanText(best_contact_time)
-
+  const cleanDescription = cleanText(description)
+  const cleanTitle = cleanText(title)
   const details = []
 
-  if (summary) {
-    details.push(`Caller reported: ${summary}`)
+  if (cleanDescription) {
+    details.push(`Caller reported: ${cleanDescription}`)
+  } else if (cleanTitle) {
+    details.push(`Caller reported: ${cleanTitle}`)
+  } else {
+    details.push('Ava created a new intake item requiring property manager review.')
   }
 
-  if (association) {
-    details.push(`Association: ${association}.`)
+  if (cleanText(associationName)) {
+    details.push(`Association: ${cleanText(associationName)}.`)
   }
 
-  if (address) {
-    details.push(`Property / Unit: ${address}.`)
+  if (cleanText(unit)) {
+    details.push(`Property / Unit: ${cleanText(unit)}.`)
   }
 
-  if (caller) {
-    details.push(`Caller: ${caller}.`)
+  if (cleanText(callerName)) {
+    details.push(`Caller: ${cleanText(callerName)}.`)
   }
 
-  if (category) {
-    details.push(`Request Type: ${category}.`)
+  if (cleanText(category)) {
+    details.push(`Category: ${cleanText(category)}.`)
   }
 
-  if (priority) {
-    details.push(`Reported Urgency: ${priority}.`)
+  if (cleanText(priority)) {
+    details.push(`Priority: ${cleanText(priority)}.`)
   }
 
-  if (contactTime) {
-    details.push(`Best Contact Time: ${contactTime}.`)
-  }
-
-  if (!details.length) {
-    return 'Ava created a new intake item requiring property manager review.'
+  if (cleanText(bestContactTime)) {
+    details.push(`Best Contact Time: ${cleanText(bestContactTime)}.`)
   }
 
   return details.join(' ')
@@ -175,38 +221,73 @@ export default async function handler(req, res) {
     })
   }
 
-  const {
-    caller_name,
-    caller_phone,
-    association_name,
-    property_address,
-    request_type,
-    issue_summary,
-    urgency,
-    best_contact_time,
-  } = req.body || {}
+  const body = req.body || {}
 
-  const cleanSummary = cleanText(issue_summary)
+  const callerName =
+    cleanText(body.caller_name) ||
+    cleanText(body.customer_name) ||
+    cleanText(body.name)
 
-  if (!cleanSummary) {
+  const callerPhone =
+    cleanText(body.caller_phone) ||
+    cleanText(body.customer_phone) ||
+    cleanText(body.phone)
+
+  const associationName =
+    cleanText(body.association_name) ||
+    cleanText(body.association) ||
+    cleanText(body.community_name)
+
+  const unit =
+    cleanText(body.unit) ||
+    cleanText(body.property_address) ||
+    cleanText(body.address) ||
+    cleanText(body.property)
+
+  const rawCategory =
+    cleanText(body.category) ||
+    cleanText(body.request_type) ||
+    cleanText(body.type)
+
+  const rawPriority =
+    cleanText(body.priority) ||
+    cleanText(body.urgency)
+
+  const rawDescription =
+    cleanText(body.description) ||
+    cleanText(body.issue_summary) ||
+    cleanText(body.summary) ||
+    cleanText(body.request_description)
+
+  const rawTitle =
+    cleanText(body.title)
+
+  const bestContactTime =
+    cleanText(body.best_contact_time) ||
+    cleanText(body.contact_time)
+
+  const usableIssueText = rawDescription || rawTitle
+
+  if (!usableIssueText) {
     return res.status(400).json({
       success: false,
-      message: 'Missing issue_summary',
+      message: 'Missing title or description',
     })
   }
 
-  const normalizedType = normalizeRequestType(request_type, cleanSummary)
-  const normalizedPriority = normalizePriority(urgency, cleanSummary)
-  const title = generateTitle(cleanSummary, normalizedType)
+  const normalizedType = normalizeRequestType(rawCategory, usableIssueText)
+  const normalizedPriority = normalizePriority(rawPriority, usableIssueText)
+  const finalTitle = generateTitle(rawTitle, rawDescription, normalizedType)
 
-  const description = generateDescription({
-    issue_summary: cleanSummary,
-    caller_name,
-    association_name,
-    property_address,
-    request_type: normalizedType,
-    urgency: normalizedPriority,
-    best_contact_time,
+  const finalDescription = generateDescription({
+    description: rawDescription,
+    title: rawTitle,
+    callerName,
+    associationName,
+    unit,
+    category: normalizedType,
+    priority: normalizedPriority,
+    bestContactTime,
   })
 
   const { data, error } = await supabase
@@ -214,15 +295,15 @@ export default async function handler(req, res) {
     .insert([
       {
         request_type: normalizedType,
-        title,
-        description,
+        title: finalTitle,
+        description: finalDescription,
         priority: normalizedPriority,
-        association_name: cleanText(association_name) || 'Demo Association',
-        owner_name: cleanText(caller_name) || 'Ava Caller',
-        owner_phone: cleanText(caller_phone),
+        association_name: associationName || 'Demo Association',
+        owner_name: callerName || 'Ava Caller',
+        owner_phone: callerPhone,
         owner_email: '',
-        property_address: cleanText(property_address) || 'Pending manager confirmation',
-        best_contact_time: cleanText(best_contact_time) || 'Normal business hours',
+        property_address: unit || 'Pending manager confirmation',
+        best_contact_time: bestContactTime || 'Normal business hours',
         status: 'open',
         source: 'Ava AI Phone Intake',
       },
