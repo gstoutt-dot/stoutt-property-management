@@ -19,6 +19,7 @@ const INITIAL_ACTION_ITEMS = [
     status: "New",
     priority: "High",
     nextStep: "Review responsibility and assign vendor",
+    note: "",
   },
   {
     id: "AC-1002",
@@ -29,6 +30,7 @@ const INITIAL_ACTION_ITEMS = [
     status: "Manager Review",
     priority: "Medium",
     nextStep: "Confirm photo evidence and prepare notice",
+    note: "",
   },
   {
     id: "AC-1003",
@@ -39,6 +41,7 @@ const INITIAL_ACTION_ITEMS = [
     status: "Approved",
     priority: "Medium",
     nextStep: "Route approved request to board",
+    note: "",
   },
   {
     id: "AC-1004",
@@ -49,10 +52,20 @@ const INITIAL_ACTION_ITEMS = [
     status: "Sent to Board",
     priority: "High",
     nextStep: "Await board approval",
+    note: "",
   },
 ];
 
 const filters = ["All", "Work Order", "Violation", "Architectural", "Invoice"];
+
+const getNextStepByStatus = (status) => {
+  if (status === "New") return "Initial intake received";
+  if (status === "Manager Review") return "Manager review in progress";
+  if (status === "Approved") return "Ready to route for board decision or completion";
+  if (status === "Sent to Board") return "Awaiting board approval";
+  if (status === "Complete") return "Workflow completed";
+  return "Review next action";
+};
 
 export default function ActionCenter() {
   const router = useRouter();
@@ -77,32 +90,33 @@ export default function ActionCenter() {
     setRole(savedRole);
   }, [router]);
 
-  const moveForward = (id) => {
+  const updateItemStatus = (id, newStatus, note = "") => {
     setItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== id) return item;
+      currentItems.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: newStatus,
+              nextStep: getNextStepByStatus(newStatus),
+              note,
+            }
+          : item
+      )
+    );
+  };
 
-        const currentIndex = WORKFLOW_STAGES.indexOf(item.status);
-        const nextStatus =
-          currentIndex < WORKFLOW_STAGES.length - 1
-            ? WORKFLOW_STAGES[currentIndex + 1]
-            : item.status;
-
-        return {
-          ...item,
-          status: nextStatus,
-          nextStep:
-            nextStatus === "Manager Review"
-              ? "Manager review in progress"
-              : nextStatus === "Approved"
-              ? "Ready to route for board decision or completion"
-              : nextStatus === "Sent to Board"
-              ? "Awaiting board approval"
-              : nextStatus === "Complete"
-              ? "Workflow completed"
-              : item.nextStep,
-        };
-      })
+  const rejectItem = (id) => {
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: "New",
+              nextStep: "Returned for correction or additional review",
+              note: "Returned / needs more information",
+            }
+          : item
+      )
     );
   };
 
@@ -113,6 +127,82 @@ export default function ActionCenter() {
 
   const countByStatus = (status) =>
     items.filter((item) => item.status === status).length;
+
+  const renderSmartActions = (item) => {
+    if (item.status === "New") {
+      return (
+        <button
+          onClick={() =>
+            updateItemStatus(
+              item.id,
+              "Manager Review",
+              "Item opened for manager review"
+            )
+          }
+          className="rounded-2xl bg-amber-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-200"
+        >
+          Review Item
+        </button>
+      );
+    }
+
+    if (item.status === "Manager Review") {
+      return (
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() =>
+              updateItemStatus(item.id, "Approved", "Manager approved item")
+            }
+            className="rounded-2xl bg-amber-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-200"
+          >
+            Approve
+          </button>
+
+          <button
+            onClick={() => rejectItem(item.id)}
+            className="rounded-2xl border border-red-300/30 bg-red-400/10 px-5 py-3 font-semibold text-red-200 transition hover:bg-red-400/15"
+          >
+            Return for Info
+          </button>
+        </div>
+      );
+    }
+
+    if (item.status === "Approved") {
+      return (
+        <button
+          onClick={() =>
+            updateItemStatus(item.id, "Sent to Board", "Forwarded to board")
+          }
+          className="rounded-2xl bg-amber-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-200"
+        >
+          Send to Board
+        </button>
+      );
+    }
+
+    if (item.status === "Sent to Board") {
+      return (
+        <button
+          onClick={() =>
+            updateItemStatus(item.id, "Complete", "Board action completed")
+          }
+          className="rounded-2xl bg-emerald-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-200"
+        >
+          Mark Complete
+        </button>
+      );
+    }
+
+    return (
+      <button
+        disabled
+        className="cursor-not-allowed rounded-2xl border border-emerald-300/30 bg-emerald-300/10 px-5 py-3 font-semibold text-emerald-200"
+      >
+        Completed
+      </button>
+    );
+  };
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -139,7 +229,7 @@ export default function ActionCenter() {
               </h1>
 
               <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-300">
-                Operational workflow routing for violations, work orders,
+                Smart workflow routing for violations, work orders,
                 architectural requests, vendor invoices, and board approvals.
               </p>
             </div>
@@ -174,9 +264,9 @@ export default function ActionCenter() {
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-              Workflow Queue
+              Smart Action Queue
             </p>
-            <h2 className="mt-2 text-3xl font-bold">Items Requiring Action</h2>
+            <h2 className="mt-2 text-3xl font-bold">Items Requiring Decision</h2>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -199,7 +289,6 @@ export default function ActionCenter() {
         <div className="space-y-4">
           {filteredItems.map((item) => {
             const currentIndex = WORKFLOW_STAGES.indexOf(item.status);
-            const isComplete = item.status === "Complete";
 
             return (
               <div
@@ -232,9 +321,15 @@ export default function ActionCenter() {
                       <p className="mt-3 max-w-2xl leading-7 text-slate-400">
                         Next step: {item.nextStep}
                       </p>
+
+                      {item.note && (
+                        <p className="mt-3 inline-flex rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm text-slate-300">
+                          Note: {item.note}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                    <div className="flex min-w-[180px] flex-col gap-3">
                       <div
                         className={`rounded-2xl border px-4 py-3 text-center text-sm font-semibold ${
                           item.priority === "High"
@@ -245,17 +340,7 @@ export default function ActionCenter() {
                         {item.priority} Priority
                       </div>
 
-                      <button
-                        onClick={() => moveForward(item.id)}
-                        disabled={isComplete}
-                        className={`rounded-2xl px-5 py-3 font-semibold transition ${
-                          isComplete
-                            ? "cursor-not-allowed border border-emerald-300/30 bg-emerald-300/10 text-emerald-200"
-                            : "bg-amber-300 text-slate-950 hover:bg-amber-200"
-                        }`}
-                      >
-                        {isComplete ? "Completed" : "Advance Workflow"}
-                      </button>
+                      {renderSmartActions(item)}
                     </div>
                   </div>
 
