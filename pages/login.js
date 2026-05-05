@@ -6,10 +6,9 @@ export default function LoginPage() {
   const [role, setRole] = useState("owner");
 
   const routes = {
-    owner: "/portal",
-    manager: "/portal",
-    board: "/board",
-    admin: "/board/command-center",
+    owner: "/portal/owner",
+    board: "/portal/board",
+    admin: "/portal/board/command-center",
   };
 
   const handleLogin = (e) => {
@@ -45,7 +44,7 @@ export default function LoginPage() {
                 {[
                   ["Owner", "Balances, requests, documents"],
                   ["Board", "Actions, approvals, oversight"],
-                  ["Manager", "Review and workflow control"],
+                  ["Admin", "Command center and BOS"],
                 ].map(([title, text]) => (
                   <div
                     key={title}
@@ -70,10 +69,33 @@ export default function LoginPage() {
                 <h2 className="mt-4 text-3xl font-semibold">Sign in</h2>
 
                 <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Demo mode is active. Choose your role to enter the correct portal.
+                  Demo mode is active. Choose the portal role below to enter the
+                  correct dashboard.
                 </p>
 
                 <div className="mt-8 space-y-5">
+                  <div>
+                    <label className="mb-2 block text-sm text-slate-300">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="demo@stouttpm.com"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-[#D4AF37]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-slate-300">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-[#D4AF37]"
+                    />
+                  </div>
+
                   <div>
                     <label className="mb-2 block text-sm text-slate-300">
                       Demo Portal Role
@@ -84,9 +106,8 @@ export default function LoginPage() {
                       className="w-full rounded-2xl border border-white/10 bg-[#070B14] px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]"
                     >
                       <option value="owner">Owner Portal</option>
-                      <option value="manager">Manager Portal</option>
                       <option value="board">Board Portal</option>
-                      <option value="admin">Admin Command Center</option>
+                      <option value="admin">Admin / BOS Command Center</option>
                     </select>
                   </div>
 
@@ -99,7 +120,8 @@ export default function LoginPage() {
                 </div>
 
                 <div className="mt-8 rounded-2xl border border-[#D4AF37]/20 bg-[#D4AF37]/10 p-4 text-sm leading-6 text-[#F3D77A]">
-                  Presentation mode: routes each role to its correct dashboard.
+                  Presentation mode: credentials are not validated yet. This routes
+                  each user type to the correct dashboard.
                 </div>
               </form>
             </div>
@@ -109,3 +131,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+
