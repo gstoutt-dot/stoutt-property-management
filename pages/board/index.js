@@ -1,6 +1,14 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const boardPages = [
+  {
+    title: "Approval Queue",
+    status: "Live / Ready",
+    href: "/portal/approval-queue",
+    description:
+      "Review items routed from management for board decisions and final approval.",
+  },
   {
     title: "Command Center",
     status: "Live / Ready",
@@ -72,32 +80,75 @@ function statusStyle(status) {
 }
 
 export default function BoardModuleHub() {
+  const router = useRouter();
+
   const liveCount = boardPages.filter((p) => p.status === "Live / Ready").length;
   const reviewCount = boardPages.filter(
     (p) => p.status === "Built / Needs Review"
   ).length;
 
+  const handleLogout = () => {
+    localStorage.removeItem("spmPortalLoggedIn");
+    localStorage.removeItem("spmPortalUser");
+    localStorage.removeItem("spmPortalUserName");
+    localStorage.removeItem("spmPortalRole");
+    router.push("/homeowner-login");
+  };
+
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
         <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="mb-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300">
-            Board Portal Module
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300">
+                Board Portal Module
+              </div>
+
+              <h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">
+                Board Hub
+              </h1>
+
+              <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
+                Central directory for the Board Portal. Live decision pages are
+                separated from built pages that still need review or wiring.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Board Access
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3">
+                <button
+                  onClick={() => router.push("/software-dashboard")}
+                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Back to Software Dashboard
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="rounded-xl border border-red-300/20 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-400/15"
+                >
+                  Logout / Switch Role
+                </button>
+              </div>
+            </div>
           </div>
-
-          <h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">
-            Board Hub
-          </h1>
-
-          <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-            Central directory for the Board Portal. Live decision pages are
-            separated from built pages that still need review or wiring.
-          </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
-              href="/board/command-center"
+              href="/portal/approval-queue"
               className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg hover:bg-amber-300"
+            >
+              Approval Queue
+            </Link>
+
+            <Link
+              href="/board/command-center"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-6 py-3 font-semibold text-amber-300 hover:bg-amber-400/20"
             >
               Command Center
             </Link>
@@ -169,9 +220,9 @@ export default function BoardModuleHub() {
           <h2 className="text-3xl font-bold">Source of Truth</h2>
 
           <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
-            For now, the official live Board workflow is Command Center plus
-            Action Center. All other Board pages should be treated as inventory
-            until reviewed, cleaned, merged, or retired.
+            For now, the official live Board workflow is Approval Queue,
+            Command Center, and Action Center. All other Board pages should be
+            treated as inventory until reviewed, cleaned, merged, or retired.
           </p>
         </section>
       </section>
