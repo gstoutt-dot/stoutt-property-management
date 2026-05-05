@@ -31,11 +31,21 @@ export default function HomeownerLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // 🔥 ROLE-BASED ROUTING FUNCTION
+  const getRouteByRole = (role) => {
+    if (role === "owner") return "/portal";
+    if (role === "manager") return "/portal";
+    if (role === "board") return "/board";
+    if (role === "admin") return "/software-dashboard";
+    return "/";
+  };
+
   useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
+    const role = localStorage.getItem("spmPortalRole");
 
-    if (loggedIn === "true") {
-      router.push("/software-dashboard");
+    if (loggedIn === "true" && role) {
+      router.push(getRouteByRole(role));
     }
   }, [router]);
 
@@ -52,7 +62,7 @@ export default function HomeownerLogin() {
       localStorage.setItem("spmPortalUserName", user.name);
       localStorage.setItem("spmPortalRole", user.role);
 
-      router.push("/software-dashboard");
+      router.push(getRouteByRole(user.role));
       return;
     }
 
@@ -132,6 +142,7 @@ export default function HomeownerLogin() {
     </main>
   );
 }
+
 
 
 
