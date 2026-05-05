@@ -34,10 +34,11 @@ const portalSections = [
 ];
 
 export default function PortalHub() {
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("owner");
 
   useEffect(() => {
-    setRole(localStorage.getItem("spmPortalRole") || "owner");
+    const savedRole = localStorage.getItem("spmPortalRole");
+    setRole(savedRole || "owner");
   }, []);
 
   const visibleSections = portalSections.filter((section) =>
