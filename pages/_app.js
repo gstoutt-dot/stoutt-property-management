@@ -7,14 +7,11 @@ const routeAccess = [
   { path: "/portal/manager", roles: ["manager", "admin"] },
   { path: "/portal/workflow-engine-live", roles: ["manager", "admin"] },
   { path: "/portal/workflow-engine", roles: ["manager", "admin"] },
-
   { path: "/board/command-center", roles: ["board", "manager", "admin"] },
   { path: "/board/action-center", roles: ["board", "manager", "admin"] },
   { path: "/board", roles: ["board", "manager", "admin"] },
-
   { path: "/portal/owner-hub", roles: ["owner", "manager", "board", "admin"] },
   { path: "/portal/owner", roles: ["owner", "manager", "board", "admin"] },
-
   { path: "/portal", roles: ["owner", "manager", "board", "admin"] },
   { path: "/software-dashboard", roles: ["owner", "manager", "board", "admin"] },
 ];
@@ -23,7 +20,7 @@ function AccessDenied({ onReturn }) {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="flex min-h-screen items-center justify-center px-6">
-        <div className="max-w-xl rounded-3xl border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-xl">
+        <div className="max-w-xl rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur-xl">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-xl font-bold text-amber-300">
             S
           </div>
@@ -50,10 +47,12 @@ function AccessDenied({ onReturn }) {
 
 function PortalGate({ children }) {
   const router = useRouter();
-  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(false);
   const [denied, setDenied] = useState(false);
 
   useEffect(() => {
+    if (!router.isReady) return;
+
     const cleanPath = router.asPath.split("?")[0].split("#")[0];
 
     const matchingRoute = routeAccess
@@ -69,15 +68,18 @@ function PortalGate({ children }) {
       return;
     }
 
-    const loggedIn = localStorage.getItem("spmPortalLoggedIn");
-    const role = localStorage.getItem("spmPortalRole");
+    setCheckingAccess(true);
+
+    const loggedIn = window.localStorage.getItem("spmPortalLoggedIn");
+    const role = window.localStorage.getItem("spmPortalRole");
 
     if (loggedIn !== "true") {
+      setCheckingAccess(false);
       router.replace("/homeowner-login");
       return;
     }
 
-    if (!matchingRoute.roles.includes(role)) {
+    if (!role || !matchingRoute.roles.includes(role)) {
       setDenied(true);
       setCheckingAccess(false);
       return;
@@ -85,13 +87,13 @@ function PortalGate({ children }) {
 
     setDenied(false);
     setCheckingAccess(false);
-  }, [router.asPath]);
+  }, [router.isReady, router.asPath, router]);
 
   if (checkingAccess) {
     return (
       <main className="min-h-screen bg-slate-950 text-white">
         <section className="flex min-h-screen items-center justify-center px-6">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-xl">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur-xl">
             <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
               Verifying Access
             </p>
