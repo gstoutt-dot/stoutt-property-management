@@ -322,12 +322,7 @@ export default function ManagerDashboard() {
                 Open Action Center
               </Link>
 
-              <Link
-                href="/portal/manager/vendor-dispatch"
-                className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
-              >
-                Vendor Dispatch
-              </Link>
+             <div />
 
               <button
                 onClick={fetchData}
