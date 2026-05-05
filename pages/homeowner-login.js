@@ -40,15 +40,6 @@ export default function HomeownerLogin() {
     return "/";
   };
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("spmPortalLoggedIn");
-    const role = localStorage.getItem("spmPortalRole");
-
-    if (loggedIn === "true" && role) {
-      router.push(getRouteByRole(role));
-    }
-  }, [router]);
-
   const handleLogin = (e) => {
     e.preventDefault();
     setError("");
