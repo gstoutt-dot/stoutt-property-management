@@ -1,50 +1,20 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 
-const TEMP_USERS = {
-  owner: {
-    password: "owner2026",
-    role: "owner",
-    route: "/portal/owner-hub",
-  },
-  manager: {
-    password: "manager2026",
-    role: "manager",
-    route: "/portal/manager-hub",
-  },
-  board: {
-    password: "board2026",
-    role: "board",
-    route: "/board",
-  },
-  admin: {
-    password: "admin2026",
-    role: "admin",
-    route: "/software-dashboard",
-  },
-};
-
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("owner");
-  const [password, setPassword] = useState("owner2026");
-  const [error, setError] = useState("");
+  const [role, setRole] = useState("owner");
+
+  const routes = {
+    owner: "/portal",
+    manager: "/portal",
+    board: "/board",
+    admin: "/board/command-center",
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
-
-    const user = TEMP_USERS[username];
-
-    if (!user || password !== user.password) {
-      setError("Invalid demo username or password.");
-      return;
-    }
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem("spmPortalRole", user.role);
-    }
-
-    router.push(user.route);
+    router.push(routes[role]);
   };
 
   return (
@@ -61,31 +31,28 @@ export default function LoginPage() {
                 </div>
 
                 <h1 className="max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                  Secure access for owners, boards, managers, and administration.
+                  Secure access for owners, boards, and management.
                 </h1>
 
                 <p className="mt-6 max-w-lg text-lg leading-8 text-slate-300">
                   A single gateway for account balances, work orders, violations,
-                  architectural requests, board actions, manager review, documents,
-                  calendars, and Ava-powered support.
+                  architectural requests, board actions, documents, calendars, and
+                  Ava-powered support.
                 </p>
               </div>
 
-              <div className="mt-12 grid gap-4 sm:grid-cols-4">
+              <div className="mt-12 grid gap-4 sm:grid-cols-3">
                 {[
-                  ["Owner", "Balances and requests"],
-                  ["Manager", "Review and routing"],
-                  ["Board", "Approvals and oversight"],
-                  ["Admin", "Command center"],
+                  ["Owner", "Balances, requests, documents"],
+                  ["Board", "Actions, approvals, oversight"],
+                  ["Manager", "Review and workflow control"],
                 ].map(([title, text]) => (
                   <div
                     key={title}
                     className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 shadow-xl"
                   >
                     <p className="text-xl font-semibold text-white">{title}</p>
-                    <p className="mt-2 text-sm leading-5 text-slate-400">
-                      {text}
-                    </p>
+                    <p className="mt-2 text-sm leading-5 text-slate-400">{text}</p>
                   </div>
                 ))}
               </div>
@@ -103,52 +70,25 @@ export default function LoginPage() {
                 <h2 className="mt-4 text-3xl font-semibold">Sign in</h2>
 
                 <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Demo mode is active. Use one of the temporary logins below to
-                  enter the correct portal.
+                  Demo mode is active. Choose your role to enter the correct portal.
                 </p>
 
                 <div className="mt-8 space-y-5">
                   <div>
                     <label className="mb-2 block text-sm text-slate-300">
-                      Username
+                      Demo Portal Role
                     </label>
                     <select
-                      value={username}
-                      onChange={(e) => {
-                        const selected = e.target.value;
-                        setUsername(selected);
-                        setPassword(TEMP_USERS[selected]?.password || "");
-                        setError("");
-                      }}
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
                       className="w-full rounded-2xl border border-white/10 bg-[#070B14] px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]"
                     >
-                      <option value="owner">owner</option>
-                      <option value="manager">manager</option>
-                      <option value="board">board</option>
-                      <option value="admin">admin</option>
+                      <option value="owner">Owner Portal</option>
+                      <option value="manager">Manager Portal</option>
+                      <option value="board">Board Portal</option>
+                      <option value="admin">Admin Command Center</option>
                     </select>
                   </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm text-slate-300">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setError("");
-                      }}
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-[#D4AF37]"
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-200">
-                      {error}
-                    </div>
-                  )}
 
                   <button
                     type="submit"
@@ -159,7 +99,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="mt-8 rounded-2xl border border-[#D4AF37]/20 bg-[#D4AF37]/10 p-4 text-sm leading-6 text-[#F3D77A]">
-                  Temporary demo users: owner / manager / board / admin.
+                  Presentation mode: routes each role to its correct dashboard.
                 </div>
               </form>
             </div>
