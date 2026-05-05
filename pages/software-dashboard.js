@@ -1,79 +1,113 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+const allPortals = [
+  {
+    title: "Portal Hub",
+    description: "Main access point for all Stoutt portal systems.",
+    href: "/portal",
+    label: "Open Portal",
+    roles: ["owner", "manager", "board", "admin"],
+  },
+  {
+    title: "Owner Hub",
+    description: "Homeowner requests, account support, and owner tools.",
+    href: "/portal/owner-hub",
+    label: "Open Owner Hub",
+    roles: ["owner", "manager", "board", "admin"],
+  },
+  {
+    title: "Owner Engine",
+    description: "Core owner-facing request and support engine.",
+    href: "/portal/owner",
+    label: "Open Owner Engine",
+    roles: ["owner", "manager", "board", "admin"],
+  },
+  {
+    title: "Manager Hub",
+    description: "Manager intake, review, inspections, and workflow routing.",
+    href: "/portal/manager-hub",
+    label: "Open Manager Hub",
+    roles: ["manager", "admin"],
+  },
+  {
+    title: "Manager Engine",
+    description: "Core management review and processing engine.",
+    href: "/portal/manager",
+    label: "Open Manager Engine",
+    roles: ["manager", "admin"],
+  },
+  {
+    title: "Workflow Map",
+    description: "Visual overview of how requests move through the system.",
+    href: "/portal/workflow-engine",
+    label: "Open Workflow Map",
+    roles: ["manager", "admin"],
+  },
+  {
+    title: "Workflow Live",
+    description: "Live operating workflow for intake, review, and approvals.",
+    href: "/portal/workflow-engine-live",
+    label: "Open Workflow Live",
+    roles: ["manager", "admin"],
+  },
+  {
+    title: "Board Hub",
+    description: "Board approvals, community oversight, and decisions.",
+    href: "/board",
+    label: "Open Board Hub",
+    roles: ["board", "manager", "admin"],
+  },
+  {
+    title: "Board Command Center",
+    description: "Board-level command center for oversight and approval flow.",
+    href: "/board/command-center",
+    label: "Open Command Center",
+    roles: ["board", "manager", "admin"],
+  },
+  {
+    title: "Board Action Center",
+    description: "Board action items, decisions, and approval queue.",
+    href: "/board/action-center",
+    label: "Open Action Center",
+    roles: ["board", "manager", "admin"],
+  },
+];
+
 export default function SoftwareDashboard() {
   const router = useRouter();
+
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userName, setUserName] = useState("Portal User");
+  const [role, setRole] = useState("owner");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("spmPortalUserName");
+    const storedRole = localStorage.getItem("spmPortalRole");
+
+    if (storedName) setUserName(storedName);
+    if (storedRole) setRole(storedRole);
+  }, []);
+
+  const initials = userName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const visiblePortals = allPortals.filter((portal) =>
+    portal.roles.includes(role)
+  );
 
   const handleLogout = () => {
     localStorage.removeItem("spmPortalLoggedIn");
     localStorage.removeItem("spmPortalUser");
+    localStorage.removeItem("spmPortalUserName");
+    localStorage.removeItem("spmPortalRole");
     router.push("/homeowner-login");
   };
-
-  const portals = [
-    {
-      title: "Portal Hub",
-      description: "Main access point for all Stoutt portal systems.",
-      href: "/portal",
-      label: "Open Portal",
-    },
-    {
-      title: "Owner Hub",
-      description: "Homeowner requests, account support, and owner tools.",
-      href: "/portal/owner-hub",
-      label: "Open Owner Hub",
-    },
-    {
-      title: "Manager Hub",
-      description: "Manager intake, review, inspections, and workflow routing.",
-      href: "/portal/manager-hub",
-      label: "Open Manager Hub",
-    },
-    {
-      title: "Board Hub",
-      description: "Board approvals, community oversight, and decisions.",
-      href: "/board",
-      label: "Open Board Hub",
-    },
-    {
-      title: "Workflow Map",
-      description: "Visual overview of how requests move through the system.",
-      href: "/portal/workflow-engine",
-      label: "Open Workflow Map",
-    },
-    {
-      title: "Workflow Live",
-      description: "Live operating workflow for intake, review, and approvals.",
-      href: "/portal/workflow-engine-live",
-      label: "Open Workflow Live",
-    },
-    {
-      title: "Owner Engine",
-      description: "Core owner-facing request and support engine.",
-      href: "/portal/owner",
-      label: "Open Owner Engine",
-    },
-    {
-      title: "Manager Engine",
-      description: "Core management review and processing engine.",
-      href: "/portal/manager",
-      label: "Open Manager Engine",
-    },
-    {
-      title: "Board Command Center",
-      description: "Board-level command center for oversight and approval flow.",
-      href: "/board/command-center",
-      label: "Open Command Center",
-    },
-    {
-      title: "Board Action Center",
-      description: "Board action items, decisions, and approval queue.",
-      href: "/board/action-center",
-      label: "Open Action Center",
-    },
-  ];
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -83,25 +117,22 @@ export default function SoftwareDashboard() {
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <header className="mb-10 flex flex-col gap-6 rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-2xl backdrop-blur-xl md:flex-row md:items-center md:justify-between">
-            
-            {/* LEFT SIDE */}
             <div>
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-300">
                 Stoutt Software Dashboard
               </p>
+
               <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
                 Command Access Center
               </h1>
+
               <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
                 One secure operating dashboard for owner access, manager review,
                 board approvals, workflow routing, and software training.
               </p>
             </div>
 
-            {/* RIGHT SIDE */}
             <div className="flex items-center gap-3">
-              
-              {/* LOGOUT BUTTON (VISIBLE) */}
               <button
                 onClick={handleLogout}
                 className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-medium text-slate-200 backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
@@ -109,21 +140,22 @@ export default function SoftwareDashboard() {
                 Logout
               </button>
 
-              {/* USER DROPDOWN */}
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 shadow-lg backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-xs font-bold text-amber-300">
-                    GS
+                    {initials}
                   </div>
 
-                  <div className="hidden sm:block text-left">
+                  <div className="hidden text-left sm:block">
                     <p className="text-sm font-semibold text-white">
-                      Glenn Stoutt
+                      {userName}
                     </p>
-                    <p className="text-xs text-slate-400">Admin</p>
+                    <p className="text-xs capitalize text-slate-400">
+                      {role} Access
+                    </p>
                   </div>
 
                   <span className="text-amber-300">▾</span>
@@ -133,10 +165,10 @@ export default function SoftwareDashboard() {
                   <div className="absolute right-0 z-50 mt-3 w-64 rounded-3xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-xl">
                     <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
                       <p className="text-sm font-semibold text-white">
-                        Glenn Stoutt
+                        {userName}
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        Temporary Portal Access
+                      <p className="mt-1 text-xs capitalize text-slate-400">
+                        {role} Portal Access
                       </p>
                     </div>
 
@@ -162,9 +194,47 @@ export default function SoftwareDashboard() {
             </div>
           </header>
 
-          {/* PORTALS GRID */}
+          <div className="mb-10 grid gap-5 md:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Role
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold capitalize">
+                {role} Access
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                This dashboard only displays the portals assigned to your login
+                role.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Session
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold">Active Login</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Your temporary development login keeps you inside the software
+                environment until you log out.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Visible Tools
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold">
+                {visiblePortals.length} Portals
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Admin sees all tools. Owners, managers, and board members see
+                role-specific systems.
+              </p>
+            </div>
+          </div>
+
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {portals.map((portal) => (
+            {visiblePortals.map((portal) => (
               <Link
                 key={portal.href}
                 href={portal.href}
@@ -178,7 +248,7 @@ export default function SoftwareDashboard() {
                   {portal.title}
                 </h3>
 
-                <p className="mt-3 text-sm leading-6 text-slate-300">
+                <p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-300">
                   {portal.description}
                 </p>
 
