@@ -10,17 +10,17 @@ const ownerModules = [
   },
   {
     title: "Request Status Center",
-    status: "Live",
-    href: "/portal/owner",
+    status: "Integrated",
+    href: null,
     description:
-      "Owners can see request status, progress timeline, next step, and management/board review stages.",
+      "Request tracking, progress timeline, and next steps are built directly into the Owner Portal.",
   },
   {
     title: "Board Review Visibility",
-    status: "Live",
-    href: "/portal/owner",
+    status: "Integrated",
+    href: null,
     description:
-      "Owner requests reflect when items are routed to board review, approved, scheduled, or completed.",
+      "Board review stages and approvals are automatically reflected inside each request.",
   },
 ];
 
@@ -60,23 +60,22 @@ export default function OwnerHub() {
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="grid gap-6 md:grid-cols-2">
-          {ownerModules.map((mod) => (
-            <Link key={mod.title} href={mod.href}>
-              <div className="cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-amber-400/40">
-                <div className="mb-2 text-sm text-emerald-300">
-                  {mod.status}
+          {ownerModules.map((mod) =>
+            mod.href ? (
+              <Link key={mod.title} href={mod.href}>
+                <div className="cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-amber-400/40">
+                  <ModuleCard mod={mod} />
                 </div>
-
-                <h2 className="text-2xl font-semibold">{mod.title}</h2>
-
-                <p className="mt-3 text-sm text-slate-400">
-                  {mod.description}
-                </p>
-
-                <div className="mt-5 text-sm text-amber-300">Open →</div>
+              </Link>
+            ) : (
+              <div
+                key={mod.title}
+                className="rounded-2xl border border-white/10 bg-white/5 p-6 opacity-75"
+              >
+                <ModuleCard mod={mod} />
               </div>
-            </Link>
-          ))}
+            )
+          )}
         </div>
 
         <div className="mt-10 rounded-2xl border border-amber-400/20 bg-amber-400/5 p-6">
@@ -84,11 +83,29 @@ export default function OwnerHub() {
 
           <p className="mt-3 text-sm text-slate-300">
             The Owner Portal is the live request intake and owner visibility
-            engine. This page is strictly for navigation, module clarity, and
-            project organization.
+            engine. Request tracking and Board review visibility are integrated
+            features inside the Owner Portal, not separate pages yet.
           </p>
         </div>
       </section>
     </main>
+  );
+}
+
+function ModuleCard({ mod }) {
+  return (
+    <>
+      <div className="mb-2 text-sm text-emerald-300">{mod.status}</div>
+
+      <h2 className="text-2xl font-semibold">{mod.title}</h2>
+
+      <p className="mt-3 text-sm text-slate-400">{mod.description}</p>
+
+      {mod.href ? (
+        <div className="mt-5 text-sm text-amber-300">Open →</div>
+      ) : (
+        <div className="mt-5 text-sm text-slate-500">Integrated Feature</div>
+      )}
+    </>
   );
 }
