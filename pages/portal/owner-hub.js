@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const ownerModules = [
   {
@@ -7,6 +8,13 @@ const ownerModules = [
     href: "/portal/owner",
     description:
       "Owner intake, request submission, profile-based request creation, and live progress visibility.",
+  },
+  {
+    title: "Financials",
+    status: "Planned",
+    href: null,
+    description:
+      "Owner account balance, payment status, ledger visibility, and assessment history.",
   },
   {
     title: "Request Status Center",
@@ -25,20 +33,56 @@ const ownerModules = [
 ];
 
 export default function OwnerHub() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("spmPortalLoggedIn");
+    localStorage.removeItem("spmPortalUser");
+    localStorage.removeItem("spmPortalUserName");
+    localStorage.removeItem("spmPortalRole");
+    router.push("/homeowner-login");
+  };
+
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 to-stone-900">
         <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="text-sm uppercase tracking-[0.3em] text-amber-400">
-            Owner Module
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="text-sm uppercase tracking-[0.3em] text-amber-400">
+                Owner Module
+              </div>
+
+              <h1 className="mt-4 text-5xl font-black">Owner Hub</h1>
+
+              <p className="mt-4 max-w-2xl text-slate-300">
+                Navigation layer for owner-facing software. The live Owner
+                Portal is the active intake and request visibility engine.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Owner Access
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3">
+                <button
+                  onClick={() => router.push("/software-dashboard")}
+                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Back to Software Dashboard
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="rounded-xl border border-red-300/20 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-400/15"
+                >
+                  Logout / Switch Role
+                </button>
+              </div>
+            </div>
           </div>
-
-          <h1 className="mt-4 text-5xl font-black">Owner Hub</h1>
-
-          <p className="mt-4 max-w-2xl text-slate-300">
-            Navigation layer for owner-facing software. The live Owner Portal is
-            the active intake and request visibility engine.
-          </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
@@ -83,8 +127,9 @@ export default function OwnerHub() {
 
           <p className="mt-3 text-sm text-slate-300">
             The Owner Portal is the live request intake and owner visibility
-            engine. Request tracking and Board review visibility are integrated
-            features inside the Owner Portal, not separate pages yet.
+            engine. Request tracking, Board review visibility, and future
+            financial access are integrated features inside the owner
+            experience.
           </p>
         </div>
       </section>
