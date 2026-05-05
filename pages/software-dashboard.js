@@ -13,17 +13,17 @@ export default function SoftwareDashboard() {
     router.push("/homeowner-login");
   };
 
-  const cards = [
-    { title: "Portal Hub", href: "/portal" },
-    { title: "Owner Hub", href: "/portal" },
-    { title: "Manager Hub", href: "/portal" },
-    { title: "Board Hub", href: "/board" },
-    { title: "Command Center", href: "/board/command-center" },
-    { title: "Action Center", href: "/board/action-center" },
-    { title: "Workflow Engine", href: "/portal/workflow-engine" },
-    { title: "Workflow Live", href: "/portal/workflow-engine-live" },
-    { title: "Manager Intake", href: "/portal/manager" },
-  ];
+ const cards = [
+  { title: "Portal Hub", href: "/portal" },
+  { title: "Owner Hub", href: "/portal/owner-hub" },
+  { title: "Manager Hub", href: "/portal/manager-hub" },
+  { title: "Board Hub", href: "/board" },
+  { title: "Command Center", href: "/board/command-center" },
+  { title: "Action Center", href: "/board/action-center" },
+  { title: "Workflow Engine", href: "/portal/workflow-engine" },
+  { title: "Workflow Live", href: "/portal/workflow-engine-live" },
+  { title: "Manager Intake", href: "/portal/manager" },
+];
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
