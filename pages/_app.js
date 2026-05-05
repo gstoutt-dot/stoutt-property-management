@@ -3,50 +3,20 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 const routeAccess = [
-  {
-    path: "/software-dashboard",
-    roles: ["owner", "manager", "board", "admin"],
-  },
-  {
-    path: "/portal",
-    roles: ["owner", "manager", "board", "admin"],
-  },
-  {
-    path: "/portal/owner-hub",
-    roles: ["owner", "manager", "board", "admin"],
-  },
-  {
-    path: "/portal/owner",
-    roles: ["owner", "manager", "board", "admin"],
-  },
-  {
-    path: "/portal/manager-hub",
-    roles: ["manager", "admin"],
-  },
-  {
-    path: "/portal/manager",
-    roles: ["manager", "admin"],
-  },
-  {
-    path: "/portal/workflow-engine",
-    roles: ["manager", "admin"],
-  },
-  {
-    path: "/portal/workflow-engine-live",
-    roles: ["manager", "admin"],
-  },
-  {
-    path: "/board",
-    roles: ["board", "manager", "admin"],
-  },
-  {
-    path: "/board/command-center",
-    roles: ["board", "manager", "admin"],
-  },
-  {
-    path: "/board/action-center",
-    roles: ["board", "manager", "admin"],
-  },
+  { path: "/portal/manager-hub", roles: ["manager", "admin"] },
+  { path: "/portal/manager", roles: ["manager", "admin"] },
+  { path: "/portal/workflow-engine-live", roles: ["manager", "admin"] },
+  { path: "/portal/workflow-engine", roles: ["manager", "admin"] },
+
+  { path: "/board/command-center", roles: ["board", "manager", "admin"] },
+  { path: "/board/action-center", roles: ["board", "manager", "admin"] },
+  { path: "/board", roles: ["board", "manager", "admin"] },
+
+  { path: "/portal/owner-hub", roles: ["owner", "manager", "board", "admin"] },
+  { path: "/portal/owner", roles: ["owner", "manager", "board", "admin"] },
+
+  { path: "/portal", roles: ["owner", "manager", "board", "admin"] },
+  { path: "/software-dashboard", roles: ["owner", "manager", "board", "admin"] },
 ];
 
 function AccessDenied({ onReturn }) {
@@ -66,11 +36,6 @@ function AccessDenied({ onReturn }) {
             This area is not assigned to your role.
           </h1>
 
-          <p className="mt-4 text-sm leading-6 text-slate-300">
-            Return to your dashboard to view the portals available to your
-            current login.
-          </p>
-
           <button
             onClick={onReturn}
             className="mt-6 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
@@ -89,11 +54,14 @@ function PortalGate({ children }) {
   const [denied, setDenied] = useState(false);
 
   useEffect(() => {
-    const path = router.pathname;
+    const cleanPath = router.asPath.split("?")[0].split("#")[0];
 
-    const matchingRoute = routeAccess.find(
-      (route) => path === route.path || path.startsWith(`${route.path}/`)
-    );
+    const matchingRoute = routeAccess
+      .filter(
+        (route) =>
+          cleanPath === route.path || cleanPath.startsWith(`${route.path}/`)
+      )
+      .sort((a, b) => b.path.length - a.path.length)[0];
 
     if (!matchingRoute) {
       setDenied(false);
@@ -117,16 +85,13 @@ function PortalGate({ children }) {
 
     setDenied(false);
     setCheckingAccess(false);
-  }, [router.pathname, router]);
+  }, [router.asPath]);
 
   if (checkingAccess) {
     return (
       <main className="min-h-screen bg-slate-950 text-white">
         <section className="flex min-h-screen items-center justify-center px-6">
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 text-center shadow-2xl backdrop-blur-xl">
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-xl font-bold text-amber-300">
-              S
-            </div>
             <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
               Verifying Access
             </p>
