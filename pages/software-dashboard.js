@@ -83,6 +83,8 @@ export default function SoftwareDashboard() {
 
         <div className="relative z-10 mx-auto max-w-7xl">
           <header className="mb-10 flex flex-col gap-6 rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-2xl backdrop-blur-xl md:flex-row md:items-center md:justify-between">
+            
+            {/* LEFT SIDE */}
             <div>
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-300">
                 Stoutt Software Dashboard
@@ -96,103 +98,77 @@ export default function SoftwareDashboard() {
               </p>
             </div>
 
-            <div className="relative">
+            {/* RIGHT SIDE */}
+            <div className="flex items-center gap-3">
+              
+              {/* LOGOUT BUTTON (VISIBLE) */}
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-left shadow-lg backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10"
+                onClick={handleLogout}
+                className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-medium text-slate-200 backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-sm font-bold text-amber-300">
-                  GS
-                </div>
-
-                <div className="hidden sm:block">
-                  <p className="text-sm font-semibold text-white">
-                    Glenn Stoutt
-                  </p>
-                  <p className="text-xs text-slate-400">Development Admin</p>
-                </div>
-
-                <span className="text-amber-300">▾</span>
+                Logout
               </button>
 
-              {menuOpen && (
-                <div className="absolute right-0 z-50 mt-3 w-64 rounded-3xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-xl">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+              {/* USER DROPDOWN */}
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 shadow-lg backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-xs font-bold text-amber-300">
+                    GS
+                  </div>
+
+                  <div className="hidden sm:block text-left">
                     <p className="text-sm font-semibold text-white">
                       Glenn Stoutt
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Temporary Portal Access
-                    </p>
+                    <p className="text-xs text-slate-400">Admin</p>
                   </div>
 
-                  <div className="mt-3 space-y-2">
-                    <button
-                      onClick={() => setMenuOpen(false)}
-                      className="w-full rounded-2xl px-4 py-3 text-left text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-amber-300"
-                    >
-                      Profile
-                    </button>
+                  <span className="text-amber-300">▾</span>
+                </button>
 
-                    <button
-                      onClick={() => setMenuOpen(false)}
-                      className="w-full rounded-2xl px-4 py-3 text-left text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-amber-300"
-                    >
-                      Settings
-                    </button>
+                {menuOpen && (
+                  <div className="absolute right-0 z-50 mt-3 w-64 rounded-3xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-xl">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                      <p className="text-sm font-semibold text-white">
+                        Glenn Stoutt
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Temporary Portal Access
+                      </p>
+                    </div>
 
-                    <button
-                      onClick={handleLogout}
-                      className="w-full rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-left text-sm font-semibold text-amber-300 transition hover:bg-amber-400 hover:text-slate-950"
-                    >
-                      Logout
-                    </button>
+                    <div className="mt-3 space-y-2">
+                      <button className="w-full rounded-2xl px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/[0.06] hover:text-amber-300">
+                        Profile
+                      </button>
+
+                      <button className="w-full rounded-2xl px-4 py-3 text-left text-sm text-slate-300 hover:bg-white/[0.06] hover:text-amber-300">
+                        Settings
+                      </button>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-left text-sm font-semibold text-amber-300 hover:bg-amber-400 hover:text-slate-950"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </header>
 
-          <div className="mb-10 grid gap-5 md:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
-              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Access
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold">Locked Portal</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                This dashboard is now protected behind the homeowner login gate.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
-              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Session
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold">Active Login</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                Your temporary development login keeps you inside the software
-                environment until you log out.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
-              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Build Mode
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold">Training View</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                Use this page as your master screen to learn and access every
-                working portal page.
-              </p>
-            </div>
-          </div>
-
+          {/* PORTALS GRID */}
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {portals.map((portal) => (
               <Link
                 key={portal.href}
                 href={portal.href}
-                className="group rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl transition hover:-translate-y-1 hover:border-amber-400/40 hover:bg-white/[0.09] hover:shadow-amber-500/10"
+                className="group rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl transition hover:-translate-y-1 hover:border-amber-400/40 hover:bg-white/[0.09]"
               >
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-lg font-bold text-amber-300">
                   S
@@ -202,21 +178,15 @@ export default function SoftwareDashboard() {
                   {portal.title}
                 </h3>
 
-                <p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-300">
+                <p className="mt-3 text-sm leading-6 text-slate-300">
                   {portal.description}
                 </p>
 
-                <div className="mt-6 inline-flex rounded-2xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition group-hover:bg-amber-300">
+                <div className="mt-6 inline-flex rounded-2xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950">
                   {portal.label}
                 </div>
               </Link>
             ))}
-          </div>
-
-          <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6 text-sm leading-6 text-amber-100 shadow-xl shadow-amber-500/10 backdrop-blur-xl">
-            <strong className="text-amber-300">Development Login:</strong>{" "}
-            Username <span className="font-semibold">glenn</span> / Password{" "}
-            <span className="font-semibold">stoutt2026</span>
           </div>
         </div>
       </section>
