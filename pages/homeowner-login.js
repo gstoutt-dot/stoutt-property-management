@@ -1,147 +1,114 @@
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
-export default function HomeownerLoginPage() {
+export default function HomeownerLogin() {
+  const router = useRouter();
+
+  const TEMP_USERNAME = "glenn";
+  const TEMP_PASSWORD = "stoutt2026";
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loggedIn = localStorage.getItem("spmPortalLoggedIn");
+    if (loggedIn === "true") {
+      router.push("/software-dashboard");
+    }
+  }, [router]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (
+      username.trim().toLowerCase() === TEMP_USERNAME &&
+      password === TEMP_PASSWORD
+    ) {
+      localStorage.setItem("spmPortalLoggedIn", "true");
+      localStorage.setItem("spmPortalUser", TEMP_USERNAME);
+      router.push("/software-dashboard");
+    } else {
+      setError("Invalid username or password.");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <Link href="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="Stoutt Property Management"
-              className="h-16 w-auto object-contain lg:h-20"
-            />
-          </Link>
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,1),transparent_45%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950 to-slate-950" />
 
-          <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
-            <Link href="/">Home</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/why-switch">Why Switch</Link>
-            <Link href="/founder">Founder</Link>
-            <Link href="/collections">Collections</Link>
-            <Link href="/coverage">Coverage</Link>
-          </nav>
+        <div className="relative z-10 w-full max-w-xl rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-xl md:p-10">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-2xl font-bold text-amber-300 shadow-lg shadow-amber-500/10">
+              S
+            </div>
 
-          <a
-            href="tel:7546004755"
-            className="rounded-full border border-amber-400/40 bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
-          >
-            Call Now
-          </a>
-        </div>
-      </header>
-
-      <section className="relative flex min-h-[calc(100vh-96px)] items-center justify-center overflow-hidden px-6 py-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_30%)]" />
-
-        <div className="relative z-10 grid w-full max-w-6xl gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
-          <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-amber-300">
-              Private Homeowner Portal
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-300">
+              Homeowner Access
             </p>
 
-            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-              Secure access to your association account.
+            <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
+              Stoutt Property Management
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              View balances, payments, service requests, violations,
-              architectural requests, governing documents, and Ava assistant
-              support from one secure Stoutt-controlled location.
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              Secure portal access for community management tools, dashboards,
+              requests, approvals, and owner support.
             </p>
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <p className="text-2xl font-semibold text-amber-300">24/7</p>
-                <p className="mt-2 text-sm text-slate-300">Portal access</p>
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <p className="text-2xl font-semibold text-amber-300">AI</p>
-                <p className="mt-2 text-sm text-slate-300">Ava assistance</p>
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <p className="text-2xl font-semibold text-amber-300">SPM</p>
-                <p className="mt-2 text-sm text-slate-300">Private records</p>
-              </div>
-            </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white p-8 text-slate-950 shadow-2xl shadow-black/30 md:p-10">
-            <div className="mb-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-700">
-                Stoutt Property Management
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold">Homeowner Login</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Sign in to access your private homeowner or board member
-                dashboard.
-              </p>
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
+                placeholder="Enter username"
+              />
             </div>
 
-            <form className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-500/10"
-                />
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
+                placeholder="Enter password"
+              />
+            </div>
+
+            {error && (
+              <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {error}
               </div>
+            )}
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Enter your password"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-500/10"
-                />
-              </div>
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
+            >
+              Enter Portal
+            </button>
+          </form>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Association Code{" "}
-                  <span className="font-normal text-slate-400">optional</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Example: ENVIRON1"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 uppercase text-slate-950 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-500/10"
-                />
-              </div>
-
-              <Link
-  href="/homeowner"
-  className="block w-full rounded-2xl bg-amber-400 px-5 py-4 text-center text-sm font-bold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
->
-  Sign In
-</Link>
-            </form>
-
-            <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-              <Link href="#" className="hover:text-amber-700">
-                Forgot Password?
-              </Link>
-              <Link href="/proposal" className="hover:text-amber-700">
-                Need Portal Access?
-              </Link>
-            </div>
-
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-              Private access. Secure records. Stoutt-controlled management data.
-            </div>
-
-            <div className="mt-5 text-center text-sm text-slate-500">
-              Need help?{" "}
-              <a href="tel:7546004755" className="font-semibold text-amber-700">
-                Call 754-600-4755
-              </a>
-            </div>
+          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-900/50 p-4 text-center text-xs leading-5 text-slate-400">
+            Temporary development login:
+            <br />
+            Username: <span className="text-amber-300">glenn</span>
+            <br />
+            Password: <span className="text-amber-300">stoutt2026</span>
           </div>
         </div>
       </section>
