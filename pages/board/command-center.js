@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function CommandCenter() {
   const [actions, setActions] = useState([]);
@@ -37,75 +33,25 @@ export default function CommandCenter() {
   const metrics = useMemo(() => {
     const open = actions.filter((a) => a.status === "open").length;
     const inProgress = actions.filter((a) => a.status === "in_progress").length;
+    const boardReview = actions.filter((a) => a.status === "board_review").length;
+    const approved = actions.filter((a) => a.status === "approved").length;
     const completed = actions.filter((a) => a.status === "completed").length;
     const highPriority = actions.filter((a) => a.priority === "high").length;
-
-    const activeHighRisk = actions.filter(
-      (a) => a.priority === "high" && a.status !== "completed"
-    ).length;
 
     return {
       total: actions.length,
       open,
       inProgress,
+      boardReview,
+      approved,
       completed,
       highPriority,
-      activeHighRisk,
     };
   }, [actions]);
 
-  const riskSignals = useMemo(() => {
-    const signals = [];
-
-    const highOpen = actions.filter(
-      (a) => a.priority === "high" && a.status === "open"
-    );
-
-    const highInProgress = actions.filter(
-      (a) => a.priority === "high" && a.status === "in_progress"
-    );
-
-    if (highOpen.length > 0) {
-      signals.push({
-        title: "High Priority Items Awaiting Action",
-        detail: `${highOpen.length} high priority action item${
-          highOpen.length === 1 ? "" : "s"
-        } remain open.`,
-        severity: "critical",
-      });
-    }
-
-    if (highInProgress.length > 0) {
-      signals.push({
-        title: "Escalated Work In Progress",
-        detail: `${highInProgress.length} escalated item${
-          highInProgress.length === 1 ? "" : "s"
-        } currently moving through workflow.`,
-        severity: "warning",
-      });
-    }
-
-    if (metrics.open > 3) {
-      signals.push({
-        title: "Open Item Volume Rising",
-        detail: `${metrics.open} open items require board or management review.`,
-        severity: "warning",
-      });
-    }
-
-    if (signals.length === 0) {
-      signals.push({
-        title: "No Active Risk Signals",
-        detail: "No high priority unresolved items are currently detected.",
-        severity: "stable",
-      });
-    }
-
-    return signals;
-  }, [actions, metrics.open]);
-
   return (
     <main className="min-h-screen bg-slate-950 text-white">
+      {/* HEADER */}
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900 px-8 py-12">
         <p className="mb-4 text-sm font-bold uppercase tracking-[0.35em] text-amber-400">
           Board Operating System
@@ -116,98 +62,50 @@ export default function CommandCenter() {
         </h1>
 
         <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-          Real-time operational intelligence across action items, workflow
-          movement, escalation status, and board-level risk signals.
+          Real-time operational intelligence across workflow activity, board
+          decisions, escalation status, and association-level risk signals.
         </p>
-      </section>
 
-      <section className="px-8 py-10">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-amber-400">
-              Live Intelligence Layer
-            </p>
-            <h2 className="mt-2 text-3xl font-bold">Operational Overview</h2>
-          </div>
+        <div className="mt-8 flex flex-wrap gap-4">
+          <Link
+            href="/board/action-center"
+            className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg hover:bg-amber-300"
+          >
+            Open Action Center
+          </Link>
 
           <button
             onClick={loadCommandCenter}
-            className="rounded-full bg-amber-400 px-6 py-3 font-bold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
+            className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm text-slate-200 hover:bg-white/10"
           >
-            Refresh Command Center
+            Refresh Data
           </button>
         </div>
+      </section>
 
+      {/* METRICS */}
+      <section className="px-8 py-10">
         {loading ? (
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-slate-300">
             Loading live BOS data...
           </div>
         ) : (
           <>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-6">
-              <MetricCard label="Total Actions" value={metrics.total} />
-              <MetricCard label="Open" value={metrics.open} />
-              <MetricCard label="In Progress" value={metrics.inProgress} />
-              <MetricCard label="Completed" value={metrics.completed} />
-              <MetricCard label="High Priority" value={metrics.highPriority} alert />
-              <MetricCard label="Active Risk" value={metrics.activeHighRisk} danger />
+            <div className="grid gap-5 md:grid-cols-3 xl:grid-cols-6">
+              <Metric label="Total Items" value={metrics.total} />
+              <Metric label="Open" value={metrics.open} />
+              <Metric label="In Progress" value={metrics.inProgress} />
+              <Metric label="Awaiting Board" value={metrics.boardReview} highlight />
+              <Metric label="Approved" value={metrics.approved} />
+              <Metric label="Completed" value={metrics.completed} />
             </div>
 
-            <div className="mt-10 grid gap-8 xl:grid-cols-3">
-              <section className="xl:col-span-2 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl">
-                <div className="mb-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
-                      Risk Signals
-                    </p>
-                    <h3 className="mt-2 text-3xl font-bold">
-                      Board Attention Required
-                    </h3>
-                  </div>
-                </div>
+            {/* EVENTS */}
+            <div className="mt-10 grid gap-8 xl:grid-cols-2">
+              <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl">
+                <h3 className="text-2xl font-bold mb-6">Recent Board Activity</h3>
 
                 <div className="space-y-4">
-                  {riskSignals.map((signal, index) => (
-                    <div
-                      key={index}
-                      className={`rounded-2xl border p-5 ${
-                        signal.severity === "critical"
-                          ? "border-red-500/50 bg-red-500/10"
-                          : signal.severity === "warning"
-                          ? "border-amber-400/40 bg-amber-400/10"
-                          : "border-emerald-400/30 bg-emerald-400/10"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h4 className="text-xl font-bold">{signal.title}</h4>
-                          <p className="mt-2 text-slate-300">{signal.detail}</p>
-                        </div>
-
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-                            signal.severity === "critical"
-                              ? "bg-red-500 text-white"
-                              : signal.severity === "warning"
-                              ? "bg-amber-400 text-slate-950"
-                              : "bg-emerald-500 text-white"
-                          }`}
-                        >
-                          {signal.severity}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl">
-                <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
-                  Event Activity
-                </p>
-                <h3 className="mt-2 text-3xl font-bold">Live BOS Events</h3>
-
-                <div className="mt-6 space-y-4">
                   {events.length === 0 ? (
                     <p className="text-slate-400">No events recorded yet.</p>
                   ) : (
@@ -216,10 +114,8 @@ export default function CommandCenter() {
                         key={event.id}
                         className="rounded-2xl border border-white/10 bg-slate-950/70 p-4"
                       >
-                        <p className="font-semibold text-white">
-                          {event.message || "BOS event recorded"}
-                        </p>
-                        <p className="mt-2 text-sm text-slate-500">
+                        <p className="font-semibold">{event.message}</p>
+                        <p className="text-xs text-slate-500 mt-1">
                           {new Date(event.created_at).toLocaleString()}
                         </p>
                       </div>
@@ -227,71 +123,43 @@ export default function CommandCenter() {
                   )}
                 </div>
               </section>
-            </div>
 
-            <section className="mt-10 rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.3em] text-amber-400">
-                    Latest Actions
-                  </p>
-                  <h3 className="mt-2 text-3xl font-bold">
-                    Current BOS Action Register
-                  </h3>
-                </div>
-              </div>
+              {/* ACTION LIST */}
+              <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-2xl">
+                <h3 className="text-2xl font-bold mb-6">
+                  Awaiting Board Decisions
+                </h3>
 
-              <div className="grid gap-4">
-                {actions.length === 0 ? (
-                  <p className="text-slate-400">No action items found.</p>
-                ) : (
-                  actions.map((action) => (
-                    <div
-                      key={action.id}
-                      className={`rounded-2xl border p-5 ${
-                        action.priority === "high"
-                          ? "border-red-500/50 bg-red-500/10"
-                          : "border-white/10 bg-slate-950/70"
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div>
-                          <h4 className="text-xl font-bold">{action.title}</h4>
-                          <p className="mt-2 text-sm text-slate-400">
-                            Status:{" "}
-                            <span className="font-bold text-amber-400">
-                              {String(action.status || "open").replace(
-                                "_",
-                                " "
-                              )}
-                            </span>
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-                              action.priority === "high"
-                                ? "bg-red-500 text-white"
-                                : "bg-slate-700 text-white"
-                            }`}
-                          >
-                            {action.priority || "normal"}
+                <div className="space-y-4">
+                  {actions
+                    .filter((a) => a.status === "board_review")
+                    .slice(0, 5)
+                    .map((action) => (
+                      <div
+                        key={action.id}
+                        className="rounded-2xl border border-purple-400/30 bg-purple-400/10 p-4"
+                      >
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-semibold">{action.title}</h4>
+                          <span className="text-xs text-purple-300">
+                            Board Review
                           </span>
-
-                          {action.priority === "high" &&
-                            action.status !== "completed" && (
-                              <span className="rounded-full bg-amber-400 px-3 py-1 text-xs font-bold uppercase text-slate-950">
-                                At Risk
-                              </span>
-                            )}
                         </div>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {action.association_name}
+                        </p>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </section>
+                    ))}
+                </div>
+
+                <Link
+                  href="/board/action-center"
+                  className="mt-6 inline-block text-amber-300 text-sm font-medium"
+                >
+                  Go to Action Center →
+                </Link>
+              </section>
+            </div>
           </>
         )}
       </section>
@@ -299,28 +167,19 @@ export default function CommandCenter() {
   );
 }
 
-function MetricCard({ label, value, alert, danger }) {
+function Metric({ label, value, highlight }) {
   return (
     <div
-      className={`rounded-3xl border p-6 shadow-xl ${
-        danger
-          ? "border-red-500/50 bg-red-500/10"
-          : alert
+      className={`rounded-3xl border p-6 ${
+        highlight
           ? "border-amber-400/40 bg-amber-400/10"
           : "border-white/10 bg-slate-900/70"
       }`}
     >
-      <p className="text-sm font-bold uppercase tracking-[0.25em] text-slate-400">
+      <p className="text-sm uppercase tracking-[0.25em] text-slate-400">
         {label}
       </p>
-
-      <p
-        className={`mt-4 text-4xl font-black ${
-          danger ? "text-red-400" : alert ? "text-amber-400" : "text-white"
-        }`}
-      >
-        {value}
-      </p>
+      <p className="mt-4 text-4xl font-black text-white">{value}</p>
     </div>
   );
 }
