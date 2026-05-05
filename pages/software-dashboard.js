@@ -12,6 +12,12 @@ const DASHBOARD_MODULES = {
       label: "Primary Command",
     },
     {
+      title: "Approval Queue",
+      description:
+        "Review items routed from management for board decisions and final approval.",
+      href: "/portal/approval-queue",
+    },
+    {
       title: "Manager Hub",
       description: "Review manager-side operations and association workflows.",
       href: "/portal/manager",
@@ -46,6 +52,12 @@ const DASHBOARD_MODULES = {
       href: "/portal/action-center",
       featured: true,
       label: "Manager Priority",
+    },
+    {
+      title: "Approval Queue",
+      description:
+        "Track items sent to the board and monitor approval status.",
+      href: "/portal/approval-queue",
     },
     {
       title: "Manager Hub",
@@ -85,7 +97,8 @@ const DASHBOARD_MODULES = {
     },
     {
       title: "Approval Queue",
-      description: "View open decisions awaiting board action.",
+      description:
+        "Review items routed from management for board decisions and final approval.",
       href: "/portal/approval-queue",
     },
     {
@@ -168,28 +181,28 @@ export default function SoftwareDashboard() {
               </p>
             </div>
 
-           <div className="rounded-3xl border border-white/10 bg-white/[0.07] px-6 py-5 shadow-2xl backdrop-blur-xl">
-  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-    Current Role
-  </p>
+            <div className="rounded-3xl border border-white/10 bg-white/[0.07] px-6 py-5 shadow-2xl backdrop-blur-xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Current Role
+              </p>
 
-  <p className="mt-2 text-2xl font-bold text-amber-300">
-    {roleLabel}
-  </p>
+              <p className="mt-2 text-2xl font-bold text-amber-300">
+                {roleLabel}
+              </p>
 
-  <button
-    onClick={() => {
-      localStorage.removeItem("spmPortalLoggedIn");
-      localStorage.removeItem("spmPortalUser");
-      localStorage.removeItem("spmPortalUserName");
-      localStorage.removeItem("spmPortalRole");
-      router.push("/homeowner-login");
-    }}
-    className="mt-4 rounded-full border border-red-300/20 bg-red-400/10 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-400/15"
-  >
-    Logout / Switch Role
-  </button>
-</div>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("spmPortalLoggedIn");
+                  localStorage.removeItem("spmPortalUser");
+                  localStorage.removeItem("spmPortalUserName");
+                  localStorage.removeItem("spmPortalRole");
+                  router.push("/homeowner-login");
+                }}
+                className="mt-4 rounded-full border border-red-300/20 bg-red-400/10 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-400/15"
+              >
+                Logout / Switch Role
+              </button>
+            </div>
           </div>
         </div>
       </section>
