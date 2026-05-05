@@ -6,12 +6,7 @@ const portalSections = [
     title: "Owner Portal",
     description:
       "Owner intake, request submission, preloaded profile data, and live status tracking.",
-    links: [
-      {
-        label: "Open Owner Portal",
-        href: "/portal/owner-hub",
-      },
-    ],
+    links: [{ label: "Open Owner Portal", href: "/portal/owner-hub" }],
     roles: ["owner", "manager", "board", "admin"],
   },
   {
@@ -19,18 +14,9 @@ const portalSections = [
     description:
       "Manager command layer for reviewing requests, routing items, vendor dispatch, and workflow control.",
     links: [
-      {
-        label: "Open Manager Portal",
-        href: "/portal/manager-hub",
-      },
-      {
-        label: "Manager Action Center",
-        href: "/portal/manager",
-      },
-      {
-        label: "Vendor Dispatch",
-        href: "/portal/workflow-engine-live",
-      },
+      { label: "Open Manager Portal", href: "/portal/manager-hub" },
+      { label: "Manager Action Center", href: "/portal/manager" },
+      { label: "Workflow Engine", href: "/portal/workflow-engine" },
     ],
     roles: ["manager", "admin"],
   },
@@ -39,45 +25,19 @@ const portalSections = [
     description:
       "Board intelligence and decision layer for items escalated by management.",
     links: [
-      {
-        label: "Board Module Hub",
-        href: "/board",
-      },
-      {
-        label: "Command Center",
-        href: "/board/command-center",
-      },
-      {
-        label: "Action Center",
-        href: "/board/action-center",
-      },
+      { label: "Board Module Hub", href: "/board" },
+      { label: "Command Center", href: "/board/command-center" },
+      { label: "Action Center", href: "/board/action-center" },
     ],
     roles: ["board", "manager", "admin"],
-  },
-  {
-    title: "BOS / Supabase Layer",
-    description:
-      "Shared data layer powering owner requests, manager workflow, board decisions, and activity tracking.",
-    links: [
-      {
-        label: "View Board Command Center",
-        href: "/board/command-center",
-      },
-      {
-        label: "View Workflow Engine",
-        href: "/portal/workflow-engine",
-      },
-    ],
-    roles: ["manager", "admin"],
   },
 ];
 
 export default function PortalHub() {
-  const [role, setRole] = useState("owner");
+  const [role, setRole] = useState("");
 
   useEffect(() => {
-    const storedRole = localStorage.getItem("spmPortalRole");
-    if (storedRole) setRole(storedRole);
+    setRole(localStorage.getItem("spmPortalRole") || "owner");
   }, []);
 
   const visibleSections = portalSections.filter((section) =>
@@ -103,23 +63,10 @@ export default function PortalHub() {
             portal modules.
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-4 text-sm font-semibold">
-            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-amber-300 capitalize">
+          <div className="mt-10">
+            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-sm font-semibold capitalize text-amber-300">
               {role} Access
             </span>
-
-            {visibleSections.map((section) => (
-              <a
-                key={section.title}
-                href={`#${section.title
-                  .toLowerCase()
-                  .replaceAll(" ", "-")
-                  .replaceAll("/", "")}`}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-slate-200 transition hover:border-amber-400/40 hover:text-amber-300"
-              >
-                {section.title}
-              </a>
-            ))}
           </div>
         </div>
       </section>
@@ -129,10 +76,6 @@ export default function PortalHub() {
           {visibleSections.map((section) => (
             <div
               key={section.title}
-              id={section.title
-                .toLowerCase()
-                .replaceAll(" ", "-")
-                .replaceAll("/", "")}
               className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-xl"
             >
               <h2 className="text-3xl font-semibold">{section.title}</h2>
