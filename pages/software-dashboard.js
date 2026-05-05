@@ -16,7 +16,7 @@ export default function SoftwareDashboard() {
  const cards = [
   { title: "Portal Hub", href: "/portal" },
   { title: "Owner Hub", href: "/portal/owner-hub" },
-  { title: "Manager Hub", href: "/portal/manager-hub" },
+  { title: "Manager Hub", href: "/portal/manager" },
   { title: "Board Hub", href: "/board" },
   { title: "Command Center", href: "/board/command-center" },
   { title: "Action Center", href: "/board/action-center" },
