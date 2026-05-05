@@ -109,25 +109,21 @@ const DASHBOARD_MODULES = {
   ],
 
   owner: [
-    {
-      title: "Owner Portal",
-      description:
-        "Access your account, submit requests, and view association information.",
-      href: "/portal",
-      featured: true,
-      label: "Owner Access",
-    },
-    {
-      title: "Submit Request",
-      description: "Send maintenance, ARC, violation, or general requests.",
-      href: "/portal/owner-requests",
-    },
-    {
-      title: "Documents",
-      description: "Access association documents, notices, and forms.",
-      href: "/portal/documents",
-    },
-  ],
+  {
+    title: "Owner Hub",
+    description:
+      "Access owner requests, status visibility, financials, and association information.",
+    href: "/homeowner",
+    featured: true,
+    label: "Owner Access",
+  },
+  {
+    title: "Owner Portal",
+    description:
+      "Open the live owner intake and request visibility portal.",
+    href: "/portal/owner",
+  },
+],
 };
 
 export default function SoftwareDashboard() {
