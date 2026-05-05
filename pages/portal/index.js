@@ -34,26 +34,15 @@ const portalSections = [
 ];
 
 export default function PortalHub() {
-  const [role, setRole] = useState("owner");
-  const [ready, setReady] = useState(false);
+  const [role, setRole] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedRole = window.localStorage.getItem("spmPortalRole");
-      setRole(savedRole || "owner");
-      setReady(true);
-    }
+    setRole(localStorage.getItem("spmPortalRole") || "owner");
   }, []);
 
   const visibleSections = portalSections.filter((section) =>
     section.roles.includes(role)
   );
-
-  if (!ready) {
-    return (
-      <main className="min-h-screen bg-slate-950 text-white" />
-    );
-  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -113,3 +102,5 @@ export default function PortalHub() {
     </main>
   );
 }
+
+
