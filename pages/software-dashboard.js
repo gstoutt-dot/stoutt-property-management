@@ -1,167 +1,174 @@
 import Link from "next/link";
-
-const hubs = [
-  { title: "Master Portal Hub", href: "/portal", type: "Hub", status: "Live" },
-  { title: "Owner Hub", href: "/portal/owner-hub", type: "Hub", status: "Live" },
-  { title: "Manager Hub", href: "/portal/manager", type: "Hub", status: "Live" },
-  { title: "Board Hub", href: "/board", type: "Hub", status: "Live" },
-  {
-    title: "Workflow Architecture Map",
-    href: "/portal/workflow-engine",
-    type: "System Map",
-    status: "Live",
-  },
-  {
-    title: "Workflow Live Monitor",
-    href: "/portal/workflow-engine-live",
-    type: "Live Monitor",
-    status: "Live",
-  },
-];
-
-const engines = [
-  { title: "Owner Portal", href: "/portal/owner", role: "Owner intake + request visibility" },
-  { title: "Manager Command Center", href: "/portal/manager", role: "Main operational engine" },
-  { title: "Board Command Center", href: "/board/command-center", role: "Board intelligence" },
-  { title: "Board Action Center", href: "/board/action-center", role: "Board decisions" },
-];
+import { useRouter } from "next/router";
 
 export default function SoftwareDashboard() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("spmPortalLoggedIn");
+    localStorage.removeItem("spmPortalUser");
+    router.push("/homeowner-login");
+  };
+
+  const portals = [
+    {
+      title: "Portal Hub",
+      description: "Main access point for all Stoutt portal systems.",
+      href: "/portal",
+      label: "Open Portal",
+    },
+    {
+      title: "Owner Hub",
+      description: "Homeowner requests, account support, and owner tools.",
+      href: "/portal/owner-hub",
+      label: "Open Owner Hub",
+    },
+    {
+      title: "Manager Hub",
+      description: "Manager intake, review, inspections, and workflow routing.",
+      href: "/portal/manager-hub",
+      label: "Open Manager Hub",
+    },
+    {
+      title: "Board Hub",
+      description: "Board approvals, community oversight, and decisions.",
+      href: "/board",
+      label: "Open Board Hub",
+    },
+    {
+      title: "Workflow Map",
+      description: "Visual overview of how requests move through the system.",
+      href: "/portal/workflow-engine",
+      label: "Open Workflow Map",
+    },
+    {
+      title: "Workflow Live",
+      description: "Live operating workflow for intake, review, and approvals.",
+      href: "/portal/workflow-engine-live",
+      label: "Open Workflow Live",
+    },
+    {
+      title: "Owner Engine",
+      description: "Core owner-facing request and support engine.",
+      href: "/portal/owner",
+      label: "Open Owner Engine",
+    },
+    {
+      title: "Manager Engine",
+      description: "Core management review and processing engine.",
+      href: "/portal/manager",
+      label: "Open Manager Engine",
+    },
+    {
+      title: "Board Command Center",
+      description: "Board-level command center for oversight and approval flow.",
+      href: "/board/command-center",
+      label: "Open Command Center",
+    },
+    {
+      title: "Board Action Center",
+      description: "Board action items, decisions, and approval queue.",
+      href: "/board/action-center",
+      label: "Open Action Center",
+    },
+  ];
+
   return (
-    <main className="min-h-screen bg-[#020617] text-white">
-      <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
-        <div className="mx-auto max-w-7xl px-6 py-10">
-          <div className="mb-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300">
-            Stoutt Property Management Software
+    <main className="min-h-screen bg-slate-950 text-white">
+      <section className="relative overflow-hidden px-6 py-10 md:px-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.14),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(30,41,59,0.55),transparent_38%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950 to-slate-950" />
+
+        <div className="relative z-10 mx-auto max-w-7xl">
+          <header className="mb-10 flex flex-col gap-6 rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-2xl backdrop-blur-xl md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-300">
+                Stoutt Software Dashboard
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
+                Command Access Center
+              </h1>
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300 md:text-base">
+                One secure operating dashboard for owner access, manager review,
+                board approvals, workflow routing, and software training.
+              </p>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="rounded-2xl border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-slate-200 shadow-lg backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
+            >
+              Logout
+            </button>
+          </header>
+
+          <div className="mb-10 grid gap-5 md:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Access
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold">Locked Portal</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                This dashboard is now protected behind the homeowner login gate.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Session
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold">Active Login</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Your temporary development login keeps you inside the software
+                environment until you log out.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+                Build Mode
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold">Training View</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Use this page as your master screen to learn and access every
+                working portal page.
+              </p>
+            </div>
           </div>
 
-          <h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">
-            Software Dashboard
-          </h1>
-
-          <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-300">
-            One-page control map for all live hubs, engines, and BOS workflow
-            reference pages.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-6 grid gap-4 md:grid-cols-4">
-          <Metric label="Hub Pages" value={hubs.length} />
-          <Metric label="Core Engines" value={engines.length} />
-          <Metric label="Workflow Status" value="Closed" highlight />
-          <Metric label="Use Case" value="Project Map" />
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
-            <div className="mb-5">
-              <div className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-                Navigation Hubs
-              </div>
-              <h2 className="mt-2 text-3xl font-bold">Daily Management Links</h2>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {hubs.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  <div className="cursor-pointer rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:border-amber-400/40 hover:bg-amber-400/10">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                        {item.status}
-                      </span>
-                      <span className="text-xs uppercase tracking-wide text-slate-500">
-                        {item.type}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-semibold">{item.title}</h3>
-                    <div className="mt-3 font-mono text-sm text-amber-300">
-                      {item.href}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
-            <div className="mb-5">
-              <div className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-                Core Engines
-              </div>
-              <h2 className="mt-2 text-3xl font-bold">Where Work Happens</h2>
-            </div>
-
-            <div className="space-y-4">
-              {engines.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  <div className="cursor-pointer rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:border-amber-400/40 hover:bg-amber-400/10">
-                    <h3 className="text-lg font-semibold">{item.title}</h3>
-                    <p className="mt-2 text-sm text-slate-400">{item.role}</p>
-                    <div className="mt-3 font-mono text-sm text-amber-300">
-                      {item.href}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <section className="mt-8 rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-7">
-          <div className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Working BOS Flow
-          </div>
-
-          <h2 className="mt-2 text-3xl font-bold">
-            Owner → Manager → Board → Manager → Vendor → Owner
-          </h2>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-6">
-            {[
-              "Owner Intake",
-              "Manager Review",
-              "Board Decision",
-              "Manager Execution",
-              "Vendor Dispatch",
-              "Owner Visibility",
-            ].map((step, index) => (
-              <div
-                key={step}
-                className="rounded-2xl border border-white/10 bg-black/20 p-4"
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {portals.map((portal) => (
+              <Link
+                key={portal.href}
+                href={portal.href}
+                className="group rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl transition hover:-translate-y-1 hover:border-amber-400/40 hover:bg-white/[0.09] hover:shadow-amber-500/10"
               >
-                <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-sm font-black text-slate-950">
-                  {index + 1}
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-lg font-bold text-amber-300">
+                  S
                 </div>
-                <div className="text-sm font-medium text-slate-200">{step}</div>
-              </div>
+
+                <h3 className="text-xl font-semibold text-white">
+                  {portal.title}
+                </h3>
+
+                <p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-300">
+                  {portal.description}
+                </p>
+
+                <div className="mt-6 inline-flex rounded-2xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition group-hover:bg-amber-300">
+                  {portal.label}
+                </div>
+              </Link>
             ))}
           </div>
-        </section>
+
+          <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6 text-sm leading-6 text-amber-100 shadow-xl shadow-amber-500/10 backdrop-blur-xl">
+            <strong className="text-amber-300">Development Login:</strong>{" "}
+            Username <span className="font-semibold">glenn</span> / Password{" "}
+            <span className="font-semibold">stoutt2026</span>
+          </div>
+        </div>
       </section>
     </main>
-  );
-}
-
-function Metric({ label, value, highlight }) {
-  return (
-    <div
-      className={`rounded-3xl border p-5 ${
-        highlight
-          ? "border-amber-400/40 bg-amber-400/10"
-          : "border-white/10 bg-white/[0.04]"
-      }`}
-    >
-      <div className="text-sm text-slate-400">{label}</div>
-      <div
-        className={`mt-2 text-2xl font-black ${
-          highlight ? "text-amber-300" : "text-white"
-        }`}
-      >
-        {value}
-      </div>
-    </div>
   );
 }
