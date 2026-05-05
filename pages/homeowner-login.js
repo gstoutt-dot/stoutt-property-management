@@ -1,11 +1,31 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
+const TEMP_USERS = {
+  owner: {
+    password: "owner2026",
+    name: "Homeowner User",
+    role: "owner",
+  },
+  manager: {
+    password: "manager2026",
+    name: "Property Manager",
+    role: "manager",
+  },
+  board: {
+    password: "board2026",
+    name: "Board Member",
+    role: "board",
+  },
+  glenn: {
+    password: "stoutt2026",
+    name: "Glenn Stoutt",
+    role: "admin",
+  },
+};
+
 export default function HomeownerLogin() {
   const router = useRouter();
-
-  const TEMP_USERNAME = "glenn";
-  const TEMP_PASSWORD = "stoutt2026";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +33,7 @@ export default function HomeownerLogin() {
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
+
     if (loggedIn === "true") {
       router.push("/software-dashboard");
     }
@@ -22,16 +43,20 @@ export default function HomeownerLogin() {
     e.preventDefault();
     setError("");
 
-    if (
-      username.trim().toLowerCase() === TEMP_USERNAME &&
-      password === TEMP_PASSWORD
-    ) {
+    const cleanUsername = username.trim().toLowerCase();
+    const user = TEMP_USERS[cleanUsername];
+
+    if (user && password === user.password) {
       localStorage.setItem("spmPortalLoggedIn", "true");
-      localStorage.setItem("spmPortalUser", TEMP_USERNAME);
+      localStorage.setItem("spmPortalUser", cleanUsername);
+      localStorage.setItem("spmPortalUserName", user.name);
+      localStorage.setItem("spmPortalRole", user.role);
+
       router.push("/software-dashboard");
-    } else {
-      setError("Invalid username or password.");
+      return;
     }
+
+    setError("Invalid username or password.");
   };
 
   return (
@@ -47,7 +72,7 @@ export default function HomeownerLogin() {
             </div>
 
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-300">
-              Homeowner Access
+              Secure Portal Access
             </p>
 
             <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
@@ -55,8 +80,8 @@ export default function HomeownerLogin() {
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              Secure portal access for community management tools, dashboards,
-              requests, approvals, and owner support.
+              Login to access your assigned portal tools, dashboards, workflows,
+              and approval systems.
             </p>
           </div>
 
@@ -102,14 +127,6 @@ export default function HomeownerLogin() {
               Enter Portal
             </button>
           </form>
-
-          <div className="mt-8 rounded-2xl border border-white/10 bg-slate-900/50 p-4 text-center text-xs leading-5 text-slate-400">
-            Temporary development login:
-            <br />
-            Username: <span className="text-amber-300">glenn</span>
-            <br />
-            Password: <span className="text-amber-300">stoutt2026</span>
-          </div>
         </div>
       </section>
     </main>
