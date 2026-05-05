@@ -1,8 +1,10 @@
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
 export default function SoftwareDashboard() {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("spmPortalLoggedIn");
@@ -94,12 +96,61 @@ export default function SoftwareDashboard() {
               </p>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="rounded-2xl border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-slate-200 shadow-lg backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
-            >
-              Logout
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-left shadow-lg backdrop-blur-xl transition hover:border-amber-400/40 hover:bg-amber-400/10"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-sm font-bold text-amber-300">
+                  GS
+                </div>
+
+                <div className="hidden sm:block">
+                  <p className="text-sm font-semibold text-white">
+                    Glenn Stoutt
+                  </p>
+                  <p className="text-xs text-slate-400">Development Admin</p>
+                </div>
+
+                <span className="text-amber-300">▾</span>
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 z-50 mt-3 w-64 rounded-3xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-xl">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                    <p className="text-sm font-semibold text-white">
+                      Glenn Stoutt
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Temporary Portal Access
+                    </p>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    <button
+                      onClick={() => setMenuOpen(false)}
+                      className="w-full rounded-2xl px-4 py-3 text-left text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-amber-300"
+                    >
+                      Profile
+                    </button>
+
+                    <button
+                      onClick={() => setMenuOpen(false)}
+                      className="w-full rounded-2xl px-4 py-3 text-left text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-amber-300"
+                    >
+                      Settings
+                    </button>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-left text-sm font-semibold text-amber-300 transition hover:bg-amber-400 hover:text-slate-950"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </header>
 
           <div className="mb-10 grid gap-5 md:grid-cols-3">
