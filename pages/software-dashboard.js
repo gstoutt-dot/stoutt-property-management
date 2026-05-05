@@ -3,7 +3,7 @@ import Link from "next/link";
 const hubs = [
   { title: "Master Portal Hub", href: "/portal", type: "Hub", status: "Live" },
   { title: "Owner Hub", href: "/portal/owner-hub", type: "Hub", status: "Live" },
-  { title: "Manager Hub", href: "/portal/manager-hub", type: "Hub", status: "Live" },
+  { title: "Manager Hub", href: "/portal/manager", type: "Hub", status: "Live" },
   { title: "Board Hub", href: "/board", type: "Hub", status: "Live" },
   {
     title: "Workflow Architecture Map",
