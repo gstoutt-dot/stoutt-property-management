@@ -211,12 +211,27 @@ export default function ActionCenter() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/85 to-slate-950" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-10">
-          <button
-            onClick={() => router.push("/software-dashboard")}
-            className="mb-8 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-sm text-slate-300 transition hover:border-amber-300/40 hover:text-amber-200"
-          >
-            ← Back to Dashboard
-          </button>
+          <div className="mb-8 flex flex-wrap gap-3">
+  <button
+    onClick={() => router.push("/software-dashboard")}
+    className="rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-sm text-slate-300 transition hover:border-amber-300/40 hover:text-amber-200"
+  >
+    ← Back to Dashboard
+  </button>
+
+  <button
+    onClick={() => {
+      localStorage.removeItem("spmPortalLoggedIn");
+      localStorage.removeItem("spmPortalUser");
+      localStorage.removeItem("spmPortalUserName");
+      localStorage.removeItem("spmPortalRole");
+      router.push("/homeowner-login");
+    }}
+    className="rounded-full border border-red-300/20 bg-red-400/10 px-4 py-2 text-sm text-red-200 transition hover:bg-red-400/15"
+  >
+    Logout / Switch Role
+  </button>
+</div>
 
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
