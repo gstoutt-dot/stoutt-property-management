@@ -316,7 +316,7 @@ export default function ManagerDashboard() {
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/portal/manager/action-center"
+  href="/portal/manager#live-queue"
                 className="rounded-xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
               >
                 Open Action Center
