@@ -1,196 +1,142 @@
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function BOSActionCenter() {
   const [actions, setActions] = useState([]);
   const [filter, setFilter] = useState("all");
-  const [sort, setSort] = useState("newest");
   const [selectedAction, setSelectedAction] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState("");
+  const [sortMode, setSortMode] = useState("newest");
 
   useEffect(() => {
     loadActions();
 
     const interval = setInterval(() => {
-      loadActions(false);
+      loadActions();
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
-  async function loadActions(showLoading = true) {
-    if (showLoading) setLoading(true);
-
+  async function loadActions() {
     const { data, error } = await supabase
       .from("bos_actions")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("BOS load error:", error.message);
-      setLoading(false);
+      console.error("Unable to load BOS actions:", error);
       return;
     }
 
-    const mapped = (data || []).map((item) => ({
-      id: item.id,
-      title: item.title || "Ava Intake Request",
-      description: item.description || "No description provided.",
-      notes: item.description || "",
-      association: item.association_name || "Unknown Association",
-      ownerName: item.owner_name || "Unknown Caller",
-      owner: item.owner_name || "Unknown Caller",
-      ownerPhone: item.owner_phone || "",
-      ownerEmail: item.owner_email || "",
-      unit: item.property_address || "",
-      category: item.request_type || "general",
-      type: item.request_type || "general",
-      status: mapStatus(item.status),
-      rawStatus: item.status,
-      priority: item.priority || "medium",
-      source: item.source || "Ava AI Phone Intake",
-      bestContactTime: item.best_contact_time || "",
-      createdAt: item.created_at,
-      managerUpdatedAt: item.updated_at,
-      boardDecisionAt:
-        item.status === "approved" || item.status === "rejected"
-          ? item.updated_at
-          : null,
-      dispatched: item.status === "completed",
-      dispatchedAt: item.status === "completed" ? item.updated_at : null,
-      vendorStatus: item.vendor_status || "",
-      vendorNote: item.vendor_note || "",
-      vendorUpdatedAt: item.vendor_updated_at || null,
-    }));
-
-    setActions(mapped);
-    setLastRefresh(new Date().toLocaleTimeString());
-    setLoading(false);
+    setActions(data || []);
   }
 
   const filtered = useMemo(() => {
-    let list = [...actions];
+    let filteredActions = [...actions];
 
     if (filter === "intake") {
-      list = list.filter((a) => a.status === "new");
+      filteredActions = filteredActions.filter((a) => a.status === "open");
     }
 
     if (filter === "manager") {
-      list = list.filter(
-        (a) => a.status === "manager_approved" || a.status === "board_pending"
+      filteredActions = filteredActions.filter(
+        (a) => a.status === "manager_review"
       );
     }
 
     if (filter === "board") {
-      list = list.filter(
-        (a) =>
-          a.status === "board_pending" ||
-          a.status === "board_approved" ||
-          a.status === "board_rejected"
+      filteredActions = filteredActions.filter(
+        (a) => a.status === "board_review"
       );
     }
 
     if (filter === "dispatch") {
-      list = list.filter((a) => a.dispatched);
+      filteredActions = filteredActions.filter((a) => a.dispatched);
     }
 
     if (filter === "clarification") {
-      list = list.filter((a) => a.status === "needs_clarification");
+      filteredActions = filteredActions.filter(
+        (a) => a.status === "needs_clarification"
+      );
     }
 
     if (filter === "vendor") {
-      list = list.filter((a) => a.vendorStatus);
+      filteredActions = filteredActions.filter((a) => a.vendor_status);
     }
 
-    if (sort === "newest") {
-      list.sort(
-        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    if (sortMode === "oldest") {
+      filteredActions.sort(
+        (a, b) =>
+          new Date(a.created_at || 0) - new Date(b.created_at || 0)
+      );
+    } else {
+      filteredActions.sort(
+        (a, b) =>
+          new Date(b.created_at || 0) - new Date(a.created_at || 0)
       );
     }
 
-    if (sort === "oldest") {
-      list.sort(
-        (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
-      );
-    }
-
-    if (sort === "priority") {
-      list.sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
-    }
-
-    return list;
-  }, [actions, filter, sort]);
+    return filteredActions;
+  }, [actions, filter, sortMode]);
 
   const stats = {
     total: actions.length,
-    intake: actions.filter((a) => a.status === "new").length,
-    manager: actions.filter(
-      (a) => a.status === "manager_approved" || a.status === "board_pending"
-    ).length,
-    board: actions.filter(
-      (a) =>
-        a.status === "board_pending" ||
-        a.status === "board_approved" ||
-        a.status === "board_rejected"
-    ).length,
+    intake: actions.filter((a) => a.status === "open").length,
+    manager: actions.filter((a) => a.status === "manager_review").length,
+    board: actions.filter((a) => a.status === "board_review").length,
     dispatched: actions.filter((a) => a.dispatched).length,
     clarification: actions.filter((a) => a.status === "needs_clarification")
       .length,
-    vendor: actions.filter((a) => a.vendorStatus).length,
+    vendor: actions.filter((a) => a.vendor_status).length,
   };
 
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-7 md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto max-w-7xl px-6 py-7 flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
               BOS SYSTEM
             </p>
 
-            <h1 className="mt-2 text-3xl font-semibold md:text-4xl">
+            <h1 className="mt-2 text-3xl md:text-4xl font-semibold">
               Action Center
             </h1>
 
-            <p className="mt-2 text-white/60">
-              Live lifecycle visibility from Ava intake through management
-              review, board approval, dispatch, and vendor response.
-            </p>
-
-            <p className="mt-2 text-xs text-white/35">
-              Auto-refreshing every 5 seconds
-              {lastRefresh ? ` • Last refresh ${lastRefresh}` : ""}
+            <p className="mt-2 text-white/60 max-w-3xl">
+              Real-time operational visibility from Ava AI intake through
+              manager review, board approval, vendor dispatch, and vendor
+              completion.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button onClick={() => loadActions()} className="navGold">
-              Refresh Now
-            </button>
-
-            <Link href="/software-dashboard" className="navBtn">
-              Dashboard
-            </Link>
-
-            <Link href="/portal/manager" className="navBtn">
+          <div className="hidden md:flex gap-3">
+            <a
+              href="/portal/manager"
+              className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/10 transition"
+            >
               Manager
-            </Link>
+            </a>
 
-            <Link href="/board" className="navBtn">
+            <a
+              href="/portal/board"
+              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+            >
               Board
-            </Link>
+            </a>
 
-            <Link href="/bos/dispatch-feed" className="navBtn">
+            <a
+              href="/bos/dispatch-feed"
+              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+            >
               Dispatch
-            </Link>
+            </a>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-7">
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
           <Stat label="Total" value={stats.total} />
           <Stat label="Intake" value={stats.intake} />
           <Stat label="Manager" value={stats.manager} />
@@ -201,46 +147,43 @@ export default function BOSActionCenter() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-3">
-            {[
-              "all",
-              "intake",
-              "manager",
-              "board",
-              "dispatch",
-              "clarification",
-              "vendor",
-            ].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                  filter === f
-                    ? "border-yellow-400/40 bg-yellow-400/10 text-yellow-300"
-                    : "border-white/10 bg-white/[0.015] text-white/60 hover:border-yellow-400/25 hover:text-yellow-300"
-                }`}
-              >
-                {f.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="rounded-xl border border-yellow-400/20 bg-[#020617] px-4 py-3 text-sm text-yellow-300 outline-none focus:border-yellow-400/50"
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="priority">Priority First</option>
-          </select>
+      <section className="mx-auto max-w-7xl px-6 pb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex gap-3 flex-wrap">
+          {[
+            "all",
+            "intake",
+            "manager",
+            "board",
+            "dispatch",
+            "clarification",
+            "vendor",
+          ].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                filter === f
+                  ? "border-yellow-400/40 bg-yellow-400/10 text-yellow-300"
+                  : "border-white/10 bg-white/[0.015] text-white/60 hover:border-yellow-400/25 hover:text-yellow-300"
+              }`}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
         </div>
+
+        <select
+          value={sortMode}
+          onChange={(e) => setSortMode(e.target.value)}
+          className="rounded-2xl border border-yellow-400/20 bg-[#020617] px-5 py-3 text-sm font-semibold text-yellow-300 outline-none"
+        >
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 shadow-2xl shadow-black/30 md:p-8">
+        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 md:p-8 shadow-2xl shadow-black/30">
           <div className="mb-6">
             <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
               OPERATING TIMELINE
@@ -251,19 +194,13 @@ export default function BOSActionCenter() {
             </h2>
 
             <p className="mt-2 text-white/55">
-              Every Ava-created action shows where it sits in the SPM/BOS
-              approval chain.
+              Every Ava-created action moves through the SPM/BOS operational
+              workflow.
             </p>
           </div>
 
-          {loading ? (
-            <div className="rounded-3xl border border-dashed border-yellow-500/20 bg-white/[0.015] p-10 text-center">
-              <p className="text-xl font-semibold text-white/80">
-                Loading BOS actions...
-              </p>
-            </div>
-          ) : filtered.length === 0 ? (
-            <Empty filter={filter} />
+          {filtered.length === 0 ? (
+            <Empty message="No actions in this stage." />
           ) : (
             <div className="space-y-5">
               {filtered.map((item) => (
@@ -284,78 +221,72 @@ export default function BOSActionCenter() {
           onClose={() => setSelectedAction(null)}
         />
       )}
-
-      <style jsx>{`
-        .navBtn {
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 1rem;
-          padding: 0.75rem 1.25rem;
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.7);
-          transition: all 0.2s ease;
-        }
-
-        .navBtn:hover {
-          border-color: rgba(250, 204, 21, 0.3);
-          color: rgb(253, 224, 71);
-        }
-
-        .navGold {
-          border: 1px solid rgba(250, 204, 21, 0.3);
-          border-radius: 1rem;
-          padding: 0.75rem 1.25rem;
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: rgb(253, 224, 71);
-          transition: all 0.2s ease;
-        }
-
-        .navGold:hover {
-          background: rgba(250, 204, 21, 0.1);
-        }
-      `}</style>
     </main>
   );
 }
 
 function ActionRow({ item, onOpen }) {
   return (
-    <article
-      onClick={onOpen}
-      className="group cursor-pointer rounded-3xl border border-white/10 bg-[#020617]/80 p-6 transition hover:border-yellow-400/30 hover:bg-white/[0.025]"
-    >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-2xl">
+    <article className="rounded-3xl border border-white/10 bg-[#020617]/80 p-6 hover:border-yellow-400/25 transition duration-300">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+        <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
-            {item.source || "BOS Action"}
+            AVA AI PHONE INTAKE
           </p>
 
-          <h3 className="mt-2 text-xl font-semibold transition group-hover:text-yellow-100">
-            {item.title || item.requestType || "BOS Action"}
+          <h3 className="mt-2 text-2xl font-semibold leading-tight">
+            {item.title || "BOS Action"}
           </h3>
 
-          <p className="mt-3 leading-relaxed text-white/65">
-            {item.description || item.notes || "No description provided."}
-          </p>
+          <div className="mt-5 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
+            <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
+              Operational Summary
+            </p>
+
+            <div className="mt-4 space-y-3 text-white/75 leading-relaxed">
+              <p>
+                {cleanDescription(item.description)}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col items-start gap-3 lg:items-end">
+        <div className="flex flex-col items-start lg:items-end gap-3 min-w-[180px]">
           <Badge item={item} />
-          <PriorityBadge item={item} />
-          <VendorBadge status={item.vendorStatus} />
 
-          <span className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-semibold text-yellow-300 transition group-hover:bg-yellow-400/20">
+          <PriorityBadge priority={item.priority} />
+
+          <VendorBadge status={item.vendor_status} />
+
+          <button
+            onClick={onOpen}
+            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
+          >
             View Details
-          </span>
+          </button>
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
-        <Meta label="Association" value={item.association} />
-        <Meta label="Owner" value={item.ownerName || item.owner} />
-        <Meta label="Property / Unit" value={item.unit} />
-        <Meta label="Category" value={formatCategory(item.category || item.type)} />
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Meta
+          label="Association"
+          value={item.association_name || "Demo Association"}
+        />
+
+        <Meta
+          label="Owner"
+          value={item.owner_name || "Ava Caller"}
+        />
+
+        <Meta
+          label="Property / Unit"
+          value={item.property_address || "Pending"}
+        />
+
+        <Meta
+          label="Category"
+          value={formatCategory(item.category || item.request_type)}
+        />
       </div>
 
       <Timeline item={item} />
@@ -369,52 +300,46 @@ function Timeline({ item }) {
       key: "intake",
       label: "Ava Intake",
       complete: true,
-      date: item.createdAt,
+      date: item.created_at,
     },
     {
       key: "manager",
       label: "Manager Review",
       complete:
-        item.status === "manager_approved" ||
-        item.status === "board_pending" ||
-        item.status === "board_approved" ||
-        item.status === "board_rejected" ||
-        item.status === "needs_clarification" ||
+        item.status === "manager_review" ||
+        item.status === "board_review" ||
         item.dispatched,
-      date: item.managerUpdatedAt || item.managerDecisionAt,
+      date: item.manager_updated_at,
     },
     {
       key: "board",
       label: "Board Decision",
       complete:
-        item.status === "board_approved" ||
-        item.status === "board_rejected" ||
-        item.status === "needs_clarification" ||
-        item.dispatched,
-      date: item.boardDecisionAt,
+        item.status === "board_review" || item.dispatched,
+      date: item.board_decision_at,
     },
     {
       key: "dispatch",
       label: "Vendor Dispatch",
       complete: Boolean(item.dispatched),
-      date: item.dispatchedAt,
+      date: item.dispatched_at,
     },
     {
       key: "vendor",
       label: "Vendor Response",
-      complete: Boolean(item.vendorStatus),
-      date: item.vendorUpdatedAt,
+      complete: Boolean(item.vendor_status),
+      date: item.vendor_updated_at,
     },
   ];
 
   return (
     <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {steps.map((step, index) => (
           <div key={step.key} className="relative">
             <div className="flex items-center gap-3">
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold ${
+                className={`h-11 w-11 rounded-full border flex items-center justify-center text-sm font-semibold ${
                   step.complete
                     ? "border-yellow-400/40 bg-yellow-400/15 text-yellow-300"
                     : "border-white/10 bg-white/[0.03] text-white/35"
@@ -426,7 +351,9 @@ function Timeline({ item }) {
               <div>
                 <p
                   className={
-                    step.complete ? "font-medium text-white" : "text-white/40"
+                    step.complete
+                      ? "text-white font-medium"
+                      : "text-white/40"
                   }
                 >
                   {step.label}
@@ -443,7 +370,7 @@ function Timeline({ item }) {
             </div>
 
             {index < steps.length - 1 && (
-              <div className="absolute left-10 top-4 hidden h-px w-[calc(100%-2.5rem)] bg-white/10 md:block" />
+              <div className="hidden md:block absolute left-12 top-5 h-px w-[calc(100%-3rem)] bg-white/10" />
             )}
           </div>
         ))}
@@ -461,21 +388,21 @@ function DetailDrawer({ item, onClose }) {
         className="absolute inset-0 bg-black/70"
       />
 
-      <aside className="absolute right-0 top-0 h-full w-full max-w-xl overflow-y-auto border-l border-yellow-500/10 bg-[#020617] p-6 shadow-2xl shadow-black">
+      <aside className="absolute right-0 top-0 h-full w-full max-w-2xl overflow-y-auto border-l border-yellow-500/10 bg-[#020617] p-6 shadow-2xl shadow-black">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
               Action Detail
             </p>
 
-            <h2 className="mt-2 text-2xl font-semibold">
-              {item.title || item.requestType || "BOS Action"}
+            <h2 className="mt-2 text-3xl font-semibold leading-tight">
+              {item.title || "BOS Action"}
             </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 transition hover:border-yellow-400/30 hover:text-yellow-300"
+            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 hover:border-yellow-400/30 hover:text-yellow-300 transition"
           >
             ✕
           </button>
@@ -483,116 +410,51 @@ function DetailDrawer({ item, onClose }) {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Badge item={item} />
-          <PriorityBadge item={item} />
-          <VendorBadge status={item.vendorStatus} />
+          <PriorityBadge priority={item.priority} />
+          <VendorBadge status={item.vendor_status} />
         </div>
 
-        <div className="mt-6 rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-5">
+        <div className="mt-6 rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6">
           <p className="text-sm uppercase tracking-[0.25em] text-yellow-400/70">
-            Request Summary
+            Operational Summary
           </p>
 
-          <p className="mt-3 leading-relaxed text-white/70">
-            {item.description || item.notes || "No description provided."}
-          </p>
-        </div>
-
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Meta label="Association" value={item.association} />
-          <Meta label="Owner" value={item.ownerName || item.owner} />
-          <Meta label="Owner Phone" value={item.ownerPhone} />
-          <Meta label="Owner Email" value={item.ownerEmail} />
-          <Meta label="Property / Unit" value={item.unit} />
-          <Meta label="Category" value={formatCategory(item.category || item.type)} />
-          <Meta label="Status" value={formatStatus(item.status)} />
-          <Meta label="Priority" value={item.priority || "Medium"} />
-          <Meta label="Best Contact Time" value={item.bestContactTime} />
-          <Meta label="Vendor Status" value={formatVendorStatus(item.vendorStatus)} />
-          <Meta
-            label="Dispatch Lock"
-            value={item.dispatchLocked || item.dispatched ? "Locked" : "Open"}
-          />
-          <Meta
-            label="Vendor Updated"
-            value={
-              item.vendorUpdatedAt
-                ? new Date(item.vendorUpdatedAt).toLocaleString()
-                : "No vendor response yet"
-            }
-          />
-        </div>
-
-        <div className="mt-6 rounded-3xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
-          <p className="text-sm uppercase tracking-[0.25em] text-yellow-400/70">
-            Vendor Response
-          </p>
-
-          <div className="mt-4">
-            <VendorBadge status={item.vendorStatus} />
+          <div className="mt-4 space-y-4 text-white/75 leading-relaxed">
+            <p>{cleanDescription(item.description)}</p>
           </div>
+        </div>
 
-          <p className="mt-4 leading-relaxed text-white/70">
-            {item.vendorNote || "No vendor response has been recorded yet."}
-          </p>
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Meta
+            label="Association"
+            value={item.association_name || "Demo Association"}
+          />
+
+          <Meta
+            label="Owner"
+            value={item.owner_name || "Ava Caller"}
+          />
+
+          <Meta
+            label="Unit"
+            value={item.property_address || "Pending"}
+          />
+
+          <Meta
+            label="Category"
+            value={formatCategory(item.category || item.request_type)}
+          />
+
+          <Meta label="Status" value={item.status || "Open"} />
+
+          <Meta
+            label="Priority"
+            value={titleCase(item.priority || "medium")}
+          />
         </div>
 
         <div className="mt-6">
           <Timeline item={item} />
-        </div>
-
-        <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.015] p-5">
-          <p className="text-sm uppercase tracking-[0.25em] text-yellow-400/70">
-            Audit Trail
-          </p>
-
-          <div className="mt-4 space-y-3 text-sm">
-            <AuditLine
-              label="Created"
-              value={
-                item.createdAt
-                  ? new Date(item.createdAt).toLocaleString()
-                  : "Not recorded"
-              }
-            />
-            <AuditLine
-              label="Manager Updated"
-              value={
-                item.managerUpdatedAt || item.managerDecisionAt
-                  ? new Date(
-                      item.managerUpdatedAt || item.managerDecisionAt
-                    ).toLocaleString()
-                  : "Not recorded"
-              }
-            />
-            <AuditLine
-              label="Board Decision"
-              value={
-                item.boardDecisionAt
-                  ? new Date(item.boardDecisionAt).toLocaleString()
-                  : "Not recorded"
-              }
-            />
-            <AuditLine
-              label="Dispatch"
-              value={
-                item.dispatchedAt
-                  ? new Date(item.dispatchedAt).toLocaleString()
-                  : item.dispatched
-                  ? "Dispatched"
-                  : "Not dispatched"
-              }
-            />
-            <AuditLine
-              label="Vendor Response"
-              value={
-                item.vendorUpdatedAt
-                  ? `${formatVendorStatus(item.vendorStatus)} — ${new Date(
-                      item.vendorUpdatedAt
-                    ).toLocaleString()}`
-                  : "Not recorded"
-              }
-            />
-          </div>
         </div>
       </aside>
     </div>
@@ -600,28 +462,42 @@ function DetailDrawer({ item, onClose }) {
 }
 
 function Badge({ item }) {
-  if (item.dispatched) return <Pill text="Dispatched" tone="green" />;
-
-  return <Pill text={formatStatus(item.status)} tone={statusTone(item.status)} />;
+  return <Pill text="New Intake" tone="blue" />;
 }
 
-function VendorBadge({ status }) {
-  return <Pill text={formatVendorStatus(status)} tone={vendorTone(status)} />;
-}
+function PriorityBadge({ priority }) {
+  const value = String(priority || "medium").toLowerCase();
 
-function PriorityBadge({ item }) {
-  const priority = String(item.priority || "").toLowerCase();
-  const score = getPriorityScore(item);
-
-  if (priority === "high" || score >= 4) {
+  if (value === "high") {
     return <Pill text="High Priority" tone="red" />;
   }
 
-  if (priority === "medium" || score >= 2) {
-    return <Pill text="Medium Priority" tone="gold" />;
+  if (value === "low") {
+    return <Pill text="Low Priority" tone="blue" />;
   }
 
-  return <Pill text="Standard Priority" tone="neutral" />;
+  return <Pill text="Medium Priority" tone="gold" />;
+}
+
+function VendorBadge({ status }) {
+  const labels = {
+    accepted: "Vendor Accepted",
+    in_progress: "Vendor In Progress",
+    completed: "Vendor Completed",
+  };
+
+  const tones = {
+    accepted: "blue",
+    in_progress: "gold",
+    completed: "green",
+  };
+
+  return (
+    <Pill
+      text={labels[status] || "Awaiting Vendor"}
+      tone={tones[status] || "neutral"}
+    />
+  );
 }
 
 function Pill({ text, tone }) {
@@ -648,137 +524,59 @@ function Stat({ label, value }) {
   return (
     <div className="rounded-2xl border border-yellow-500/10 bg-white/[0.025] p-5">
       <p className="text-sm text-white/55">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-yellow-300">{value}</p>
+
+      <p className="mt-2 text-2xl font-semibold text-yellow-300">
+        {value}
+      </p>
     </div>
   );
 }
 
 function Meta({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
       <p className="text-xs uppercase tracking-[0.18em] text-white/35">
         {label}
       </p>
-      <p className="mt-1 text-white/75">{value || "N/A"}</p>
-    </div>
-  );
-}
 
-function AuditLine({ label, value }) {
-  return (
-    <div className="flex justify-between gap-4 rounded-xl border border-white/10 bg-[#020617]/70 p-3">
-      <span className="text-white/45">{label}</span>
-      <span className="text-right text-white/75">{value}</span>
-    </div>
-  );
-}
-
-function Empty({ filter }) {
-  return (
-    <div className="rounded-3xl border border-dashed border-yellow-500/20 bg-white/[0.015] p-10 text-center">
-      <p className="text-xl font-semibold text-white/80">No actions found</p>
-      <p className="mt-2 text-white/50">
-        There are no BOS actions in the{" "}
-        <span className="text-yellow-300">{filter}</span> view yet.
-      </p>
-      <p className="mt-4 text-sm text-white/35">
-        New activity will appear here as Ava, managers, board members, vendors,
-        and dispatch events update the workflow.
+      <p className="mt-2 text-lg text-white/85 break-words">
+        {value || "N/A"}
       </p>
     </div>
   );
 }
 
-function formatStatus(status) {
-  const labels = {
-    new: "New Intake",
-    manager_approved: "Manager Review",
-    board_pending: "Board Review",
-    board_approved: "Board Approved",
-    board_rejected: "Board Rejected",
-    needs_clarification: "Needs Clarification",
-  };
-
-  return labels[status] || status || "Unknown";
+function Empty({ message }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-yellow-500/20 bg-white/[0.015] p-10 text-center text-white/50">
+      {message}
+    </div>
+  );
 }
 
-function statusTone(status) {
-  const tones = {
-    new: "blue",
-    manager_approved: "gold",
-    board_pending: "gold",
-    board_approved: "green",
-    board_rejected: "red",
-    needs_clarification: "blue",
-  };
+function cleanDescription(description) {
+  if (!description) {
+    return "No operational summary available.";
+  }
 
-  return tones[status] || "neutral";
+  return description
+    .replace(/Caller:/g, "\n\nCaller:")
+    .replace(/Phone:/g, "\nPhone:")
+    .replace(/Unit\/Address:/g, "\nUnit/Address:")
+    .replace(/Category:/g, "\nCategory:")
+    .replace(/Priority:/g, "\nPriority:")
+    .replace(/Source:/g, "\n\nSource:");
 }
 
-function formatVendorStatus(status) {
-  const labels = {
-    accepted: "Vendor Accepted",
-    in_progress: "Vendor In Progress",
-    completed: "Vendor Completed",
-  };
-
-  return labels[status] || "Awaiting Vendor";
-}
-
-function vendorTone(status) {
-  const tones = {
-    accepted: "blue",
-    in_progress: "gold",
-    completed: "green",
-  };
-
-  return tones[status] || "neutral";
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function formatCategory(category) {
-  const labels = {
-    maintenance: "Maintenance",
-    architectural: "Architectural",
-    amenity: "Amenity",
-    financial: "Financial",
-    violation: "Violation",
-    documents: "Documents",
-    general: "General",
-  };
-
-  return labels[category] || category || "General";
+  return titleCase(String(category || "General").replace(/_/g, " "));
 }
 
-function getPriorityScore(item) {
-  const text = `${item.title || ""} ${item.description || ""} ${
-    item.notes || ""
-  } ${item.category || ""}`.toLowerCase();
 
-  let score = 0;
 
-  if (String(item.priority || "").toLowerCase() === "high") score += 5;
-  if (String(item.priority || "").toLowerCase() === "medium") score += 2;
-  if (text.includes("leak")) score += 4;
-  if (text.includes("water")) score += 3;
-  if (text.includes("electrical")) score += 4;
-  if (text.includes("fire")) score += 5;
-  if (text.includes("security")) score += 4;
-  if (text.includes("gate")) score += 2;
-  if (text.includes("roof")) score += 3;
-  if (text.includes("pool")) score += 2;
-  if (text.includes("urgent")) score += 4;
-  if (item.status === "needs_clarification") score += 1;
-  if (item.dispatched && !item.vendorStatus) score += 2;
-
-  return score;
-}
-
-function mapStatus(status) {
-  if (status === "open") return "new";
-  if (status === "in_progress") return "manager_approved";
-  if (status === "board_review") return "board_pending";
-  if (status === "approved") return "board_approved";
-  if (status === "rejected") return "board_rejected";
-  if (status === "completed") return "board_approved";
-  return "new";
-}
