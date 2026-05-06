@@ -138,7 +138,7 @@ export default function BOSActionCenter() {
 
     if (filter === "board") {
       filteredActions = filteredActions.filter(
-        (a) => a.status === "board_review"
+        (a) => a.status === "board_review" || a.status === "board_approved"
       );
     }
 
@@ -162,13 +162,11 @@ export default function BOSActionCenter() {
 
     if (sortMode === "oldest") {
       filteredActions.sort(
-        (a, b) =>
-          new Date(a.created_at || 0) - new Date(b.created_at || 0)
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
       );
     } else {
       filteredActions.sort(
-        (a, b) =>
-          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
       );
     }
 
@@ -179,7 +177,9 @@ export default function BOSActionCenter() {
     total: actions.length,
     intake: actions.filter((a) => isIntake(a)).length,
     manager: actions.filter((a) => a.status === "manager_review").length,
-    board: actions.filter((a) => a.status === "board_review").length,
+    board: actions.filter(
+      (a) => a.status === "board_review" || a.status === "board_approved"
+    ).length,
     dispatched: actions.filter((a) => a.dispatched || a.status === "dispatched")
       .length,
     clarification: actions.filter((a) => a.status === "needs_clarification")
@@ -204,7 +204,7 @@ export default function BOSActionCenter() {
 
             <p className="mt-2 text-white/60 max-w-3xl">
               Real-time operational command center from Ava AI intake through
-              manager verification, board routing, vendor dispatch, owner
+              manager verification, board approval, vendor dispatch, owner
               notification, and completion.
             </p>
           </div>
@@ -360,9 +360,7 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
         <div className="flex flex-col items-start lg:items-end gap-3 min-w-[190px]">
           <Badge item={item} />
-
           <PriorityBadge priority={item.priority} />
-
           <VendorBadge status={item.vendor_status} item={item} />
 
           <button
@@ -375,31 +373,15 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
       </div>
 
       <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Meta
-          label="Association"
-          value={item.association_name || "Demo Association"}
-        />
-
+        <Meta label="Association" value={item.association_name || "Demo Association"} />
         <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
-
-        <Meta
-          label="Property / Unit"
-          value={item.property_address || "Pending"}
-        />
-
-        <Meta
-          label="Category"
-          value={formatCategory(item.category || item.request_type)}
-        />
+        <Meta label="Property / Unit" value={item.property_address || "Pending"} />
+        <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
       </div>
 
       <Timeline item={item} />
 
-      <WorkflowControls
-        item={item}
-        onUpdate={onUpdate}
-        updatingId={updatingId}
-      />
+      <WorkflowControls item={item} onUpdate={onUpdate} updatingId={updatingId} />
     </article>
   );
 }
@@ -421,42 +403,12 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <WorkflowButton
-            label="Manager Verified"
-            disabled={busy}
-            onClick={() => onUpdate(item, "manager_verified")}
-          />
-
-          <WorkflowButton
-            label="Send to Board"
-            disabled={busy}
-            onClick={() => onUpdate(item, "send_to_board")}
-          />
-
-          <WorkflowButton
-            label="Request Clarification"
-            disabled={busy}
-            onClick={() => onUpdate(item, "request_clarification")}
-          />
-
-          <WorkflowButton
-            label="Dispatch Vendor"
-            disabled={busy}
-            onClick={() => onUpdate(item, "dispatch_vendor")}
-          />
-
-          <WorkflowButton
-            label="Notify Owner"
-            disabled={busy}
-            onClick={() => onUpdate(item, "notify_owner")}
-          />
-
-          <WorkflowButton
-            label="Mark Complete"
-            disabled={busy}
-            strong
-            onClick={() => onUpdate(item, "mark_complete")}
-          />
+          <WorkflowButton label="Manager Verified" disabled={busy} onClick={() => onUpdate(item, "manager_verified")} />
+          <WorkflowButton label="Send to Board" disabled={busy} onClick={() => onUpdate(item, "send_to_board")} />
+          <WorkflowButton label="Request Clarification" disabled={busy} onClick={() => onUpdate(item, "request_clarification")} />
+          <WorkflowButton label="Dispatch Vendor" disabled={busy} onClick={() => onUpdate(item, "dispatch_vendor")} />
+          <WorkflowButton label="Notify Owner" disabled={busy} onClick={() => onUpdate(item, "notify_owner")} />
+          <WorkflowButton label="Mark Complete" disabled={busy} strong onClick={() => onUpdate(item, "mark_complete")} />
         </div>
       </div>
     </div>
@@ -480,6 +432,27 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 }
 
 function Timeline({ item }) {
+  const managerComplete = [
+    "manager_review",
+    "board_review",
+    "board_approved",
+    "dispatched",
+    "completed",
+  ].includes(item.status) || item.dispatched;
+
+  const boardComplete = [
+    "board_review",
+    "board_approved",
+    "dispatched",
+    "completed",
+  ].includes(item.status) || item.dispatched;
+
+  const dispatchComplete =
+    item.status === "dispatched" || item.status === "completed" || item.dispatched;
+
+  const completeComplete =
+    item.status === "completed" || item.vendor_status === "completed";
+
   const steps = [
     {
       key: "intake",
@@ -490,38 +463,25 @@ function Timeline({ item }) {
     {
       key: "manager",
       label: "Manager Verified",
-      complete:
-        item.status === "manager_review" ||
-        item.status === "board_review" ||
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        item.dispatched,
+      complete: managerComplete,
       date: item.manager_updated_at,
     },
     {
       key: "board",
-      label: "Board Review",
-      complete:
-        item.status === "board_review" ||
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        item.dispatched,
-      date: item.board_sent_at || item.board_decision_at,
+      label: item.status === "board_approved" ? "Board Approved" : "Board Review",
+      complete: boardComplete,
+      date: item.board_decision_at || item.board_sent_at,
     },
     {
       key: "dispatch",
       label: "Vendor Dispatch",
-      complete:
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        Boolean(item.dispatched),
+      complete: dispatchComplete,
       date: item.dispatched_at,
     },
     {
       key: "complete",
       label: "Completed",
-      complete:
-        item.status === "completed" || item.vendor_status === "completed",
+      complete: completeComplete,
       date: item.completed_at || item.vendor_updated_at,
     },
   ];
@@ -543,13 +503,7 @@ function Timeline({ item }) {
               </div>
 
               <div>
-                <p
-                  className={
-                    step.complete
-                      ? "text-white font-medium"
-                      : "text-white/40"
-                  }
-                >
+                <p className={step.complete ? "text-white font-medium" : "text-white/40"}>
                   {step.label}
                 </p>
 
@@ -582,11 +536,7 @@ function Timeline({ item }) {
 function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
   return (
     <div className="fixed inset-0 z-50">
-      <button
-        aria-label="Close drawer overlay"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/70"
-      />
+      <button aria-label="Close drawer overlay" onClick={onClose} className="absolute inset-0 bg-black/70" />
 
       <aside className="absolute right-0 top-0 h-full w-full max-w-2xl overflow-y-auto border-l border-yellow-500/10 bg-[#020617] p-6 shadow-2xl shadow-black">
         <div className="flex items-start justify-between gap-4">
@@ -625,37 +575,19 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         </div>
 
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Meta
-            label="Association"
-            value={item.association_name || "Demo Association"}
-          />
-
+          <Meta label="Association" value={item.association_name || "Demo Association"} />
           <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
-
           <Meta label="Unit" value={item.property_address || "Pending"} />
-
-          <Meta
-            label="Category"
-            value={formatCategory(item.category || item.request_type)}
-          />
-
+          <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
           <Meta label="Status" value={formatStatus(item.status)} />
-
-          <Meta
-            label="Priority"
-            value={titleCase(item.priority || "medium")}
-          />
+          <Meta label="Priority" value={titleCase(item.priority || "medium")} />
         </div>
 
         <div className="mt-6">
           <Timeline item={item} />
         </div>
 
-        <WorkflowControls
-          item={item}
-          onUpdate={onUpdate}
-          updatingId={updatingId}
-        />
+        <WorkflowControls item={item} onUpdate={onUpdate} updatingId={updatingId} />
       </aside>
     </div>
   );
@@ -668,6 +600,7 @@ function Badge({ item }) {
     open: "New Intake",
     manager_review: "Manager Review",
     board_review: "Board Review",
+    board_approved: "Board Approved",
     needs_clarification: "Needs Clarification",
     dispatched: "Dispatched",
     completed: "Completed",
@@ -677,41 +610,28 @@ function Badge({ item }) {
     open: "blue",
     manager_review: "gold",
     board_review: "gold",
+    board_approved: "green",
     needs_clarification: "red",
     dispatched: "blue",
     completed: "green",
   };
 
-  return (
-    <Pill
-      text={labels[status] || formatStatus(status)}
-      tone={tones[status] || "neutral"}
-    />
-  );
+  return <Pill text={labels[status] || formatStatus(status)} tone={tones[status] || "neutral"} />;
 }
 
 function PriorityBadge({ priority }) {
   const value = String(priority || "medium").toLowerCase();
 
-  if (value === "high") {
-    return <Pill text="High Priority" tone="red" />;
-  }
-
-  if (value === "low") {
-    return <Pill text="Low Priority" tone="blue" />;
-  }
+  if (value === "high") return <Pill text="High Priority" tone="red" />;
+  if (value === "low") return <Pill text="Low Priority" tone="blue" />;
 
   return <Pill text="Medium Priority" tone="gold" />;
 }
 
 function VendorBadge({ status, item }) {
-  if (item?.status === "completed") {
-    return <Pill text="Completed" tone="green" />;
-  }
-
-  if (item?.status === "dispatched" || item?.dispatched) {
-    return <Pill text="Vendor Dispatched" tone="blue" />;
-  }
+  if (item?.status === "completed") return <Pill text="Completed" tone="green" />;
+  if (item?.status === "dispatched" || item?.dispatched) return <Pill text="Vendor Dispatched" tone="blue" />;
+  if (item?.status === "board_approved") return <Pill text="Approved / Awaiting Dispatch" tone="green" />;
 
   const labels = {
     pending: "Vendor Pending",
@@ -727,12 +647,7 @@ function VendorBadge({ status, item }) {
     completed: "green",
   };
 
-  return (
-    <Pill
-      text={labels[status] || "Awaiting Vendor"}
-      tone={tones[status] || "neutral"}
-    />
-  );
+  return <Pill text={labels[status] || "Awaiting Vendor"} tone={tones[status] || "neutral"} />;
 }
 
 function Pill({ text, tone }) {
@@ -745,11 +660,7 @@ function Pill({ text, tone }) {
   };
 
   return (
-    <span
-      className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${
-        styles[tone] || styles.neutral
-      }`}
-    >
+    <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${styles[tone] || styles.neutral}`}>
       {text}
     </span>
   );
@@ -759,7 +670,6 @@ function Stat({ label, value }) {
   return (
     <div className="rounded-2xl border border-yellow-500/10 bg-white/[0.025] p-5">
       <p className="text-sm text-white/55">{label}</p>
-
       <p className="mt-2 text-2xl font-semibold text-yellow-300">{value}</p>
     </div>
   );
@@ -788,9 +698,7 @@ function Empty({ message }) {
 }
 
 function cleanDescription(description) {
-  if (!description) {
-    return "No operational summary available.";
-  }
+  if (!description) return "No operational summary available.";
 
   return String(description)
     .replace(/Caller:/g, "\n\nCaller:")
@@ -822,29 +730,12 @@ function isIntake(action) {
 }
 
 function buildFallbackPayload(workflowAction) {
-  if (workflowAction === "manager_verified") {
-    return { status: "manager_review" };
-  }
-
-  if (workflowAction === "send_to_board") {
-    return { status: "board_review" };
-  }
-
-  if (workflowAction === "request_clarification") {
-    return { status: "needs_clarification" };
-  }
-
-  if (workflowAction === "dispatch_vendor") {
-    return { status: "dispatched", dispatched: true };
-  }
-
-  if (workflowAction === "mark_complete") {
-    return { status: "completed" };
-  }
-
-  if (workflowAction === "notify_owner") {
-    return { status: "manager_review" };
-  }
+  if (workflowAction === "manager_verified") return { status: "manager_review" };
+  if (workflowAction === "send_to_board") return { status: "board_review" };
+  if (workflowAction === "request_clarification") return { status: "needs_clarification" };
+  if (workflowAction === "dispatch_vendor") return { status: "dispatched", dispatched: true };
+  if (workflowAction === "mark_complete") return { status: "completed" };
+  if (workflowAction === "notify_owner") return { status: "manager_review" };
 
   return { status: "open" };
 }
