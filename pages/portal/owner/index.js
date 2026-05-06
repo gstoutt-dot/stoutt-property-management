@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
+import NotificationBell from "../../../components/NotificationBell";
 
 const DEMO_OWNER_PROFILE = {
   associationName: "Royal Palm Villas HOA",
@@ -324,12 +325,19 @@ export default function OwnerPortal() {
             </p>
           </div>
 
-          <button
-            onClick={() => fetchItems()}
-            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
-          >
-            Refresh Status
-          </button>
+         <div className="flex items-center gap-3">
+  <NotificationBell
+    audience="owner"
+    label="Owner Updates"
+  />
+
+  <button
+    onClick={() => fetchItems()}
+    className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
+  >
+    Refresh Status
+  </button>
+</div>
         </div>
 
         <div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6">
