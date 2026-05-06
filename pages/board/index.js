@@ -17,11 +17,11 @@ const boardPages = [
       "Board-level intelligence, metrics, pending decisions, and clean decision history.",
   },
   {
-    title: "Action Center",
+    title: "BOS Action Center",
     status: "Live / Ready",
-    href: "/board/action-center",
+    href: "/bos/action-center",
     description:
-      "Board approval layer for approving, rejecting, or requesting more information.",
+      "Live operational workflow visibility from Ava intake through approval and vendor completion.",
   },
   {
     title: "Violation Review",
@@ -67,6 +67,44 @@ const boardPages = [
   },
 ];
 
+const BOARD_WORKFLOW = [
+  {
+    title: "Manager Verification",
+    description:
+      "Management validates the request, checks responsibility, confirms urgency, and determines whether board review is required.",
+    status: "Completed Before Board Review",
+    complete: true,
+  },
+  {
+    title: "Board Review Queue",
+    description:
+      "Items requiring board direction, funding approval, or policy interpretation route into the Board Approval Queue.",
+    status: "Board Visibility Layer",
+    complete: true,
+  },
+  {
+    title: "Board Decision",
+    description:
+      "Board members approve, reject, defer, or request clarification before vendor dispatch or operational execution.",
+    status: "Board Action Required",
+    complete: false,
+  },
+  {
+    title: "Vendor Authorization",
+    description:
+      "Approved items move into dispatch with vendor assignment, work scope, and operational tracking.",
+    status: "Triggered After Approval",
+    complete: false,
+  },
+  {
+    title: "Completion & Audit Trail",
+    description:
+      "Final completion, vendor confirmation, timestamps, and operational history remain visible for accountability.",
+    status: "Permanent Board Record",
+    complete: false,
+  },
+];
+
 function statusStyle(status) {
   if (status === "Live / Ready") {
     return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
@@ -82,7 +120,10 @@ function statusStyle(status) {
 export default function BoardModuleHub() {
   const router = useRouter();
 
-  const liveCount = boardPages.filter((p) => p.status === "Live / Ready").length;
+  const liveCount = boardPages.filter(
+    (p) => p.status === "Live / Ready"
+  ).length;
+
   const reviewCount = boardPages.filter(
     (p) => p.status === "Built / Needs Review"
   ).length;
@@ -92,6 +133,7 @@ export default function BoardModuleHub() {
     localStorage.removeItem("spmPortalUser");
     localStorage.removeItem("spmPortalUserName");
     localStorage.removeItem("spmPortalRole");
+
     router.push("/homeowner-login");
   };
 
@@ -110,8 +152,8 @@ export default function BoardModuleHub() {
               </h1>
 
               <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-                Central directory for the Board Portal. Live decision pages are
-                separated from built pages that still need review or wiring.
+                Central command for board-level visibility, approvals, decision
+                tracking, and operational oversight across the BOS workflow.
               </p>
             </div>
 
@@ -147,24 +189,17 @@ export default function BoardModuleHub() {
             </Link>
 
             <Link
+              href="/bos/action-center"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-6 py-3 font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              BOS Action Center
+            </Link>
+
+            <Link
               href="/board/command-center"
               className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-6 py-3 font-semibold text-amber-300 hover:bg-amber-400/20"
             >
               Command Center
-            </Link>
-
-            <Link
-              href="/board/action-center"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-6 py-3 font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Action Center
-            </Link>
-
-            <Link
-              href="/portal"
-              className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Portal Hub
             </Link>
           </div>
         </div>
@@ -175,14 +210,41 @@ export default function BoardModuleHub() {
           <Metric label="Board Pages Listed" value={boardPages.length} />
           <Metric label="Live / Ready" value={liveCount} highlight />
           <Metric label="Needs Review" value={reviewCount} />
-          <Metric label="Workflow Role" value="Decision" />
+          <Metric label="Workflow Role" value="Decision Layer" />
         </div>
+
+        <section className="mb-10 rounded-[2rem] border border-amber-400/20 bg-amber-400/[0.06] p-8">
+          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+            Board Verification Workflow
+          </div>
+
+          <h2 className="text-4xl font-black">
+            Board Oversight Chain
+          </h2>
+
+          <p className="mt-4 max-w-4xl text-base leading-8 text-slate-300">
+            The board exists as the decision and authorization layer inside the
+            BOS operational workflow. Requests move from Ava intake through
+            management verification before entering the board review chain when
+            approval or direction is required.
+          </p>
+
+          <div className="mt-8 space-y-4">
+            {BOARD_WORKFLOW.map((step, index) => (
+              <WorkflowStep
+                key={step.title}
+                step={step}
+                index={index}
+              />
+            ))}
+          </div>
+        </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {boardPages.map((page) => (
             <div
               key={page.href}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-2xl shadow-black/30"
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-2xl shadow-black/30 transition hover:border-amber-400/20"
             >
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
@@ -194,7 +256,9 @@ export default function BoardModuleHub() {
                     {page.status}
                   </div>
 
-                  <h2 className="text-3xl font-bold">{page.title}</h2>
+                  <h2 className="text-3xl font-bold">
+                    {page.title}
+                  </h2>
                 </div>
 
                 <Link
@@ -205,7 +269,7 @@ export default function BoardModuleHub() {
                 </Link>
               </div>
 
-              <p className="text-sm leading-6 text-slate-400">
+              <p className="text-sm leading-7 text-slate-400">
                 {page.description}
               </p>
             </div>
@@ -217,16 +281,55 @@ export default function BoardModuleHub() {
             Board Module Rule
           </div>
 
-          <h2 className="text-3xl font-bold">Source of Truth</h2>
+          <h2 className="text-3xl font-bold">
+            Source of Truth
+          </h2>
 
           <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
-            For now, the official live Board workflow is Approval Queue,
-            Command Center, and Action Center. All other Board pages should be
-            treated as inventory until reviewed, cleaned, merged, or retired.
+            The official live board workflow is Approval Queue, Command Center,
+            and BOS Action Center. All other board pages should currently be
+            treated as review inventory until finalized, merged, or retired into
+            the unified operational workflow.
           </p>
         </section>
       </section>
     </main>
+  );
+}
+
+function WorkflowStep({ step, index }) {
+  return (
+    <div className="grid gap-4 rounded-3xl border border-white/10 bg-[#020617]/70 p-5 md:grid-cols-[auto_1fr_auto]">
+      <div
+        className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-bold ${
+          step.complete
+            ? "border-amber-400/40 bg-amber-400/15 text-amber-300"
+            : "border-white/10 bg-white/[0.04] text-slate-400"
+        }`}
+      >
+        {step.complete ? "✓" : index + 1}
+      </div>
+
+      <div>
+        <h3 className="text-2xl font-bold">
+          {step.title}
+        </h3>
+
+        <p className="mt-3 leading-7 text-slate-300">
+          {step.description}
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300 md:min-w-[240px]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Workflow Status
+        </p>
+
+        <p className="mt-1 text-amber-200">
+          {step.status}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -239,7 +342,10 @@ function Metric({ label, value, highlight }) {
           : "border-white/10 bg-white/[0.04]"
       }`}
     >
-      <div className="text-sm text-slate-400">{label}</div>
+      <div className="text-sm text-slate-400">
+        {label}
+      </div>
+
       <div
         className={`mt-2 text-2xl font-black ${
           highlight ? "text-emerald-300" : "text-white"
