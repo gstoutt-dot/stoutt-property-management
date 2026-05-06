@@ -63,8 +63,19 @@ export default function BOSActionCenter() {
         dispatched: true,
         dispatched_at: now,
         vendor_status: "pending",
+        vendor_name: "Premier Property Services",
         internal_note: "Vendor dispatch initiated.",
       },
+      vendor_accepted: {
+  vendor_status: "accepted",
+  vendor_updated_at: now,
+  internal_note: "Vendor accepted assignment.",
+},
+      vendor_in_progress: {
+  vendor_status: "in_progress",
+  vendor_updated_at: now,
+  internal_note: "Vendor work is in progress.",
+},
       mark_complete: {
         status: "completed",
         completed_at: now,
@@ -446,6 +457,18 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             disabled={busy}
             onClick={() => onUpdate(item, "dispatch_vendor")}
           />
+
+              <WorkflowButton
+  label="Vendor Accepted"
+  disabled={busy}
+  onClick={() => onUpdate(item, "vendor_accepted")}
+/>
+
+<WorkflowButton
+  label="Vendor In Progress"
+  disabled={busy}
+  onClick={() => onUpdate(item, "vendor_in_progress")}
+/>
 
           <WorkflowButton
             label="Notify Owner"
