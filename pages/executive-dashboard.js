@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 export default function ExecutiveDashboard() {
   const [actions, setActions] = useState([]);
   const [systemMessage, setSystemMessage] = useState("");
+  const [lastSync, setLastSync] = useState(null);
 
   useEffect(() => {
     loadActions();
@@ -29,13 +30,15 @@ export default function ExecutiveDashboard() {
     }
 
     setActions(data || []);
+    setSystemMessage("");
+    setLastSync(new Date());
   }
 
   const metrics = useMemo(() => {
     const today = new Date().toDateString();
 
     return {
-      open: actions.filter((a) => isOpen(a)).length,
+      active: actions.filter((a) => isOpen(a)).length,
       board: actions.filter((a) =>
         ["board_review", "board_approved"].includes(a.status)
       ).length,
@@ -49,7 +52,7 @@ export default function ExecutiveDashboard() {
           new Date(a.completed_at).toDateString() === today
       ).length,
       ownerUpdates: actions.filter((a) => a.owner_notified).length,
-      highPriority: actions.filter(
+      attention: actions.filter(
         (a) => String(a.priority || "").toLowerCase() === "high"
       ).length,
     };
@@ -60,33 +63,33 @@ export default function ExecutiveDashboard() {
       {
         label: "Ava Intake",
         count: actions.filter((a) => isOpen(a)).length,
-        description: "New requests received",
+        description: "Received",
       },
       {
-        label: "Management",
+        label: "Manager Review",
         count: actions.filter((a) => a.status === "manager_review").length,
-        description: "Under manager review",
+        description: "Under review",
       },
       {
-        label: "Board",
+        label: "Board Review",
         count: actions.filter((a) =>
           ["board_review", "board_approved"].includes(a.status)
         ).length,
-        description: "Board oversight items",
+        description: "Board visibility",
       },
       {
-        label: "Vendor",
+        label: "Vendor Coordination",
         count: actions.filter(
           (a) => a.dispatched || a.status === "dispatched" || a.vendor_status
         ).length,
-        description: "Vendor coordination",
+        description: "Service movement",
       },
       {
-        label: "Completion",
+        label: "Completed",
         count: actions.filter(
           (a) => a.status === "completed" || a.vendor_status === "completed"
         ).length,
-        description: "Resolved requests",
+        description: "Resolved",
       },
     ];
   }, [actions]);
@@ -109,54 +112,65 @@ export default function ExecutiveDashboard() {
 
   return (
     <main className="min-h-screen bg-[#020617] text-white">
-      <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
-        <div className="mx-auto max-w-7xl px-6 py-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+      <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(250,204,21,0.12),transparent_32%),linear-gradient(135deg,#020617,#0f172a_42%,#1c1917)]">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:64px_64px] opacity-30" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-10 md:py-12">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
+              <p className="text-xs uppercase tracking-[0.38em] text-yellow-400/80">
                 Stoutt Property Management
               </p>
 
-              <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">
-                Community Operations Dashboard
+              <h1 className="mt-4 max-w-5xl text-4xl font-semibold tracking-tight md:text-6xl">
+                Executive Community Operations Dashboard
               </h1>
 
-              <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-300">
-                Calm, live operational awareness for community requests,
-                management review, board oversight, vendor coordination, and
-                owner updates.
+              <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+                Peaceful visibility into live community requests, management
+                review, board oversight, vendor coordination, and owner updates.
               </p>
             </div>
 
-            <div className="rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-5 shadow-2xl shadow-black/30">
+            <div className="w-full rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-5 shadow-2xl shadow-black/40 backdrop-blur lg:w-80">
               <p className="text-xs uppercase tracking-[0.25em] text-yellow-300">
-                Live BOS Pulse
+                Live Operations Pulse
               </p>
 
-              <p className="mt-3 text-3xl font-semibold text-white">
+              <p className="mt-4 text-5xl font-semibold text-white">
                 {actions.length}
               </p>
 
-              <p className="mt-1 text-sm text-slate-400">
-                Total operational records
+              <p className="mt-2 text-sm text-slate-400">
+                Community operation records
               </p>
 
-              <div className="mt-5 flex gap-3">
+              <div className="mt-6 grid grid-cols-2 gap-3">
                 <Link
                   href="/bos/action-center"
-                  className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20"
+                  className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-center text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20"
                 >
-                  BOS
+                  BOS Center
                 </Link>
 
                 <Link
                   href="/software-dashboard"
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10"
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-slate-300 hover:bg-white/10"
                 >
                   Software
                 </Link>
               </div>
             </div>
+          </div>
+
+          <div className="mt-8 grid gap-3 md:grid-cols-4">
+            <StatusPill label="Community Operations" value="Stable" />
+            <StatusPill label="Live Sync" value="Active" />
+            <StatusPill label="Board Visibility" value={`${metrics.board} Items`} />
+            <StatusPill
+              label="Last Sync"
+              value={lastSync ? lastSync.toLocaleTimeString() : "Loading"}
+            />
           </div>
 
           {systemMessage && (
@@ -169,29 +183,30 @@ export default function ExecutiveDashboard() {
 
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <Metric label="Open Requests" value={metrics.open} />
+          <Metric label="Active Requests" value={metrics.active} />
           <Metric label="Board Review" value={metrics.board} />
-          <Metric label="Active Vendors" value={metrics.vendors} />
+          <Metric label="Vendor Coordination" value={metrics.vendors} />
           <Metric label="Completed Today" value={metrics.completedToday} />
           <Metric label="Owner Updates" value={metrics.ownerUpdates} />
-          <Metric label="Priority Items" value={metrics.highPriority} alert />
+          <Metric label="Attention Needed" value={metrics.attention} alert />
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-8">
-        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.025] p-6 shadow-2xl shadow-black/30">
-          <div className="mb-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
-              Live Workflow Progression
-            </p>
+        <div className="rounded-[2rem] border border-yellow-500/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/30 backdrop-blur">
+          <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
+                Live Workflow Progression
+              </p>
 
-            <h2 className="mt-2 text-2xl font-semibold">
-              Community Operations Flow
-            </h2>
+              <h2 className="mt-2 text-2xl font-semibold">
+                Community Operations Flow
+              </h2>
+            </div>
 
-            <p className="mt-2 text-sm text-slate-400">
-              Requests move quietly through the operating chain without exposing
-              unnecessary internal complexity to owners.
+            <p className="max-w-xl text-sm leading-6 text-slate-400">
+              A quiet operating chain from first contact through completion.
             </p>
           </div>
 
@@ -212,7 +227,7 @@ export default function ExecutiveDashboard() {
         <Panel
           title="Priority Attention Items"
           eyebrow="Community Impact"
-          description="High-priority requests needing calm, prompt attention."
+          tone="attention"
         >
           <ItemList
             items={priorityItems}
@@ -220,11 +235,7 @@ export default function ExecutiveDashboard() {
           />
         </Panel>
 
-        <Panel
-          title="Board Review Queue"
-          eyebrow="Board Oversight"
-          description="Items currently requiring board visibility or decision."
-        >
+        <Panel title="Board Review Queue" eyebrow="Board Oversight" tone="board">
           <ItemList
             items={boardItems}
             empty="No items currently waiting for board review."
@@ -234,7 +245,7 @@ export default function ExecutiveDashboard() {
         <Panel
           title="Vendor Coordination"
           eyebrow="Service Movement"
-          description="Requests currently in vendor dispatch or service flow."
+          tone="vendor"
         >
           <ItemList
             items={vendorItems}
@@ -244,59 +255,97 @@ export default function ExecutiveDashboard() {
         </Panel>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 shadow-2xl shadow-black/30">
-          <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
-                Ava Operational Activity
-              </p>
+      <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-8 lg:grid-cols-5">
+        <div className="lg:col-span-2">
+          <div className="h-full rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.08),transparent_38%),rgba(255,255,255,0.025)] p-6 shadow-2xl shadow-black/30">
+            <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
+              Community Coordination View
+            </p>
 
-              <h2 className="mt-2 text-2xl font-semibold">
-                Live Activity Feed
-              </h2>
+            <h2 className="mt-2 text-2xl font-semibold">
+              Operational Calm Layer
+            </h2>
 
-              <p className="mt-2 text-sm text-slate-400">
-                A simple view of recent community operations movement.
-              </p>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Reserved for future property-level coordination, vendor movement,
+              building zones, and community service visibility.
+            </p>
+
+            <div className="mt-8 rounded-3xl border border-dashed border-yellow-400/20 bg-yellow-400/[0.035] p-6">
+              <div className="grid gap-3">
+                <CoordinationLine label="Owner Requests" value={metrics.active} />
+                <CoordinationLine label="Board Items" value={metrics.board} />
+                <CoordinationLine label="Vendor Flow" value={metrics.vendors} />
+                <CoordinationLine
+                  label="Completed Today"
+                  value={metrics.completedToday}
+                />
+              </div>
             </div>
-
-            <Link
-              href="/bos/action-center"
-              className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20"
-            >
-              Open Action Center
-            </Link>
           </div>
+        </div>
 
-          {activityFeed.length === 0 ? (
-            <Empty message="No recent activity yet." />
-          ) : (
-            <div className="space-y-3">
-              {activityFeed.map((item) => (
-                <ActivityRow key={item.id} item={item} />
-              ))}
+        <div className="lg:col-span-3">
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/30">
+            <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
+                  Ava Operational Activity
+                </p>
+
+                <h2 className="mt-2 text-2xl font-semibold">
+                  Live Activity Feed
+                </h2>
+              </div>
+
+              <Link
+                href="/bos/action-center"
+                className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20"
+              >
+                Open Action Center
+              </Link>
             </div>
-          )}
+
+            {activityFeed.length === 0 ? (
+              <Empty message="No recent activity yet." />
+            ) : (
+              <div className="space-y-3">
+                {activityFeed.map((item) => (
+                  <ActivityRow key={item.id} item={item} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>
   );
 }
 
+function StatusPill({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 backdrop-blur">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold text-slate-200">{value}</p>
+    </div>
+  );
+}
+
 function Metric({ label, value, alert }) {
   return (
     <div
-      className={`rounded-2xl border p-5 ${
+      className={`rounded-2xl border p-5 shadow-xl shadow-black/20 ${
         alert
-          ? "border-red-400/25 bg-red-400/10"
+          ? "border-amber-400/25 bg-amber-400/[0.08]"
           : "border-white/10 bg-white/[0.035]"
       }`}
     >
       <p className="text-sm text-slate-400">{label}</p>
       <p
         className={`mt-2 text-3xl font-semibold ${
-          alert ? "text-red-200" : "text-yellow-300"
+          alert ? "text-amber-200" : "text-yellow-300"
         }`}
       >
         {value}
@@ -307,14 +356,14 @@ function Metric({ label, value, alert }) {
 
 function WorkflowStage({ step, index, isLast }) {
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-[#020617]/80 p-5">
+    <div className="relative rounded-2xl border border-white/10 bg-[#020617]/80 p-5 shadow-xl shadow-black/20">
       <div className="flex items-center justify-between">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-yellow-400/30 bg-yellow-400/10 text-sm font-bold text-yellow-300">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-yellow-400/30 bg-yellow-400/10 text-sm font-bold text-yellow-300 shadow-lg shadow-yellow-950/30">
           {index + 1}
         </div>
 
         {!isLast && (
-          <div className="hidden h-px flex-1 bg-white/10 md:ml-4 md:block" />
+          <div className="hidden h-px flex-1 bg-gradient-to-r from-yellow-400/25 to-white/5 md:ml-4 md:block" />
         )}
       </div>
 
@@ -329,16 +378,27 @@ function WorkflowStage({ step, index, isLast }) {
   );
 }
 
-function Panel({ eyebrow, title, description, children }) {
+function Panel({ eyebrow, title, children, tone }) {
+  const tones = {
+    attention:
+      "border-amber-400/15 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.09),transparent_40%),rgba(255,255,255,0.025)]",
+    board:
+      "border-yellow-400/15 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.08),transparent_40%),rgba(255,255,255,0.025)]",
+    vendor:
+      "border-sky-300/15 bg-[radial-gradient(circle_at_top,rgba(125,211,252,0.07),transparent_40%),rgba(255,255,255,0.025)]",
+  };
+
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-6 shadow-2xl shadow-black/30">
+    <div
+      className={`rounded-[2rem] border p-6 shadow-2xl shadow-black/30 ${
+        tones[tone] || "border-white/10 bg-white/[0.025]"
+      }`}
+    >
       <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
         {eyebrow}
       </p>
 
       <h2 className="mt-2 text-2xl font-semibold">{title}</h2>
-
-      <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
 
       <div className="mt-6">{children}</div>
     </div>
@@ -403,6 +463,15 @@ function ActivityRow({ item }) {
           {item.created_at ? new Date(item.created_at).toLocaleString() : "—"}
         </p>
       </div>
+    </div>
+  );
+}
+
+function CoordinationLine({ label, value }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#020617]/70 px-4 py-3">
+      <span className="text-sm text-slate-400">{label}</span>
+      <span className="text-lg font-semibold text-yellow-300">{value}</span>
     </div>
   );
 }
