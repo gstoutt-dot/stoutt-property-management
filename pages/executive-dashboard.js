@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../lib/supabaseClient";
+import NotificationBell from "../components/NotificationBell";
 
 export default function ExecutiveDashboard() {
   const [actions, setActions] = useState([]);
@@ -146,20 +147,24 @@ export default function ExecutiveDashboard() {
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <Link
-                  href="/bos/action-center"
-                  className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-center text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20"
-                >
-                  BOS Center
-                </Link>
+  <Link
+    href="/bos/action-center"
+    className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-center text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20"
+  >
+    BOS Center
+  </Link>
 
-                <Link
-                  href="/software-dashboard"
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-slate-300 hover:bg-white/10"
-                >
-                  Software
-                </Link>
-              </div>
+  <Link
+    href="/software-dashboard"
+    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-slate-300 hover:bg-white/10"
+  >
+    Software
+  </Link>
+</div>
+
+<div className="mt-4">
+  <NotificationBell audience="manager" label="Manager Updates" />
+</div>
             </div>
           </div>
 
