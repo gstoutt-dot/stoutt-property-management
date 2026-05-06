@@ -365,9 +365,53 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
               Operational Summary
             </p>
 
-            <div className="mt-4 whitespace-pre-line text-white/75 leading-relaxed">
-              {cleanDescription(item.description)}
-            </div>
+           <div className="mt-4 text-white/80 leading-relaxed space-y-4">
+  <p>
+    {item.description || "No operational summary available."}
+  </p>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
+        Caller
+      </p>
+
+      <p className="mt-1 text-white/90">
+        {item.owner_name || "Ava Caller"}
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
+        Phone
+      </p>
+
+      <p className="mt-1 text-white/90">
+        {item.caller_phone || "Not Provided"}
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
+        Unit / Address
+      </p>
+
+      <p className="mt-1 text-white/90">
+        {item.property_address || "Pending"}
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
+        Source
+      </p>
+
+      <p className="mt-1 text-white/90">
+        Ava AI Phone Assistant
+      </p>
+    </div>
+  </div>
+</div>
           </div>
         </div>
 
