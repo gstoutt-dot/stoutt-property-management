@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
+import NotificationBell from "../../components/NotificationBell";
+import { createNotificationEvent } from "../../lib/notificationEngine";
 
 export default function BoardApprovalQueue() {
   const [actions, setActions] = useState([]);
@@ -102,6 +104,17 @@ export default function BoardApprovalQueue() {
       }
     }
 
+    const updatedAction = {
+      ...item,
+      ...fullPayload,
+    };
+
+    await createNotificationEvent(
+      supabase,
+      updatedAction,
+      getBoardNotificationEventType(decision)
+    );
+
     await loadBoardQueue();
     setSystemMessage(getDecisionMessage(decision));
     setUpdatingId(null);
@@ -176,6 +189,7 @@ export default function BoardApprovalQueue() {
             >
               Back to Board Hub
             </Link>
+                <NotificationBell audience="board" label="Board Updates" />
           </div>
         </div>
 
@@ -449,7 +463,16 @@ function buildFallbackPayload(decision) {
 
   return { status: "board_review" };
 }
+function getBoardNotificationEventType(decision) {
+  const map = {
+    approve: "board_approved",
+    request_clarification: "manager_review",
+    return_to_manager: "manager_review",
+    dispatch_vendor: "vendor_dispatched",
+  };
 
+  return map[decision] || "board_review";
+}
 function getDecisionMessage(decision) {
   const messages = {
     approve: "Board approved the request.",
