@@ -138,7 +138,9 @@ export default function BOSActionCenter() {
 
     if (filter === "board") {
       filteredActions = filteredActions.filter(
-        (a) => a.status === "board_review"
+        (a) =>
+  a.status === "board_review" ||
+  a.status === "board_approved"
       );
     }
 
