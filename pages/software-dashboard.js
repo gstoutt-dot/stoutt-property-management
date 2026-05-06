@@ -4,10 +4,10 @@ import { useRouter } from "next/router";
 const DASHBOARD_MODULES = {
   admin: [
     {
-      title: "Action Center",
+      title: "BOS Action Center",
       description:
-        "Central command for requests, approvals, violations, invoices, and follow-ups.",
-      href: "/portal/action-center",
+        "Live command center for Ava intake, manager verification, board routing, vendor dispatch, and completion tracking.",
+      href: "/bos/action-center",
       featured: true,
       label: "Primary Command",
     },
@@ -49,7 +49,7 @@ const DASHBOARD_MODULES = {
       title: "Action Center",
       description:
         "Review incoming owner requests, work orders, violations, ARC forms, and invoices.",
-      href: "/portal/action-center",
+      href: "/bos/action-center",
       featured: true,
       label: "Manager Priority",
     },
@@ -109,22 +109,60 @@ const DASHBOARD_MODULES = {
   ],
 
   owner: [
-  {
-    title: "Owner Hub",
-    description:
-      "Access owner requests, status visibility, financials, and association information.",
-    href: "/homeowner",
-    featured: true,
-    label: "Owner Access",
-  },
-  {
-    title: "Owner Portal",
-    description:
-      "Open the live owner intake and request visibility portal.",
-    href: "/portal/owner",
-  },
-],
+    {
+      title: "Owner Hub",
+      description:
+        "Access owner requests, status visibility, financials, and association information.",
+      href: "/homeowner",
+      featured: true,
+      label: "Owner Access",
+    },
+    {
+      title: "Owner Portal",
+      description:
+        "Open the live owner intake and request visibility portal.",
+      href: "/portal/owner",
+    },
+  ],
 };
+
+const ADMIN_VERIFICATION_STEPS = [
+  {
+    title: "Ava Intake Received",
+    description:
+      "Ava captures the caller, issue, urgency, unit/address, and creates the BOS action automatically.",
+    notice: "Admin sees the live intake immediately.",
+    complete: true,
+  },
+  {
+    title: "Manager Verification",
+    description:
+      "Management reviews accuracy, confirms responsibility, checks urgency, and determines next routing.",
+    notice: "Manager notification required.",
+    complete: true,
+  },
+  {
+    title: "Board Review Required?",
+    description:
+      "If the item requires approval, funding authorization, policy interpretation, or board direction, it routes to the board queue.",
+    notice: "Board notification triggered when needed.",
+    complete: false,
+  },
+  {
+    title: "Vendor Dispatch",
+    description:
+      "Approved maintenance items move to vendor assignment with scope, priority, and access instructions.",
+    notice: "Vendor notification pending.",
+    complete: false,
+  },
+  {
+    title: "Owner / Caller Update",
+    description:
+      "The caller receives an appropriate update once management has reviewed or acted on the request.",
+    notice: "Owner notification pending.",
+    complete: false,
+  },
+];
 
 export default function SoftwareDashboard() {
   const router = useRouter();
@@ -205,27 +243,58 @@ export default function SoftwareDashboard() {
 
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">Open Items</p>
-            <p className="mt-2 text-3xl font-bold">24</p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">Awaiting Review</p>
-            <p className="mt-2 text-3xl font-bold">9</p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">Approvals</p>
-            <p className="mt-2 text-3xl font-bold">5</p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-slate-400">System Status</p>
-            <p className="mt-2 text-3xl font-bold text-emerald-300">Live</p>
-          </div>
+          <Stat label="Open Items" value="24" />
+          <Stat label="Awaiting Review" value="9" />
+          <Stat label="Approvals" value="5" />
+          <Stat label="System Status" value="Live" accent />
         </div>
       </section>
+
+      {role === "admin" && (
+        <section className="mx-auto max-w-7xl px-6 pb-10">
+          <div className="rounded-[2rem] border border-amber-300/15 bg-white/[0.045] p-6 shadow-2xl shadow-black/30">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+              BOS Verification Chain
+            </p>
+
+            <h2 className="mt-2 text-3xl font-bold">
+              Admin Oversight Workflow
+            </h2>
+
+            <p className="mt-3 max-w-3xl leading-7 text-slate-300">
+              Every Ava-created item should move through verification,
+              notification, approval, dispatch, and completion visibility so the
+              right people are notified at the right stage.
+            </p>
+
+            <div className="mt-7 space-y-4">
+              {ADMIN_VERIFICATION_STEPS.map((step, index) => (
+                <VerificationStep
+                  key={step.title}
+                  index={index}
+                  step={step}
+                />
+              ))}
+            </div>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => router.push("/bos/action-center")}
+                className="rounded-2xl border border-amber-300/30 bg-amber-300/10 px-6 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/15"
+              >
+                Open BOS Action Center
+              </button>
+
+              <button
+                onClick={() => router.push("/portal/approval-queue")}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-3 text-sm font-semibold text-slate-300 transition hover:border-amber-300/30 hover:text-amber-200"
+              >
+                View Approval Queue
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
         <div className="mb-6">
@@ -276,6 +345,49 @@ export default function SoftwareDashboard() {
         </div>
       </section>
     </main>
+  );
+}
+
+function VerificationStep({ step, index }) {
+  return (
+    <div className="grid gap-4 rounded-3xl border border-white/10 bg-slate-950/60 p-5 md:grid-cols-[auto_1fr_auto] md:items-start">
+      <div
+        className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-bold ${
+          step.complete
+            ? "border-amber-300/40 bg-amber-300/15 text-amber-200"
+            : "border-white/10 bg-white/[0.04] text-slate-400"
+        }`}
+      >
+        {step.complete ? "✓" : index + 1}
+      </div>
+
+      <div>
+        <h3 className="text-xl font-bold">{step.title}</h3>
+        <p className="mt-2 leading-7 text-slate-300">{step.description}</p>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300 md:min-w-[240px]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Notification
+        </p>
+        <p className="mt-1 text-amber-200">{step.notice}</p>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, accent }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+      <p className="text-sm text-slate-400">{label}</p>
+      <p
+        className={`mt-2 text-3xl font-bold ${
+          accent ? "text-emerald-300" : "text-white"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
   );
 }
 
