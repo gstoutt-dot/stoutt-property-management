@@ -5,8 +5,20 @@ const portalSections = [
   {
     title: "Owner Portal",
     description:
-      "Owner intake, request submission, preloaded profile data, and live status tracking.",
-    links: [{ label: "Open Owner Portal", href: "/portal/owner-hub" }],
+      "Submit requests, view owner-facing updates, check financials, and track request status without exposing internal management notes.",
+    links: [
+      { label: "Open Owner Hub", href: "/homeowner" },
+      { label: "Owner Request Portal", href: "/portal/owner" },
+    ],
+    roles: ["owner", "manager", "board", "admin"],
+  },
+  {
+    title: "Owner Request Status",
+    description:
+      "Owner-facing request visibility should show simple progress only: received, under review, approved or dispatched, completed.",
+    links: [
+      { label: "View Owner Status", href: "/portal/owner" },
+    ],
     roles: ["owner", "manager", "board", "admin"],
   },
   {
@@ -14,8 +26,8 @@ const portalSections = [
     description:
       "Manager command layer for reviewing requests, routing items, vendor dispatch, and workflow control.",
     links: [
-      { label: "Open Manager Portal", href: "/portal/manager-hub" },
-      { label: "Manager Action Center", href: "/portal/manager" },
+      { label: "Open Manager Portal", href: "/portal/manager" },
+      { label: "BOS Action Center", href: "/bos/action-center" },
       { label: "Workflow Engine", href: "/portal/workflow-engine" },
     ],
     roles: ["manager", "admin"],
@@ -26,10 +38,22 @@ const portalSections = [
       "Board intelligence and decision layer for items escalated by management.",
     links: [
       { label: "Board Module Hub", href: "/board" },
+      { label: "Approval Queue", href: "/portal/approval-queue" },
+      { label: "BOS Action Center", href: "/bos/action-center" },
       { label: "Command Center", href: "/board/command-center" },
-      { label: "Action Center", href: "/board/action-center" },
     ],
     roles: ["board", "manager", "admin"],
+  },
+  {
+    title: "Admin Operations",
+    description:
+      "Full administrative oversight across Ava intake, manager verification, board routing, vendor dispatch, and completion tracking.",
+    links: [
+      { label: "Software Dashboard", href: "/software-dashboard" },
+      { label: "BOS Action Center", href: "/bos/action-center" },
+      { label: "Approval Queue", href: "/portal/approval-queue" },
+    ],
+    roles: ["admin"],
   },
 ];
 
@@ -71,6 +95,32 @@ export default function PortalHub() {
         </div>
       </section>
 
+      {role === "owner" && (
+        <section className="px-8 pt-12">
+          <div className="rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+              Owner Visibility Rule
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold">
+              Simple Status, Not Internal Workflow
+            </h2>
+
+            <p className="mt-4 max-w-4xl text-lg leading-8 text-slate-300">
+              Owners should see request progress, not internal board notes,
+              manager comments, vendor routing details, or approval logic.
+            </p>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-4">
+              <StatusStep title="Received" />
+              <StatusStep title="Under Review" />
+              <StatusStep title="Dispatched" />
+              <StatusStep title="Completed" />
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="px-8 py-14">
         <div className="grid gap-8 lg:grid-cols-2">
           {visibleSections.map((section) => (
@@ -103,4 +153,15 @@ export default function PortalHub() {
   );
 }
 
+function StatusStep({ title }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full border border-amber-400/40 bg-amber-400/10 text-sm font-bold text-amber-300">
+        ✓
+      </div>
+
+      <p className="text-lg font-semibold text-white">{title}</p>
+    </div>
+  );
+}
 
