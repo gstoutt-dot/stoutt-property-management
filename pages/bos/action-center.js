@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { createNotificationEvent } from "../../lib/notificationEngine";
 
 export default function BOSActionCenter() {
   const [actions, setActions] = useState([]);
@@ -118,6 +119,17 @@ export default function BOSActionCenter() {
         return;
       }
     }
+
+        const updatedAction = {
+      ...item,
+      ...fullPayload,
+    };
+
+    await createNotificationEvent(
+      supabase,
+      updatedAction,
+      getNotificationEventType(workflowAction)
+    );
 
     await loadActions();
 
@@ -921,12 +933,29 @@ function buildFallbackPayload(workflowAction) {
   return { status: "open" };
 }
 
+function getNotificationEventType(workflowAction) {
+  const map = {
+    manager_verified: "manager_review",
+    send_to_board: "board_review",
+    request_clarification: "manager_review",
+    dispatch_vendor: "vendor_dispatched",
+    vendor_accepted: "vendor_accepted",
+    vendor_in_progress: "vendor_in_progress",
+    mark_complete: "completed",
+    notify_owner: "owner_notified",
+  };
+
+  return map[workflowAction] || "manager_review";
+}
+
 function getWorkflowMessage(workflowAction) {
   const messages = {
     manager_verified: "Manager verification complete. Request moved into review.",
     send_to_board: "Request sent to board review.",
     request_clarification: "Clarification requested.",
     dispatch_vendor: "Vendor dispatch initiated.",
+    vendor_accepted: "Vendor acceptance recorded.",
+    vendor_in_progress: "Vendor work marked in progress.",
     mark_complete: "Request marked complete.",
     notify_owner: "Owner notification marked as sent.",
   };
