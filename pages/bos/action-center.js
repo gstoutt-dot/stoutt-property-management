@@ -504,10 +504,11 @@ function Timeline({ item }) {
       key: "board",
       label: "Board Review",
       complete:
-        item.status === "board_review" ||
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        item.dispatched,
+  item.status === "board_review" ||
+  item.status === "board_approved" ||
+  item.status === "dispatched" ||
+  item.status === "completed" ||
+  item.dispatched,
       date: item.board_sent_at || item.board_decision_at,
     },
     {
@@ -670,6 +671,7 @@ function Badge({ item }) {
     open: "New Intake",
     manager_review: "Manager Review",
     board_review: "Board Review",
+    board_approved: "Board Approved",
     needs_clarification: "Needs Clarification",
     dispatched: "Dispatched",
     completed: "Completed",
@@ -679,6 +681,7 @@ function Badge({ item }) {
     open: "blue",
     manager_review: "gold",
     board_review: "gold",
+    board_approved: "green",
     needs_clarification: "red",
     dispatched: "blue",
     completed: "green",
