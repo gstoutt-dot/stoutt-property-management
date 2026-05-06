@@ -596,5 +596,4 @@ export default function OwnerPortal() {
     </div>
   );
 }
-```
 
