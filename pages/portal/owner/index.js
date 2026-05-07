@@ -253,12 +253,27 @@ export default function OwnerPortal() {
     ]);
 
     if (error) {
-      setErrorMessage(error.message);
-      setSubmitting(false);
-      return;
-    }
+  setErrorMessage(error.message);
+  setSubmitting(false);
+  return;
+}
 
-    setSuccessMessage("Request submitted successfully.");
+await fetch("/api/notifications/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    associationId: ownerProfile?.association_id,
+    recipientRole: "manager",
+    notificationType: "owner_request_submitted",
+    title: "New owner request submitted",
+    message: `${ownerProfile?.ownerName} submitted a new request.`,
+    priority: form.priority || "normal",
+  }),
+});
+
+setSuccessMessage("Request submitted successfully.");
 
     setForm({
       request_type: "maintenance",
@@ -330,9 +345,11 @@ export default function OwnerPortal() {
 
          <div className="flex items-center gap-3">
   <NotificationBell
-    audience="owner"
-    label="Owner Updates"
-  />
+  associationId={ownerProfile?.association_id}
+  recipientRole="owner"
+  recipientUserId={ownerProfile?.id}
+  label="Owner Updates"
+/>
 
   <button
     onClick={() => fetchItems()}
