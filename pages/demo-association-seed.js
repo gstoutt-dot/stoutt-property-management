@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { seedDemoAssociation } from "../lib/demoAssociationSeed";
 
 export default function DemoAssociationSeedPage() {
   const [loading, setLoading] = useState(false);
@@ -12,7 +11,11 @@ export default function DemoAssociationSeedPage() {
     setResult(null);
 
     try {
-      const response = await seedDemoAssociation();
+      const apiResponse = await fetch("/api/demo/seed-association", {
+  method: "POST",
+});
+
+const response = await apiResponse.json();
 
       if (!response.success) {
         setErrorMessage(
