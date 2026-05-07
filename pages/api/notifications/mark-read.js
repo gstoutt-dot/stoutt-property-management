@@ -1,15 +1,15 @@
-import { supabase } from "../../../lib/supabaseClient";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
-      error: "Method not allowed",
+      error: "Method not allowed. Use POST.",
     });
   }
 
   try {
-    const { notificationId } = req.body || {};
+    const { notificationId, associationId } = req.body || {};
 
     if (!notificationId) {
       return res.status(400).json({
@@ -18,14 +18,22 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data, error } = await supabase
-      .from("bos_notifications")
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing associationId.",
+      });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("notifications")
       .update({
-        status: "read",
+        is_read: true,
         read_at: new Date().toISOString(),
       })
       .eq("id", notificationId)
-      .select()
+      .eq("association_id", associationId)
+      .select("*")
       .single();
 
     if (error) {
@@ -46,7 +54,8 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       success: false,
-      error: "Unexpected notification mark-read error.",
+      error: error?.message || "Unexpected notification mark-read error.",
+      stack: error?.stack || null,
     });
   }
 }
