@@ -1,4 +1,4 @@
-import { supabase } from "../../../lib/supabaseClient";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { buildOwnerBalanceRecord } from "../../../lib/accountingMirrorEngine";
 
 export default async function handler(req, res) {
