@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import NotificationBell from "../../../components/NotificationBell";
+import OwnerBalanceCard from "../../../components/OwnerBalanceCard";
 
 const DEMO_OWNER_PROFILE = {
   associationName: "Royal Palm Villas HOA",
@@ -340,7 +341,15 @@ export default function OwnerPortal() {
 </div>
         </div>
 
-        <div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6">
+        </div>
+
+<OwnerBalanceCard
+  associationId={ownerProfile?.association_id}
+  ownerUserId={ownerProfile?.id}
+  unitNumber={ownerProfile?.unitNumber}
+/>
+
+<div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6">
           <div className="mb-6">
             <h2 className="text-2xl font-semibold">
               Submit a Request
