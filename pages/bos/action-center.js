@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { createNotificationEvent } from "../../lib/notificationEngine";
+import NotificationBell from "../../components/NotificationBell";
 
 export default function BOSActionCenter() {
   const [actions, setActions] = useState([]);
@@ -234,7 +235,11 @@ export default function BOSActionCenter() {
             </p>
           </div>
 
-          <div className="hidden md:flex gap-3">
+          <div className="hidden md:flex gap-3 items-center">
+  <NotificationBell
+    recipientRole="manager"
+    label="Manager Alerts"
+  />
             <a
               href="/portal/manager"
               className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/10 transition"
