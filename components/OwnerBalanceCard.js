@@ -46,7 +46,32 @@ export default function OwnerBalanceCard({
       }
 
       setBalance(result.balance);
-      setLoading(false);
+
+if (
+  result.balance &&
+  String(result.balance.payment_status || "").toLowerCase() !== "current"
+) {
+  await fetch("/api/notifications/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      associationId,
+      recipientRole: "manager",
+      recipientUserId: ownerUserId || null,
+      notificationType: "owner_balance_due",
+      title: "Owner balance requires attention",
+      message: `Unit ${
+        unitNumber || "Unknown"
+      } currently shows a balance due status.`,
+      relatedEntityType: "account_balance",
+      priority: "normal",
+    }),
+  });
+}
+
+setLoading(false);
     } catch (error) {
       console.error("Owner balance load failed:", error);
       setErrorMessage("Balance unavailable.");
