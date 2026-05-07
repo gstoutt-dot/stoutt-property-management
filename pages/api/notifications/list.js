@@ -1,28 +1,57 @@
-import { supabase } from "../../../lib/supabaseClient";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+
+function cleanText(value, fallback = "") {
+  if (typeof value !== "string") return fallback;
+  return value.trim() || fallback;
+}
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({
       success: false,
-      error: "Method not allowed",
+      error: "Method not allowed. Use GET.",
     });
   }
 
   try {
-    const { audience, status, limit } = req.query || {};
+    const {
+      associationId,
+      recipientRole,
+      recipientUserId,
+      unreadOnly,
+      limit,
+    } = req.query || {};
 
-    let query = supabase
-      .from("bos_notifications")
+    const safeAssociationId = cleanText(associationId);
+    const safeRecipientRole = cleanText(recipientRole).toLowerCase();
+    const safeRecipientUserId = cleanText(recipientUserId);
+    const safeUnreadOnly =
+      cleanText(unreadOnly).toLowerCase() === "true";
+
+    if (!safeAssociationId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing associationId.",
+      });
+    }
+
+    let query = supabaseAdmin
+      .from("notifications")
       .select("*")
+      .eq("association_id", safeAssociationId)
       .order("created_at", { ascending: false })
       .limit(Number(limit) || 50);
 
-    if (audience) {
-      query = query.eq("audience", audience);
+    if (safeRecipientRole) {
+      query = query.eq("recipient_role", safeRecipientRole);
     }
 
-    if (status) {
-      query = query.eq("status", status);
+    if (safeRecipientUserId) {
+      query = query.eq("recipient_user_id", safeRecipientUserId);
+    }
+
+    if (safeUnreadOnly) {
+      query = query.eq("is_read", false);
     }
 
     const { data, error } = await query;
@@ -33,19 +62,23 @@ export default async function handler(req, res) {
       return res.status(500).json({
         success: false,
         error: error.message || "Unable to load notifications.",
+        notifications: [],
       });
     }
 
     return res.status(200).json({
       success: true,
       notifications: data || [],
+      count: data?.length || 0,
     });
   } catch (error) {
     console.error("Notification list API failed:", error);
 
     return res.status(500).json({
       success: false,
-      error: "Unexpected notification list error.",
+      error: error?.message || "Unexpected notification list error.",
+      stack: error?.stack || null,
+      notifications: [],
     });
   }
 }
