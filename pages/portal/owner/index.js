@@ -607,10 +607,9 @@ export default function OwnerPortal() {
               );
             })}
 
-          </div>
-        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
