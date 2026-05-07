@@ -163,7 +163,10 @@ export default function ExecutiveDashboard() {
 </div>
 
 <div className="mt-4">
-  <NotificationBell audience="manager" label="Manager Updates" />
+  <NotificationBell
+  recipientRole="manager"
+  label="Manager Updates"
+/>
 </div>
             </div>
           </div>
