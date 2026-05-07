@@ -154,6 +154,11 @@ function ProfileCard({ profile }) {
           {" "}
           {profile.association_id}
         </p>
+          <p className="break-all">
+  Profile ID:
+  {" "}
+  {profile.id}
+</p>
       </div>
     </div>
   );
