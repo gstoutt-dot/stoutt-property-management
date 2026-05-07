@@ -29,9 +29,10 @@ export default async function handler(req, res) {
 
     if (ownersError) {
       return res.status(500).json({
-        success: false,
-        error: ownersError.message || "Unable to load owners.",
-      });
+  success: false,
+  error: error?.message || "Unexpected accounting mirror error.",
+  stack: error?.stack || null,
+});
     }
 
     const records = (owners || []).map((owner, index) =>
