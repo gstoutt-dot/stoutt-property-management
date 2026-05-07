@@ -115,6 +115,48 @@ export default function BoardApprovalQueue() {
       getBoardNotificationEventType(decision)
     );
 
+    await fetch("/api/notifications/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    associationId:
+      updatedAction.association_id ||
+      "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
+
+    recipientRole:
+      decision === "dispatch_vendor"
+        ? "vendor"
+        : decision === "approve"
+        ? "manager"
+        : "manager",
+
+    notificationType:
+      decision === "dispatch_vendor"
+        ? "vendor_dispatch"
+        : decision === "approve"
+        ? "board_approved"
+        : "board_update",
+
+    title:
+      decision === "dispatch_vendor"
+        ? "Vendor dispatch approved"
+        : decision === "approve"
+        ? "Board approval completed"
+        : "Board workflow updated",
+
+    message: `${
+      updatedAction.title || "Board item"
+    } moved through board workflow.`,
+
+    relatedEntityType: "bos_action",
+    relatedEntityId: updatedAction.id,
+
+    priority: updatedAction.priority || "normal",
+  }),
+});
+
     await loadBoardQueue();
     setSystemMessage(getDecisionMessage(decision));
     setUpdatingId(null);
@@ -189,7 +231,10 @@ export default function BoardApprovalQueue() {
             >
               Back to Board Hub
             </Link>
-                <NotificationBell audience="board" label="Board Updates" />
+                <NotificationBell
+  recipientRole="board"
+  label="Board Updates"
+/>
           </div>
         </div>
 
