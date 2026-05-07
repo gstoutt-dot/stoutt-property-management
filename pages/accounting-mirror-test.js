@@ -38,8 +38,27 @@ export default function AccountingMirrorTestPage() {
         return;
       }
 
-      setRecords(result.mirrored || []);
-      setLoading(false);
+      const mirroredRecords = result.mirrored || [];
+
+setRecords(mirroredRecords);
+
+await fetch("/api/notifications/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    associationId: associationId.trim(),
+    recipientRole: "manager",
+    notificationType: "accounting_mirror_sync",
+    title: "Accounting mirror sync completed",
+    message: `${mirroredRecords.length} owner balance records were mirrored successfully.`,
+    relatedEntityType: "accounting_mirror",
+    priority: "normal",
+  }),
+});
+
+setLoading(false);
     } catch (error) {
       console.error("Accounting mirror test failed:", error);
 
