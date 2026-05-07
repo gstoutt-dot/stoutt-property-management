@@ -1,51 +1,105 @@
-import { supabase } from "../../../lib/supabaseClient";
-import { buildNotificationEvent } from "../../../lib/notificationEngine";
+import { createNotification } from "../../../lib/notificationRouter";
+
+function resolveNotificationPayload(body = {}) {
+  const {
+    associationId,
+    recipientUserId = null,
+    recipientRole = "manager",
+    notificationType = "general",
+    title,
+    message,
+    relatedEntityType = null,
+    relatedEntityId = null,
+    priority = "normal",
+    deliveryChannel = "in_app",
+    deliveryStatus = "created",
+    createdByUserId = null,
+
+    // Backward-compatible support for existing BOS action event calls
+    action = null,
+    eventType = null,
+  } = body;
+
+  if (action && eventType) {
+    const actionTitle = action.title || action.category || "BOS action update";
+    const unitLabel = action.unit ? `Unit ${action.unit}` : "Association item";
+
+    return {
+      associationId: action.association_id || associationId,
+      recipientUserId: null,
+      recipientRole:
+        eventType === "board_review_requested"
+          ? "board"
+          : eventType === "vendor_dispatched"
+          ? "vendor"
+          : eventType === "owner_update"
+          ? "owner"
+          : "manager",
+      notificationType: eventType,
+      title:
+        eventType === "board_review_requested"
+          ? "Board review requested"
+          : eventType === "vendor_dispatched"
+          ? "Vendor dispatch update"
+          : eventType === "owner_update"
+          ? "Request status updated"
+          : "Workflow update",
+      message: `${unitLabel}: ${actionTitle}`,
+      relatedEntityType: "bos_action",
+      relatedEntityId: action.id,
+      priority: action.priority || priority || "normal",
+      deliveryChannel,
+      deliveryStatus,
+      createdByUserId,
+    };
+  }
+
+  return {
+    associationId,
+    recipientUserId,
+    recipientRole,
+    notificationType,
+    title,
+    message,
+    relatedEntityType,
+    relatedEntityId,
+    priority,
+    deliveryChannel,
+    deliveryStatus,
+    createdByUserId,
+  };
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
-      error: "Method not allowed",
+      error: "Method not allowed. Use POST.",
     });
   }
 
   try {
-    const { action, eventType } = req.body || {};
+    const payload = resolveNotificationPayload(req.body || {});
 
-    if (!action?.id || !eventType) {
+    if (!payload.associationId) {
       return res.status(400).json({
         success: false,
-        error: "Missing action or eventType.",
+        error: "Missing associationId.",
       });
     }
 
-    const notification = buildNotificationEvent(action, eventType);
+    const result = await createNotification(payload);
 
-    const { data, error } = await supabase
-      .from("bos_notifications")
-      .insert([notification])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Notification API insert failed:", error);
-
-      return res.status(500).json({
-        success: false,
-        error: error.message || "Unable to create notification.",
-      });
+    if (!result.success) {
+      return res.status(500).json(result);
     }
 
-    return res.status(200).json({
-      success: true,
-      notification: data,
-    });
+    return res.status(200).json(result);
   } catch (error) {
-    console.error("Notification API failed:", error);
-
     return res.status(500).json({
       success: false,
-      error: "Unexpected notification error.",
+      error: error?.message || "Unexpected notification creation error.",
+      stack: error?.stack || null,
     });
   }
 }
