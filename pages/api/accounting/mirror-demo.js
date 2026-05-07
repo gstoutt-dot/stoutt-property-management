@@ -22,9 +22,9 @@ export default async function handler(req, res) {
     const { data: owners, error: ownersError } = await supabase
       .from("user_profiles")
       .select("*")
-      .eq("association_id", associationId)
-      .eq("role", "owner")
-      .eq("status", "active")
+      .eq("association_id", associationId.trim())
+.ilike("role", "owner")
+.eq("status", "active")
       .order("unit_number", { ascending: true });
 
     if (ownersError) {
