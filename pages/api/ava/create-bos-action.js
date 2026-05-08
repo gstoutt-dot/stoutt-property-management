@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createNotification } from "../../../lib/notificationRouter";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -307,21 +308,44 @@ export default async function handler(req, res) {
       .single();
 
     if (error) {
-      console.error("Supabase insert error:", error);
+  console.error("Supabase insert error:", error);
 
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+  return res.status(500).json({
+    success: false,
+    error: error.message,
+  });
+}
 
-    return res.status(200).json({
-      success: true,
-      message:
-        "The request has been logged in the Board Operating System for management review.",
-      action_id: data?.id,
-      title: data?.title,
-    });
+await createNotification({
+  associationId:
+    cleanText(args.association_id) ||
+    "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
+
+  recipientRole: "manager",
+
+  notificationType: "ava_intake_created",
+
+  title: "New Ava intake received",
+
+  message: `${finalTitle} was created through Ava AI intake.`,
+
+  relatedEntityType: "bos_action",
+
+  relatedEntityId: data?.id,
+
+  priority:
+    priority === "high"
+      ? "high"
+      : "normal",
+});
+
+return res.status(200).json({
+  success: true,
+  message:
+    "The request has been logged in the Board Operating System for management review.",
+  action_id: data?.id,
+  title: data?.title,
+});
   } catch (error) {
     console.error("Ava BOS route error:", error);
 
