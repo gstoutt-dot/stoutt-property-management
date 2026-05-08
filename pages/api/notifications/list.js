@@ -28,17 +28,13 @@ export default async function handler(req, res) {
     const safeUnreadOnly =
       cleanText(unreadOnly).toLowerCase() === "true";
 
-    if (!safeAssociationId) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing associationId.",
-      });
-    }
+    const resolvedAssociationId =
+  safeAssociationId || "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
     let query = supabaseAdmin
       .from("notifications")
       .select("*")
-      .eq("association_id", safeAssociationId)
+      .eq("association_id", resolvedAssociationId)
       .order("created_at", { ascending: false })
       .limit(Number(limit) || 50);
 
