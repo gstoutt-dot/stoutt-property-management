@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { buildOwnerBalanceRecord } from "../../../lib/accountingMirrorEngine";
+import { createNotification } from "../../../lib/notificationRouter";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -61,18 +62,28 @@ export default async function handler(req, res) {
       .select();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error:
-          error.message ||
-          "Unable to mirror demo accounting records.",
-      });
-    }
+  return res.status(500).json({
+    success: false,
+    error:
+      error.message ||
+      "Unable to mirror demo accounting records.",
+  });
+}
 
-    return res.status(200).json({
-      success: true,
-      mirrored: data || [],
-    });
+await createNotification({
+  associationId: associationId.trim(),
+  recipientRole: "manager",
+  notificationType: "accounting_mirror_sync",
+  title: "Accounting mirror sync completed",
+  message: `${data?.length || 0} owner balance records were mirrored successfully.`,
+  relatedEntityType: "accounting_mirror",
+  priority: "normal",
+});
+
+return res.status(200).json({
+  success: true,
+  mirrored: data || [],
+});
   } catch (error) {
     console.error("Accounting mirror demo API failed:", error);
 
