@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+import { createNotification } from "../../../lib/notificationRouter";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -77,11 +78,22 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      association,
-      profiles,
-    });
+   await createNotification({
+  associationId: association.id,
+  recipientRole: "manager",
+  notificationType: "association_seeded",
+  title: "Demo association foundation created",
+  message: `${association.name} was seeded with ${profiles?.length || 0} active demo profiles.`,
+  relatedEntityType: "association",
+  relatedEntityId: association.id,
+  priority: "normal",
+});
+
+return res.status(200).json({
+  success: true,
+  association,
+  profiles,
+});
   } catch (error) {
     return res.status(500).json({
       success: false,
