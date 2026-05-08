@@ -18,12 +18,8 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!associationId) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing associationId.",
-      });
-    }
+   const resolvedAssociationId =
+  associationId || "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
     const { data, error } = await supabaseAdmin
       .from("notifications")
@@ -32,7 +28,7 @@ export default async function handler(req, res) {
         read_at: new Date().toISOString(),
       })
       .eq("id", notificationId)
-      .eq("association_id", associationId)
+     .eq("association_id", resolvedAssociationId)
       .select("*")
       .single();
 
