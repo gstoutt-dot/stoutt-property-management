@@ -27,7 +27,25 @@ const response = await apiResponse.json();
       }
 
       setResult(response);
-      setLoading(false);
+
+await fetch("/api/notifications/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    associationId: response?.association?.id,
+    recipientRole: "manager",
+    notificationType: "association_seed_complete",
+    title: "Demo association ready",
+    message: `${response?.association?.name} has been fully initialized and is ready for operational testing.`,
+    relatedEntityType: "association",
+    relatedEntityId: response?.association?.id,
+    priority: "normal",
+  }),
+});
+
+setLoading(false);
     } catch (error) {
       console.error("Seed page failed:", error);
 
