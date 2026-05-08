@@ -24,17 +24,13 @@ export default async function handler(req, res) {
     const safeRecipientRole = cleanText(recipientRole).toLowerCase();
     const safeRecipientUserId = cleanText(recipientUserId);
 
-    if (!safeAssociationId) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing associationId.",
-      });
-    }
+    const resolvedAssociationId =
+  safeAssociationId || "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
     let query = supabaseAdmin
       .from("notifications")
       .select("id", { count: "exact", head: true })
-      .eq("association_id", safeAssociationId)
+      .eq("association_id", resolvedAssociationId)
       .eq("is_read", false);
 
     if (safeRecipientRole) {
