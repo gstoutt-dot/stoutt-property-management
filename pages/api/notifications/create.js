@@ -1,4 +1,4 @@
-import { createNotification } from "../../../lib/notificationRouter";
+import { createNotification } from "../../../lib/notificationRouter"; 
 
 function resolveNotificationPayload(body = {}) {
   const {
