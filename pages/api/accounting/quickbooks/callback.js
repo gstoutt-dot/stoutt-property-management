@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/callback.js
 
 import crypto from "crypto";
+import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const INTUIT_TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
 
@@ -26,7 +27,6 @@ function verifyAndDecodeState(state, secret) {
   }
 
   const [encodedPayload, receivedSignature] = state.split(".");
-
   const expectedSignature = signState(encodedPayload, secret);
 
   const receivedBuffer = Buffer.from(receivedSignature);
@@ -46,6 +46,11 @@ function verifyAndDecodeState(state, secret) {
   }
 
   return decoded;
+}
+
+function addSecondsToNow(seconds) {
+  if (!seconds || Number.isNaN(Number(seconds))) return null;
+  return new Date(Date.now() + Number(seconds) * 1000).toISOString();
 }
 
 export default async function handler(req, res) {
@@ -101,6 +106,7 @@ export default async function handler(req, res) {
     }
 
     const decodedState = verifyAndDecodeState(state, stateSecret);
+    const associationId = decodedState.association_id;
 
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
       "base64"
@@ -132,13 +138,49 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log("QuickBooks connection established:", {
-      association_id: decodedState.association_id,
-      realmId,
+    const now = new Date().toISOString();
+
+    const connectionRecord = {
+      association_id: associationId,
+      realm_id: realmId,
+      quickbooks_company_id: realmId,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      token_type: tokenData.token_type || "bearer",
+      access_token_expires_at: addSecondsToNow(tokenData.expires_in),
+      refresh_token_expires_at: addSecondsToNow(
+        tokenData.x_refresh_token_expires_in
+      ),
+      scope: tokenData.scope || "com.intuit.quickbooks.accounting",
+      environment: process.env.QUICKBOOKS_ENVIRONMENT || "development",
+      connection_status: "connected",
+      connected_at: now,
+      last_token_refresh_at: now,
+      updated_at: now,
+    };
+
+    const { error: upsertError } = await supabaseAdmin
+      .from("quickbooks_connections")
+      .upsert(connectionRecord, {
+        onConflict: "association_id",
+      });
+
+    if (upsertError) {
+      console.error("QuickBooks connection Supabase save failed:", upsertError);
+
+      return res.status(500).json({
+        success: false,
+        error: "QuickBooks connected, but SPM could not save the connection.",
+        details: upsertError.message,
+      });
+    }
+
+    console.log("QuickBooks connection saved:", {
+      association_id: associationId,
+      realm_id: realmId,
       token_type: tokenData.token_type,
       expires_in: tokenData.expires_in,
-      x_refresh_token_expires_in: tokenData.x_refresh_token_expires_in,
-      connected_at: new Date().toISOString(),
+      connected_at: now,
     });
 
     const returnTo =
@@ -149,8 +191,9 @@ export default async function handler(req, res) {
     const redirectTarget = new URL(returnTo, `https://${req.headers.host}`);
 
     redirectTarget.searchParams.set("quickbooks", "connected");
-    redirectTarget.searchParams.set("association_id", decodedState.association_id);
+    redirectTarget.searchParams.set("association_id", associationId);
     redirectTarget.searchParams.set("realm_id", realmId);
+    redirectTarget.searchParams.set("connection_saved", "true");
 
     return res.redirect(302, redirectTarget.toString());
   } catch (error) {
