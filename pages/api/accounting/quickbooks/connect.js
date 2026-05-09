@@ -1,4 +1,5 @@
 // /pages/api/accounting/quickbooks/connect.js
+// QuickBooks OAuth connection start endpoint
 
 import crypto from "crypto";
 
