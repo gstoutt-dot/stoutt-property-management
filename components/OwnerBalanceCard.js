@@ -46,32 +46,7 @@ export default function OwnerBalanceCard({
       }
 
       setBalance(result.balance);
-
-if (
-  result.balance &&
-  String(result.balance.payment_status || "").toLowerCase() !== "current"
-) {
-  await fetch("/api/notifications/create", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      associationId,
-      recipientRole: "manager",
-      recipientUserId: ownerUserId || null,
-      notificationType: "owner_balance_due",
-      title: "Owner balance requires attention",
-      message: `Unit ${
-        unitNumber || "Unknown"
-      } currently shows a balance due status.`,
-      relatedEntityType: "account_balance",
-      priority: "normal",
-    }),
-  });
-}
-
-setLoading(false);
+      setLoading(false);
     } catch (error) {
       console.error("Owner balance load failed:", error);
       setErrorMessage("Balance unavailable.");
@@ -83,8 +58,11 @@ setLoading(false);
     return null;
   }
 
+  const isCurrent =
+    String(balance?.payment_status || "").toLowerCase() === "current";
+
   return (
-    <div className="mb-8 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.07] p-6 shadow-2xl shadow-black/20">
+    <div className="mb-8 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-6 shadow-2xl shadow-black/20">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">
@@ -133,11 +111,7 @@ setLoading(false);
 
             <BalanceField
               label="Payment Status"
-              value={
-                String(balance.payment_status || "").toLowerCase() === "current"
-                  ? "Current"
-                  : "Balance Due"
-              }
+              value={isCurrent ? "Current" : "Balance Due"}
             />
 
             <BalanceField
@@ -146,18 +120,34 @@ setLoading(false);
             />
           </div>
 
-          {balance.payment_link && (
-            <div className="mt-5">
+          <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            {balance.payment_link ? (
               <a
                 href={balance.payment_link}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex rounded-xl border border-yellow-400/30 bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300"
+                className="inline-flex w-fit rounded-xl border border-yellow-400/30 bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300"
               >
                 Make a Payment
               </a>
+            ) : (
+              <div className="text-sm text-slate-500">
+                Payment link unavailable.
+              </div>
+            )}
+
+            <div
+              className={`w-fit rounded-full border px-4 py-2 text-xs font-semibold ${
+                isCurrent
+                  ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                  : "border-amber-400/30 bg-amber-400/10 text-amber-300"
+              }`}
+            >
+              {isCurrent
+                ? "Account in good standing"
+                : "Balance requires attention"}
             </div>
-          )}
+          </div>
 
           <p className="mt-5 text-xs text-slate-500">
             Last synced:{" "}
