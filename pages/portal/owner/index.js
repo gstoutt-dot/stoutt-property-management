@@ -4,17 +4,17 @@ import NotificationBell from "../../../components/NotificationBell";
 import OwnerBalanceCard from "../../../components/OwnerBalanceCard";
 
 const DEMO_OWNER_PROFILE = {
-  associationName: "Royal Palm Villas HOA",
-  ownerName: "Michael Bennett",
-  streetAddress: "1842 Palm Ridge Drive",
+  associationName: "Sunset Condominium Association",
+  ownerName: "Robert Mitchell",
+  streetAddress: "Sunset Condominium Association",
   city: "Hollywood",
   state: "FL",
   zip: "33021",
-  phone: "(954) 555-0148",
-  email: "demo.owner1@stouttpm.com",
+  phone: "(954) 555-0101",
+  email: "unit101@sunsetcondo.com",
   association_id: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-id: "2576c2a8-e49e-4009-9d07-10aba3c63090",
-unitNumber: "101",
+  id: "2576c2a8-e49e-4009-9d07-10aba3c63090",
+  unitNumber: "101",
 };
 
 const ownerStatusFlow = [
