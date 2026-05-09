@@ -105,12 +105,24 @@ export default async function handler(req, res) {
       })
     );
 
-    const { data, error } = await supabaseAdmin
-      .from("owner_account_balances")
-      .upsert(records, {
-        onConflict: "association_id,unit_number",
-      })
-      .select();
+    const { error: deleteError } = await supabaseAdmin
+  .from("owner_account_balances")
+  .delete()
+  .eq("association_id", cleanAssociationId);
+
+if (deleteError) {
+  return res.status(500).json({
+    success: false,
+    error:
+      deleteError.message ||
+      "Unable to clear previous accounting mirror records.",
+  });
+}
+
+const { data, error } = await supabaseAdmin
+  .from("owner_account_balances")
+  .insert(records)
+  .select();
 
     if (error) {
       return res.status(500).json({
