@@ -9,10 +9,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { associationId, ownerUserId, unitNumber } =
-      req.query || {};
+    const {
+      associationId,
+      ownerUserId,
+      unitNumber,
+    } = req.query || {};
 
-    if (!associationId) {
+    const cleanAssociationId = String(
+      associationId || ""
+    ).trim();
+
+    if (!cleanAssociationId) {
       return res.status(400).json({
         success: false,
         error: "Missing associationId.",
@@ -21,42 +28,110 @@ export default async function handler(req, res) {
 
     let query = supabaseAdmin
       .from("owner_account_balances")
-      .select("*");
-
-    query = query.eq(
-      "association_id",
-      associationId.trim()
-    );
+      .select(`
+        *,
+        accounting_identity_links (
+          quickbooks_company_name,
+          quickbooks_customer_id,
+          quickbooks_customer_display_name,
+          last_invoice_id,
+          last_payment_id,
+          sync_status,
+          last_synced_at
+        )
+      `)
+      .eq("association_id", cleanAssociationId);
 
     if (ownerUserId) {
       query = query.eq(
         "owner_user_id",
-        ownerUserId.trim()
+        String(ownerUserId).trim()
       );
     }
 
     if (unitNumber) {
       query = query.eq(
         "unit_number",
-        unitNumber.trim()
+        String(unitNumber).trim()
       );
     }
 
     const { data, error } = await query.single();
 
-    if (error) {
+    if (error || !data) {
       return res.status(404).json({
         success: false,
         error: "Owner balance not found.",
-        details: error,
+        details: error || null,
       });
     }
 
+    const identity =
+      data.accounting_identity_links || null;
+
     return res.status(200).json({
       success: true,
-      balance: data,
+
+      balance: {
+        association_id: data.association_id,
+        owner_user_id: data.owner_user_id,
+
+        owner_name: data.owner_name,
+        unit_number: data.unit_number,
+
+        account_number: data.account_number,
+
+        current_balance: data.current_balance,
+        monthly_assessment:
+          data.monthly_assessment,
+
+        payment_status: data.payment_status,
+
+        delinquency_level:
+          data.delinquency_level,
+
+        account_health:
+          data.account_health,
+
+        last_payment_date:
+          data.last_payment_date,
+
+        payment_link: data.payment_link,
+
+        synced_at: data.synced_at,
+
+        accounting_identity: identity
+          ? {
+              quickbooks_company_name:
+                identity.quickbooks_company_name,
+
+              quickbooks_customer_id:
+                identity.quickbooks_customer_id,
+
+              quickbooks_customer_display_name:
+                identity.quickbooks_customer_display_name,
+
+              last_invoice_id:
+                identity.last_invoice_id,
+
+              last_payment_id:
+                identity.last_payment_id,
+
+              sync_status:
+                identity.sync_status,
+
+              last_synced_at:
+                identity.last_synced_at,
+            }
+          : null,
+      },
     });
   } catch (error) {
+    console.error(
+      "Owner balance API failed:",
+      error
+    );
+
     return res.status(500).json({
       success: false,
       error:
