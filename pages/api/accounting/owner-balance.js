@@ -19,6 +19,14 @@ export default async function handler(req, res) {
       associationId || ""
     ).trim();
 
+    const cleanOwnerUserId = String(
+      ownerUserId || ""
+    ).trim();
+
+    const cleanUnitNumber = String(
+      unitNumber || ""
+    ).trim();
+
     if (!cleanAssociationId) {
       return res.status(400).json({
         success: false,
@@ -26,79 +34,90 @@ export default async function handler(req, res) {
       });
     }
 
-    let query = supabaseAdmin
-      .from("owner_account_balances")
-      .select(`
-        *,
-        accounting_identity_links (
-          quickbooks_company_name,
-          quickbooks_customer_id,
-          quickbooks_customer_display_name,
-          last_invoice_id,
-          last_payment_id,
-          sync_status,
-          last_synced_at
-        )
-      `)
-      .eq("association_id", cleanAssociationId);
-
-    if (ownerUserId) {
-      query = query.eq(
-        "owner_user_id",
-        String(ownerUserId).trim()
-      );
-    }
-
-    if (unitNumber) {
-      query = query.eq(
-        "unit_number",
-        String(unitNumber).trim()
-      );
-    }
-
-    const { data, error } = await query.single();
-
-    if (error || !data) {
-      return res.status(404).json({
+    if (!cleanOwnerUserId && !cleanUnitNumber) {
+      return res.status(400).json({
         success: false,
-        error: "Owner balance not found.",
-        details: error || null,
+        error:
+          "Missing ownerUserId or unitNumber.",
       });
     }
 
-    const identity =
-      data.accounting_identity_links || null;
+    let balance = null;
+    let balanceError = null;
+
+    if (cleanOwnerUserId) {
+      const result = await supabaseAdmin
+        .from("owner_account_balances")
+        .select("*")
+        .eq("association_id", cleanAssociationId)
+        .eq("owner_user_id", cleanOwnerUserId)
+        .maybeSingle();
+
+      balance = result.data;
+      balanceError = result.error;
+    }
+
+    if (!balance && cleanUnitNumber) {
+      const result = await supabaseAdmin
+        .from("owner_account_balances")
+        .select("*")
+        .eq("association_id", cleanAssociationId)
+        .eq("unit_number", cleanUnitNumber)
+        .maybeSingle();
+
+      balance = result.data;
+      balanceError = result.error;
+    }
+
+    if (balanceError || !balance) {
+      return res.status(404).json({
+        success: false,
+        error: "Owner balance not found.",
+        details: balanceError || null,
+      });
+    }
+
+    const { data: identity } =
+      await supabaseAdmin
+        .from("accounting_identity_links")
+        .select("*")
+        .eq("association_id", cleanAssociationId)
+        .eq("unit_number", balance.unit_number)
+        .maybeSingle();
 
     return res.status(200).json({
       success: true,
-
       balance: {
-        association_id: data.association_id,
-        owner_user_id: data.owner_user_id,
+        association_id: balance.association_id,
+        owner_user_id: balance.owner_user_id,
 
-        owner_name: data.owner_name,
-        unit_number: data.unit_number,
+        owner_name: balance.owner_name,
+        unit_number: balance.unit_number,
+        account_number: balance.account_number,
 
-        account_number: data.account_number,
+        current_balance:
+          balance.current_balance,
 
-        current_balance: data.current_balance,
         monthly_assessment:
-          data.monthly_assessment,
+          balance.monthly_assessment,
 
-        payment_status: data.payment_status,
+        payment_status:
+          balance.payment_status,
 
         delinquency_level:
-          data.delinquency_level,
+          balance.delinquency_level,
 
         account_health:
-          data.account_health,
+          balance.account_health,
 
         last_payment_date:
-          data.last_payment_date,
+          balance.last_payment_date,
 
-        payment_link: data.payment_link,
+        payment_link:
+          balance.payment_link,
 
-        synced_at: data.synced_at,
+        synced_at:
+          balance.synced_at,
 
         accounting_identity: identity
           ? {
