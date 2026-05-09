@@ -39,7 +39,10 @@ export default function OwnerBalanceCard({
       const result = await response.json();
 
       if (!result.success) {
-        setErrorMessage(result.error || "Balance unavailable.");
+        setErrorMessage(
+          result.error || "Balance unavailable."
+        );
+
         setBalance(null);
         setLoading(false);
         return;
@@ -49,6 +52,7 @@ export default function OwnerBalanceCard({
       setLoading(false);
     } catch (error) {
       console.error("Owner balance load failed:", error);
+
       setErrorMessage("Balance unavailable.");
       setLoading(false);
     }
@@ -58,12 +62,25 @@ export default function OwnerBalanceCard({
     return null;
   }
 
-  const isCurrent =
-    String(balance?.payment_status || "").toLowerCase() === "current";
+  const paymentStatus = String(
+    balance?.payment_status || "current"
+  ).toLowerCase();
+
+  const delinquencyLevel = String(
+    balance?.delinquency_level || "current"
+  ).toLowerCase();
+
+  const accountHealth = String(
+    balance?.account_health || "healthy"
+  ).toLowerCase();
+
+  const isCurrent = paymentStatus === "current";
 
   return (
     <div className="mb-8 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-6 shadow-2xl shadow-black/20">
+
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">
             Account Balance
@@ -74,7 +91,7 @@ export default function OwnerBalanceCard({
           </h2>
 
           <p className="mt-2 text-sm text-slate-400">
-            Secure balance visibility from the accounting mirror.
+            Secure accounting visibility from the HOA accounting mirror layer.
           </p>
         </div>
 
@@ -85,6 +102,7 @@ export default function OwnerBalanceCard({
         >
           {loading ? "Refreshing..." : "Refresh Balance"}
         </button>
+
       </div>
 
       {loading ? (
@@ -97,30 +115,61 @@ export default function OwnerBalanceCard({
         </div>
       ) : balance ? (
         <>
-          <div className="grid gap-4 md:grid-cols-4">
+
+          <div className="grid gap-4 md:grid-cols-6">
+
             <BalanceField
               label="Current Balance"
-              value={`$${Number(balance.current_balance || 0).toFixed(2)}`}
+              value={`$${Number(
+                balance.current_balance || 0
+              ).toFixed(2)}`}
               highlight
             />
 
             <BalanceField
               label="Monthly Assessment"
-              value={`$${Number(balance.monthly_assessment || 0).toFixed(2)}`}
+              value={`$${Number(
+                balance.monthly_assessment || 0
+              ).toFixed(2)}`}
             />
 
-            <BalanceField
+            <StatusField
               label="Payment Status"
-              value={isCurrent ? "Current" : "Balance Due"}
+              value={
+                isCurrent
+                  ? "Current"
+                  : "Balance Due"
+              }
+              healthy={isCurrent}
+              warning={!isCurrent}
+            />
+
+            <StatusField
+              label="Delinquency"
+              value={delinquencyLevel}
+              healthy={delinquencyLevel === "current"}
+              warning={delinquencyLevel === "attention"}
+              elevated={delinquencyLevel === "elevated"}
+              critical={delinquencyLevel === "severe"}
+            />
+
+            <StatusField
+              label="Account Health"
+              value={accountHealth}
+              healthy={accountHealth === "healthy"}
+              warning={accountHealth === "watch"}
+              critical={accountHealth === "critical"}
             />
 
             <BalanceField
               label="Last Payment"
               value={balance.last_payment_date || "N/A"}
             />
+
           </div>
 
           <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
             {balance.payment_link ? (
               <a
                 href={balance.payment_link}
@@ -138,23 +187,31 @@ export default function OwnerBalanceCard({
 
             <div
               className={`w-fit rounded-full border px-4 py-2 text-xs font-semibold ${
-                isCurrent
+                accountHealth === "healthy"
                   ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
-                  : "border-amber-400/30 bg-amber-400/10 text-amber-300"
+                  : accountHealth === "watch"
+                  ? "border-yellow-400/30 bg-yellow-400/10 text-yellow-300"
+                  : "border-red-400/30 bg-red-400/10 text-red-300"
               }`}
             >
-              {isCurrent
+              {accountHealth === "healthy"
                 ? "Account in good standing"
-                : "Balance requires attention"}
+                : accountHealth === "watch"
+                ? "Account requires monitoring"
+                : "Account requires attention"}
             </div>
+
           </div>
 
           <p className="mt-5 text-xs text-slate-500">
             Last synced:{" "}
             {balance.synced_at
-              ? new Date(balance.synced_at).toLocaleString()
+              ? new Date(
+                  balance.synced_at
+                ).toLocaleString()
               : "N/A"}
           </p>
+
         </>
       ) : (
         <div className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-slate-400">
@@ -165,7 +222,11 @@ export default function OwnerBalanceCard({
   );
 }
 
-function BalanceField({ label, value, highlight }) {
+function BalanceField({
+  label,
+  value,
+  highlight,
+}) {
   return (
     <div
       className={`rounded-2xl border p-4 ${
@@ -180,11 +241,61 @@ function BalanceField({ label, value, highlight }) {
 
       <p
         className={`mt-2 text-lg font-semibold ${
-          highlight ? "text-yellow-300" : "text-slate-200"
+          highlight
+            ? "text-yellow-300"
+            : "text-slate-200"
         }`}
       >
         {value}
       </p>
+    </div>
+  );
+}
+
+function StatusField({
+  label,
+  value,
+  healthy,
+  warning,
+  elevated,
+  critical,
+}) {
+  let styles =
+    "border-white/10 bg-black/20 text-slate-300";
+
+  if (healthy) {
+    styles =
+      "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
+  }
+
+  if (warning) {
+    styles =
+      "border-yellow-400/30 bg-yellow-400/10 text-yellow-300";
+  }
+
+  if (elevated) {
+    styles =
+      "border-orange-400/30 bg-orange-400/10 text-orange-300";
+  }
+
+  if (critical) {
+    styles =
+      "border-red-400/30 bg-red-400/10 text-red-300";
+  }
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+
+      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+        {label}
+      </p>
+
+      <div
+        className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold capitalize ${styles}`}
+      >
+        {value}
+      </div>
+
     </div>
   );
 }
