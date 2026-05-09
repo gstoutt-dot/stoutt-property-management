@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const records = SUNSET_QB_CUSTOMERS.map((customer) =>
+    const balanceRecords = SUNSET_QB_CUSTOMERS.map((customer) =>
       buildOwnerBalanceRecord({
         associationId: cleanAssociationId,
         ownerUserId: null,
@@ -105,31 +105,68 @@ export default async function handler(req, res) {
       })
     );
 
-    const { error: deleteError } = await supabaseAdmin
-  .from("owner_account_balances")
-  .delete()
-  .eq("association_id", cleanAssociationId);
+    const identityRecords = SUNSET_QB_CUSTOMERS.map((customer) => ({
+      association_id: cleanAssociationId,
+      unit_number: customer.unitNumber,
+      owner_user_id: null,
+      quickbooks_company_name: SUNSET_QB_COMPANY_NAME,
+      quickbooks_customer_id: `QB-CUSTOMER-${customer.unitNumber}`,
+      quickbooks_customer_display_name: `Unit ${customer.unitNumber} - ${customer.ownerName}`,
+      last_invoice_id: `QB-INVOICE-${customer.unitNumber}`,
+      last_payment_id:
+        Number(customer.currentBalance || 0) > 0
+          ? null
+          : `QB-PAYMENT-${customer.unitNumber}`,
+      current_balance: Number(customer.currentBalance || 0),
+      monthly_assessment: DEFAULT_MONTHLY_ASSESSMENT,
+      sync_status: "mirror_ready",
+      last_synced_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
 
-if (deleteError) {
-  return res.status(500).json({
-    success: false,
-    error:
-      deleteError.message ||
-      "Unable to clear previous accounting mirror records.",
-  });
-}
+    const { error: deleteBalanceError } = await supabaseAdmin
+      .from("owner_account_balances")
+      .delete()
+      .eq("association_id", cleanAssociationId);
 
-const { data, error } = await supabaseAdmin
-  .from("owner_account_balances")
-  .insert(records)
-  .select();
-
-    if (error) {
+    if (deleteBalanceError) {
       return res.status(500).json({
         success: false,
         error:
-          error.message ||
-          "Unable to mirror Sunset accounting records.",
+          deleteBalanceError.message ||
+          "Unable to clear previous owner balance mirror records.",
+      });
+    }
+
+    const { data: balanceData, error: balanceError } =
+      await supabaseAdmin
+        .from("owner_account_balances")
+        .insert(balanceRecords)
+        .select();
+
+    if (balanceError) {
+      return res.status(500).json({
+        success: false,
+        error:
+          balanceError.message ||
+          "Unable to mirror Sunset owner balance records.",
+      });
+    }
+
+    const { data: identityData, error: identityError } =
+      await supabaseAdmin
+        .from("accounting_identity_links")
+        .upsert(identityRecords, {
+          onConflict: "association_id,unit_number",
+        })
+        .select();
+
+    if (identityError) {
+      return res.status(500).json({
+        success: false,
+        error:
+          identityError.message ||
+          "Unable to update QuickBooks identity links.",
       });
     }
 
@@ -138,7 +175,9 @@ const { data, error } = await supabaseAdmin
       recipientRole: "manager",
       notificationType: "accounting_mirror_sync",
       title: "Sunset accounting mirror sync completed",
-      message: `${data?.length || 0} owner balance records from ${SUNSET_QB_COMPANY_NAME} were mirrored successfully.`,
+      message: `${balanceData?.length || 0} owner balances and ${
+        identityData?.length || 0
+      } QuickBooks identity links were synchronized.`,
       relatedEntityType: "accounting_mirror",
       priority: "normal",
     });
@@ -147,7 +186,8 @@ const { data, error } = await supabaseAdmin
       success: true,
       source: "quickbooks_accountant_mirror",
       company: SUNSET_QB_COMPANY_NAME,
-      mirrored: data || [],
+      mirrored: balanceData || [],
+      identityLinks: identityData || [],
     });
   } catch (error) {
     console.error("Sunset accounting mirror API failed:", error);
