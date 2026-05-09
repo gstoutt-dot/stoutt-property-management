@@ -5,6 +5,69 @@ import { createNotification } from "../../../lib/notificationRouter";
 const SUNSET_QB_COMPANY_NAME = "Sunset Condominium Association";
 const DEFAULT_MONTHLY_ASSESSMENT = 425;
 
+const SUNSET_QB_CUSTOMERS = [
+  {
+    unitNumber: "101",
+    ownerName: "Robert Mitchell",
+    currentBalance: 375,
+    lastPaymentDate: "2026-04-15",
+  },
+  {
+    unitNumber: "102",
+    ownerName: "Angela Brooks",
+    currentBalance: 750,
+    lastPaymentDate: "2026-04-10",
+  },
+  {
+    unitNumber: "103",
+    ownerName: "Carlos Hernandez",
+    currentBalance: 0,
+    lastPaymentDate: "2026-05-01",
+  },
+  {
+    unitNumber: "104",
+    ownerName: "Lisa Morgan",
+    currentBalance: 1850,
+    lastPaymentDate: "2026-03-20",
+  },
+  {
+    unitNumber: "204",
+    ownerName: "Michael Turner",
+    currentBalance: 650,
+    lastPaymentDate: "2026-04-05",
+  },
+  {
+    unitNumber: "305",
+    ownerName: "Sarah Collins",
+    currentBalance: 412.5,
+    lastPaymentDate: "2026-04-18",
+  },
+  {
+    unitNumber: "408",
+    ownerName: "David Ramirez",
+    currentBalance: 1125,
+    lastPaymentDate: "2026-03-28",
+  },
+  {
+    unitNumber: "512",
+    ownerName: "Jennifer Lee",
+    currentBalance: 0,
+    lastPaymentDate: "2026-05-01",
+  },
+  {
+    unitNumber: "601",
+    ownerName: "Thomas Walker",
+    currentBalance: 525,
+    lastPaymentDate: "2026-04-12",
+  },
+  {
+    unitNumber: "702",
+    ownerName: "Emily Foster",
+    currentBalance: 2400,
+    lastPaymentDate: "2026-03-15",
+  },
+];
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -24,56 +87,28 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: owners, error: ownersError } = await supabaseAdmin
-      .from("user_profiles")
-      .select("*")
-      .eq("association_id", cleanAssociationId)
-      .ilike("role", "owner")
-      .eq("status", "active")
-      .order("unit_number", { ascending: true });
-
-    if (ownersError) {
-      return res.status(500).json({
-        success: false,
-        error: ownersError.message || "Unable to load owners.",
-      });
-    }
-
-    if (!owners || owners.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error:
-          "No active owners found for this association. Add owner profiles before running the accounting mirror.",
-      });
-    }
-
-    const records = owners.map((owner, index) => {
-      const unitNumber = owner.unit_number || `UNKNOWN-${index + 1}`;
-      const ownerName =
-        owner.full_name ||
-        owner.name ||
-        `Unit ${unitNumber} Owner`;
-
-      const isCurrent = index === 0;
-
-      return buildOwnerBalanceRecord({
+    const records = SUNSET_QB_CUSTOMERS.map((customer) =>
+      buildOwnerBalanceRecord({
         associationId: cleanAssociationId,
-        ownerUserId: owner.id,
-        ownerName,
-        unitNumber,
-        accountNumber: `SUNSET-QB-${unitNumber}`,
-        currentBalance: isCurrent ? 0 : 250 + index * 75,
+        ownerUserId: null,
+        ownerName: customer.ownerName,
+        unitNumber: customer.unitNumber,
+        accountNumber: `SUNSET-QB-${customer.unitNumber}`,
+        currentBalance: customer.currentBalance,
         monthlyAssessment: DEFAULT_MONTHLY_ASSESSMENT,
-        lastPaymentDate: isCurrent ? "2026-05-01" : "2026-04-15",
-        paymentStatus: isCurrent ? "current" : "balance_due",
+        lastPaymentDate: customer.lastPaymentDate,
+        paymentStatus:
+          Number(customer.currentBalance || 0) > 0
+            ? "balance_due"
+            : "current",
         paymentLink: "https://stouttmgmt.com/payments",
-      });
-    });
+      })
+    );
 
     const { data, error } = await supabaseAdmin
       .from("owner_account_balances")
       .upsert(records, {
-        onConflict: "association_id,owner_user_id,unit_number",
+        onConflict: "association_id,unit_number",
       })
       .select();
 
