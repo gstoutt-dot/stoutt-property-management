@@ -592,10 +592,12 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 }
 
 function Timeline({ item }) {
-  const steps = [
-      const isAccountingRequest = String(item.request_type || "")
+  
+  const isAccountingRequest = String(item.request_type || "")
     .toLowerCase()
     .startsWith("financial_");
+  
+  const steps = [
     {
       key: "intake",
       label: "Ava Intake",
