@@ -501,9 +501,11 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             Live Workflow Actions
           </p>
 
-          <p className="mt-2 text-sm text-white/50">
-            Move this request through the SPM/BOS operating chain.
-          </p>
+         <p className="mt-2 text-sm text-white/50">
+  {isFinancialRequest(item)
+    ? "Move this accounting request through financial review and owner coordination."
+    : "Move this request through the SPM/BOS operating chain."}
+</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
