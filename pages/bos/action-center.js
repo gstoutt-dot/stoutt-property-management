@@ -480,7 +480,11 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
       </div>
 
       <Timeline item={item} />
-
+{isFinancialRequest(item) && (
+  <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
+    This accounting request is routed for management review and owner financial coordination. Vendor dispatch is not required.
+  </div>
+)}
       <WorkflowControls
         item={item}
         onUpdate={onUpdate}
