@@ -346,7 +346,13 @@ and completion movement.
           </div>
 
           {filtered.length === 0 ? (
-            <Empty message="No actions in this stage." />
+            <Empty
+  message={
+    filter === "accounting"
+      ? "No accounting requests are currently in this queue."
+      : "No actions in this stage."
+  }
+/>
           ) : (
             <div className="space-y-5">
               {filtered.map((item) => (
