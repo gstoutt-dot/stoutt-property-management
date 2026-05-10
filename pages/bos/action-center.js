@@ -901,16 +901,7 @@ function VendorBadge({ status, item }) {
     return <Pill text="No Vendor Needed" tone="neutral" />;
   }
    if (item?.status === "completed") {
-  return (
-    <Pill
-      text={
-        isFinancialRequest(item)
-          ? "Financial Review Completed"
-          : "Completed"
-      }
-      tone="green"
-    />
-  );
+  return <Pill text="Completed" tone="green" />;
 }
 
   if (item?.status === "dispatched" || item?.dispatched) {
