@@ -1052,6 +1052,7 @@ function buildFallbackPayload(workflowAction) {
 function getNotificationEventType(workflowAction) {
   const map = {
     manager_verified: "manager_review",
+    accounting_review: "manager_review",
     send_to_board: "board_review",
     request_clarification: "manager_review",
     dispatch_vendor: "vendor_dispatched",
