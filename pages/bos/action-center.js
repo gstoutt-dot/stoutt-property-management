@@ -210,11 +210,7 @@ export default function BOSActionCenter() {
     total: actions.length,
     intake: actions.filter((a) => isIntake(a)).length,
     manager: actions.filter((a) => a.status === "manager_review").length,
-    accounting: actions.filter((a) =>
-  String(a.request_type || "")
-    .toLowerCase()
-    .startsWith("financial_")
-).length,
+    accounting: actions.filter((a) => isFinancialRequest(a)).length,
     board: actions.filter((a) => a.status === "board_review").length,
     dispatched: actions.filter((a) => a.dispatched || a.status === "dispatched")
       .length,
