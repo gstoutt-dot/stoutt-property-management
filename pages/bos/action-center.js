@@ -583,9 +583,7 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 
 function Timeline({ item }) {
   
-  const isAccountingRequest = String(item.request_type || "")
-    .toLowerCase()
-    .startsWith("financial_");
+ const isAccountingRequest = isFinancialRequest(item);
   
   const steps = [
     {
