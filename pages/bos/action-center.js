@@ -441,9 +441,7 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
           <PriorityBadge priority={item.priority} />
 
-{String(item.request_type || "")
-  .toLowerCase()
-  .startsWith("financial_") && (
+{isFinancialRequest(item) && (
   <Pill text="Accounting Request" tone="gold" />
 )}
 
