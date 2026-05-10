@@ -834,11 +834,7 @@ function PriorityBadge({ priority }) {
 }
 
 function VendorBadge({ status, item }) {
-    if (
-    String(item?.request_type || "")
-      .toLowerCase()
-      .startsWith("financial_")
-  ) {
+    if (isFinancialRequest(item)) {
     return <Pill text="No Vendor Needed" tone="neutral" />;
   }
    if (item?.status === "completed") {
