@@ -1049,7 +1049,10 @@ function buildFallbackPayload(workflowAction) {
     return { status: "manager_review" };
   }
 if (workflowAction === "accounting_review") {
-  return { status: "manager_review" };
+  return {
+    status: "manager_review",
+    accounting_review_started_at: new Date().toISOString(),
+  };
 }
   if (workflowAction === "send_to_board") {
     return { status: "board_review" };
