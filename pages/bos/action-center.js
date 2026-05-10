@@ -633,7 +633,9 @@ function Timeline({ item }) {
     item.status === "dispatched" ||
     item.status === "completed" ||
     item.dispatched,
-      date: item.board_sent_at || item.board_decision_at,
+      date: isAccountingRequest
+  ? item.manager_updated_at || item.board_sent_at || item.board_decision_at
+  : item.board_sent_at || item.board_decision_at,
     },
     {
       key: "dispatch",
