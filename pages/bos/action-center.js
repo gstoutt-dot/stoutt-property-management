@@ -36,6 +36,12 @@ export default function BOSActionCenter() {
     setActions(data || []);
   }
 
+  function isAccountingRequest(action) {
+    return String(action?.request_type || "")
+      .toLowerCase()
+      .startsWith("financial_");
+  }
+
   async function updateAction(item, workflowAction) {
     if (!item?.id) return;
 
@@ -49,6 +55,11 @@ export default function BOSActionCenter() {
         status: "manager_review",
         manager_updated_at: now,
         internal_note: "Manager verified intake and moved request into review.",
+      },
+      accounting_review: {
+        status: "manager_review",
+        manager_updated_at: now,
+        internal_note: "Accounting review initiated by management.",
       },
       send_to_board: {
         status: "board_review",
@@ -69,15 +80,15 @@ export default function BOSActionCenter() {
         internal_note: "Vendor dispatch initiated.",
       },
       vendor_accepted: {
-  vendor_status: "accepted",
-  vendor_updated_at: now,
-  internal_note: "Vendor accepted assignment.",
-},
+        vendor_status: "accepted",
+        vendor_updated_at: now,
+        internal_note: "Vendor accepted assignment.",
+      },
       vendor_in_progress: {
-  vendor_status: "in_progress",
-  vendor_updated_at: now,
-  internal_note: "Vendor work is in progress.",
-},
+        vendor_status: "in_progress",
+        vendor_updated_at: now,
+        internal_note: "Vendor work is in progress.",
+      },
       mark_complete: {
         status: "completed",
         completed_at: now,
@@ -121,7 +132,7 @@ export default function BOSActionCenter() {
       }
     }
 
-        const updatedAction = {
+    const updatedAction = {
       ...item,
       ...fullPayload,
     };
@@ -161,18 +172,12 @@ export default function BOSActionCenter() {
     }
 
     if (filter === "accounting") {
-  filteredActions = filteredActions.filter((a) =>
-    String(a.request_type || "")
-      .toLowerCase()
-      .startsWith("financial_")
-  );
-}
+      filteredActions = filteredActions.filter((a) => isAccountingRequest(a));
+    }
 
     if (filter === "board") {
       filteredActions = filteredActions.filter(
-        (a) =>
-  a.status === "board_review" ||
-  a.status === "board_approved"
+        (a) => a.status === "board_review" || a.status === "board_approved"
       );
     }
 
@@ -196,13 +201,11 @@ export default function BOSActionCenter() {
 
     if (sortMode === "oldest") {
       filteredActions.sort(
-        (a, b) =>
-          new Date(a.created_at || 0) - new Date(b.created_at || 0)
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
       );
     } else {
       filteredActions.sort(
-        (a, b) =>
-          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
       );
     }
 
@@ -213,12 +216,10 @@ export default function BOSActionCenter() {
     total: actions.length,
     intake: actions.filter((a) => isIntake(a)).length,
     manager: actions.filter((a) => a.status === "manager_review").length,
-    accounting: actions.filter((a) =>
-  String(a.request_type || "")
-    .toLowerCase()
-    .startsWith("financial_")
-).length,
-    board: actions.filter((a) => a.status === "board_review").length,
+    accounting: actions.filter((a) => isAccountingRequest(a)).length,
+    board: actions.filter(
+      (a) => a.status === "board_review" || a.status === "board_approved"
+    ).length,
     dispatched: actions.filter((a) => a.dispatched || a.status === "dispatched")
       .length,
     clarification: actions.filter((a) => a.status === "needs_clarification")
@@ -231,45 +232,43 @@ export default function BOSActionCenter() {
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-7 flex items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-7">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
               BOS SYSTEM
             </p>
 
-            <h1 className="mt-2 text-3xl md:text-4xl font-semibold">
+            <h1 className="mt-2 text-3xl font-semibold md:text-4xl">
               Action Center
             </h1>
 
-            <p className="mt-2 text-white/60 max-w-3xl">
+            <p className="mt-2 max-w-3xl text-white/60">
               Real-time operational command center from Ava AI intake through
-              manager verification, board routing, vendor dispatch, owner
-              notification, and completion.
+              manager verification, accounting review, board routing, vendor
+              dispatch, owner notification, and completion.
             </p>
           </div>
 
-          <div className="hidden md:flex gap-3 items-center">
-  <NotificationBell
-    recipientRole="manager"
-    label="Manager Alerts"
-  />
+          <div className="hidden items-center gap-3 md:flex">
+            <NotificationBell recipientRole="manager" label="Manager Alerts" />
+
             <a
               href="/portal/manager"
-              className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/10 transition"
+              className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
             >
               Manager
             </a>
 
             <a
               href="/portal/board"
-              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-yellow-400/30 hover:text-yellow-300"
             >
               Board
             </a>
 
             <a
               href="/bos/dispatch-feed"
-              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-yellow-400/30 hover:text-yellow-300"
             >
               Dispatch
             </a>
@@ -278,15 +277,15 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-8">
           <Stat label="Total" value={stats.total} />
-<Stat label="Intake" value={stats.intake} />
-<Stat label="Manager" value={stats.manager} />
-<Stat label="Accounting" value={stats.accounting} />
-<Stat label="Board" value={stats.board} />
-<Stat label="Dispatched" value={stats.dispatched} />
-<Stat label="Clarification" value={stats.clarification} />
-<Stat label="Completed" value={stats.completed} />
+          <Stat label="Intake" value={stats.intake} />
+          <Stat label="Manager" value={stats.manager} />
+          <Stat label="Accounting" value={stats.accounting} />
+          <Stat label="Board" value={stats.board} />
+          <Stat label="Dispatched" value={stats.dispatched} />
+          <Stat label="Clarification" value={stats.clarification} />
+          <Stat label="Completed" value={stats.completed} />
         </div>
 
         {systemMessage && (
@@ -296,18 +295,18 @@ export default function BOSActionCenter() {
         )}
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex gap-3 flex-wrap">
+      <section className="mx-auto flex max-w-7xl flex-col gap-4 px-6 pb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-3">
           {[
-  "all",
-  "intake",
-  "manager",
-  "accounting",
-  "board",
-  "dispatch",
-  "clarification",
-  "completed",
-].map((f) => (
+            "all",
+            "intake",
+            "manager",
+            "accounting",
+            "board",
+            "dispatch",
+            "clarification",
+            "completed",
+          ].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -333,7 +332,7 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 md:p-8 shadow-2xl shadow-black/30">
+        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 shadow-2xl shadow-black/30 md:p-8">
           <div className="mb-6">
             <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
               OPERATING TIMELINE
@@ -344,7 +343,7 @@ export default function BOSActionCenter() {
             </h2>
 
             <p className="mt-2 text-white/55">
-              Every Ava-created action now has operational controls for manager,
+              Every action now has operational controls for manager, accounting,
               board, vendor, owner, and completion movement.
             </p>
           </div>
@@ -380,12 +379,14 @@ export default function BOSActionCenter() {
 }
 
 function ActionRow({ item, onOpen, onUpdate, updatingId }) {
+  const isAccounting = isAccountingRequest(item);
+
   return (
-    <article className="rounded-3xl border border-white/10 bg-[#020617]/80 p-6 hover:border-yellow-400/25 transition duration-300">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+    <article className="rounded-3xl border border-white/10 bg-[#020617]/80 p-6 transition duration-300 hover:border-yellow-400/25">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
-            AVA AI PHONE INTAKE
+            {isAccounting ? "OWNER ACCOUNTING REQUEST" : "AVA AI PHONE INTAKE"}
           </p>
 
           <h3 className="mt-2 text-2xl font-semibold leading-tight">
@@ -397,114 +398,57 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
               Operational Summary
             </p>
 
-           <div className="mt-4 text-white/80 leading-relaxed space-y-4">
-  <p>
-    {item.description || "No operational summary available."}
-  </p>
+            <div className="mt-4 space-y-4 text-white/80 leading-relaxed">
+              <p>{item.description || "No operational summary available."}</p>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Caller
-      </p>
-
-      <p className="mt-1 text-white/90">
-        {item.owner_name || "Ava Caller"}
-      </p>
-    </div>
-
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Phone
-      </p>
-
-      <p className="mt-1 text-white/90">
-        {item.caller_phone || "Not Provided"}
-      </p>
-    </div>
-
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Unit / Address
-      </p>
-
-      <p className="mt-1 text-white/90">
-        {item.property_address || "Pending"}
-      </p>
-    </div>
-
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Source
-      </p>
-
-      <p className="mt-1 text-white/90">
-        Ava AI Phone Assistant
-      </p>
-    </div>
-  </div>
-</div>
+              <div className="grid grid-cols-1 gap-3 pt-2 md:grid-cols-2">
+                <MiniMeta label="Caller" value={item.owner_name || "Ava Caller"} />
+                <MiniMeta label="Phone" value={item.caller_phone || item.owner_phone || "Not Provided"} />
+                <MiniMeta label="Unit / Address" value={item.property_address || "Pending"} />
+                <MiniMeta label="Source" value={item.source || "Ava AI Phone Assistant"} />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-start lg:items-end gap-3 min-w-[190px]">
+        <div className="flex min-w-[190px] flex-col items-start gap-3 lg:items-end">
           <Badge item={item} />
-
           <PriorityBadge priority={item.priority} />
 
-        {String(item.request_type || "")
-  .toLowerCase()
-  .startsWith("financial_") && (
-  <Pill text="Accounting Request" tone="gold" />
-)}
+          {isAccounting && <Pill text="Accounting Request" tone="gold" />}
 
           <VendorBadge status={item.vendor_status} item={item} />
 
           <button
             onClick={onOpen}
-            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
+            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/20"
           >
             View Details
           </button>
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Meta
-          label="Association"
-          value={item.association_name || "Demo Association"}
-        />
-
+      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
+        <Meta label="Association" value={item.association_name || "Demo Association"} />
         <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
-
-        <Meta
-          label="Property / Unit"
-          value={item.property_address || "Pending"}
-        />
-
-        <Meta
-          label="Category"
-          value={formatCategory(item.category || item.request_type)}
-        />
+        <Meta label="Property / Unit" value={item.property_address || "Pending"} />
+        <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
       </div>
 
       <Timeline item={item} />
 
-      <WorkflowControls
-        item={item}
-        onUpdate={onUpdate}
-        updatingId={updatingId}
-      />
+      <WorkflowControls item={item} onUpdate={onUpdate} updatingId={updatingId} />
     </article>
   );
 }
 
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
+  const isAccounting = isAccountingRequest(item);
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
@@ -522,6 +466,14 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             onClick={() => onUpdate(item, "manager_verified")}
           />
 
+          {isAccounting && (
+            <WorkflowButton
+              label="Accounting Review"
+              disabled={busy}
+              onClick={() => onUpdate(item, "accounting_review")}
+            />
+          )}
+
           <WorkflowButton
             label="Send to Board"
             disabled={busy}
@@ -534,33 +486,27 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             onClick={() => onUpdate(item, "request_clarification")}
           />
 
-          <WorkflowButton
-            label="Dispatch Vendor"
-            disabled={busy}
-            onClick={() => onUpdate(item, "dispatch_vendor")}
-          />
+          {!isAccounting && (
+            <>
+              <WorkflowButton
+                label="Dispatch Vendor"
+                disabled={busy}
+                onClick={() => onUpdate(item, "dispatch_vendor")}
+              />
 
               <WorkflowButton
-  label="Vendor Accepted"
-  disabled={busy}
-  onClick={() => onUpdate(item, "vendor_accepted")}
-/>
+                label="Vendor Accepted"
+                disabled={busy}
+                onClick={() => onUpdate(item, "vendor_accepted")}
+              />
 
-<WorkflowButton
-  label="Vendor In Progress"
-  disabled={busy}
-  onClick={() => onUpdate(item, "vendor_in_progress")}
-/>
-
-    {String(item.request_type || "")
-  .toLowerCase()
-  .startsWith("financial_") && (
-  <WorkflowButton
-    label="Accounting Review"
-    disabled={busy}
-    onClick={() => onUpdate(item, "manager_verified")}
-  />
-)}
+              <WorkflowButton
+                label="Vendor In Progress"
+                disabled={busy}
+                onClick={() => onUpdate(item, "vendor_in_progress")}
+              />
+            </>
+          )}
 
           <WorkflowButton
             label="Notify Owner"
@@ -597,61 +543,67 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 }
 
 function Timeline({ item }) {
+  const isAccounting = isAccountingRequest(item);
+
   const steps = [
     {
       key: "intake",
-      label: "Ava Intake",
+      label: "Intake",
       complete: true,
       date: item.created_at,
     },
     {
       key: "manager",
-      label: "Manager Verified",
+      label: "Manager Review",
       complete:
         item.status === "manager_review" ||
         item.status === "board_review" ||
+        item.status === "board_approved" ||
         item.status === "dispatched" ||
         item.status === "completed" ||
         item.dispatched,
       date: item.manager_updated_at,
     },
     {
-      key: "board",
-      label: "Board Review",
-      complete:
-  item.status === "board_review" ||
-  item.status === "board_approved" ||
-  item.status === "dispatched" ||
-  item.status === "completed" ||
-  item.dispatched,
-      date: item.board_sent_at || item.board_decision_at,
+      key: "accounting",
+      label: isAccounting ? "Accounting Review" : "Board Review",
+      complete: isAccounting
+        ? item.status === "manager_review" ||
+          item.status === "board_review" ||
+          item.status === "completed"
+        : item.status === "board_review" ||
+          item.status === "board_approved" ||
+          item.status === "dispatched" ||
+          item.status === "completed" ||
+          item.dispatched,
+      date: item.manager_updated_at || item.board_sent_at || item.board_decision_at,
     },
     {
       key: "dispatch",
-      label: "Vendor Dispatch",
-      complete:
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        Boolean(item.dispatched),
-      date: item.dispatched_at,
+      label: isAccounting ? "Owner Update" : "Vendor Dispatch",
+      complete: isAccounting
+        ? item.owner_notified || item.status === "completed"
+        : item.status === "dispatched" ||
+          item.status === "completed" ||
+          Boolean(item.dispatched),
+      date: isAccounting ? item.owner_notified_at : item.dispatched_at,
     },
     {
       key: "complete",
       label: "Completed",
-      complete:
-        item.status === "completed" || item.vendor_status === "completed",
+      complete: item.status === "completed" || item.vendor_status === "completed",
       date: item.completed_at || item.vendor_updated_at,
     },
   ];
 
   return (
     <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         {steps.map((step, index) => (
           <div key={step.key} className="relative">
             <div className="flex items-center gap-3">
               <div
-                className={`h-11 w-11 rounded-full border flex items-center justify-center text-sm font-semibold ${
+                className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-semibold ${
                   step.complete
                     ? "border-yellow-400/40 bg-yellow-400/15 text-yellow-300"
                     : "border-white/10 bg-white/[0.03] text-white/35"
@@ -661,13 +613,7 @@ function Timeline({ item }) {
               </div>
 
               <div>
-                <p
-                  className={
-                    step.complete
-                      ? "text-white font-medium"
-                      : "text-white/40"
-                  }
-                >
+                <p className={step.complete ? "font-medium text-white" : "text-white/40"}>
                   {step.label}
                 </p>
 
@@ -682,7 +628,7 @@ function Timeline({ item }) {
             </div>
 
             {index < steps.length - 1 && (
-              <div className="hidden md:block absolute left-12 top-5 h-px w-[calc(100%-3rem)] bg-white/10" />
+              <div className="absolute left-12 top-5 hidden h-px w-[calc(100%-3rem)] bg-white/10 md:block" />
             )}
           </div>
         ))}
@@ -698,6 +644,8 @@ function Timeline({ item }) {
 }
 
 function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
+  const isAccounting = isAccountingRequest(item);
+
   return (
     <div className="fixed inset-0 z-50">
       <button
@@ -710,7 +658,7 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
-              Action Detail
+              {isAccounting ? "Accounting Detail" : "Action Detail"}
             </p>
 
             <h2 className="mt-2 text-3xl font-semibold leading-tight">
@@ -720,7 +668,7 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 transition hover:border-yellow-400/30 hover:text-yellow-300"
           >
             ✕
           </button>
@@ -729,6 +677,7 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Badge item={item} />
           <PriorityBadge priority={item.priority} />
+          {isAccounting && <Pill text="Accounting Request" tone="gold" />}
           <VendorBadge status={item.vendor_status} item={item} />
         </div>
 
@@ -742,38 +691,20 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Meta
-            label="Association"
-            value={item.association_name || "Demo Association"}
-          />
-
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Meta label="Association" value={item.association_name || "Demo Association"} />
           <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
-
           <Meta label="Unit" value={item.property_address || "Pending"} />
-
-          <Meta
-            label="Category"
-            value={formatCategory(item.category || item.request_type)}
-          />
-
+          <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
           <Meta label="Status" value={formatStatus(item.status)} />
-
-          <Meta
-            label="Priority"
-            value={titleCase(item.priority || "medium")}
-          />
+          <Meta label="Priority" value={titleCase(item.priority || "medium")} />
         </div>
 
         <div className="mt-6">
           <Timeline item={item} />
         </div>
 
-        <WorkflowControls
-          item={item}
-          onUpdate={onUpdate}
-          updatingId={updatingId}
-        />
+        <WorkflowControls item={item} onUpdate={onUpdate} updatingId={updatingId} />
       </aside>
     </div>
   );
@@ -813,18 +744,17 @@ function Badge({ item }) {
 function PriorityBadge({ priority }) {
   const value = String(priority || "medium").toLowerCase();
 
-  if (value === "high") {
-    return <Pill text="High Priority" tone="red" />;
-  }
-
-  if (value === "low") {
-    return <Pill text="Low Priority" tone="blue" />;
-  }
+  if (value === "high") return <Pill text="High Priority" tone="red" />;
+  if (value === "low") return <Pill text="Low Priority" tone="blue" />;
 
   return <Pill text="Medium Priority" tone="gold" />;
 }
 
 function VendorBadge({ status, item }) {
+  if (isAccountingRequest(item)) {
+    return <Pill text="No Vendor Needed" tone="neutral" />;
+  }
+
   if (item?.status === "completed") {
     return <Pill text="Completed" tone="green" />;
   }
@@ -847,12 +777,7 @@ function VendorBadge({ status, item }) {
     completed: "green",
   };
 
-  return (
-    <Pill
-      text={labels[status] || "Awaiting Vendor"}
-      tone={tones[status] || "neutral"}
-    />
-  );
+  return <Pill text={labels[status] || "Awaiting Vendor"} tone={tones[status] || "neutral"} />;
 }
 
 function Pill({ text, tone }) {
@@ -879,7 +804,6 @@ function Stat({ label, value }) {
   return (
     <div className="rounded-2xl border border-yellow-500/10 bg-white/[0.025] p-5">
       <p className="text-sm text-white/55">{label}</p>
-
       <p className="mt-2 text-2xl font-semibold text-yellow-300">{value}</p>
     </div>
   );
@@ -892,7 +816,21 @@ function Meta({ label, value }) {
         {label}
       </p>
 
-      <p className="mt-2 text-lg text-white/85 break-words">
+      <p className="mt-2 break-words text-lg text-white/85">
+        {value || "N/A"}
+      </p>
+    </div>
+  );
+}
+
+function MiniMeta({ label, value }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
+        {label}
+      </p>
+
+      <p className="mt-1 text-white/90">
         {value || "N/A"}
       </p>
     </div>
@@ -941,8 +879,18 @@ function isIntake(action) {
   return !action.status || action.status === "open";
 }
 
+function isAccountingRequest(action) {
+  return String(action?.request_type || "")
+    .toLowerCase()
+    .startsWith("financial_");
+}
+
 function buildFallbackPayload(workflowAction) {
   if (workflowAction === "manager_verified") {
+    return { status: "manager_review" };
+  }
+
+  if (workflowAction === "accounting_review") {
     return { status: "manager_review" };
   }
 
@@ -963,7 +911,7 @@ function buildFallbackPayload(workflowAction) {
   }
 
   if (workflowAction === "notify_owner") {
-    return { status: "manager_review" };
+    return { owner_notified: true };
   }
 
   return { status: "open" };
@@ -972,6 +920,7 @@ function buildFallbackPayload(workflowAction) {
 function getNotificationEventType(workflowAction) {
   const map = {
     manager_verified: "manager_review",
+    accounting_review: "accounting_review",
     send_to_board: "board_review",
     request_clarification: "manager_review",
     dispatch_vendor: "vendor_dispatched",
@@ -987,6 +936,7 @@ function getNotificationEventType(workflowAction) {
 function getWorkflowMessage(workflowAction) {
   const messages = {
     manager_verified: "Manager verification complete. Request moved into review.",
+    accounting_review: "Accounting review initiated.",
     send_to_board: "Request sent to board review.",
     request_clarification: "Clarification requested.",
     dispatch_vendor: "Vendor dispatch initiated.",
