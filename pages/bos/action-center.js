@@ -160,6 +160,14 @@ export default function BOSActionCenter() {
       );
     }
 
+    if (filter === "accounting") {
+  filteredActions = filteredActions.filter((a) =>
+    String(a.request_type || "")
+      .toLowerCase()
+      .startsWith("financial_")
+  );
+}
+
     if (filter === "board") {
       filteredActions = filteredActions.filter(
         (a) =>
@@ -205,6 +213,11 @@ export default function BOSActionCenter() {
     total: actions.length,
     intake: actions.filter((a) => isIntake(a)).length,
     manager: actions.filter((a) => a.status === "manager_review").length,
+    accounting: actions.filter((a) =>
+  String(a.request_type || "")
+    .toLowerCase()
+    .startsWith("financial_")
+).length,
     board: actions.filter((a) => a.status === "board_review").length,
     dispatched: actions.filter((a) => a.dispatched || a.status === "dispatched")
       .length,
@@ -285,14 +298,15 @@ export default function BOSActionCenter() {
       <section className="mx-auto max-w-7xl px-6 pb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex gap-3 flex-wrap">
           {[
-            "all",
-            "intake",
-            "manager",
-            "board",
-            "dispatch",
-            "clarification",
-            "completed",
-          ].map((f) => (
+  "all",
+  "intake",
+  "manager",
+  "accounting",
+  "board",
+  "dispatch",
+  "clarification",
+  "completed",
+].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -437,6 +451,12 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
           <PriorityBadge priority={item.priority} />
 
+        {String(item.request_type || "")
+  .toLowerCase()
+  .startsWith("financial_") && (
+  <Pill text="Accounting Request" tone="gold" />
+)}
+
           <VendorBadge status={item.vendor_status} item={item} />
 
           <button
@@ -530,6 +550,16 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
   disabled={busy}
   onClick={() => onUpdate(item, "vendor_in_progress")}
 />
+
+    {String(item.request_type || "")
+  .toLowerCase()
+  .startsWith("financial_") && (
+  <WorkflowButton
+    label="Accounting Review"
+    disabled={busy}
+    onClick={() => onUpdate(item, "manager_verified")}
+  />
+)}
 
           <WorkflowButton
             label="Notify Owner"
