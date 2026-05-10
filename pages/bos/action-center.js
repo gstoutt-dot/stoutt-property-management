@@ -428,8 +428,10 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
       </p>
 
       <p className="mt-1 text-white/90">
-        Ava AI Phone Assistant
-      </p>
+  {isFinancialRequest(item)
+    ? "Owner Portal Accounting Request"
+    : "Ava AI Phone Assistant"}
+</p>
     </div>
   </div>
 </div>
