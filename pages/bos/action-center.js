@@ -333,8 +333,9 @@ export default function BOSActionCenter() {
             </h2>
 
             <p className="mt-2 text-white/55">
-              Every Ava-created action now has operational controls for manager,
-              board, vendor, owner, and completion movement.
+              Every action now has operational controls for manager review,
+accounting coordination, board routing, vendor dispatch, owner updates,
+and completion movement.
             </p>
           </div>
 
