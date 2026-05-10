@@ -957,6 +957,15 @@ function isFinancialRequest(action) {
     .startsWith("financial_");
 }
 
+function isFinancialUrgent(priority) {
+  const normalized = String(priority || "").toLowerCase();
+
+  return (
+    normalized === "high" ||
+    normalized === "financial_urgent"
+  );
+}
+
 function buildFallbackPayload(workflowAction) {
   if (workflowAction === "manager_verified") {
     return { status: "manager_review" };
