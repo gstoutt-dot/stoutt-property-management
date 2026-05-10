@@ -447,7 +447,13 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
           <PriorityBadge priority={item.priority} />
 
-          <VendorBadge status={item.vendor_status} item={item} />
+{String(item.request_type || "")
+  .toLowerCase()
+  .startsWith("financial_") && (
+  <Pill text="Accounting Request" tone="gold" />
+)}
+
+<VendorBadge status={item.vendor_status} item={item} />
 
           <button
             onClick={onOpen}
