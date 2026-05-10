@@ -970,9 +970,21 @@ function titleCase(value) {
 }
 
 function formatCategory(category) {
+  const value = String(category || "General").toLowerCase();
+
+  const accountingLabels = {
+    financial_balance_question: "Balance Question",
+    financial_statement_request: "Statement Request",
+    financial_payment_review: "Payment Review",
+    financial_payment_arrangement: "Payment Arrangement Inquiry",
+  };
+
+  if (accountingLabels[value]) {
+    return accountingLabels[value];
+  }
+
   return titleCase(String(category || "General").replace(/_/g, " "));
 }
-
 function formatStatus(status) {
   return titleCase(status || "Open");
 }
