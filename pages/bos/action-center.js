@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-//import { createNotificationEvent } from "../../lib/notificationEngine";
+import { createNotificationEvent } from "../../lib/notificationEngine";
 
 export default function BOSActionCenter() {
   const [actions, setActions] = useState([]);
@@ -125,11 +125,11 @@ export default function BOSActionCenter() {
       ...fullPayload,
     };
 
-    //await createNotificationEvent(
-      //supabase,
-      //updatedAction,
-      //getNotificationEventType(workflowAction)
-    //);
+    await createNotificationEvent(
+      supabase,
+      updatedAction,
+      getNotificationEventType(workflowAction)
+    );
 
     await loadActions();
 
