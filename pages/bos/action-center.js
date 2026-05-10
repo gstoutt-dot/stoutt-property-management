@@ -620,7 +620,9 @@ function Timeline({ item }) {
     },
     {
       key: "dispatch",
-      label: "Vendor Dispatch",
+      label: isAccountingRequest
+  ? "Owner Update"
+  : "Vendor Dispatch",
       complete:
         item.status === "dispatched" ||
         item.status === "completed" ||
