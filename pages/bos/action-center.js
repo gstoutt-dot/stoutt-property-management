@@ -782,7 +782,11 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="mt-6">
           <Timeline item={item} />
         </div>
-
+{isFinancialRequest(item) && (
+  <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
+    Financial requests move through accounting review, owner coordination, and account resolution workflows rather than vendor dispatch operations.
+  </div>
+)}
         <WorkflowControls
           item={item}
           onUpdate={onUpdate}
