@@ -624,12 +624,15 @@ function Timeline({ item }) {
     {
       key: "board",
       label: isAccountingRequest ? "Accounting Review" : "Board Review",
-      complete:
-  item.status === "board_review" ||
-  item.status === "board_approved" ||
-  item.status === "dispatched" ||
-  item.status === "completed" ||
-  item.dispatched,
+      complete: isAccountingRequest
+  ? item.status === "manager_review" ||
+    item.status === "board_review" ||
+    item.status === "completed"
+  : item.status === "board_review" ||
+    item.status === "board_approved" ||
+    item.status === "dispatched" ||
+    item.status === "completed" ||
+    item.dispatched,
       date: item.board_sent_at || item.board_decision_at,
     },
     {
