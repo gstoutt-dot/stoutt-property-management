@@ -7,10 +7,18 @@ import {
   buildBoardFinancialSummary,
 } from "../../../../lib/accountingMirrorEngine";
 
-const QUICKBOOKS_API_BASE = "https://sandbox-quickbooks.api.intuit.com";
+const QUICKBOOKS_MINOR_VERSION = "75";
+
+function getQuickBooksBaseUrl() {
+  const environment = process.env.QUICKBOOKS_ENVIRONMENT || "development";
+
+  return environment === "production"
+    ? "https://quickbooks.api.intuit.com"
+    : "https://sandbox-quickbooks.api.intuit.com";
+}
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
+  if (!["GET", "POST"].includes(req.method)) {
     return res.status(405).json({
       success: false,
       error: "Method not allowed",
@@ -18,64 +26,62 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { association_id, realm_id } = req.body;
+    const association_id =
+      req.method === "GET" ? req.query.association_id : req.body.association_id;
 
-    if (!association_id) {
+    if (!association_id || typeof association_id !== "string") {
       return res.status(400).json({
         success: false,
-        error: "association_id is required",
+        error: "Missing required association_id.",
       });
     }
 
-    if (!realm_id) {
-      return res.status(400).json({
+    const { data: connection, error: connectionError } = await supabaseAdmin
+      .from("quickbooks_connections")
+      .select("*")
+      .eq("association_id", association_id)
+      .eq("connection_status", "connected")
+      .single();
+
+    if (connectionError || !connection) {
+      return res.status(404).json({
         success: false,
-        error: "realm_id is required",
+        error: "No active QuickBooks connection found for this association.",
+        details: connectionError?.message || null,
       });
     }
 
-    const accessToken = process.env.QUICKBOOKS_ACCESS_TOKEN;
+    const realmId = connection.realm_id;
+    const accessToken = connection.access_token;
 
-    if (!accessToken) {
-      return res.status(500).json({
-        success: false,
-        error: "QUICKBOOKS_ACCESS_TOKEN is missing",
-      });
-    }
+    const query = "select * from Customer startPosition 1 maxResults 1000";
 
-    const customerQuery = `
-      SELECT 
-        Id,
-        DisplayName,
-        Balance
-      FROM Customer
-      MAXRESULTS 1000
-    `;
-
-    const quickbooksResponse = await fetch(
-      `${QUICKBOOKS_API_BASE}/v3/company/${realm_id}/query?query=${encodeURIComponent(
-        customerQuery
-      )}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json",
-        },
-      }
+    const quickBooksUrl = new URL(
+      `${getQuickBooksBaseUrl()}/v3/company/${realmId}/query`
     );
 
-    const quickbooksData = await quickbooksResponse.json();
+    quickBooksUrl.searchParams.set("query", query);
+    quickBooksUrl.searchParams.set("minorversion", QUICKBOOKS_MINOR_VERSION);
 
-    if (!quickbooksResponse.ok) {
+    const qbResponse = await fetch(quickBooksUrl.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
+    const qbData = await qbResponse.json();
+
+    if (!qbResponse.ok) {
       return res.status(502).json({
         success: false,
-        error: "Unable to pull QuickBooks balances",
-        details: quickbooksData,
+        error: "Unable to pull QuickBooks live balances.",
+        details: qbData,
       });
     }
 
-    const customers = quickbooksData?.QueryResponse?.Customer || [];
+    const customers = qbData?.QueryResponse?.Customer || [];
 
     const balanceRecords = customers.map((customer) =>
       buildOwnerBalanceRecordFromQuickBooksCustomer({
@@ -96,11 +102,22 @@ export default async function handler(req, res) {
       if (upsertError) {
         return res.status(500).json({
           success: false,
-          error: "Unable to save mirrored balances",
+          error: "Unable to save live owner balances.",
           details: upsertError.message,
         });
       }
     }
+
+    const now = new Date().toISOString();
+
+    await supabaseAdmin
+      .from("quickbooks_connections")
+      .update({
+        last_customer_sync_at: now,
+        sync_error: null,
+        updated_at: now,
+      })
+      .eq("association_id", association_id);
 
     const boardSummary = buildBoardFinancialSummary(balanceRecords);
 
@@ -108,7 +125,7 @@ export default async function handler(req, res) {
       success: true,
       message: "Live QuickBooks balances synchronized successfully.",
       association_id,
-      realm_id,
+      realm_id: realmId,
       synced_accounts: balanceRecords.length,
       board_summary: boardSummary,
       balances: balanceRecords,
