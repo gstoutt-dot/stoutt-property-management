@@ -593,6 +593,9 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 
 function Timeline({ item }) {
   const steps = [
+      const isAccountingRequest = String(item.request_type || "")
+    .toLowerCase()
+    .startsWith("financial_");
     {
       key: "intake",
       label: "Ava Intake",
@@ -612,7 +615,7 @@ function Timeline({ item }) {
     },
     {
       key: "board",
-      label: "Board Review",
+      label: isAccountingRequest ? "Accounting Review" : "Board Review",
       complete:
   item.status === "board_review" ||
   item.status === "board_approved" ||
