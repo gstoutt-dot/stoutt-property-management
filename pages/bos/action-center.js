@@ -751,9 +751,7 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
             label="Priority"
             value={titleCase(item.priority || "medium")}
           />
-            {String(item.request_type || "")
-  .toLowerCase()
-  .startsWith("financial_") && (
+            {isFinancialRequest(item) && (
   <Meta
     label="Accounting Workflow"
     value="Financial Review Required"
