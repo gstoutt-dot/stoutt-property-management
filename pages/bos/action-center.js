@@ -533,23 +533,27 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             onClick={() => onUpdate(item, "request_clarification")}
           />
 
-          <WorkflowButton
-            label="Dispatch Vendor"
-            disabled={busy}
-            onClick={() => onUpdate(item, "dispatch_vendor")}
-          />
+          {!isFinancialRequest(item) && (
+  <>
+    <WorkflowButton
+      label="Dispatch Vendor"
+      disabled={busy}
+      onClick={() => onUpdate(item, "dispatch_vendor")}
+    />
 
-              <WorkflowButton
-  label="Vendor Accepted"
-  disabled={busy}
-  onClick={() => onUpdate(item, "vendor_accepted")}
-/>
+    <WorkflowButton
+      label="Vendor Accepted"
+      disabled={busy}
+      onClick={() => onUpdate(item, "vendor_accepted")}
+    />
 
-<WorkflowButton
-  label="Vendor In Progress"
-  disabled={busy}
-  onClick={() => onUpdate(item, "vendor_in_progress")}
-/>
+    <WorkflowButton
+      label="Vendor In Progress"
+      disabled={busy}
+      onClick={() => onUpdate(item, "vendor_in_progress")}
+    />
+  </>
+)}
 
           <WorkflowButton
             label="Notify Owner"
