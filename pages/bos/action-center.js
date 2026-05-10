@@ -509,9 +509,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             onClick={() => onUpdate(item, "manager_verified")}
           />
 
-        {String(item.request_type || "")
-  .toLowerCase()
-  .startsWith("financial_") && (
+        {isFinancialRequest(item) && (
   <WorkflowButton
     label="Accounting Review"
     disabled={busy}
