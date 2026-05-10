@@ -660,7 +660,9 @@ function Timeline({ item }) {
     },
     {
       key: "complete",
-      label: "Completed",
+      label: isAccountingRequest
+  ? "Financial Resolution"
+  : "Completed",
       complete:
         item.status === "completed" || item.vendor_status === "completed",
       date: item.completed_at || item.vendor_updated_at,
