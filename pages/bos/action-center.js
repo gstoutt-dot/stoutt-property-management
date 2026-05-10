@@ -702,8 +702,10 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
-              Action Detail
-            </p>
+  {isFinancialRequest(item)
+    ? "Accounting Detail"
+    : "Action Detail"}
+</p>
 
             <h2 className="mt-2 text-3xl font-semibold leading-tight">
               {item.title || "BOS Action"}
