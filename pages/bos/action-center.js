@@ -846,7 +846,9 @@ function Badge({ item }) {
   ? "Financial Oversight"
   : "Board Review",
     board_approved: "Board Approved",
-    needs_clarification: "Needs Clarification",
+    needs_clarification: isFinancialRequest(item)
+  ? "Financial Clarification"
+  : "Needs Clarification",
     dispatched: "Dispatched",
     completed: isFinancialRequest(item)
   ? "Financial Resolution"
