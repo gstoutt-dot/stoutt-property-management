@@ -278,14 +278,15 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
           <Stat label="Total" value={stats.total} />
-          <Stat label="Intake" value={stats.intake} />
-          <Stat label="Manager" value={stats.manager} />
-          <Stat label="Board" value={stats.board} />
-          <Stat label="Dispatched" value={stats.dispatched} />
-          <Stat label="Clarification" value={stats.clarification} />
-          <Stat label="Completed" value={stats.completed} />
+<Stat label="Intake" value={stats.intake} />
+<Stat label="Manager" value={stats.manager} />
+<Stat label="Accounting" value={stats.accounting} />
+<Stat label="Board" value={stats.board} />
+<Stat label="Dispatched" value={stats.dispatched} />
+<Stat label="Clarification" value={stats.clarification} />
+<Stat label="Completed" value={stats.completed} />
         </div>
 
         {systemMessage && (
