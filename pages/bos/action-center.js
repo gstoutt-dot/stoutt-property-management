@@ -1057,7 +1057,8 @@ function getNotificationEventType(workflowAction) {
 
 function getWorkflowMessage(workflowAction) {
   const messages = {
-    manager_verified: "Manager verification complete. Request moved into review.",
+    manager_verified:
+  "Verification complete. Request moved into review.",
     send_to_board: "Request sent to board review.",
     request_clarification: "Clarification requested.",
     dispatch_vendor: "Vendor dispatch initiated.",
