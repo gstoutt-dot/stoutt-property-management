@@ -1047,7 +1047,9 @@ function buildFallbackPayload(workflowAction) {
   if (workflowAction === "manager_verified") {
     return { status: "manager_review" };
   }
-
+if (workflowAction === "accounting_review") {
+  return { status: "manager_review" };
+}
   if (workflowAction === "send_to_board") {
     return { status: "board_review" };
   }
