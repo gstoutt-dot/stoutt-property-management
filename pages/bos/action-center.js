@@ -969,6 +969,12 @@ function isIntake(action) {
   return !action.status || action.status === "open";
 }
 
+function isFinancialRequest(action) {
+  return String(action?.request_type || "")
+    .toLowerCase()
+    .startsWith("financial_");
+}
+
 function buildFallbackPayload(workflowAction) {
   if (workflowAction === "manager_verified") {
     return { status: "manager_review" };
