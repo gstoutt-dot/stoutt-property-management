@@ -533,7 +533,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
   <WorkflowButton
     label="Accounting Review"
     disabled={busy}
-    onClick={() => onUpdate(item, "manager_verified")}
+    onClick={() => onUpdate(item, "accounting_review")}
   />
 )}
 
