@@ -47,6 +47,7 @@ export default function BOSActionCenter() {
       manager_verified: {
         status: "manager_review",
         manager_updated_at: now,
+        accounting_review_started_at: now,
         internal_note: "Manager verified intake and moved request into review.",
       },
       accounting_review: {
