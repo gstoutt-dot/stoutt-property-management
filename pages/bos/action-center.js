@@ -836,7 +836,9 @@ function Badge({ item }) {
   const status = item.status || "open";
 
   const labels = {
-    open: "New Intake",
+    open: isFinancialRequest(item)
+  ? "Financial Intake"
+  : "New Intake",
     manager_review: isFinancialRequest(item)
   ? "Accounting Review"
   : "Manager Review",
