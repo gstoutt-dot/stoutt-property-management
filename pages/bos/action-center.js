@@ -840,7 +840,9 @@ function Badge({ item }) {
     manager_review: isFinancialRequest(item)
   ? "Accounting Review"
   : "Manager Review",
-    board_review: "Board Review",
+    board_review: isFinancialRequest(item)
+  ? "Financial Oversight"
+  : "Board Review",
     board_approved: "Board Approved",
     needs_clarification: "Needs Clarification",
     dispatched: "Dispatched",
