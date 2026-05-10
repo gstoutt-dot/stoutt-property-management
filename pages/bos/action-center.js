@@ -846,7 +846,9 @@ function Badge({ item }) {
     board_approved: "Board Approved",
     needs_clarification: "Needs Clarification",
     dispatched: "Dispatched",
-    completed: "Completed",
+    completed: isFinancialRequest(item)
+  ? "Financial Resolution"
+  : "Completed",
   };
 
   const tones = {
