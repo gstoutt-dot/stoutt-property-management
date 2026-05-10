@@ -786,7 +786,15 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
             value={formatCategory(item.category || item.request_type)}
           />
 
-          <Meta label="Status" value={formatStatus(item.status)} />
+          <Meta
+  label="Status"
+  value={
+    isFinancialRequest(item) &&
+    item.status === "manager_review"
+      ? "Accounting Review"
+      : formatStatus(item.status)
+  }
+/>
 
           <Meta
             label="Priority"
