@@ -837,7 +837,9 @@ function Badge({ item }) {
 
   const labels = {
     open: "New Intake",
-    manager_review: "Manager Review",
+    manager_review: isFinancialRequest(item)
+  ? "Accounting Review"
+  : "Manager Review",
     board_review: "Board Review",
     board_approved: "Board Approved",
     needs_clarification: "Needs Clarification",
