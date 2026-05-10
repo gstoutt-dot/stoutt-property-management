@@ -642,7 +642,9 @@ function Timeline({ item }) {
   : item.status === "dispatched" ||
     item.status === "completed" ||
     Boolean(item.dispatched),
-      date: item.dispatched_at,
+      date: isAccountingRequest
+  ? item.owner_notified_at
+  : item.dispatched_at,
     },
     {
       key: "complete",
