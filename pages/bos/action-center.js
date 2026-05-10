@@ -338,11 +338,11 @@ export default function BOSActionCenter() {
               Request Progression
             </h2>
 
-            <p className="mt-2 text-white/55">
-              Every action now has operational controls for manager review,
-accounting coordination, board routing, vendor dispatch, owner updates,
-and completion movement.
-            </p>
+           <p className="mt-2 text-white/55">
+  {filter === "accounting"
+    ? "Accounting requests are routed through financial review, owner coordination, and resolution tracking."
+    : "Every action now has operational controls for manager review, accounting coordination, board routing, vendor dispatch, owner updates, and completion movement."}
+</p>
           </div>
 
           {filtered.length === 0 ? (
