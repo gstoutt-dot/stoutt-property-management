@@ -875,8 +875,7 @@ function Badge({ item }) {
 
 function PriorityBadge({ priority }) {
   const normalized = String(priority || "").toLowerCase();
-  const value = String(priority || "medium").toLowerCase();
-
+  
   if (isFinancialUrgent(normalized)) {
     return (
   <Pill
@@ -890,7 +889,7 @@ function PriorityBadge({ priority }) {
 );
   }
 
-  if (value === "low") {
+  if (normalized === "low") {
     return <Pill text="Low Priority" tone="blue" />;
   }
 
