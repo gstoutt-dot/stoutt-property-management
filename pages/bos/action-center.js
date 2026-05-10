@@ -1086,7 +1086,8 @@ function getWorkflowMessage(workflowAction) {
     vendor_in_progress: "Vendor work marked in progress.",
     mark_complete:
   "Request marked complete. Financial review and owner coordination finalized.",
-    notify_owner: "Owner notification marked as sent.",
+    notify_owner:
+  "Owner update delivered. Financial coordination workflow updated successfully.",
   };
 
   return messages[workflowAction] || "Workflow updated.";
