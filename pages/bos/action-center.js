@@ -288,14 +288,15 @@ export default function BOSActionCenter() {
       <section className="mx-auto max-w-7xl px-6 pb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex gap-3 flex-wrap">
           {[
-            "all",
-            "intake",
-            "manager",
-            "board",
-            "dispatch",
-            "clarification",
-            "completed",
-          ].map((f) => (
+  "all",
+  "intake",
+  "manager",
+  "accounting",
+  "board",
+  "dispatch",
+  "clarification",
+  "completed",
+].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
