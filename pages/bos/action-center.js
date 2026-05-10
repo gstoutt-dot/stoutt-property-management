@@ -1043,7 +1043,8 @@ function getWorkflowMessage(workflowAction) {
     dispatch_vendor: "Vendor dispatch initiated.",
     vendor_accepted: "Vendor acceptance recorded.",
     vendor_in_progress: "Vendor work marked in progress.",
-    mark_complete: "Request marked complete.",
+    mark_complete:
+  "Request marked complete. Financial review and owner coordination finalized.",
     notify_owner: "Owner notification marked as sent.",
   };
 
