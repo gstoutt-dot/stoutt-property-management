@@ -302,14 +302,27 @@ setSuccessMessage("Request submitted successfully.");
   );
 
   const requestTypeLabels = {
-    maintenance: "Maintenance Request",
-    architectural: "Architectural Review",
-    amenity: "Amenity Reservation",
-    financial: "Financial Request",
-    violation: "Violation Question",
-    documents: "Document Request",
-    general: "General Request",
-  };
+  maintenance: "Maintenance Request",
+
+  architectural: "Architectural Review",
+
+  amenity: "Amenity Reservation",
+
+  financial_balance_question: "Balance Question",
+
+  financial_statement_request: "Statement Request",
+
+  financial_payment_review: "Payment Review",
+
+  financial_payment_arrangement:
+    "Payment Arrangement Inquiry",
+
+  violation: "Violation Question",
+
+  documents: "Document Request",
+
+  general: "General Request",
+};
 
   const ownerStatusCopy = {
     received: "Received",
@@ -438,7 +451,21 @@ setSuccessMessage("Request submitted successfully.");
                     <option value="maintenance">Maintenance Request</option>
                     <option value="architectural">Architectural Review</option>
                     <option value="amenity">Amenity Reservation</option>
-                    <option value="financial">Financial Request</option>
+                    <option value="financial_balance_question">
+  Balance Question
+</option>
+
+<option value="financial_statement_request">
+  Statement Request
+</option>
+
+<option value="financial_payment_review">
+  Payment Review
+</option>
+
+<option value="financial_payment_arrangement">
+  Payment Arrangement Inquiry
+</option>
                     <option value="violation">Violation Question</option>
                     <option value="documents">Document Request</option>
                     <option value="general">General Request</option>
