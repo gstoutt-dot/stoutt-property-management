@@ -52,7 +52,8 @@ export default function BOSActionCenter() {
       accounting_review: {
   status: "manager_review",
   manager_updated_at: now,
-  internal_note: "Accounting review initiated by management.",
+  internal_note:
+  "Accounting review initiated. Owner financial coordination and balance review are now active.",
 },
       send_to_board: {
         status: "board_review",
