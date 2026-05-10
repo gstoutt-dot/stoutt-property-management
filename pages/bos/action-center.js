@@ -514,7 +514,11 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
 
         <div className="flex flex-wrap gap-3">
           <WorkflowButton
-            label="Manager Verified"
+            label={
+  isFinancialRequest(item)
+    ? "Accounting Verified"
+    : "Manager Verified"
+}
             disabled={busy}
             onClick={() => onUpdate(item, "manager_verified")}
           />
