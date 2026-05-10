@@ -1074,6 +1074,8 @@ function getWorkflowMessage(workflowAction) {
   const messages = {
     manager_verified:
   "Verification complete. Request moved into review.",
+    accounting_review:
+  "Accounting review initiated and financial coordination is now active.",
     send_to_board: "Request sent to board review.",
     request_clarification: "Clarification requested.",
     dispatch_vendor: "Vendor dispatch initiated.",
