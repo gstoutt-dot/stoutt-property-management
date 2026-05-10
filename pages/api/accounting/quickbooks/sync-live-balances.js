@@ -17,6 +17,27 @@ function getQuickBooksBaseUrl() {
     : "https://sandbox-quickbooks.api.intuit.com";
 }
 
+function sanitizeOwnerBalanceRecord(record) {
+  return {
+    association_id: record.association_id,
+    owner_user_id: record.owner_user_id || null,
+    owner_name: record.owner_name || "",
+    unit_number: record.unit_number || record.account_number || "",
+    account_number: record.account_number || "",
+
+    current_balance: Number(record.current_balance || 0),
+    monthly_assessment: Number(record.monthly_assessment || 0),
+
+    last_payment_date: record.last_payment_date || null,
+    payment_status: record.payment_status || "current",
+    delinquency_level: record.delinquency_level || "current",
+    account_health: record.account_health || "healthy",
+    payment_link: record.payment_link || "",
+
+    synced_at: new Date().toISOString(),
+  };
+}
+
 export default async function handler(req, res) {
   if (!["GET", "POST"].includes(req.method)) {
     return res.status(405).json({
@@ -84,27 +105,67 @@ export default async function handler(req, res) {
     const customers = qbData?.QueryResponse?.Customer || [];
 
     const balanceRecords = customers.map((customer) =>
-      buildOwnerBalanceRecordFromQuickBooksCustomer({
-        associationId: association_id,
-        quickbooksCustomerId: customer.Id,
-        customerName: customer.DisplayName,
-        currentBalance: Number(customer.Balance || 0),
-      })
+      sanitizeOwnerBalanceRecord(
+        buildOwnerBalanceRecordFromQuickBooksCustomer({
+          associationId: association_id,
+          quickbooksCustomerId: customer.Id,
+          customerName: customer.DisplayName,
+          currentBalance: Number(customer.Balance || 0),
+        })
+      )
     );
 
-    if (balanceRecords.length > 0) {
-      const { error: upsertError } = await supabaseAdmin
-        .from("owner_account_balances")
-        .upsert(balanceRecords, {
-          onConflict: "association_id,account_number",
-        });
+    let savedCount = 0;
+    const saveErrors = [];
 
-      if (upsertError) {
-        return res.status(500).json({
-          success: false,
-          error: "Unable to save live owner balances.",
-          details: upsertError.message,
+    for (const record of balanceRecords) {
+      const { data: existingRecord, error: existingError } = await supabaseAdmin
+        .from("owner_account_balances")
+        .select("id")
+        .eq("association_id", record.association_id)
+        .eq("account_number", record.account_number)
+        .maybeSingle();
+
+      if (existingError) {
+        saveErrors.push({
+          account_number: record.account_number,
+          owner_name: record.owner_name,
+          error: existingError.message,
         });
+        continue;
+      }
+
+      if (existingRecord?.id) {
+        const { error: updateError } = await supabaseAdmin
+          .from("owner_account_balances")
+          .update(record)
+          .eq("id", existingRecord.id);
+
+        if (updateError) {
+          saveErrors.push({
+            account_number: record.account_number,
+            owner_name: record.owner_name,
+            error: updateError.message,
+          });
+          continue;
+        }
+
+        savedCount += 1;
+      } else {
+        const { error: insertError } = await supabaseAdmin
+          .from("owner_account_balances")
+          .insert(record);
+
+        if (insertError) {
+          saveErrors.push({
+            account_number: record.account_number,
+            owner_name: record.owner_name,
+            error: insertError.message,
+          });
+          continue;
+        }
+
+        savedCount += 1;
       }
     }
 
@@ -114,19 +175,25 @@ export default async function handler(req, res) {
       .from("quickbooks_connections")
       .update({
         last_customer_sync_at: now,
-        sync_error: null,
+        sync_error: saveErrors.length > 0 ? JSON.stringify(saveErrors) : null,
         updated_at: now,
       })
       .eq("association_id", association_id);
 
     const boardSummary = buildBoardFinancialSummary(balanceRecords);
 
-    return res.status(200).json({
-      success: true,
-      message: "Live QuickBooks balances synchronized successfully.",
+    return res.status(saveErrors.length > 0 ? 207 : 200).json({
+      success: saveErrors.length === 0,
+      message:
+        saveErrors.length === 0
+          ? "Live QuickBooks balances synchronized successfully."
+          : "Live QuickBooks balances synchronized with some save warnings.",
       association_id,
       realm_id: realmId,
-      synced_accounts: balanceRecords.length,
+      pulled_accounts: balanceRecords.length,
+      saved_accounts: savedCount,
+      failed_accounts: saveErrors.length,
+      save_errors: saveErrors,
       board_summary: boardSummary,
       balances: balanceRecords,
     });
