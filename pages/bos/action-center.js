@@ -161,9 +161,7 @@ export default function BOSActionCenter() {
 
     if (filter === "accounting") {
   filteredActions = filteredActions.filter((a) =>
-    String(a.request_type || "")
-      .toLowerCase()
-      .startsWith("financial_")
+    isFinancialRequest(a)
   );
 }
 
