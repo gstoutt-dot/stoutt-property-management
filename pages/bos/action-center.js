@@ -637,10 +637,11 @@ function Timeline({ item }) {
       label: isAccountingRequest
   ? "Owner Update"
   : "Vendor Dispatch",
-      complete:
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        Boolean(item.dispatched),
+      complete: isAccountingRequest
+  ? item.owner_notified || item.status === "completed"
+  : item.status === "dispatched" ||
+    item.status === "completed" ||
+    Boolean(item.dispatched),
       date: item.dispatched_at,
     },
     {
