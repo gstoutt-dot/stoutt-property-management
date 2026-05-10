@@ -49,6 +49,11 @@ export default function BOSActionCenter() {
         manager_updated_at: now,
         internal_note: "Manager verified intake and moved request into review.",
       },
+      accounting_review: {
+  status: "manager_review",
+  manager_updated_at: now,
+  internal_note: "Accounting review initiated by management.",
+},
       send_to_board: {
         status: "board_review",
         board_sent_at: now,
