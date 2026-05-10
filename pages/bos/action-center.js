@@ -374,8 +374,10 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
         <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
-            AVA AI PHONE INTAKE
-          </p>
+  {isFinancialRequest(item)
+    ? "OWNER ACCOUNTING REQUEST"
+    : "AVA AI PHONE INTAKE"}
+</p>
 
           <h3 className="mt-2 text-2xl font-semibold leading-tight">
             {item.title || "BOS Action"}
