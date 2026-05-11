@@ -635,7 +635,22 @@ setSuccessMessage("Request submitted successfully.");
 
           <div className="divide-y divide-white/10">
 
-            {visibleItems.map((item) => {
+  {!loading && visibleItems.length === 0 && (
+    <div className="px-6 py-10">
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-6">
+        <h3 className="text-lg font-semibold text-white">
+          No owner requests found
+        </h3>
+
+        <p className="mt-2 text-sm leading-6 text-slate-400">
+          Requests submitted from this portal will appear here once they are linked
+          to your association, unit, and owner profile.
+        </p>
+      </div>
+    </div>
+  )}
+
+  {visibleItems.map((item) => {
               const ownerStatus = getOwnerStatus(item);
               const currentIndex = getCurrentStepIndex(item);
               const progress = getProgress(item);
