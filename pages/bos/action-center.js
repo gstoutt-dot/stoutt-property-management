@@ -1079,7 +1079,12 @@ function isFinancialUrgent(priority) {
     normalized === "financial_urgent"
   );
 }
-
+function isCompleted(action) {
+  return (
+    action?.status === "completed" ||
+    action?.vendor_status === "completed"
+  );
+}
 function buildFallbackPayload(workflowAction) {
   if (workflowAction === "manager_verified") {
     return { status: "manager_review" };
