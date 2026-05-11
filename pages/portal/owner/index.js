@@ -785,6 +785,12 @@ const requestBadge = getRequestBadge(item);
                       {ownerStatusCopy[ownerStatus]}
                     </span>
 
+<span
+  className={`rounded-full border px-3 py-1 text-xs font-medium ${requestBadge.className}`}
+>
+  {requestBadge.label}
+</span>
+
                     {item.owner_notified && (
                       <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
                         Update Sent
