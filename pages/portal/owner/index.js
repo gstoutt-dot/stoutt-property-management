@@ -316,7 +316,7 @@ useEffect(() => {
     owner_phone: ownerProfile.phone,
     best_contact_time: form.best_contact_time.trim(),
     amenity_selected: form.amenity_selected,
-    amenity_date: form.amenity_date,
+    amenity_date: form.amenity_date || null,
 
     status: "open",
     source: "Owner Portal",
