@@ -597,7 +597,8 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
     onClick={() => onUpdate(item, "notify_owner")}
   />
 )}
-{item.owner_notified && (
+{item.owner_notified &&
+ item.status !== "completed" && (
   <Pill text="Owner Updated" tone="green" />
 )}
          {item.status !== "completed" && (
