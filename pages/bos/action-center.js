@@ -639,7 +639,7 @@ function Timeline({ item }) {
       key: "board",
       label: isAccountingRequest ? "Accounting Review" : "Board Review",
       complete: isAccountingRequest
-  ? item.status === "manager_review" ||
+  ? Boolean(item.accounting_review_started_at) ||
     item.status === "board_review" ||
     item.status === "completed"
   : item.status === "board_review" ||
