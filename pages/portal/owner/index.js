@@ -93,7 +93,71 @@ function getOwnerPublicUpdate(item) {
 
   return "Your request has been received and is now in the management queue.";
 }
+function getRequestBadge(item) {
+  const type = String(item?.request_type || "").toLowerCase();
 
+  if (type.includes("financial_payment_arrangement")) {
+    return {
+      label: "Payment Arrangement",
+      className:
+        "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+    };
+  }
+
+  if (type.includes("financial_balance_question")) {
+    return {
+      label: "Balance Inquiry",
+      className:
+        "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+    };
+  }
+
+  if (type.includes("financial_statement_request")) {
+    return {
+      label: "Statement Request",
+      className:
+        "border-indigo-400/30 bg-indigo-400/10 text-indigo-300",
+    };
+  }
+
+  if (type.includes("financial_payment_review")) {
+    return {
+      label: "Payment Review",
+      className:
+        "border-blue-400/30 bg-blue-400/10 text-blue-300",
+    };
+  }
+
+  if (type.includes("architectural")) {
+    return {
+      label: "Architectural Review",
+      className:
+        "border-purple-400/30 bg-purple-400/10 text-purple-300",
+    };
+  }
+
+  if (type.includes("amenity")) {
+    return {
+      label: "Amenity Reservation",
+      className:
+        "border-pink-400/30 bg-pink-400/10 text-pink-300",
+    };
+  }
+
+  if (type.includes("violation")) {
+    return {
+      label: "Violation Question",
+      className:
+        "border-red-400/30 bg-red-400/10 text-red-300",
+    };
+  }
+
+  return {
+    label: "Operational Request",
+    className:
+      "border-yellow-400/30 bg-yellow-400/10 text-yellow-300",
+  };
+}
 function ProfileCard({ label, value, wide }) {
   return (
     <div
@@ -712,7 +776,7 @@ useEffect(() => {
               const ownerStatus = getOwnerStatus(item);
               const currentIndex = getCurrentStepIndex(item);
               const progress = getProgress(item);
-
+const requestBadge = getRequestBadge(item);
               return (
                 <div key={item.id} className="px-6 py-6">
 
