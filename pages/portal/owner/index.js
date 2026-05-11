@@ -172,15 +172,20 @@ export default function OwnerPortal() {
   });
 
   useEffect(() => {
-    fetchOwnerProfile();
-    fetchItems();
+  fetchOwnerProfile();
+}, []);
 
-    const interval = setInterval(() => {
-      fetchItems(false);
-    }, 5000);
+useEffect(() => {
+  if (!ownerProfile?.association_id) return;
 
-    return () => clearInterval(interval);
-  }, []);
+  fetchItems();
+
+  const interval = setInterval(() => {
+    fetchItems(false);
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [ownerProfile?.association_id, ownerProfile?.id, ownerProfile?.unitNumber]);
 
   async function fetchOwnerProfile() {
   setProfileLoading(true);
@@ -237,19 +242,33 @@ export default function OwnerPortal() {
 }
 
   async function fetchItems(showLoading = true) {
-    if (showLoading) setLoading(true);
+  if (!ownerProfile?.association_id) return;
 
-    const { data, error } = await supabase
-      .from("bos_actions")
-      .select("*")
-      .order("created_at", { ascending: false });
+  if (showLoading) setLoading(true);
 
-    if (!error) {
-      setItems(data || []);
-    }
+  const { data, error } = await supabase
+    .from("bos_actions")
+    .select("*")
+    .eq("association_id", ownerProfile.association_id)
+    .or(
+      [
+        `owner_user_id.eq.${ownerProfile.id}`,
+        `owner_email.eq.${ownerProfile.email}`,
+        `unit.eq.${ownerProfile.unitNumber}`,
+        `unit_number.eq.${ownerProfile.unitNumber}`,
+      ].join(",")
+    )
+    .order("created_at", { ascending: false });
 
-    if (showLoading) setLoading(false);
+  if (error) {
+    console.error("Owner request lookup failed", error);
+    setItems([]);
+  } else {
+    setItems(data || []);
   }
+
+  if (showLoading) setLoading(false);
+}
 
   function fullAddress(profile) {
     if (!profile) return "";
@@ -287,11 +306,15 @@ export default function OwnerPortal() {
         title: form.title.trim(),
         description: form.description.trim(),
         priority: form.priority,
-        association_name: ownerProfile.associationName,
-        owner_name: ownerProfile.ownerName,
-        owner_email: ownerProfile.email,
-        property_address: fullAddress(ownerProfile),
-        owner_phone: ownerProfile.phone,
+        association_id: ownerProfile.association_id,
+association_name: ownerProfile.associationName,
+owner_user_id: ownerProfile.id,
+owner_name: ownerProfile.ownerName,
+owner_email: ownerProfile.email,
+unit: ownerProfile.unitNumber,
+unit_number: ownerProfile.unitNumber,
+property_address: fullAddress(ownerProfile),
+owner_phone: ownerProfile.phone,
         best_contact_time: form.best_contact_time.trim(),
         amenity_selected: form.amenity_selected,
         amenity_date: form.amenity_date,
