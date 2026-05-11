@@ -846,9 +846,11 @@ function Badge({ item }) {
     open: isFinancialRequest(item)
   ? "Financial Intake"
   : "New Intake",
-    manager_review: isFinancialRequest(item)
-  ? "Accounting Review"
-  : "Manager Review",
+    manager_review:
+  isFinancialRequest(item) &&
+  item.accounting_review_started_at
+    ? "Accounting Review"
+    : "Manager Review",
     board_review: isFinancialRequest(item)
   ? "Financial Oversight"
   : "Board Review",
