@@ -800,8 +800,11 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
   label="Status"
   value={
     isFinancialRequest(item) &&
-    item.status === "manager_review"
-      ? "Accounting Review"
+(
+  item.accounting_review_started_at ||
+  item.status === "manager_review"
+)
+  ? "Accounting Review"
       : formatStatus(item.status)
   }
 />
