@@ -250,22 +250,34 @@ useEffect(() => {
     .from("bos_actions")
     .select("*")
     .eq("association_id", ownerProfile.association_id)
-    .or(
-      [
-        `owner_user_id.eq.${ownerProfile.id}`,
-        `owner_email.eq.${ownerProfile.email}`,
-        `unit.eq.${ownerProfile.unitNumber}`,
-        `unit_number.eq.${ownerProfile.unitNumber}`,
-      ].join(",")
-    )
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Owner request lookup failed", error);
     setItems([]);
-  } else {
-    setItems(data || []);
+    if (showLoading) setLoading(false);
+    return;
   }
+
+  const ownerFilteredItems = (data || []).filter((item) => {
+    const itemOwnerUserId = String(item.owner_user_id || "").trim();
+    const itemOwnerEmail = String(item.owner_email || "").toLowerCase().trim();
+    const itemUnit = String(item.unit || "").trim();
+    const itemUnitNumber = String(item.unit_number || "").trim();
+
+    const profileOwnerUserId = String(ownerProfile.id || "").trim();
+    const profileOwnerEmail = String(ownerProfile.email || "").toLowerCase().trim();
+    const profileUnitNumber = String(ownerProfile.unitNumber || "").trim();
+
+    return (
+      itemOwnerUserId === profileOwnerUserId ||
+      itemOwnerEmail === profileOwnerEmail ||
+      itemUnit === profileUnitNumber ||
+      itemUnitNumber === profileUnitNumber
+    );
+  });
+
+  setItems(ownerFilteredItems);
 
   if (showLoading) setLoading(false);
 }
