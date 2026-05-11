@@ -280,92 +280,96 @@ useEffect(() => {
   }
 
   async function submitRequest(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    setErrorMessage("");
-    setSuccessMessage("");
+  setErrorMessage("");
+  setSuccessMessage("");
 
-    if (!ownerProfile?.association_id || !ownerProfile?.id) {
-  setErrorMessage("Owner profile is still loading. Please refresh and try again.");
-  return;
-}
+  if (!ownerProfile?.association_id) {
+    setErrorMessage("Owner profile is still loading. Please refresh and try again.");
+    return;
+  }
 
-if (!form.title.trim() || !form.description.trim()) {
-  setErrorMessage("Please enter both a title and description.");
-  return;
-}
+  if (!form.title.trim() || !form.description.trim()) {
+    setErrorMessage("Please enter both a title and description.");
+    return;
+  }
 
-setSubmitting(true);
+  setSubmitting(true);
 
-    const { data: insertedRequest, error } = await supabase
-  .from("bos_actions")
-  .insert([
-    {
-        request_type: form.request_type,
-        title: form.title.trim(),
-        description: form.description.trim(),
-        priority: form.priority,
-        association_id: ownerProfile.association_id,
-        owner_user_id: ownerProfile.id,
-        unit: ownerProfile.unitNumber,
-        unit_number: ownerProfile.unitNumber,
-        association_name: ownerProfile.associationName,
-        owner_name: ownerProfile.ownerName,
-        owner_email: ownerProfile.email,
-        property_address: fullAddress(ownerProfile),
-        owner_phone: ownerProfile.phone,
-        best_contact_time: form.best_contact_time.trim(),
-        amenity_selected: form.amenity_selected,
-        amenity_date: form.amenity_date,
-        status: "open",
-        source: "Owner Portal",
-            },
-    ])
+  const requestPayload = {
+    request_type: form.request_type,
+    title: form.title.trim(),
+    description: form.description.trim(),
+    priority: form.priority,
+
+    association_id: ownerProfile.association_id,
+    association_name: ownerProfile.associationName,
+
+    owner_user_id: ownerProfile.id || null,
+    owner_name: ownerProfile.ownerName,
+    owner_email: ownerProfile.email,
+    unit: ownerProfile.unitNumber,
+    unit_number: ownerProfile.unitNumber,
+
+    property_address: fullAddress(ownerProfile),
+    owner_phone: ownerProfile.phone,
+    best_contact_time: form.best_contact_time.trim(),
+    amenity_selected: form.amenity_selected,
+    amenity_date: form.amenity_date,
+
+    status: "open",
+    source: "Owner Portal",
+  };
+
+  const { data: insertedRequest, error } = await supabase
+    .from("bos_actions")
+    .insert([requestPayload])
     .select("*")
     .single();
 
-    if (error) {
-  setErrorMessage(error.message);
-  setSubmitting(false);
-  return;
-}
-
-await fetch("/api/notifications/create", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    associationId: ownerProfile?.association_id,
-    recipientRole: "manager",
-    notificationType: "owner_request_submitted",
-    title: "New owner request submitted",
-    message: `${ownerProfile?.ownerName} submitted a new request.`,
-    priority: form.priority || "normal",
-  }),
-});
-
-setSuccessMessage("Request submitted successfully.");
-
-    setForm({
-      request_type: "maintenance",
-      title: "",
-      description: "",
-      priority: "medium",
-      best_contact_time: "",
-      amenity_selected: "",
-      amenity_date: "",
-    });
-
-    if (insertedRequest) {
-  setItems((currentItems) => [insertedRequest, ...currentItems]);
-}
-
-await fetchItems(false);
-setSubmitting(false);
+  if (error) {
+    console.error("Owner request insert failed:", error);
+    setErrorMessage(error.message || "Request could not be submitted.");
+    alert(error.message || "Request could not be submitted.");
+    setSubmitting(false);
+    return;
   }
 
-  const visibleItems = useMemo(() => {
+  if (insertedRequest) {
+    setItems((currentItems) => [insertedRequest, ...currentItems]);
+  }
+
+  await fetch("/api/notifications/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      associationId: ownerProfile?.association_id,
+      recipientRole: "manager",
+      notificationType: "owner_request_submitted",
+      title: "New owner request submitted",
+      message: `${ownerProfile?.ownerName} submitted a new request.`,
+      priority: form.priority || "normal",
+    }),
+  });
+
+  setSuccessMessage("Request submitted successfully.");
+
+  setForm({
+    request_type: "maintenance",
+    title: "",
+    description: "",
+    priority: "medium",
+    best_contact_time: "",
+    amenity_selected: "",
+    amenity_date: "",
+  });
+
+  await fetchItems(false);
+  setSubmitting(false);
+}
     return items.filter((item) => item.status !== "rejected");
   }, [items]);
 
