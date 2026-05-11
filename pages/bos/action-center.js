@@ -170,7 +170,7 @@ export default function BOSActionCenter() {
   filteredActions = filteredActions.filter(
     (a) =>
       isFinancialRequest(a) &&
-      a.status !== "completed"
+      !isCompleted(a)
   );
 }
 
