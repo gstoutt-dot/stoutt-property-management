@@ -305,12 +305,17 @@ useEffect(() => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!form.title.trim() || !form.description.trim()) {
-      setErrorMessage("Please enter both a title and description.");
-      return;
-    }
+    if (!ownerProfile?.association_id || !ownerProfile?.id) {
+  setErrorMessage("Owner profile is still loading. Please refresh and try again.");
+  return;
+}
 
-    setSubmitting(true);
+if (!form.title.trim() || !form.description.trim()) {
+  setErrorMessage("Please enter both a title and description.");
+  return;
+}
+
+setSubmitting(true);
 
     const { data: insertedRequest, error } = await supabase
   .from("bos_actions")
