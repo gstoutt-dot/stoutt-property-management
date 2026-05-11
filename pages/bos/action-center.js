@@ -648,7 +648,10 @@ function Timeline({ item }) {
     item.status === "completed" ||
     item.dispatched,
       date: isAccountingRequest
-  ? item.manager_updated_at || item.board_sent_at || item.board_decision_at
+  ? item.accounting_review_started_at ||
+    item.manager_updated_at ||
+    item.board_sent_at ||
+    item.board_decision_at
   : item.board_sent_at || item.board_decision_at,
     },
     {
