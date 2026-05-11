@@ -1,8 +1,7 @@
-// /pages/accounting/quickbooks-live.js
-
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const REALM_ID = "9341457054133986";
 
 export default function QuickBooksLiveAccounting() {
   const [loading, setLoading] = useState(false);
@@ -36,29 +35,97 @@ export default function QuickBooksLiveAccounting() {
   const summary =
     syncResult?.results?.financial_summary?.data?.board_summary || null;
 
+  const ownerBalances =
+    syncResult?.results?.balances?.data?.owner_balances ||
+    syncResult?.results?.live_balances?.data?.owner_balances ||
+    syncResult?.results?.sync_live_balances?.data?.owner_balances ||
+    [];
+
+  const syncItems = Object.entries(syncResult?.results || {});
+
+  const financialSnapshot = useMemo(() => {
+    const totalOwners = ownerBalances.length;
+
+    const delinquentOwners = ownerBalances.filter((owner) =>
+      ["attention", "elevated", "severe"].includes(owner.delinquency_level)
+    ).length;
+
+    const criticalOwners = ownerBalances.filter(
+      (owner) => owner.account_health === "critical"
+    ).length;
+
+    const currentOwners = Math.max(totalOwners - delinquentOwners, 0);
+
+    const monthlyAssessments = ownerBalances.reduce(
+      (sum, owner) => sum + Number(owner.monthly_assessment || 0),
+      0
+    );
+
+    const collectionsExposure = ownerBalances.reduce((sum, owner) => {
+      const balance = Number(owner.current_balance || 0);
+      return balance > 0 ? sum + balance : sum;
+    }, 0);
+
+    return {
+      totalOwners,
+      currentOwners,
+      delinquentOwners,
+      criticalOwners,
+      monthlyAssessments,
+      collectionsExposure,
+    };
+  }, [ownerBalances]);
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-6 py-8">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <header className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
-          <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
-            SPM Live Accounting
-          </p>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,1))]" />
 
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight">
-            QuickBooks Synchronization Center
-          </h1>
+      <div className="relative mx-auto max-w-7xl px-6 py-8">
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
+                SPM Financial Operations
+              </p>
 
-          <p className="mt-4 max-w-3xl text-slate-300">
-            Live operational accounting connection for Sunset Condominium
-            Association. This page pulls QuickBooks customers, invoices,
-            payments, owner balances, and board financial summary data into SPM.
-          </p>
+              <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
+                QuickBooks Financial Command Center
+              </h1>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+              <p className="mt-4 max-w-3xl text-slate-300">
+                Live accounting operations for Sunset Condominium Association.
+                This command center connects QuickBooks synchronization, owner
+                balances, delinquency visibility, and board financial reporting
+                into one HOA-safe operational view.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-5 lg:min-w-[320px]">
+              <p className="text-xs uppercase tracking-[0.24em] text-amber-200">
+                Connected Association
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold">
+                Sunset Condominium Association
+              </h2>
+              <div className="mt-4 space-y-2 text-sm text-slate-300">
+                <p>Association ID: {ASSOCIATION_ID}</p>
+                <p>Realm ID: {REALM_ID}</p>
+                <p>Platform: QuickBooks</p>
+                <p>
+                  Status:{" "}
+                  <span className="font-semibold text-emerald-300">
+                    Operational
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
             <button
               onClick={runFullSync}
               disabled={loading}
-              className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
+              className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 disabled:opacity-50"
             >
               {loading ? "Synchronizing..." : "Run Live QuickBooks Sync"}
             </button>
@@ -67,46 +134,183 @@ export default function QuickBooksLiveAccounting() {
               href={`/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`}
               target="_blank"
               rel="noreferrer"
-              className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-white hover:bg-white/15"
+              className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/15"
             >
-              View Financial Summary JSON
+              View Board Financial Summary
             </a>
           </div>
         </header>
 
         {error && (
-          <section className="rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-200">
+          <section className="mt-6 rounded-3xl border border-red-400/30 bg-red-500/10 p-6 text-red-200">
             {error}
           </section>
         )}
 
-        {summary && (
-          <section className="grid gap-4 md:grid-cols-4">
-            <MetricCard
-              label="Total Balance"
-              value={`$${Number(summary.totalBalance || 0).toLocaleString()}`}
-            />
-            <MetricCard
-              label="Delinquent Accounts"
-              value={summary.delinquentAccounts}
-            />
-            <MetricCard
-              label="Critical Accounts"
-              value={summary.criticalAccounts}
-            />
-            <MetricCard
-              label="Risk Score"
-              value={`${summary.collectionRiskScore || 0}%`}
-            />
-          </section>
-        )}
+        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total Balance"
+            value={`$${Number(summary?.totalBalance || 0).toLocaleString()}`}
+            detail="Mirrored from owner accounting records"
+          />
+          <MetricCard
+            label="Delinquent Accounts"
+            value={summary?.delinquentAccounts ?? financialSnapshot.delinquentOwners}
+            detail="Owners needing financial attention"
+          />
+          <MetricCard
+            label="Critical Accounts"
+            value={summary?.criticalAccounts ?? financialSnapshot.criticalOwners}
+            detail="Highest collection risk group"
+          />
+          <MetricCard
+            label="Risk Score"
+            value={`${summary?.collectionRiskScore || 0}%`}
+            detail="Board-level collection exposure"
+          />
+        </section>
+
+        <section className="mt-6 grid gap-4 md:grid-cols-3">
+          <OperationalCard
+            title="Owner Financial Visibility"
+            value={financialSnapshot.totalOwners || "Pending Sync"}
+            label="Owner accounts available after sync"
+          />
+          <OperationalCard
+            title="Monthly Assessment Base"
+            value={`$${financialSnapshot.monthlyAssessments.toLocaleString()}`}
+            label="Assessment total from mirrored balances"
+          />
+          <OperationalCard
+            title="Collections Exposure"
+            value={`$${financialSnapshot.collectionsExposure.toLocaleString()}`}
+            label="Positive outstanding balance exposure"
+          />
+        </section>
+
+        <section className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+                  Owner Ledger Preview
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold">
+                  Owner Financial Dashboard Feed
+                </h2>
+              </div>
+              <p className="text-sm text-slate-400">
+                {ownerBalances.length
+                  ? `${ownerBalances.length} owner records loaded`
+                  : "Run sync to load owner balances"}
+              </p>
+            </div>
+
+            <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className="bg-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
+                  <tr>
+                    <th className="px-5 py-4">Unit</th>
+                    <th className="px-5 py-4">Owner</th>
+                    <th className="px-5 py-4">Balance</th>
+                    <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4">Last Payment</th>
+                    <th className="px-5 py-4">Health</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-white/10">
+                  {ownerBalances.length > 0 ? (
+                    ownerBalances.slice(0, 10).map((owner, index) => (
+                      <tr key={`${owner.unit_number}-${index}`} className="bg-slate-950/40">
+                        <td className="px-5 py-4 font-semibold text-white">
+                          {owner.unit_number || "—"}
+                        </td>
+                        <td className="px-5 py-4 text-slate-300">
+                          {owner.owner_name || "Unassigned Owner"}
+                        </td>
+                        <td className="px-5 py-4 font-semibold text-amber-300">
+                          ${Number(owner.current_balance || 0).toLocaleString()}
+                        </td>
+                        <td className="px-5 py-4">
+                          <StatusPill value={owner.payment_status} />
+                        </td>
+                        <td className="px-5 py-4 text-slate-400">
+                          {owner.last_payment_date || "—"}
+                        </td>
+                        <td className="px-5 py-4">
+                          <HealthPill value={owner.account_health} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-5 py-10 text-center text-slate-400">
+                        Owner ledger preview will appear after the next successful
+                        QuickBooks synchronization.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <aside className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
+            <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+              Operations
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold">
+              Accounting Actions
+            </h2>
+
+            <div className="mt-6 space-y-3">
+              <button
+                onClick={runFullSync}
+                disabled={loading}
+                className="w-full rounded-2xl bg-amber-400 px-5 py-3 text-left font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
+              >
+                Sync QuickBooks Now
+              </button>
+
+              <a
+                href={`/api/accounting/quickbooks/sync-live-balances?association_id=${ASSOCIATION_ID}`}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15"
+              >
+                Refresh Owner Balances
+              </a>
+
+              <a
+                href={`/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15"
+              >
+                Open Board Financial Summary
+              </a>
+            </div>
+
+            <div className="mt-6 rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
+              <p className="font-semibold text-emerald-200">
+                Demo Message
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                SPM can onboard an association, connect its accounting records,
+                mirror owner balances, and provide immediate board-level
+                financial transparency.
+              </p>
+            </div>
+          </aside>
+        </section>
 
         {syncResult && (
-          <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-2xl font-semibold">Synchronization Result</h2>
+          <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
+            <h2 className="text-2xl font-semibold">Synchronization Health</h2>
 
             <div className="mt-6 grid gap-4 md:grid-cols-5">
-              {Object.entries(syncResult.results || {}).map(([key, result]) => (
+              {syncItems.map(([key, result]) => (
                 <div
                   key={key}
                   className="rounded-2xl border border-white/10 bg-slate-900/80 p-4"
@@ -138,11 +342,53 @@ export default function QuickBooksLiveAccounting() {
   );
 }
 
-function MetricCard({ label, value }) {
+function MetricCard({ label, value, detail }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
       <p className="text-sm text-slate-400">{label}</p>
       <p className="mt-3 text-3xl font-semibold text-amber-300">{value}</p>
+      <p className="mt-3 text-sm text-slate-500">{detail}</p>
     </div>
+  );
+}
+
+function OperationalCard({ title, value, label }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-xl">
+      <p className="text-sm text-slate-400">{title}</p>
+      <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-2 text-sm text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+function StatusPill({ value }) {
+  const cleanValue = value || "unknown";
+
+  return (
+    <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold capitalize text-slate-200">
+      {cleanValue.replaceAll("_", " ")}
+    </span>
+  );
+}
+
+function HealthPill({ value }) {
+  const cleanValue = value || "pending";
+
+  const className =
+    cleanValue === "critical"
+      ? "border-red-300/30 bg-red-400/10 text-red-200"
+      : cleanValue === "watch"
+      ? "border-amber-300/30 bg-amber-400/10 text-amber-200"
+      : cleanValue === "healthy"
+      ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+      : "border-white/10 bg-white/10 text-slate-300";
+
+  return (
+    <span
+      className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${className}`}
+    >
+      {cleanValue}
+    </span>
   );
 }
