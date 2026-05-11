@@ -607,6 +607,16 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
     onClick={() => onUpdate(item, "mark_complete")}
   />
 )}
+{item.status === "completed" && (
+  <Pill
+    text={
+      isFinancialRequest(item)
+        ? "Financial Resolution Complete"
+        : "Workflow Complete"
+    }
+    tone="green"
+  />
+)}
         </div>
       </div>
     </div>
