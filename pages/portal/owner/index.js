@@ -312,8 +312,10 @@ useEffect(() => {
 
     setSubmitting(true);
 
-    const { error } = await supabase.from("bos_actions").insert([
-      {
+    const { data: insertedRequest, error } = await supabase
+  .from("bos_actions")
+  .insert([
+    {
         request_type: form.request_type,
         title: form.title.trim(),
         description: form.description.trim(),
@@ -332,8 +334,10 @@ owner_phone: ownerProfile.phone,
         amenity_date: form.amenity_date,
         status: "open",
         source: "Owner Portal",
-      },
-    ]);
+            },
+    ])
+    .select("*")
+    .single();
 
     if (error) {
   setErrorMessage(error.message);
@@ -368,8 +372,12 @@ setSuccessMessage("Request submitted successfully.");
       amenity_date: "",
     });
 
-    await fetchItems();
-    setSubmitting(false);
+    if (insertedRequest) {
+  setItems((currentItems) => [insertedRequest, ...currentItems]);
+}
+
+await fetchItems(false);
+setSubmitting(false);
   }
 
   const visibleItems = useMemo(() => {
