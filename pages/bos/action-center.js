@@ -589,11 +589,13 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
   </>
 )}
 
-          <WorkflowButton
-            label="Notify Owner"
-            disabled={busy}
-            onClick={() => onUpdate(item, "notify_owner")}
-          />
+          {!item.owner_notified && (
+  <WorkflowButton
+    label="Notify Owner"
+    disabled={busy}
+    onClick={() => onUpdate(item, "notify_owner")}
+  />
+)}
 
           <WorkflowButton
             label="Mark Complete"
