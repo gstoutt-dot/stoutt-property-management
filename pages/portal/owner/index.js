@@ -154,7 +154,7 @@ function TimelineStep({ active, complete, label, isLast }) {
 
 export default function OwnerPortal() {
   const [items, setItems] = useState([]);
-  const [ownerProfile, setOwnerProfile] = useState(DEMO_OWNER_PROFILE);
+  const [ownerProfile, setOwnerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -183,10 +183,58 @@ export default function OwnerPortal() {
   }, []);
 
   async function fetchOwnerProfile() {
-    setProfileLoading(true);
+  setProfileLoading(true);
+
+  try {
+    /*
+      TEMP PRODUCTION ACCESS LOOKUP
+
+      During presentation/demo phase we resolve the
+      provisioned owner access record directly.
+
+      NEXT PHASE:
+      Replace this with authenticated session lookup.
+    */
+
+    const demoOwnerEmail = "unit101@sunsetcondo.com";
+
+    const { data: accessRecord, error: accessError } = await supabase
+      .from("owner_access_provisioning_records")
+      .select("*")
+      .eq("owner_email", demoOwnerEmail)
+      .single();
+
+    if (accessError || !accessRecord) {
+      console.error("Owner access lookup failed", accessError);
+
+      setOwnerProfile(DEMO_OWNER_PROFILE);
+      setProfileLoading(false);
+      return;
+    }
+
+    const hydratedProfile = {
+      associationName: accessRecord.association_name,
+      ownerName: accessRecord.owner_name,
+      streetAddress: accessRecord.street_address,
+      city: accessRecord.city,
+      state: accessRecord.state,
+      zip: accessRecord.zip,
+      phone: accessRecord.owner_phone,
+      email: accessRecord.owner_email,
+      association_id: accessRecord.association_id,
+      id: accessRecord.owner_user_id,
+      unitNumber: accessRecord.unit_number,
+    };
+
+    setOwnerProfile(hydratedProfile);
+  } catch (err) {
+    console.error("Owner profile hydration failed", err);
+
     setOwnerProfile(DEMO_OWNER_PROFILE);
-    setProfileLoading(false);
   }
+
+  setProfileLoading(false);
+}
 
   async function fetchItems(showLoading = true) {
     if (showLoading) setLoading(true);
