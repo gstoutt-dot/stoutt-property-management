@@ -195,10 +195,10 @@ export default function BOSActionCenter() {
     }
 
     if (filter === "completed") {
-      filteredActions = filteredActions.filter(
-        (a) => a.status === "completed" || a.vendor_status === "completed"
-      );
-    }
+  filteredActions = filteredActions.filter((a) =>
+    isCompleted(a)
+  );
+}
 
     if (sortMode === "oldest") {
       filteredActions.sort(
