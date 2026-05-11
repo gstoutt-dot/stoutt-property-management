@@ -370,8 +370,9 @@ useEffect(() => {
   await fetchItems(false);
   setSubmitting(false);
 }
-    return items.filter((item) => item.status !== "rejected");
-  }, [items]);
+    const visibleItems = useMemo(() => {
+  return items.filter((item) => item.status !== "rejected");
+}, [items]);
 
   const notifiedItems = visibleItems.filter(
     (item) => item.owner_notified
