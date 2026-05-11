@@ -545,7 +545,10 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
     onClick={() => onUpdate(item, "accounting_review")}
   />
 )}
-
+{isFinancialRequest(item) &&
+ item.accounting_review_started_at && (
+  <Pill text="Accounting Review Active" tone="gold" />
+)}
           <WorkflowButton
             label="Send to Board"
             disabled={busy}
