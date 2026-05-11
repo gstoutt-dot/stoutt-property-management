@@ -222,7 +222,7 @@ export default function BOSActionCenter() {
     accounting: actions.filter(
   (a) =>
     isFinancialRequest(a) &&
-    a.status !== "completed"
+    !isCompleted(a)
 ).length,
     board: actions.filter((a) => a.status === "board_review").length,
     dispatched: actions.filter((a) => a.dispatched || a.status === "dispatched")
