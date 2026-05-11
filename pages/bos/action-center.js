@@ -537,7 +537,8 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             onClick={() => onUpdate(item, "manager_verified")}
           />
 
-        {isFinancialRequest(item) && (
+        {isFinancialRequest(item) &&
+ !item.accounting_review_started_at && (
   <WorkflowButton
     label="Accounting Review"
     disabled={busy}
