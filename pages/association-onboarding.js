@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 const initialForm = {
   associationName: "",
-  propertyType: "Condominium Association",
+  propertyType: "HOA",
   city: "",
   county: "",
   state: "Florida",
@@ -57,7 +57,22 @@ export default function AssociationOnboarding() {
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <Input label="Association Name" value={form.associationName} onChange={(v) => updateField("associationName", v)} />
-              <Input label="Property Type" value={form.propertyType} onChange={(v) => updateField("propertyType", v)} />
+              <label className="block">
+  <span className="text-sm text-slate-400">Property Type</span>
+
+  <select
+    value={form.propertyType}
+    onChange={(event) =>
+      updateField("propertyType", event.target.value)
+    }
+    className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-white outline-none transition focus:border-amber-300/50"
+  >
+    <option value="HOA">HOA</option>
+    <option value="Condominium Association">
+      Condominium Association
+    </option>
+  </select>
+</label>
               <Input label="City" value={form.city} onChange={(v) => updateField("city", v)} />
               <Input label="County" value={form.county} onChange={(v) => updateField("county", v)} />
               <Input label="State" value={form.state} onChange={(v) => updateField("state", v)} />
