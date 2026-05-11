@@ -167,8 +167,10 @@ export default function BOSActionCenter() {
     }
 
     if (filter === "accounting") {
-  filteredActions = filteredActions.filter((a) =>
-    isFinancialRequest(a)
+  filteredActions = filteredActions.filter(
+    (a) =>
+      isFinancialRequest(a) &&
+      a.status !== "completed"
   );
 }
 
