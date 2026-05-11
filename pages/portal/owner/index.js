@@ -246,18 +246,66 @@ useEffect(() => {
 
   if (showLoading) setLoading(true);
 
+  const profileAssociationId = String(
+    ownerProfile.association_id || ""
+  ).trim();
+
+  const profileOwnerUserId = String(
+    ownerProfile.id || ""
+  ).trim();
+
+  const profileOwnerEmail = String(
+    ownerProfile.email || ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const profileUnitNumber = String(
+    ownerProfile.unitNumber || ""
+  ).trim();
+
   const { data, error } = await supabase
     .from("bos_actions")
     .select("*")
-    .eq("association_id", ownerProfile.association_id)
+    .eq("association_id", profileAssociationId)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Owner request lookup failed", error);
     setItems([]);
-  } else {
-    setItems(data || []);
+
+    if (showLoading) setLoading(false);
+    return;
   }
+
+  const ownerScopedItems = (data || []).filter((item) => {
+    const itemOwnerUserId = String(
+      item.owner_user_id || ""
+    ).trim();
+
+    const itemOwnerEmail = String(
+      item.owner_email || ""
+    )
+      .toLowerCase()
+      .trim();
+
+    const itemUnit = String(
+      item.unit || ""
+    ).trim();
+
+    const itemUnitNumber = String(
+      item.unit_number || ""
+    ).trim();
+
+    return (
+      itemOwnerUserId === profileOwnerUserId ||
+      itemOwnerEmail === profileOwnerEmail ||
+      itemUnit === profileUnitNumber ||
+      itemUnitNumber === profileUnitNumber
+    );
+  });
+
+  setItems(ownerScopedItems);
 
   if (showLoading) setLoading(false);
 }
