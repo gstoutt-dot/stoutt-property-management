@@ -255,29 +255,9 @@ useEffect(() => {
   if (error) {
     console.error("Owner request lookup failed", error);
     setItems([]);
-    if (showLoading) setLoading(false);
-    return;
+  } else {
+    setItems(data || []);
   }
-
-  const ownerFilteredItems = (data || []).filter((item) => {
-    const itemOwnerUserId = String(item.owner_user_id || "").trim();
-    const itemOwnerEmail = String(item.owner_email || "").toLowerCase().trim();
-    const itemUnit = String(item.unit || "").trim();
-    const itemUnitNumber = String(item.unit_number || "").trim();
-
-    const profileOwnerUserId = String(ownerProfile.id || "").trim();
-    const profileOwnerEmail = String(ownerProfile.email || "").toLowerCase().trim();
-    const profileUnitNumber = String(ownerProfile.unitNumber || "").trim();
-
-    return (
-      itemOwnerUserId === profileOwnerUserId ||
-      itemOwnerEmail === profileOwnerEmail ||
-      itemUnit === profileUnitNumber ||
-      itemUnitNumber === profileUnitNumber
-    );
-  });
-
-  setItems(ownerFilteredItems);
 
   if (showLoading) setLoading(false);
 }
