@@ -552,7 +552,8 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
   />
 )}
 {isFinancialRequest(item) &&
- item.accounting_review_started_at && (
+ item.accounting_review_started_at &&
+ item.status !== "completed" && (
   <Pill text="Accounting Review Active" tone="gold" />
 )}
           <WorkflowButton
