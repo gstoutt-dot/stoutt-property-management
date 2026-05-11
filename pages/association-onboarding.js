@@ -16,6 +16,9 @@ const initialForm = {
 
 export default function AssociationOnboarding() {
   const [form, setForm] = useState(initialForm);
+  const [saving, setSaving] = useState(false);
+  const [savedAssociation, setSavedAssociation] = useState(null);
+  const [error, setError] = useState("");
 
   const completionScore = useMemo(() => {
     const fields = Object.values(form);
@@ -28,6 +31,34 @@ export default function AssociationOnboarding() {
       ...current,
       [field]: value,
     }));
+  }
+
+  async function saveAssociation() {
+    setSaving(true);
+    setError("");
+    setSavedAssociation(null);
+
+    try {
+      const response = await fetch("/api/onboarding/create-association", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Unable to save association.");
+      }
+
+      setSavedAssociation(data.association);
+    } catch (err) {
+      setError(err.message || "Unable to save association.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -51,28 +82,59 @@ export default function AssociationOnboarding() {
           </p>
         </header>
 
+        {error && (
+          <section className="mt-6 rounded-3xl border border-red-400/30 bg-red-500/10 p-5 text-red-200">
+            {error}
+          </section>
+        )}
+
+        {savedAssociation && (
+          <section className="mt-6 rounded-3xl border border-emerald-300/30 bg-emerald-400/10 p-5 text-emerald-200">
+            Association saved successfully:{" "}
+            <span className="font-semibold">
+              {savedAssociation.association_name}
+            </span>
+          </section>
+        )}
+
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-            <h2 className="text-2xl font-semibold">Association Intake</h2>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <h2 className="text-2xl font-semibold">Association Intake</h2>
+
+              <button
+                type="button"
+                onClick={saveAssociation}
+                disabled={saving}
+                className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
+              >
+                {saving ? "Saving Association..." : "Save Association Profile"}
+              </button>
+            </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <Input label="Association Name" value={form.associationName} onChange={(v) => updateField("associationName", v)} />
-              <label className="block">
-  <span className="text-sm text-slate-400">Property Type</span>
+              <Input
+                label="Association Name"
+                value={form.associationName}
+                onChange={(v) => updateField("associationName", v)}
+              />
 
-  <select
-    value={form.propertyType}
-    onChange={(event) =>
-      updateField("propertyType", event.target.value)
-    }
-    className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-white outline-none transition focus:border-amber-300/50"
-  >
-    <option value="HOA">HOA</option>
-    <option value="Condominium Association">
-      Condominium Association
-    </option>
-  </select>
-</label>
+              <label className="block">
+                <span className="text-sm text-slate-400">Property Type</span>
+                <select
+                  value={form.propertyType}
+                  onChange={(event) =>
+                    updateField("propertyType", event.target.value)
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-white outline-none transition focus:border-amber-300/50"
+                >
+                  <option value="HOA">HOA</option>
+                  <option value="Condominium Association">
+                    Condominium Association
+                  </option>
+                </select>
+              </label>
+
               <Input label="City" value={form.city} onChange={(v) => updateField("city", v)} />
               <Input label="County" value={form.county} onChange={(v) => updateField("county", v)} />
               <Input label="State" value={form.state} onChange={(v) => updateField("state", v)} />
@@ -103,7 +165,7 @@ export default function AssociationOnboarding() {
               <h2 className="text-2xl font-semibold">Next Operational Steps</h2>
 
               <div className="mt-5 space-y-3">
-                <Step title="Create Association Profile" active />
+                <Step title="Create Association Profile" active={!!savedAssociation} />
                 <Step title="Import Owner / Unit Roster" active />
                 <Step title="Map Owners to Units" />
                 <Step title="Connect QuickBooks Realm" />
