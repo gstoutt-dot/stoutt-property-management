@@ -311,20 +311,22 @@ const [loadError, setLoadError] = useState("");
                 "Under Review",
                 "Kitchen sink leak reported. Management is reviewing the request.",
               ],
-              [
+                            [
                 "Account Review Request",
                 "Received",
                 "Balance confirmation request received by management.",
+                "/homeowner/account-review",
               ],
               [
                 "Statement Request",
                 "Completed",
                 "Your most recent account statement is available in documents.",
               ],
-            ].map(([title, status, description]) => (
-              <div
+             ].map(([title, status, description, href]) => (
+                            <Link
                 key={title}
-                className="rounded-2xl border border-white/10 bg-slate-900/70 p-5"
+                href={href || "#"}
+                className="block rounded-2xl border border-white/10 bg-slate-900/70 p-5 transition hover:border-yellow-400/40 hover:bg-white/[0.03]"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="font-semibold text-white">{title}</h3>
@@ -333,7 +335,7 @@ const [loadError, setLoadError] = useState("");
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-slate-400">{description}</p>
-              </div>
+                </Link>
             ))}
           </div>
         </div>
