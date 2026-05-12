@@ -230,7 +230,7 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-            <div id="ledger-summary" className="mt-6 grid gap-6 md:grid-cols-3">
+            <div className="mt-6 grid gap-6 md:grid-cols-3">
                     {[
                 ["Monthly Assessment", monthlyAssessment],
                 ["Last Payment Date", lastPaymentDate],
