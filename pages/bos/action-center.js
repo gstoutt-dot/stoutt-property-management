@@ -463,7 +463,9 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
         <div className="flex flex-col items-start lg:items-end gap-3 min-w-[190px]">
           <Badge item={item} />
 
-          <PriorityBadge priority={item.priority} />
+<RequestTypeBadge item={item} />
+
+<PriorityBadge priority={item.priority} />
 
 {isFinancialRequest(item) && (
   <Pill text="Accounting Request" tone="gold" />
@@ -909,7 +911,79 @@ function Badge({ item }) {
     />
   );
 }
+function RequestTypeBadge({ item }) {
+  const type = String(item?.request_type || "").toLowerCase();
 
+  if (type.includes("financial_payment_arrangement")) {
+    return (
+      <Pill
+        text="Payment Arrangement"
+        tone="green"
+      />
+    );
+  }
+
+  if (type.includes("financial_balance_question")) {
+    return (
+      <Pill
+        text="Balance Inquiry"
+        tone="blue"
+      />
+    );
+  }
+
+  if (type.includes("financial_statement_request")) {
+    return (
+      <Pill
+        text="Statement Request"
+        tone="gold"
+      />
+    );
+  }
+
+  if (type.includes("financial_payment_review")) {
+    return (
+      <Pill
+        text="Payment Review"
+        tone="blue"
+      />
+    );
+  }
+
+  if (type.includes("architectural")) {
+    return (
+      <Pill
+        text="Architectural Review"
+        tone="neutral"
+      />
+    );
+  }
+
+  if (type.includes("amenity")) {
+    return (
+      <Pill
+        text="Amenity Reservation"
+        tone="blue"
+      />
+    );
+  }
+
+  if (type.includes("violation")) {
+    return (
+      <Pill
+        text="Violation Question"
+        tone="red"
+      />
+    );
+  }
+
+  return (
+    <Pill
+      text="Operational Request"
+      tone="gold"
+    />
+  );
+}
 function PriorityBadge({ priority }) {
   const normalized = String(priority || "").toLowerCase();
   
