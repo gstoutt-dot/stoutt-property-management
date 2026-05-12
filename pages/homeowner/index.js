@@ -193,14 +193,18 @@ const [loadError, setLoadError] = useState("");
                     Make Payment
                   </Link>
 
-                  <Link
-                    href="https://app.qbo.intuit.com/app/customers"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => {
+                      document
+                        .getElementById("ledger-summary")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                        });
+                    }}
                     className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
                   >
-                    Request Account Review
-                  </Link>
+                    View Ledger Summary
+                  </button>
                 </div>
               </div>
 
@@ -225,7 +229,7 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              <div id="ledger-summary" className="mt-6 grid gap-6 md:grid-cols-3">
               {[
                 ["Monthly Assessment", monthlyAssessment],
                 ["Last Payment Date", lastPaymentDate],
