@@ -684,18 +684,30 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
   );
 }
 
-function WorkflowButton({ label, onClick, disabled, strong }) {
+function WorkflowButton({
+  label,
+  onClick,
+  disabled,
+  strong,
+  active,
+}) {
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
-      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45 ${
-        strong
+      disabled={disabled || active}
+      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed ${
+        active
+          ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+          : strong
           ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20"
           : "border-yellow-400/25 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
       }`}
     >
-      {disabled ? "Updating..." : label}
+      {active
+        ? `✓ ${label}`
+        : disabled
+        ? "Updating..."
+        : label}
     </button>
   );
 }
