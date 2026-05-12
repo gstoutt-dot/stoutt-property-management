@@ -176,10 +176,10 @@ const [loadError, setLoadError] = useState("");
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
-                    href={balance?.payment_link || "/homeowner/ledger"}
+                    href="/homeowner/payment-arrangement"
                     className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
                   >
-                    Make Payment / View Ledger
+                    Request Payment Help
                   </Link>
 
                   <Link
