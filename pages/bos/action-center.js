@@ -520,414 +520,199 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
 
-  const workflowType = getWorkflowType(item);
-
-  const workflowButtons = {
-    accounting: [
-      {
-        label: "Accounting Verified",
-        action: "manager_verified",
-      },
-      {
-        label: "Accounting Review",
-        action: "accounting_review",
-      },
-      {
-        label: "Notify Owner",
-        action: "notify_owner",
-      },
-      {
-        label: "Mark Complete",
-        action: "mark_complete",
-        strong: true,
-      },
-    ],
-
-    architectural: [
-      {
-        label: "Manager Verified",
-        action: "manager_verified",
-      },
-      {
-        label: "Board Review",
-        action: "send_to_board",
-      },
-      {
-        label: "Notify Owner",
-        action: "notify_owner",
-      },
-      {
-        label: "Mark Complete",
-        action: "mark_complete",
-        strong: true,
-      },
-    ],
-
-    amenity: [
-      {
-        label: "Manager Verified",
-        action: "manager_verified",
-      },
-      {
-        label: "Reservation Review",
-        action: "manager_verified",
-      },
-      {
-        label: "Notify Owner",
-        action: "notify_owner",
-      },
-      {
-        label: "Mark Complete",
-        action: "mark_complete",
-        strong: true,
-      },
-    ],
-
-    violation: [
-      {
-        label: "Manager Verified",
-        action: "manager_verified",
-      },
-      {
-        label: "Violation Review",
-        action: "manager_verified",
-      },
-      {
-        label: "Notify Owner",
-        action: "notify_owner",
-      },
-      {
-        label: "Mark Complete",
-        action: "mark_complete",
-        strong: true,
-      },
-    ],
-
-    documents: [
-      {
-        label: "Manager Verified",
-        action: "manager_verified",
-      },
-      {
-        label: "Document Review",
-        action: "manager_verified",
-      },
-      {
-        label: "Notify Owner",
-        action: "notify_owner",
-      },
-      {
-        label: "Mark Complete",
-        action: "mark_complete",
-        strong: true,
-      },
-    ],
-
-    maintenance: [
-      {
-        label: "Manager Verified",
-        action: "manager_verified",
-      },
-      {
-        label: "Dispatch Vendor",
-        action: "dispatch_vendor",
-      },
-      {
-        label: "Vendor In Progress",
-        action: "vendor_in_progress",
-      },
-      {
-        label: "Notify Owner",
-        action: "notify_owner",
-      },
-      {
-        label: "Mark Complete",
-        action: "mark_complete",
-        strong: true,
-      },
-    ],
-  };
-
-  const buttons =
-    workflowButtons[workflowType] ||
-    workflowButtons.maintenance;
-
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
           </p>
 
-          <p className="mt-2 text-sm text-white/50">
-            Workflow actions are dynamically assigned based on request type.
-          </p>
+         <p className="mt-2 text-sm text-white/50">
+  {isFinancialRequest(item)
+    ? "Move this accounting request through financial review and owner coordination."
+    : "Move this request through the SPM/BOS operating chain."}
+</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {buttons.map((button) => (
-            <WorkflowButton
-              key={button.label}
-              label={button.label}
-              disabled={busy}
-              strong={button.strong}
-              onClick={() =>
-                onUpdate(item, button.action)
-              }
-            />
-          ))}
+          <WorkflowButton
+            label={
+  isFinancialRequest(item)
+    ? "Accounting Verified"
+    : "Manager Verified"
+}
+            disabled={busy}
+            onClick={() => onUpdate(item, "manager_verified")}
+          />
+
+        {isFinancialRequest(item) &&
+ !item.accounting_review_started_at && (
+  <WorkflowButton
+    label="Accounting Review"
+    disabled={busy}
+    onClick={() => onUpdate(item, "accounting_review")}
+  />
+)}
+{isFinancialRequest(item) &&
+ item.accounting_review_started_at &&
+ item.status !== "completed" && (
+  <Pill text="Accounting Review Active" tone="gold" />
+)}
+          {!isFinancialRequest(item) && (
+  <>
+    <WorkflowButton
+      label="Send to Board"
+      disabled={busy}
+      onClick={() => onUpdate(item, "send_to_board")}
+    />
+
+    <WorkflowButton
+      label="Request Clarification"
+      disabled={busy}
+      onClick={() => onUpdate(item, "request_clarification")}
+    />
+  </>
+)}
+
+          {!isFinancialRequest(item) && (
+  <>
+    <WorkflowButton
+      label="Dispatch Vendor"
+      disabled={busy}
+      onClick={() => onUpdate(item, "dispatch_vendor")}
+    />
+
+    <WorkflowButton
+      label="Vendor Accepted"
+      disabled={busy}
+      onClick={() => onUpdate(item, "vendor_accepted")}
+    />
+
+    <WorkflowButton
+      label="Vendor In Progress"
+      disabled={busy}
+      onClick={() => onUpdate(item, "vendor_in_progress")}
+    />
+  </>
+)}
+
+          {!item.owner_notified && (
+  <WorkflowButton
+    label="Notify Owner"
+    disabled={busy}
+    onClick={() => onUpdate(item, "notify_owner")}
+  />
+)}
+{item.owner_notified &&
+ item.status !== "completed" && (
+  <Pill text="Owner Updated" tone="green" />
+)}
+         {item.status !== "completed" && (
+  <WorkflowButton
+    label="Mark Complete"
+    disabled={busy}
+    strong
+    onClick={() => onUpdate(item, "mark_complete")}
+  />
+)}
+{item.status === "completed" && (
+  <Pill
+    text={
+      isFinancialRequest(item)
+        ? "Financial Resolution Complete"
+        : "Workflow Complete"
+    }
+    tone="green"
+  />
+)}
         </div>
       </div>
     </div>
   );
 }
 
-function WorkflowButton({
-  label,
-  onClick,
-  disabled,
-  strong,
-  active,
-}) {
+function WorkflowButton({ label, onClick, disabled, strong }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={`rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45 ${
-        active
-          ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
-          : strong
+        strong
           ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20"
           : "border-yellow-400/25 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
       }`}
     >
-      {active ? `✓ ${label}` : disabled ? "Updating..." : label}
+      {disabled ? "Updating..." : label}
     </button>
   );
 }
 
 function Timeline({ item }) {
-  const workflowType = getWorkflowType(item);
-
-  const workflowStepsByType = {
-    accounting: [
-      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
-      {
-        key: "verified",
-        label: "Accounting Verified",
-        complete:
-          item.status === "manager_review" ||
-          item.accounting_review_started_at ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "review",
-        label: "Accounting Review",
-        complete:
-          Boolean(item.accounting_review_started_at) ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.accounting_review_started_at,
-      },
-      {
-        key: "owner",
-        label: "Owner Update",
-        complete: item.owner_notified || item.status === "completed",
-        date: item.owner_notified_at,
-      },
-      {
-        key: "complete",
-        label: "Financial Resolution",
-        complete: item.status === "completed",
-        date: item.completed_at,
-      },
-    ],
-
-    architectural: [
-      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
-      {
-        key: "verified",
-        label: "Manager Verified",
-        complete:
-          item.status === "manager_review" ||
-          item.status === "board_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "board",
-        label: "Board Review",
-        complete:
-          item.status === "board_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.board_sent_at,
-      },
-      {
-        key: "owner",
-        label: "Owner Update",
-        complete: item.owner_notified || item.status === "completed",
-        date: item.owner_notified_at,
-      },
-      {
-        key: "complete",
-        label: "Completed",
-        complete: item.status === "completed",
-        date: item.completed_at,
-      },
-    ],
-
-    amenity: [
-      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
-      {
-        key: "verified",
-        label: "Manager Verified",
-        complete:
-          item.status === "manager_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "review",
-        label: "Reservation Review",
-        complete:
-          item.status === "manager_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "owner",
-        label: "Owner Update",
-        complete: item.owner_notified || item.status === "completed",
-        date: item.owner_notified_at,
-      },
-      {
-        key: "complete",
-        label: "Completed",
-        complete: item.status === "completed",
-        date: item.completed_at,
-      },
-    ],
-
-    violation: [
-      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
-      {
-        key: "verified",
-        label: "Manager Verified",
-        complete:
-          item.status === "manager_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "review",
-        label: "Violation Review",
-        complete:
-          item.status === "manager_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "owner",
-        label: "Owner Update",
-        complete: item.owner_notified || item.status === "completed",
-        date: item.owner_notified_at,
-      },
-      {
-        key: "complete",
-        label: "Completed",
-        complete: item.status === "completed",
-        date: item.completed_at,
-      },
-    ],
-
-    documents: [
-      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
-      {
-        key: "verified",
-        label: "Manager Verified",
-        complete:
-          item.status === "manager_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "review",
-        label: "Document Review",
-        complete:
-          item.status === "manager_review" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "owner",
-        label: "Owner Update",
-        complete: item.owner_notified || item.status === "completed",
-        date: item.owner_notified_at,
-      },
-      {
-        key: "complete",
-        label: "Completed",
-        complete: item.status === "completed",
-        date: item.completed_at,
-      },
-    ],
-
-    maintenance: [
-      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
-      {
-        key: "verified",
-        label: "Manager Verified",
-        complete:
-          item.status === "manager_review" ||
-          item.status === "dispatched" ||
-          item.dispatched ||
-          item.vendor_status === "in_progress" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.manager_updated_at,
-      },
-      {
-        key: "dispatch",
-        label: "Vendor Dispatch",
-        complete:
-          item.status === "dispatched" ||
-          item.dispatched ||
-          item.vendor_status === "accepted" ||
-          item.vendor_status === "in_progress" ||
-          item.status === "completed",
-        date: item.dispatched_at,
-      },
-      {
-        key: "progress",
-        label: "Vendor In Progress",
-        complete:
-          item.vendor_status === "in_progress" ||
-          item.owner_notified ||
-          item.status === "completed",
-        date: item.vendor_updated_at,
-      },
-      {
-        key: "complete",
-        label: "Completed",
-        complete: item.status === "completed" || item.vendor_status === "completed",
-        date: item.completed_at || item.vendor_updated_at,
-      },
-    ],
-  };
-
-  const steps = workflowStepsByType[workflowType] || workflowStepsByType.maintenance;
+  
+ const isAccountingRequest = isFinancialRequest(item);
+  
+  const steps = [
+    {
+      key: "intake",
+      label: "Ava Intake",
+      complete: true,
+      date: item.created_at,
+    },
+    {
+      key: "manager",
+      label: "Manager Verified",
+      complete:
+        item.status === "manager_review" ||
+        item.status === "board_review" ||
+        item.status === "dispatched" ||
+        item.status === "completed" ||
+        item.dispatched,
+      date: item.manager_updated_at,
+    },
+    {
+      key: "board",
+      label: isAccountingRequest ? "Accounting Review" : "Board Review",
+      complete: isAccountingRequest
+  ? Boolean(item.accounting_review_started_at) ||
+    item.status === "board_review" ||
+    item.status === "completed"
+  : item.status === "board_review" ||
+    item.status === "board_approved" ||
+    item.status === "dispatched" ||
+    item.status === "completed" ||
+    item.dispatched,
+      date: isAccountingRequest
+  ? item.accounting_review_started_at ||
+    item.manager_updated_at ||
+    item.board_sent_at ||
+    item.board_decision_at
+  : item.board_sent_at || item.board_decision_at,
+    },
+    {
+      key: "dispatch",
+      label: isAccountingRequest
+  ? "Owner Update"
+  : "Vendor Dispatch",
+      complete: isAccountingRequest
+  ? item.owner_notified || item.status === "completed"
+  : item.status === "dispatched" ||
+    item.status === "completed" ||
+    Boolean(item.dispatched),
+      date: isAccountingRequest
+  ? item.owner_notified_at
+  : item.dispatched_at,
+    },
+    {
+      key: "complete",
+      label: isAccountingRequest
+  ? "Financial Resolution"
+  : "Completed",
+      complete:
+        item.status === "completed" || item.vendor_status === "completed",
+      date: item.completed_at || item.vendor_updated_at,
+    },
+  ];
 
   return (
     <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
@@ -946,7 +731,13 @@ function Timeline({ item }) {
               </div>
 
               <div>
-                <p className={step.complete ? "text-white font-medium" : "text-white/40"}>
+                <p
+                  className={
+                    step.complete
+                      ? "text-white font-medium"
+                      : "text-white/40"
+                  }
+                >
                   {step.label}
                 </p>
 
@@ -968,10 +759,12 @@ function Timeline({ item }) {
       </div>
 
       {item.owner_notified && (
-        <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-          Owner update has been marked as sent.
-        </div>
-      )}
+  <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+    {isAccountingRequest
+      ? "Owner financial update has been marked as sent."
+      : "Owner notification has been marked as sent."}
+  </div>
+)}
     </div>
   );
 }
@@ -1465,6 +1258,18 @@ function getWorkflowMessage(workflowAction) {
 
   return messages[workflowAction] || "Workflow updated.";
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
