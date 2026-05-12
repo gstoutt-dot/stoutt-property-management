@@ -694,8 +694,8 @@ function WorkflowButton({
   return (
     <button
       onClick={onClick}
-      disabled={disabled || active}
-      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed ${
+      disabled={disabled}
+      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45 ${
         active
           ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
           : strong
@@ -703,11 +703,7 @@ function WorkflowButton({
           : "border-yellow-400/25 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
       }`}
     >
-      {active
-        ? `✓ ${label}`
-        : disabled
-        ? "Updating..."
-        : label}
+      {active ? `✓ ${label}` : disabled ? "Updating..." : label}
     </button>
   );
 }
