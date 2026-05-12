@@ -1150,6 +1150,32 @@ function isFinancialRequest(action) {
     .startsWith("financial_");
 }
 
+function getWorkflowType(item) {
+  const type = String(item?.request_type || "").toLowerCase();
+
+  if (type.startsWith("financial_")) {
+    return "accounting";
+  }
+
+  if (type.includes("architectural")) {
+    return "architectural";
+  }
+
+  if (type.includes("amenity")) {
+    return "amenity";
+  }
+
+  if (type.includes("violation")) {
+    return "violation";
+  }
+
+  if (type.includes("documents")) {
+    return "documents";
+  }
+
+  return "maintenance";
+}
+
 function isFinancialUrgent(priority) {
   const normalized = String(priority || "").toLowerCase();
 
