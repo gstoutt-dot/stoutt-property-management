@@ -174,22 +174,23 @@ const [loadError, setLoadError] = useState("");
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href="/homeowner/payment-arrangement"
+                                <div className="mt-6 flex flex-wrap gap-3">
+                  <a
+                    href={balance?.payment_link || "/homeowner/payment-arrangement"}
+                    target={balance?.payment_link ? "_blank" : undefined}
+                    rel={balance?.payment_link ? "noopener noreferrer" : undefined}
                     className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
                   >
                     Make Payment
-                  </Link>
+                  </a>
 
-                  <Link
-                    href="/homeowner/account-review"
+                  <a
+                    href="#ledger-summary"
                     className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
                   >
                     View Ledger Summary
-                  </Link>
+                  </a>
                 </div>
-              </div>
 
               <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
                 <p className="text-sm text-slate-400">Account Health</p>
@@ -212,7 +213,7 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              <div id="ledger-summary" className="mt-6 grid gap-6 md:grid-cols-3">
               {[
                 ["Monthly Assessment", monthlyAssessment],
                 ["Last Payment Date", lastPaymentDate],
