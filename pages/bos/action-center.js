@@ -53,8 +53,9 @@ export default function BOSActionCenter() {
       accounting_review: {
   status: "manager_review",
   manager_updated_at: now,
+  accounting_review_started_at: now,
   internal_note:
-  "Accounting review initiated. Owner financial coordination and balance review are now active.",
+    "Accounting review initiated. Owner financial coordination and balance review are now active.",
 },
       send_to_board: {
         status: "board_review",
@@ -558,17 +559,21 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
  item.status !== "completed" && (
   <Pill text="Accounting Review Active" tone="gold" />
 )}
-          <WorkflowButton
-            label="Send to Board"
-            disabled={busy}
-            onClick={() => onUpdate(item, "send_to_board")}
-          />
+          {!isFinancialRequest(item) && (
+  <>
+    <WorkflowButton
+      label="Send to Board"
+      disabled={busy}
+      onClick={() => onUpdate(item, "send_to_board")}
+    />
 
-          <WorkflowButton
-            label="Request Clarification"
-            disabled={busy}
-            onClick={() => onUpdate(item, "request_clarification")}
-          />
+    <WorkflowButton
+      label="Request Clarification"
+      disabled={busy}
+      onClick={() => onUpdate(item, "request_clarification")}
+    />
+  </>
+)}
 
           {!isFinancialRequest(item) && (
   <>
