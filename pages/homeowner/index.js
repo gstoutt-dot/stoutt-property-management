@@ -207,7 +207,37 @@ const [loadError, setLoadError] = useState("");
                   </button>
                 </div>
               </div>
+              <div
+                id="ledger-summary"
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 lg:col-span-3"
+              >
+                <p className="text-sm font-medium text-yellow-400">
+                  Ledger Summary
+                </p>
 
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  <div className="rounded-2xl bg-slate-900/70 p-5">
+                    <p className="text-sm text-slate-400">Current Balance</p>
+                    <p className="mt-2 text-2xl font-bold text-white">
+                      {currentBalance}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-900/70 p-5">
+                    <p className="text-sm text-slate-400">Monthly Assessment</p>
+                    <p className="mt-2 text-2xl font-bold text-white">
+                      {monthlyAssessment}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-900/70 p-5">
+                    <p className="text-sm text-slate-400">Last Payment</p>
+                    <p className="mt-2 text-2xl font-bold text-white">
+                      {lastPaymentDate}
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
                 <p className="text-sm text-slate-400">Account Health</p>
 
@@ -229,7 +259,7 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-              <div id="ledger-summary" className="mt-6 grid gap-6 md:grid-cols-3">
+              <div className="mt-6 grid gap-6 md:grid-cols-3">
               {[
                 ["Monthly Assessment", monthlyAssessment],
                 ["Last Payment Date", lastPaymentDate],
