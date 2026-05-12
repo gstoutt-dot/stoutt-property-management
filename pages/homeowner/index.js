@@ -24,8 +24,9 @@ function prettyDate(value) {
 
 export default function HomeownerDashboard() {
   const [balance, setBalance] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+const [notifications, setNotifications] = useState([]);
+const [loading, setLoading] = useState(true);
+const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     async function loadBalance() {
@@ -48,7 +49,29 @@ export default function HomeownerDashboard() {
       }
     }
 
+        async function loadNotifications() {
+      try {
+        const response = await fetch(
+          `/api/notifications/list?associationId=${ASSOCIATION_ID}&audience=owner&status=pending&limit=5`
+        );
+
+        const data = await response.json();
+
+        const items =
+          data.notifications ||
+          data.items ||
+          data.data ||
+          [];
+
+        setNotifications(Array.isArray(items) ? items : []);
+      } catch (error) {
+        console.error("Unable to load owner notifications:", error);
+        setNotifications([]);
+      }
+    }
+
     loadBalance();
+    loadNotifications();
   }, []);
 
   const ownerName = balance?.owner_name || "Homeowner";
@@ -226,11 +249,19 @@ export default function HomeownerDashboard() {
             </p>
 
             <div className="mt-5 space-y-3">
-              {[
-                "Your account information is available.",
-                "Statements and documents can be accessed below.",
-                "Submit an account review request if something looks incorrect.",
-              ].map((notice) => (
+                            {(notifications.length
+                ? notifications.map((item) =>
+                    item.title ||
+                    item.message ||
+                    item.body ||
+                    "New homeowner notification"
+                  )
+                : [
+                    "Your account information is available.",
+                    "Statements and documents can be accessed below.",
+                    "Submit an account review request if something looks incorrect.",
+                  ]
+              ).map((notice) => (
                 <div
                   key={notice}
                   className="rounded-2xl bg-slate-900/70 p-4 text-sm text-slate-300"
