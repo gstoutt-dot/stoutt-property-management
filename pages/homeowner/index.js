@@ -184,11 +184,13 @@ const [loadError, setLoadError] = useState("");
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href={balance?.payment_link || "/homeowner/ledger"}
+                                    <Link
+                    href={balance?.payment_link || "https://app.qbo.intuit.com/app/customers"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
                   >
-                    Make Payment / View Ledger
+                    Make Payment
                   </Link>
 
                   <Link
