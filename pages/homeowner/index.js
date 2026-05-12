@@ -179,7 +179,7 @@ const [loadError, setLoadError] = useState("");
                     href="/homeowner/payment-arrangement"
                     className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
                   >
-                    Request Payment Help
+                    Make Payment
                   </Link>
 
                   <Link
