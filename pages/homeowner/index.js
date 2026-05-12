@@ -78,9 +78,18 @@ const [loadError, setLoadError] = useState("");
   const unitNumber = balance?.unit_number || UNIT_NUMBER;
   const currentBalance = money(balance?.current_balance);
   const monthlyAssessment = money(balance?.monthly_assessment);
-  const paymentStatus = balance?.payment_status || "Not available";
-  const accountHealth = balance?.account_health || "Not available";
-  const delinquencyLevel = balance?.delinquency_level || "current";
+  const paymentStatus =
+  String(balance?.payment_status || "Not available")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const accountHealth =
+  String(balance?.account_health || "Not available")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const delinquencyLevel =
+  String(balance?.delinquency_level || "current")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
   const lastPaymentDate = prettyDate(balance?.last_payment_date);
   const syncTimestamp = balance?.synced_at
     ? `Synced from QuickBooks on ${prettyDate(balance.synced_at)}`
