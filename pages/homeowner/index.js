@@ -186,7 +186,7 @@ const [loadError, setLoadError] = useState("");
                     href="/homeowner/account-review"
                     className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
                   >
-                    Request Account Review
+                    View Ledger Summary
                   </Link>
                 </div>
               </div>
