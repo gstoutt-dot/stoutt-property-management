@@ -183,21 +183,14 @@ const [loadError, setLoadError] = useState("");
                   </div>
                 </div>
 
-                <Link
-  href={balance?.payment_link || "https://app.qbo.intuit.com/app/customers"}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
->
-  Make Payment
-</Link>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href={balance?.payment_link || "/homeowner/ledger"}
+                    className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+                  >
+                    Make Payment / View Ledger
+                  </Link>
 
-<a
-  href="#ledger-summary"
-  className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
->
-  View Ledger Summary
-</a>
                   <Link
                     href="https://app.qbo.intuit.com/app/customers"
                     target="_blank"
@@ -231,7 +224,7 @@ const [loadError, setLoadError] = useState("");
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-3">
-                    {[
+              {[
                 ["Monthly Assessment", monthlyAssessment],
                 ["Last Payment Date", lastPaymentDate],
                 ["QuickBooks Status", balance?.accounting_identity?.sync_status || "Connected"],
@@ -429,4 +422,7 @@ const [loadError, setLoadError] = useState("");
     </main>
   );
 }
+
+
+
 
