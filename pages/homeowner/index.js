@@ -90,7 +90,13 @@ const [loadError, setLoadError] = useState("");
   String(balance?.delinquency_level || "current")
     .replaceAll("_", " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
-  const lastPaymentDate = prettyDate(balance?.last_payment_date);
+    const lastPaymentDate = prettyDate(balance?.last_payment_date);
+  const accountNumber = balance?.account_number || "Not available";
+  const quickBooksStatus =
+    String(balance?.accounting_identity?.sync_status || "Connected")
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
   const syncTimestamp = balance?.synced_at
     ? `Synced from QuickBooks on ${prettyDate(balance.synced_at)}`
     : "QuickBooks sync timestamp not available";
@@ -237,7 +243,7 @@ const [loadError, setLoadError] = useState("");
                 Ledger Summary
               </p>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                <div className="mt-5 grid gap-4 md:grid-cols-5">
                 <div className="rounded-2xl bg-slate-900/70 p-5">
                   <p className="text-sm text-slate-400">Current Balance</p>
                   <p className="mt-2 text-2xl font-bold text-white">
@@ -256,6 +262,20 @@ const [loadError, setLoadError] = useState("");
                   <p className="text-sm text-slate-400">Last Payment</p>
                   <p className="mt-2 text-2xl font-bold text-white">
                     {lastPaymentDate}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-900/70 p-5">
+                  <p className="text-sm text-slate-400">Account Number</p>
+                  <p className="mt-2 text-2xl font-bold text-white">
+                    {accountNumber}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-900/70 p-5">
+                  <p className="text-sm text-slate-400">QuickBooks Status</p>
+                  <p className="mt-2 text-2xl font-bold text-white">
+                    {quickBooksStatus}
                   </p>
                 </div>
               </div>
