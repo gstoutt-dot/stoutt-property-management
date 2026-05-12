@@ -230,7 +230,7 @@ const [loadError, setLoadError] = useState("");
                 </div>
               ))}
             </div>
-          </>
+          
         )}
       </section>
 
