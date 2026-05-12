@@ -649,70 +649,225 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 }
 
 function Timeline({ item }) {
-  
- const isAccountingRequest = isFinancialRequest(item);
-  
-  const steps = [
-    {
-      key: "intake",
-      label: "Ava Intake",
-      complete: true,
-      date: item.created_at,
-    },
-    {
-      key: "manager",
-      label: "Manager Verified",
-      complete:
-        item.status === "manager_review" ||
-        item.status === "board_review" ||
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        item.dispatched,
-      date: item.manager_updated_at,
-    },
-    {
-      key: "board",
-      label: isAccountingRequest ? "Accounting Review" : "Board Review",
-      complete: isAccountingRequest
-  ? Boolean(item.accounting_review_started_at) ||
-    item.status === "board_review" ||
-    item.status === "completed"
-  : item.status === "board_review" ||
-    item.status === "board_approved" ||
-    item.status === "dispatched" ||
-    item.status === "completed" ||
-    item.dispatched,
-      date: isAccountingRequest
-  ? item.accounting_review_started_at ||
-    item.manager_updated_at ||
-    item.board_sent_at ||
-    item.board_decision_at
-  : item.board_sent_at || item.board_decision_at,
-    },
-    {
-      key: "dispatch",
-      label: isAccountingRequest
-  ? "Owner Update"
-  : "Vendor Dispatch",
-      complete: isAccountingRequest
-  ? item.owner_notified || item.status === "completed"
-  : item.status === "dispatched" ||
-    item.status === "completed" ||
-    Boolean(item.dispatched),
-      date: isAccountingRequest
-  ? item.owner_notified_at
-  : item.dispatched_at,
-    },
-    {
-      key: "complete",
-      label: isAccountingRequest
-  ? "Financial Resolution"
-  : "Completed",
-      complete:
-        item.status === "completed" || item.vendor_status === "completed",
-      date: item.completed_at || item.vendor_updated_at,
-    },
-  ];
+  const workflowType = getWorkflowType(item);
+
+  const workflowStepsByType = {
+    accounting: [
+      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
+      {
+        key: "verified",
+        label: "Accounting Verified",
+        complete:
+          item.status === "manager_review" ||
+          item.accounting_review_started_at ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "review",
+        label: "Accounting Review",
+        complete:
+          Boolean(item.accounting_review_started_at) ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.accounting_review_started_at,
+      },
+      {
+        key: "owner",
+        label: "Owner Update",
+        complete: item.owner_notified || item.status === "completed",
+        date: item.owner_notified_at,
+      },
+      {
+        key: "complete",
+        label: "Financial Resolution",
+        complete: item.status === "completed",
+        date: item.completed_at,
+      },
+    ],
+
+    architectural: [
+      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
+      {
+        key: "verified",
+        label: "Manager Verified",
+        complete:
+          item.status === "manager_review" ||
+          item.status === "board_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "board",
+        label: "Board Review",
+        complete:
+          item.status === "board_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.board_sent_at,
+      },
+      {
+        key: "owner",
+        label: "Owner Update",
+        complete: item.owner_notified || item.status === "completed",
+        date: item.owner_notified_at,
+      },
+      {
+        key: "complete",
+        label: "Completed",
+        complete: item.status === "completed",
+        date: item.completed_at,
+      },
+    ],
+
+    amenity: [
+      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
+      {
+        key: "verified",
+        label: "Manager Verified",
+        complete:
+          item.status === "manager_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "review",
+        label: "Reservation Review",
+        complete:
+          item.status === "manager_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "owner",
+        label: "Owner Update",
+        complete: item.owner_notified || item.status === "completed",
+        date: item.owner_notified_at,
+      },
+      {
+        key: "complete",
+        label: "Completed",
+        complete: item.status === "completed",
+        date: item.completed_at,
+      },
+    ],
+
+    violation: [
+      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
+      {
+        key: "verified",
+        label: "Manager Verified",
+        complete:
+          item.status === "manager_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "review",
+        label: "Violation Review",
+        complete:
+          item.status === "manager_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "owner",
+        label: "Owner Update",
+        complete: item.owner_notified || item.status === "completed",
+        date: item.owner_notified_at,
+      },
+      {
+        key: "complete",
+        label: "Completed",
+        complete: item.status === "completed",
+        date: item.completed_at,
+      },
+    ],
+
+    documents: [
+      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
+      {
+        key: "verified",
+        label: "Manager Verified",
+        complete:
+          item.status === "manager_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "review",
+        label: "Document Review",
+        complete:
+          item.status === "manager_review" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "owner",
+        label: "Owner Update",
+        complete: item.owner_notified || item.status === "completed",
+        date: item.owner_notified_at,
+      },
+      {
+        key: "complete",
+        label: "Completed",
+        complete: item.status === "completed",
+        date: item.completed_at,
+      },
+    ],
+
+    maintenance: [
+      { key: "intake", label: "Owner Intake", complete: true, date: item.created_at },
+      {
+        key: "verified",
+        label: "Manager Verified",
+        complete:
+          item.status === "manager_review" ||
+          item.status === "dispatched" ||
+          item.dispatched ||
+          item.vendor_status === "in_progress" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.manager_updated_at,
+      },
+      {
+        key: "dispatch",
+        label: "Vendor Dispatch",
+        complete:
+          item.status === "dispatched" ||
+          item.dispatched ||
+          item.vendor_status === "accepted" ||
+          item.vendor_status === "in_progress" ||
+          item.status === "completed",
+        date: item.dispatched_at,
+      },
+      {
+        key: "progress",
+        label: "Vendor In Progress",
+        complete:
+          item.vendor_status === "in_progress" ||
+          item.owner_notified ||
+          item.status === "completed",
+        date: item.vendor_updated_at,
+      },
+      {
+        key: "complete",
+        label: "Completed",
+        complete: item.status === "completed" || item.vendor_status === "completed",
+        date: item.completed_at || item.vendor_updated_at,
+      },
+    ],
+  };
+
+  const steps = workflowStepsByType[workflowType] || workflowStepsByType.maintenance;
 
   return (
     <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
@@ -731,13 +886,7 @@ function Timeline({ item }) {
               </div>
 
               <div>
-                <p
-                  className={
-                    step.complete
-                      ? "text-white font-medium"
-                      : "text-white/40"
-                  }
-                >
+                <p className={step.complete ? "text-white font-medium" : "text-white/40"}>
                   {step.label}
                 </p>
 
@@ -759,12 +908,10 @@ function Timeline({ item }) {
       </div>
 
       {item.owner_notified && (
-  <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-    {isAccountingRequest
-      ? "Owner financial update has been marked as sent."
-      : "Owner notification has been marked as sent."}
-  </div>
-)}
+        <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+          Owner update has been marked as sent.
+        </div>
+      )}
     </div>
   );
 }
