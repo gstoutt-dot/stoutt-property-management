@@ -281,23 +281,7 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
-              {[
-                ["Monthly Assessment", monthlyAssessment],
-                ["Last Payment Date", lastPaymentDate],
-                ["QuickBooks Status", balance?.accounting_identity?.sync_status || "Connected"],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-                >
-                  <p className="text-sm text-slate-400">{label}</p>
-                  <div className="mt-3 text-2xl font-bold text-white">
-                    {value}
-                  </div>
-                </div>
-              ))}
-            </div>
+            
           </>
         )}
       </section>
