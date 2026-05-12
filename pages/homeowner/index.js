@@ -80,6 +80,7 @@ const [loadError, setLoadError] = useState("");
   const monthlyAssessment = money(balance?.monthly_assessment);
   const paymentStatus = balance?.payment_status || "Not available";
   const accountHealth = balance?.account_health || "Not available";
+  const delinquencyLevel = balance?.delinquency_level || "current";
   const lastPaymentDate = prettyDate(balance?.last_payment_date);
   const syncTimestamp = balance?.synced_at
     ? `Synced from QuickBooks on ${prettyDate(balance.synced_at)}`
@@ -187,10 +188,15 @@ const [loadError, setLoadError] = useState("");
                   {accountHealth}
                 </div>
 
-                <p className="mt-4 text-sm leading-6 text-slate-300">
-                  Your account status is based on the latest financial
-                  information available from the association accounting system.
-                </p>
+                                <div className="mt-5 rounded-2xl bg-slate-900/70 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">
+                    Delinquency Level
+                  </p>
+
+                  <p className="mt-1 text-lg font-semibold text-white capitalize">
+                    {delinquencyLevel}
+                  </p>
+                </div>
 
                 <p className="mt-5 text-xs text-slate-500">{syncTimestamp}</p>
               </div>
