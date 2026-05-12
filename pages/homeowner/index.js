@@ -231,7 +231,7 @@ const [loadError, setLoadError] = useState("");
               ))}
             </div>
           
-        )}
+        }
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-12 lg:grid-cols-3">
