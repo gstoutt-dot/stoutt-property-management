@@ -281,7 +281,23 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-            
+            <div className="mt-6 grid gap-6 md:grid-cols-3">
+              {[
+                ["Monthly Assessment", monthlyAssessment],
+                ["Last Payment Date", lastPaymentDate],
+                ["QuickBooks Status", balance?.accounting_identity?.sync_status || "Connected"],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+                >
+                  <p className="text-sm text-slate-400">{label}</p>
+                  <div className="mt-3 text-2xl font-bold text-white">
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
           </>
         )}
       </section>
@@ -322,11 +338,10 @@ const [loadError, setLoadError] = useState("");
                 "Your most recent account statement is available in documents.",
               ],
             ].map(([title, status, description]) => (
-              <Link
-  key={title}
-  href={title === "Account Review Request" ? "/homeowner/account-review" : "/homeowner/work-orders"}
-  className="block rounded-2xl border border-white/10 bg-slate-900/70 p-5 transition hover:border-yellow-400/40 hover:bg-white/[0.07]"
->
+              <div
+                key={title}
+                className="rounded-2xl border border-white/10 bg-slate-900/70 p-5"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="font-semibold text-white">{title}</h3>
                   <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300">
@@ -465,6 +480,11 @@ const [loadError, setLoadError] = useState("");
     </main>
   );
 }
+
+
+
+
+
 
 
 
