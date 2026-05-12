@@ -76,12 +76,29 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: identityLink, error: identityError } = await supabaseAdmin
+        let identityQuery = supabaseAdmin
       .from("accounting_identity_links")
       .select("*")
-      .eq("association_id", association_id)
-      .eq("owner_user_id", owner_user_id)
-      .maybeSingle();
+      .eq("association_id", association_id);
+
+    if (owner_user_id) {
+      identityQuery = identityQuery.eq("owner_user_id", owner_user_id);
+    }
+
+    let { data: identityLink, error: identityError } =
+      await identityQuery.maybeSingle();
+
+    if (!identityLink && unit_number) {
+      const fallbackResult = await supabaseAdmin
+        .from("accounting_identity_links")
+        .select("*")
+        .eq("association_id", association_id)
+        .eq("unit_number", unit_number)
+        .maybeSingle();
+
+      identityLink = fallbackResult.data;
+      identityError = fallbackResult.error;
+    }
 
     if (identityError || !identityLink) {
       return res.status(404).json({
