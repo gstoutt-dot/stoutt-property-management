@@ -192,7 +192,9 @@ const [loadError, setLoadError] = useState("");
                   </Link>
 
                   <Link
-                    href="/homeowner/account-review"
+                    href="https://app.qbo.intuit.com/app/customers"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
                   >
                     Request Account Review
@@ -373,10 +375,12 @@ const [loadError, setLoadError] = useState("");
               </Link>
 
               <Link
-                href="/homeowner/payment-arrangement"
+                href={balance?.payment_link || "https://app.qbo.intuit.com/app/customers"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block rounded-2xl bg-slate-900/70 p-4 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
               >
-                Request payment arrangement
+                Make Payment
               </Link>
 
               <Link
