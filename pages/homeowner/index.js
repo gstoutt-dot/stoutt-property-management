@@ -216,15 +216,27 @@ const [loadError, setLoadError] = useState("");
               href="/homeowner/work-orders"
               className="text-sm font-semibold text-yellow-300"
             >
-              Submit Request →
+              New Request →
             </Link>
           </div>
 
           <div className="mt-6 space-y-4">
-            {[
-              ["Maintenance Request", "Under Review", "Kitchen sink leak reported"],
-              ["Account Review", "Received", "Requested balance confirmation"],
-              ["Document Request", "Completed", "Statement copy available"],
+                        {[
+              [
+                "Open Maintenance Request",
+                "Under Review",
+                "Kitchen sink leak reported. Management is reviewing the request.",
+              ],
+              [
+                "Account Review Request",
+                "Received",
+                "Balance confirmation request received by management.",
+              ],
+              [
+                "Statement Request",
+                "Completed",
+                "Your most recent account statement is available in documents.",
+              ],
             ].map(([title, status, description]) => (
               <div
                 key={title}
