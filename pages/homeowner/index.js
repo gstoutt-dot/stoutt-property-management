@@ -319,13 +319,23 @@ const [loadError, setLoadError] = useState("");
             </Link>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+                    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-sm font-medium text-yellow-400">Need Help?</p>
 
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Ask Ava for help with payments, documents, notices, requests, and
-              account questions.
-            </p>
+            <div className="mt-4 space-y-3">
+              {[
+                "Ask a question about your balance",
+                "Request help with a payment or statement",
+                "Get help with documents, notices, or requests",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl bg-slate-900/70 p-4 text-sm text-slate-300"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
 
             <Link
               href="/homeowner/ava"
