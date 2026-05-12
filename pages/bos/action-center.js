@@ -520,112 +520,164 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
 
+  const workflowType = getWorkflowType(item);
+
+  const workflowButtons = {
+    accounting: [
+      {
+        label: "Accounting Verified",
+        action: "manager_verified",
+      },
+      {
+        label: "Accounting Review",
+        action: "accounting_review",
+      },
+      {
+        label: "Notify Owner",
+        action: "notify_owner",
+      },
+      {
+        label: "Mark Complete",
+        action: "mark_complete",
+        strong: true,
+      },
+    ],
+
+    architectural: [
+      {
+        label: "Manager Verified",
+        action: "manager_verified",
+      },
+      {
+        label: "Board Review",
+        action: "send_to_board",
+      },
+      {
+        label: "Notify Owner",
+        action: "notify_owner",
+      },
+      {
+        label: "Mark Complete",
+        action: "mark_complete",
+        strong: true,
+      },
+    ],
+
+    amenity: [
+      {
+        label: "Manager Verified",
+        action: "manager_verified",
+      },
+      {
+        label: "Reservation Review",
+        action: "manager_verified",
+      },
+      {
+        label: "Notify Owner",
+        action: "notify_owner",
+      },
+      {
+        label: "Mark Complete",
+        action: "mark_complete",
+        strong: true,
+      },
+    ],
+
+    violation: [
+      {
+        label: "Manager Verified",
+        action: "manager_verified",
+      },
+      {
+        label: "Violation Review",
+        action: "manager_verified",
+      },
+      {
+        label: "Notify Owner",
+        action: "notify_owner",
+      },
+      {
+        label: "Mark Complete",
+        action: "mark_complete",
+        strong: true,
+      },
+    ],
+
+    documents: [
+      {
+        label: "Manager Verified",
+        action: "manager_verified",
+      },
+      {
+        label: "Document Review",
+        action: "manager_verified",
+      },
+      {
+        label: "Notify Owner",
+        action: "notify_owner",
+      },
+      {
+        label: "Mark Complete",
+        action: "mark_complete",
+        strong: true,
+      },
+    ],
+
+    maintenance: [
+      {
+        label: "Manager Verified",
+        action: "manager_verified",
+      },
+      {
+        label: "Dispatch Vendor",
+        action: "dispatch_vendor",
+      },
+      {
+        label: "Vendor In Progress",
+        action: "vendor_in_progress",
+      },
+      {
+        label: "Notify Owner",
+        action: "notify_owner",
+      },
+      {
+        label: "Mark Complete",
+        action: "mark_complete",
+        strong: true,
+      },
+    ],
+  };
+
+  const buttons =
+    workflowButtons[workflowType] ||
+    workflowButtons.maintenance;
+
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
           </p>
 
-         <p className="mt-2 text-sm text-white/50">
-  {isFinancialRequest(item)
-    ? "Move this accounting request through financial review and owner coordination."
-    : "Move this request through the SPM/BOS operating chain."}
-</p>
+          <p className="mt-2 text-sm text-white/50">
+            Workflow actions are dynamically assigned based on request type.
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <WorkflowButton
-            label={
-  isFinancialRequest(item)
-    ? "Accounting Verified"
-    : "Manager Verified"
-}
-            disabled={busy}
-            onClick={() => onUpdate(item, "manager_verified")}
-          />
-
-        {isFinancialRequest(item) &&
- !item.accounting_review_started_at && (
-  <WorkflowButton
-    label="Accounting Review"
-    disabled={busy}
-    onClick={() => onUpdate(item, "accounting_review")}
-  />
-)}
-{isFinancialRequest(item) &&
- item.accounting_review_started_at &&
- item.status !== "completed" && (
-  <Pill text="Accounting Review Active" tone="gold" />
-)}
-          {!isFinancialRequest(item) && (
-  <>
-    <WorkflowButton
-      label="Send to Board"
-      disabled={busy}
-      onClick={() => onUpdate(item, "send_to_board")}
-    />
-
-    <WorkflowButton
-      label="Request Clarification"
-      disabled={busy}
-      onClick={() => onUpdate(item, "request_clarification")}
-    />
-  </>
-)}
-
-          {!isFinancialRequest(item) && (
-  <>
-    <WorkflowButton
-      label="Dispatch Vendor"
-      disabled={busy}
-      onClick={() => onUpdate(item, "dispatch_vendor")}
-    />
-
-    <WorkflowButton
-      label="Vendor Accepted"
-      disabled={busy}
-      onClick={() => onUpdate(item, "vendor_accepted")}
-    />
-
-    <WorkflowButton
-      label="Vendor In Progress"
-      disabled={busy}
-      onClick={() => onUpdate(item, "vendor_in_progress")}
-    />
-  </>
-)}
-
-          {!item.owner_notified && (
-  <WorkflowButton
-    label="Notify Owner"
-    disabled={busy}
-    onClick={() => onUpdate(item, "notify_owner")}
-  />
-)}
-{item.owner_notified &&
- item.status !== "completed" && (
-  <Pill text="Owner Updated" tone="green" />
-)}
-         {item.status !== "completed" && (
-  <WorkflowButton
-    label="Mark Complete"
-    disabled={busy}
-    strong
-    onClick={() => onUpdate(item, "mark_complete")}
-  />
-)}
-{item.status === "completed" && (
-  <Pill
-    text={
-      isFinancialRequest(item)
-        ? "Financial Resolution Complete"
-        : "Workflow Complete"
-    }
-    tone="green"
-  />
-)}
+          {buttons.map((button) => (
+            <WorkflowButton
+              key={button.label}
+              label={button.label}
+              disabled={busy}
+              strong={button.strong}
+              onClick={() =>
+                onUpdate(item, button.action)
+              }
+            />
+          ))}
         </div>
       </div>
     </div>
