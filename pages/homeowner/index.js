@@ -141,12 +141,27 @@ const [loadError, setLoadError] = useState("");
                   {currentBalance}
                 </div>
 
-                <p className="mt-4 text-slate-300">
-                  Payment status:{" "}
-                  <span className="font-semibold text-emerald-300">
-                    {paymentStatus}
-                  </span>
-                </p>
+                                <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="rounded-2xl bg-emerald-500/10 px-4 py-3">
+                    <p className="text-xs uppercase tracking-wide text-emerald-300">
+                      Payment Status
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-emerald-200">
+                      {paymentStatus}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-white/5 px-4 py-3">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                      Monthly Assessment
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-white">
+                      {monthlyAssessment}
+                    </p>
+                  </div>
+                </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
