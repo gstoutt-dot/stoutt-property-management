@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import { supabase } from "../../../lib/supabaseClient";
 import NotificationBell from "../../../components/NotificationBell";
 import OwnerBalanceCard from "../../../components/OwnerBalanceCard";
@@ -217,6 +218,7 @@ function TimelineStep({ active, complete, label, isLast }) {
 }
 
 export default function OwnerPortal() {
+  const router = useRouter();
   const [items, setItems] = useState([]);
   const [ownerProfile, setOwnerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -255,29 +257,29 @@ useEffect(() => {
   setProfileLoading(true);
 
   try {
-    /*
-      TEMP PRODUCTION ACCESS LOOKUP
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-      During presentation/demo phase we resolve the
-      provisioned owner access record directly.
+    if (authError || !user?.email) {
+      router.push("/portal/owner/login");
+      return;
+    }
 
-      NEXT PHASE:
-      Replace this with authenticated session lookup.
-    */
-
-    const demoOwnerEmail = "unit101@sunsetcondo.com";
+    const normalizedEmail = String(user.email).toLowerCase().trim();
 
     const { data: accessRecord, error: accessError } = await supabase
       .from("owner_access_provisioning_records")
       .select("*")
-      .eq("owner_email", demoOwnerEmail)
-      .single();
+      .eq("owner_email", normalizedEmail)
+      .maybeSingle();
 
     if (accessError || !accessRecord) {
       console.error("Owner access lookup failed", accessError);
 
-      setOwnerProfile(DEMO_OWNER_PROFILE);
-      setProfileLoading(false);
+      setErrorMessage("Your owner access profile could not be located.");
+      router.push("/portal/owner/login");
       return;
     }
 
@@ -292,14 +294,14 @@ useEffect(() => {
       email: accessRecord.owner_email,
       association_id: accessRecord.association_id,
       id: accessRecord.owner_user_id,
+      auth_user_id: accessRecord.auth_user_id,
       unitNumber: accessRecord.unit_number,
     };
 
     setOwnerProfile(hydratedProfile);
   } catch (err) {
-    console.error("Owner profile hydration failed", err);
-
-    setOwnerProfile(DEMO_OWNER_PROFILE);
+    console.error("Authenticated owner profile hydration failed", err);
+    router.push("/portal/owner/login");
   }
 
   setProfileLoading(false);
