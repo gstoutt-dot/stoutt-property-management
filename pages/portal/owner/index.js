@@ -258,11 +258,36 @@ useEffect(() => {
 
   try {
     const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-    if (authError || !user?.email) {
+    if (sessionError) {
+      console.error(
+        "Owner session lookup failed",
+        sessionError
+      );
+    }
+
+    let user = session?.user || null;
+
+    if (!user) {
+      const {
+        data: { user: fallbackUser },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error(
+          "Owner auth user lookup failed",
+          userError
+        );
+      }
+
+      user = fallbackUser || null;
+    }
+
+    if (!user?.email) {
       router.push("/portal/owner/login");
       return;
     }
