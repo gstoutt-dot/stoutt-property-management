@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../../../lib/supabaseClient";
 
@@ -8,9 +8,52 @@ export default function OwnerLoginPage() {
   const [email, setEmail] = useState("unit101@sunsetcondo.com");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("signin");
+
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
+
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkExistingSession() {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!mounted) return;
+
+        if (session?.user) {
+          router.replace("/portal/owner");
+          return;
+        }
+      } catch (error) {
+        console.error("Session check failed:", error);
+      }
+
+      if (mounted) {
+        setInitializing(false);
+      }
+    }
+
+    checkExistingSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        router.replace("/portal/owner");
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
+  }, [router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -57,12 +100,22 @@ export default function OwnerLoginPage() {
         throw error;
       }
 
-      router.push("/portal/owner");
+      router.replace("/portal/owner");
     } catch (error) {
       setErrorMessage(error.message || "Unable to continue.");
     }
 
     setLoading(false);
+  }
+
+  if (initializing) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#020617] text-white">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-5 text-sm text-slate-300 shadow-2xl">
+          Loading secure owner access...
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -88,6 +141,7 @@ export default function OwnerLoginPage() {
                 <div className="text-sm font-semibold text-white">
                   Financial visibility
                 </div>
+
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   View your current balance, payment status, and account health
                   from the QuickBooks-connected SPM mirror.
@@ -98,6 +152,7 @@ export default function OwnerLoginPage() {
                 <div className="text-sm font-semibold text-white">
                   Operational transparency
                 </div>
+
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   Submit owner requests and track live status updates without
                   exposing internal management workflows.
@@ -120,6 +175,7 @@ export default function OwnerLoginPage() {
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Email
                 </label>
+
                 <input
                   type="email"
                   value={email}
@@ -133,6 +189,7 @@ export default function OwnerLoginPage() {
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Password
                 </label>
+
                 <input
                   type="password"
                   value={password}
