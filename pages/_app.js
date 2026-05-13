@@ -55,6 +55,17 @@ function PortalGate({ children }) {
 
     const cleanPath = router.asPath.split("?")[0].split("#")[0];
 
+        const publicRoutes = [
+      "/portal/owner/login",
+      "/homeowner-login",
+    ];
+
+    if (publicRoutes.includes(cleanPath)) {
+      setDenied(false);
+      setCheckingAccess(false);
+      return;
+    }
+    
     const matchingRoute = routeAccess
       .filter(
         (route) =>
