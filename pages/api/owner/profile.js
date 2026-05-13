@@ -31,9 +31,7 @@ export default async function handler(req, res) {
         .eq("auth_user_id", authUserId)
         .maybeSingle();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       accessRecord = data;
     }
@@ -45,9 +43,7 @@ export default async function handler(req, res) {
         .eq("owner_email", ownerEmail)
         .maybeSingle();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       accessRecord = data;
     }
@@ -59,22 +55,70 @@ export default async function handler(req, res) {
       });
     }
 
+    const accessStatus = String(accessRecord.access_status || "")
+      .toLowerCase()
+      .trim();
+
+    const financialAccessStatus = String(
+      accessRecord.financial_access_status || ""
+    )
+      .toLowerCase()
+      .trim();
+
+    if (accessStatus && accessStatus !== "active") {
+      return res.status(403).json({
+        success: false,
+        error: "Owner portal access is not active.",
+      });
+    }
+
+    if (
+      financialAccessStatus &&
+      financialAccessStatus !== "enabled"
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Owner financial access is not enabled.",
+      });
+    }
+
+    const updatePayload = {
+      last_login_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (authUserId && !accessRecord.auth_user_id) {
+      updatePayload.auth_user_id = authUserId;
+    }
+
+    const { data: updatedRecord, error: updateError } =
+      await supabaseAdmin
+        .from("owner_access_provisioning_records")
+        .update(updatePayload)
+        .eq("id", accessRecord.id)
+        .select("*")
+        .single();
+
+    if (updateError) throw updateError;
+
+    const record = updatedRecord || accessRecord;
+
     return res.status(200).json({
       success: true,
       ownerProfile: {
-        associationName: accessRecord.association_name,
-        ownerName: accessRecord.owner_name,
-        streetAddress: accessRecord.street_address,
-        city: accessRecord.city,
-        state: accessRecord.state,
-        zip: accessRecord.zip,
-        phone: accessRecord.owner_phone,
-        email: accessRecord.owner_email,
-        association_id: accessRecord.association_id,
-        id: accessRecord.owner_user_id,
-        owner_user_id: accessRecord.owner_user_id,
-        auth_user_id: accessRecord.auth_user_id,
-        unitNumber: accessRecord.unit_number,
+        associationName: record.association_name,
+        ownerName: record.owner_name,
+        streetAddress: record.street_address,
+        city: record.city,
+        state: record.state,
+        zip: record.zip,
+        phone: record.owner_phone,
+        email: record.owner_email,
+        association_id: record.association_id,
+        id: record.owner_user_id,
+        owner_user_id: record.owner_user_id,
+        auth_user_id: record.auth_user_id,
+        unitNumber: record.unit_number,
       },
     });
   } catch (error) {
