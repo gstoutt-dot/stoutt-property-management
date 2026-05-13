@@ -267,40 +267,35 @@ useEffect(() => {
       return;
     }
 
-    const normalizedEmail = String(user.email).toLowerCase().trim();
+    const normalizedEmail = String(user.email)
+      .toLowerCase()
+      .trim();
 
-    const { data: accessRecord, error: accessError } = await supabase
-      .from("owner_access_provisioning_records")
-      .select("*")
-      .eq("owner_email", normalizedEmail)
-      .maybeSingle();
+    const profileResponse = await fetch(
+      `/api/owner/profile?ownerEmail=${encodeURIComponent(
+        normalizedEmail
+      )}&authUserId=${encodeURIComponent(user.id || "")}`
+    );
 
-    if (accessError || !accessRecord) {
-      console.error("Owner access lookup failed", accessError);
+    const profileResult = await profileResponse.json();
 
-      setErrorMessage("Your owner access profile could not be located.");
+    if (!profileResponse.ok || !profileResult?.success) {
+      console.error(
+        "Owner profile API lookup failed",
+        profileResult
+      );
+
       router.push("/portal/owner/login");
       return;
     }
 
-    const hydratedProfile = {
-      associationName: accessRecord.association_name,
-      ownerName: accessRecord.owner_name,
-      streetAddress: accessRecord.street_address,
-      city: accessRecord.city,
-      state: accessRecord.state,
-      zip: accessRecord.zip,
-      phone: accessRecord.owner_phone,
-      email: accessRecord.owner_email,
-      association_id: accessRecord.association_id,
-      id: accessRecord.owner_user_id,
-      auth_user_id: accessRecord.auth_user_id,
-      unitNumber: accessRecord.unit_number,
-    };
-
-    setOwnerProfile(hydratedProfile);
+    setOwnerProfile(profileResult.ownerProfile);
   } catch (err) {
-    console.error("Authenticated owner profile hydration failed", err);
+    console.error(
+      "Authenticated owner profile hydration failed",
+      err
+    );
+
     router.push("/portal/owner/login");
   }
 
