@@ -24,10 +24,6 @@ export default async function handler(req, res) {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (associationId) {
-      query = query.eq("association_id", associationId);
-    }
-
     if (unitNumber) {
       query = query.eq("unit_number", unitNumber);
     }
