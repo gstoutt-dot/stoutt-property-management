@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     const params = new URLSearchParams({
       client_id: clientId,
       response_type: "code",
-      scope: "com.intuit.quickbooks.accounting com.intuit.quickbooks.payment",
+      scope: "com.intuit.quickbooks.accounting",
       redirect_uri: redirectUri,
       state,
     });
