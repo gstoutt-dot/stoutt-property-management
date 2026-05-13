@@ -10,52 +10,140 @@ export default async function handler(req, res) {
 
   try {
     const {
+      associationId,
+      association_id,
       associationName,
       unitNumber,
+      ownerUserId,
+      owner_user_id,
       ownerName,
       ownerEmail,
+      ownerPhone,
+      streetAddress,
+      city,
+      state,
+      zip,
       portalRole,
       accessStatus,
       financialAccessStatus,
       inviteStatus,
     } = req.body || {};
 
-    if (!unitNumber || !ownerName || !ownerEmail) {
+    const resolvedAssociationId = String(
+      associationId || association_id || ""
+    ).trim();
+
+    const resolvedOwnerUserId = String(
+      ownerUserId || owner_user_id || ""
+    ).trim();
+
+    const normalizedUnitNumber = String(unitNumber || "").trim();
+
+    const normalizedOwnerName = String(ownerName || "").trim();
+
+    const normalizedOwnerEmail = String(ownerEmail || "")
+      .toLowerCase()
+      .trim();
+
+    if (!resolvedAssociationId) {
+      return res.status(400).json({
+        success: false,
+        error: "Association ID is required.",
+      });
+    }
+
+    if (!normalizedUnitNumber || !normalizedOwnerName || !normalizedOwnerEmail) {
       return res.status(400).json({
         success: false,
         error: "Unit number, owner name, and owner email are required.",
       });
     }
 
+    const now = new Date().toISOString();
+
     const payload = {
+      association_id: resolvedAssociationId,
       association_name: associationName || null,
-      unit_number: unitNumber,
-      owner_name: ownerName,
-      owner_email: ownerEmail,
+
+      unit_number: normalizedUnitNumber,
+
+      owner_user_id: resolvedOwnerUserId || null,
+      owner_name: normalizedOwnerName,
+      owner_email: normalizedOwnerEmail,
+      owner_phone: ownerPhone || null,
+
+      street_address: streetAddress || null,
+      city: city || null,
+      state: state || null,
+      zip: zip || null,
+
       portal_role: portalRole || "Owner",
       access_status: accessStatus || "Pending",
       financial_access_status: financialAccessStatus || "Pending",
       invite_status: inviteStatus || "Not Sent",
+
       invitation_sent_at:
-        inviteStatus === "Sent" ? new Date().toISOString() : null,
-      updated_at: new Date().toISOString(),
+        inviteStatus === "Sent" ? now : null,
+
+      updated_at: now,
     };
 
-    const { data, error } = await supabaseAdmin
+    /*
+      Production-safe idempotency:
+      Before creating a new access record, check whether this association/unit/email
+      already has one. This prevents duplicate portal access records when onboarding
+      or QuickBooks sync is run more than once.
+    */
+
+    const { data: existingRecord, error: lookupError } = await supabaseAdmin
+      .from("owner_access_provisioning_records")
+      .select("*")
+      .eq("association_id", resolvedAssociationId)
+      .eq("unit_number", normalizedUnitNumber)
+      .eq("owner_email", normalizedOwnerEmail)
+      .maybeSingle();
+
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (existingRecord?.id) {
+      const { data: updatedRecord, error: updateError } = await supabaseAdmin
+        .from("owner_access_provisioning_records")
+        .update(payload)
+        .eq("id", existingRecord.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return res.status(200).json({
+        success: true,
+        mode: "updated",
+        accessRecord: updatedRecord,
+      });
+    }
+
+    const { data: createdRecord, error: insertError } = await supabaseAdmin
       .from("owner_access_provisioning_records")
       .insert(payload)
       .select()
       .single();
 
-    if (error) {
-      throw error;
+    if (insertError) {
+      throw insertError;
     }
 
     return res.status(200).json({
       success: true,
-      accessRecord: data,
+      mode: "created",
+      accessRecord: createdRecord,
     });
   } catch (error) {
+    console.error("Create owner access record failed:", error);
+
     return res.status(500).json({
       success: false,
       error: error.message || "Unable to create owner access record.",
