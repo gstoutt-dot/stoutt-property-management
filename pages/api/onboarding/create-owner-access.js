@@ -74,8 +74,17 @@ export default async function handler(req, res) {
       (user) => user.email?.toLowerCase() === normalizedOwnerEmail
     );
 
-        if (existingAuthUser?.id) {
+            if (existingAuthUser?.id) {
       resolvedAuthUserId = existingAuthUser.id;
+
+      const { error: updatePasswordError } =
+        await supabaseAdmin.auth.admin.updateUserById(resolvedAuthUserId, {
+          password: "Owner123456!",
+        });
+
+      if (updatePasswordError) {
+        throw updatePasswordError;
+      }
     } else {
                   const { data: createdAuthUser, error: createAuthError } =
         await supabaseAdmin.auth.admin.createUser({
