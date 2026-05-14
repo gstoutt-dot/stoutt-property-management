@@ -36,16 +36,54 @@ async function fetchQuickBooksQuery({ realmId, accessToken, query }) {
   return qbData;
 }
 
-function getOwnerIdentityByCustomerId(ownerBalances, customerId) {
-  if (!customerId) return null;
-
-  return ownerBalances.find(
-    (owner) =>
-      String(owner.quickbooks_customer_id || "").trim() ===
-      String(customerId || "").trim()
-  );
+function parseUnitNumber(displayName = "") {
+  const match = String(displayName || "").match(/unit\s*([A-Za-z0-9-]+)/i);
+  return match ? match[1] : null;
 }
 
+function getOwnerIdentityByCustomerId(ownerBalances, customerId, customerName) {
+  if (!customerId && !customerName) return null;
+
+  const normalizedCustomerId = String(customerId || "").trim();
+  const normalizedCustomerName = String(customerName || "").toLowerCase().trim();
+  const parsedUnitNumber = parseUnitNumber(customerName);
+
+  const directIdMatch = ownerBalances.find(
+    (owner) =>
+      String(owner.quickbooks_customer_id || "").trim() === normalizedCustomerId
+  );
+
+  if (directIdMatch?.unit_number || directIdMatch?.owner_user_id) {
+    return directIdMatch;
+  }
+
+  const displayNameMatch = ownerBalances.find((owner) => {
+    const ownerDisplayName = String(
+      owner.quickbooks_customer_display_name || ""
+    )
+      .toLowerCase()
+      .trim();
+
+    return ownerDisplayName && ownerDisplayName === normalizedCustomerName;
+  });
+
+  if (displayNameMatch?.unit_number || displayNameMatch?.owner_user_id) {
+    return displayNameMatch;
+  }
+
+  const unitMatch = ownerBalances.find((owner) => {
+    return (
+      parsedUnitNumber &&
+      String(owner.unit_number || "").trim() === String(parsedUnitNumber).trim()
+    );
+  });
+
+  if (unitMatch) {
+    return unitMatch;
+  }
+
+  return directIdMatch || displayNameMatch || null;
+}
 function getInvoiceDescription(invoice) {
   if (invoice.DocNumber) {
     return `Invoice #${invoice.DocNumber}`;
@@ -203,9 +241,10 @@ const now = new Date().toISOString();
     for (const invoice of invoices) {
       const customerRef = invoice.CustomerRef || {};
       const ownerIdentity = getOwnerIdentityByCustomerId(
-        ownerIdentityRecords || [],
-        customerRef.value
-      );
+  ownerIdentityRecords || [],
+  customerRef.value,
+  customerRef.name
+);
 
       if (!ownerIdentity) continue;
 
@@ -252,9 +291,10 @@ const now = new Date().toISOString();
     for (const payment of payments) {
       const customerRef = payment.CustomerRef || {};
       const ownerIdentity = getOwnerIdentityByCustomerId(
-        ownerIdentityRecords || [],
-        customerRef.value
-      );
+  ownerIdentityRecords || [],
+  customerRef.value,
+  customerRef.name
+);
 
       if (!ownerIdentity) continue;
 
