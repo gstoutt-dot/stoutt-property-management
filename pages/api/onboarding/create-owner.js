@@ -74,22 +74,69 @@ export default async function handler(req, res) {
 
     let ownerUserId = randomUUID();
 
-    const { data: existingAccessRecord, error: lookupError } =
-      await supabaseAdmin
-        .from("owner_access_provisioning_records")
-        .select("owner_user_id")
-        .eq("association_id", resolvedAssociationId)
-        .eq("unit_number", normalizedUnitNumber)
-        .eq("owner_email", normalizedOwnerEmail)
-        .maybeSingle();
+const { data: existingUnitRecord, error: unitLookupError } =
+  await supabaseAdmin
+    .from("owner_access_provisioning_records")
+    .select(
+      "owner_user_id, unit_number, owner_email, access_status, financial_access_status, invite_status"
+    )
+    .eq("association_id", resolvedAssociationId)
+    .eq("unit_number", normalizedUnitNumber)
+    .maybeSingle();
 
-    if (lookupError) {
-      throw lookupError;
-    }
+if (unitLookupError) {
+  throw unitLookupError;
+}
 
-    if (existingAccessRecord?.owner_user_id) {
-      ownerUserId = existingAccessRecord.owner_user_id;
-    }
+const { data: existingEmailRecord, error: emailLookupError } =
+  await supabaseAdmin
+    .from("owner_access_provisioning_records")
+    .select(
+      "owner_user_id, unit_number, owner_email, access_status, financial_access_status, invite_status"
+    )
+    .eq("association_id", resolvedAssociationId)
+    .eq("owner_email", normalizedOwnerEmail)
+    .maybeSingle();
+
+if (emailLookupError) {
+  throw emailLookupError;
+}
+
+const existingAccessRecord = existingUnitRecord || existingEmailRecord;
+
+if (existingUnitRecord && existingUnitRecord.owner_email !== normalizedOwnerEmail) {
+  return res.status(409).json({
+    success: false,
+    skipped: true,
+    error: `Unit ${normalizedUnitNumber} is already assigned to ${existingUnitRecord.owner_email}.`,
+  });
+}
+
+if (existingEmailRecord && existingEmailRecord.unit_number !== normalizedUnitNumber) {
+  return res.status(409).json({
+    success: false,
+    skipped: true,
+    error: `${normalizedOwnerEmail} is already assigned to Unit ${existingEmailRecord.unit_number}.`,
+  });
+}
+
+if (
+  existingAccessRecord?.owner_user_id &&
+  existingAccessRecord.access_status === "Active" &&
+  existingAccessRecord.financial_access_status === "Enabled" &&
+  existingAccessRecord.invite_status === "Accepted"
+) {
+  return res.status(200).json({
+    success: true,
+    skipped: true,
+    ownerUserId: existingAccessRecord.owner_user_id,
+    message: "Owner already exists. No duplicate record created.",
+  });
+}
+
+if (existingAccessRecord?.owner_user_id) {
+  ownerUserId = existingAccessRecord.owner_user_id;
+}
 
     const baseUrl = getBaseUrl(req);
 
