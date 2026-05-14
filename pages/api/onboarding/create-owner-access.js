@@ -99,9 +99,7 @@ export default async function handler(req, res) {
       resolvedAuthUserId = createdAuthUser.user.id;
     }
 
-    const payload = {
-
-    const payload = {
+      const payload = {
       association_id: resolvedAssociationId,
       association_name: associationName || null,
 
