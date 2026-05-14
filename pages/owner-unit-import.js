@@ -164,9 +164,17 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
           ownerName: payload.ownerName,
           error: data?.error || "Unable to onboard owner.",
         });
-      } else {
-        results.successful += 1;
-      }
+      } else if (data?.skipped) {
+  results.skipped += 1;
+
+  results.errors.push({
+    unitNumber: payload.unitNumber,
+    ownerName: payload.ownerName,
+    error: data.message || "Owner already exists.",
+  });
+} else {
+  results.successful += 1;
+}
     }
 
     setBulkResult(results);
