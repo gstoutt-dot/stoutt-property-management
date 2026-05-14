@@ -277,7 +277,7 @@ const payload = {
   (owner) =>
     owner.unit_number === payload.unitNumber ||
     owner.owner_email?.toLowerCase() ===
-    payload.ownerEmail?.toLowerCase()
+      payload.ownerEmail?.toLowerCase()
 );
   (owner) =>
     owner.association_id === form.associationId &&
