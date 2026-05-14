@@ -105,10 +105,7 @@ export default async function handler(req, res) {
       owner_phone: ownerPhone || null,
 
       street_address: streetAddress || null,
-      city: city || null,
-      state: state || null,
-      zip: zip || null,
-
+      
       portal_role: portalRole || "Owner",
       access_status: accessStatus || "Pending",
       financial_access_status: financialAccessStatus || "Pending",
