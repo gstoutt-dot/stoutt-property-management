@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 
 const initialOwner = {
+  associationId: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
   associationName: "Sunset Condominium Association",
   unitNumber: "",
   ownerName: "",
   ownerEmail: "",
   ownerPhone: "",
   accountNumber: "",
-  openingBalance: "",
-  importStatus: "Ready",
+  openingBalance: 0,
 };
 
 export default function OwnerUnitImport() {
@@ -65,24 +65,23 @@ export default function OwnerUnitImport() {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/onboarding/create-owner-unit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const response = await fetch("/api/onboarding/create-owner", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(form),
+});
 
-      const data = await response.json();
+const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data?.error || "Unable to save owner/unit record.");
-      }
+if (!response.ok) {
+  throw new Error(data?.error || "Unable to onboard owner.");
+}
 
-      setSuccess(
-        `Owner/unit record saved: Unit ${data.ownerUnit.unit_number} - ${data.ownerUnit.owner_name}`
-      );
-
+setSuccess(
+  `Owner onboarded successfully: Unit ${data.ownerUnit.unit_number} - ${data.ownerUnit.owner_name}`
+);
       setForm(initialOwner);
       await loadOwnerUnits();
     } catch (err) {
