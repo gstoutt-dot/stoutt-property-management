@@ -203,7 +203,7 @@ const now = new Date().toISOString();
     for (const invoice of invoices) {
       const customerRef = invoice.CustomerRef || {};
       const ownerIdentity = getOwnerIdentityByCustomerId(
-        ownerIdentityRecords || []
+        ownerIdentityRecords || [],
         customerRef.value
       );
 
@@ -252,7 +252,7 @@ const now = new Date().toISOString();
     for (const payment of payments) {
       const customerRef = payment.CustomerRef || {};
       const ownerIdentity = getOwnerIdentityByCustomerId(
-        ownerIdentityRecords || []
+        ownerIdentityRecords || [],
         customerRef.value
       );
 
