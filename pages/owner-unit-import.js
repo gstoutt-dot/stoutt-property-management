@@ -18,6 +18,8 @@ export default function OwnerUnitImport() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [csvRows, setCsvRows] = useState([]);
+  const [csvFileName, setCsvFileName] = useState("");
 
   async function loadOwnerUnits() {
     setLoading(true);
@@ -58,6 +60,41 @@ export default function OwnerUnitImport() {
       [field]: value,
     }));
   }
+
+  async function handleCsvUpload(event) {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  setCsvFileName(file.name);
+
+  const text = await file.text();
+
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    setError("CSV file contains no rows.");
+    return;
+  }
+
+  const headers = lines[0]
+    .split(",")
+    .map((h) => h.trim());
+
+  const rows = lines.slice(1).map((line) => {
+    const values = line.split(",");
+
+    return headers.reduce((obj, header, index) => {
+      obj[header] = values[index]?.trim() || "";
+      return obj;
+    }, {});
+  });
+
+  setCsvRows(rows);
+}
 
   async function saveOwnerUnit() {
     setSaving(true);
@@ -139,6 +176,31 @@ setSuccess(
         <section className="mt-8 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
           <aside className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
             <h2 className="text-2xl font-semibold">Add Owner / Unit</h2>
+
+          <div className="mt-6 rounded-2xl border border-dashed border-amber-300/30 bg-slate-950/40 p-5">
+  <p className="text-sm text-slate-400">
+    CSV Roster Upload (Preview Mode)
+  </p>
+
+  <input
+    type="file"
+    accept=".csv"
+    onChange={handleCsvUpload}
+    className="mt-4 block w-full text-sm"
+  />
+
+  {csvFileName && (
+    <p className="mt-3 text-emerald-300 text-sm">
+      Loaded: {csvFileName}
+    </p>
+  )}
+
+  {csvRows.length > 0 && (
+    <p className="mt-2 text-amber-300 text-sm">
+      Parsed {csvRows.length} owner records
+    </p>
+  )}
+</div>
 
             <div className="mt-6 grid gap-4">
               <Input
@@ -266,11 +328,43 @@ setSuccess(
                   )}
                 </tbody>
               </table>
-            </div>
-          </section>
-        </section>
-      </div>
-    </main>
+</div>
+
+{csvRows.length > 0 && (
+  <div className="mt-8 overflow-hidden rounded-3xl border border-white/10">
+    <div className="bg-white/10 px-5 py-4">
+      <h2 className="text-xl font-semibold">CSV Preview</h2>
+    </div>
+
+    <table className="w-full text-left text-sm">
+      <thead className="bg-slate-950/40">
+        <tr>
+          {Object.keys(csvRows[0]).map((header) => (
+            <th key={header} className="px-4 py-3">
+              {header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {csvRows.slice(0, 10).map((row, index) => (
+          <tr key={index}>
+            {Object.values(row).map((value, col) => (
+              <td key={col} className="px-4 py-3 text-slate-300">
+                {value}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+</section>
+</section>
+</div>
+</main>
   );
 }
 
