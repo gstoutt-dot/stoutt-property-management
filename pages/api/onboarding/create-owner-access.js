@@ -77,7 +77,7 @@ export default async function handler(req, res) {
         if (existingAuthUser?.id) {
       resolvedAuthUserId = existingAuthUser.id;
     } else {
-      const temporaryPassword = `SPM-${normalizedUnitNumber}-Welcome!`;
+            const temporaryPassword = "SpmWelcome2026!";
 
       const { data: createdAuthUser, error: createAuthError } =
         await supabaseAdmin.auth.admin.createUser({
