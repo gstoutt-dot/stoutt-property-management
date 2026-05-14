@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { supabase } from "../../../lib/supabaseClient";
 import NotificationBell from "../../../components/NotificationBell";
 import OwnerBalanceCard from "../../../components/OwnerBalanceCard";
+import OwnerAccountLedger from "../../../components/OwnerAccountLedger";
 
 const DEMO_OWNER_PROFILE = {
   associationName: "Sunset Condominium Association",
@@ -628,6 +629,12 @@ useEffect(() => {
     </button>
   </div>
 </div>
+
+<OwnerAccountLedger
+  associationId={ownerProfile?.association_id}
+  ownerUserId={ownerProfile?.id}
+  unitNumber={ownerProfile?.unitNumber}
+/>
 
 <div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6">
           <div className="mb-6">
