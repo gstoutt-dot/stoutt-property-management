@@ -103,30 +103,10 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 }
 
   function getCsvRowValue(row, fields) {
-  const normalizedRow = {};
-
-  Object.entries(row).forEach(([key, value]) => {
-    normalizedRow[
-      String(key)
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "")
-    ] = value;
-  });
-
   for (const field of fields) {
-    const normalizedField = field
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
+    const value = row[field];
 
-    const value = normalizedRow[normalizedField];
-
-    if (
-      value !== undefined &&
-      value !== null &&
-      String(value).trim() !== ""
-    ) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
       return String(value).trim();
     }
   }
@@ -143,181 +123,30 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const results = {
     total: csvRows.length,
     successful: 0,
-    skipped: 0,
     failed: 0,
     errors: [],
   };
 
-  const validationErrors = [];
-  const seenUnits = new Set();
-  const seenEmails = new Set();
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  csvRows.forEach((row, index) => {
-    const rowNumber = index + 2;
-
-    const unitNumber = getCsvRowValue(row, [
-      "unitNumber",
-      "unit_number",
-      "Unit",
-      "unit",
-      "Unit Number",
-      "Unit #",
-    ]);
-
-    const ownerName = getCsvRowValue(row, [
-      "ownerName",
-      "owner_name",
-      "Owner",
-      "owner",
-      "Owner Name",
-      "Name",
-      "Resident",
-    ]);
-
-    const ownerEmail = getCsvRowValue(row, [
-      "ownerEmail",
-      "owner_email",
-      "Email",
-      "email",
-      "Email Address",
-      "Primary Email",
-    ]).toLowerCase();
-
-    if (!unitNumber) {
-      validationErrors.push(`Row ${rowNumber}: missing unit number.`);
-    } else if (seenUnits.has(unitNumber)) {
-      validationErrors.push(`Row ${rowNumber}: duplicate unit ${unitNumber}.`);
-    } else {
-      seenUnits.add(unitNumber);
-    }
-
-    if (!ownerName) {
-      validationErrors.push(`Row ${rowNumber}: missing owner name.`);
-    }
-
-    if (!ownerEmail) {
-      validationErrors.push(`Row ${rowNumber}: missing owner email.`);
-    } else if (!emailPattern.test(ownerEmail)) {
-      validationErrors.push(`Row ${rowNumber}: invalid email ${ownerEmail}.`);
-    } else if (seenEmails.has(ownerEmail)) {
-      validationErrors.push(`Row ${rowNumber}: duplicate email ${ownerEmail}.`);
-    } else {
-      seenEmails.add(ownerEmail);
-    }
-  });
-
-  if (validationErrors.length > 0) {
-    setBulkResult({
-      total: csvRows.length,
-      successful: 0,
-      skipped: 0,
-      failed: csvRows.length,
-      errors: validationErrors.map((message) => ({
-        unitNumber: "Validation",
-        ownerName: "CSV Roster",
-        error: message,
-      })),
-    });
-
-    setError(
-      `CSV validation failed. Fix ${validationErrors.length} issue${
-        validationErrors.length === 1 ? "" : "s"
-      } before onboarding.`
-    );
-
-    setBulkSaving(false);
-    return;
-  }
-
   try {
     for (const row of csvRows) {
-      const unitNumber = getCsvRowValue(row, [
-        "unitNumber",
-        "unit_number",
-        "Unit",
-        "unit",
-        "Unit Number",
-        "Unit #",
-      ]);
-
-      const ownerName = getCsvRowValue(row, [
-        "ownerName",
-        "owner_name",
-        "Owner",
-        "owner",
-        "Owner Name",
-        "Name",
-        "Resident",
-      ]);
-
-      const ownerEmail = getCsvRowValue(row, [
-        "ownerEmail",
-        "owner_email",
-        "Email",
-        "email",
-        "Email Address",
-        "Primary Email",
-      ]).toLowerCase();
-
-      const ownerPhone = getCsvRowValue(row, [
-        "ownerPhone",
-        "owner_phone",
-        "Phone",
-        "phone",
-        "Phone Number",
-      ]);
-
-      const accountNumber =
-        getCsvRowValue(row, ["accountNumber", "account_number", "Account", "Account Number"]) ||
-        unitNumber;
-
-      const openingBalance =
-        getCsvRowValue(row, ["openingBalance", "opening_balance", "Opening Balance"]) || 0;
-
       const payload = {
         associationId: form.associationId,
         associationName: form.associationName,
-        unitNumber,
-        ownerName,
-        ownerEmail,
-        ownerPhone,
-        accountNumber,
-        openingBalance,
+        unitNumber: row.unitNumber || row.unit_number || row.Unit || row.unit || "",
+        ownerName: row.ownerName || row.owner_name || row.Owner || row.owner || "",
+        ownerEmail: row.ownerEmail || row.owner_email || row.Email || row.email || "",
+        ownerPhone: row.ownerPhone || row.owner_phone || row.Phone || row.phone || "",
+        accountNumber:
+          row.accountNumber ||
+          row.account_number ||
+          row.unitNumber ||
+          row.unit_number ||
+          row.Unit ||
+          row.unit ||
+          "",
+        openingBalance: row.openingBalance || row.opening_balance || 0,
       };
 
-      const existingOwner = owners.find((owner) => {
-        const existingAssociationId = String(
-          owner.association_id || owner.associationId || ""
-        ).trim();
-
-        const existingUnit = String(owner.unit_number || "").trim();
-        const existingEmail = String(owner.owner_email || "")
-          .trim()
-          .toLowerCase();
-
-        const sameAssociation =
-          !existingAssociationId || existingAssociationId === form.associationId;
-
-        return (
-          sameAssociation &&
-          (existingUnit === payload.unitNumber ||
-            existingEmail === payload.ownerEmail)
-        );
-      });
-
-      if (existingOwner) {
-        results.skipped += 1;
-
-        results.errors.push({
-          unitNumber: payload.unitNumber,
-          ownerName: payload.ownerName,
-          error: "Skipped: owner/unit already exists.",
-        });
-
-        continue;
-      }
-
       const response = await fetch("/api/onboarding/create-owner", {
         method: "POST",
         headers: {
@@ -330,7 +159,6 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
       if (!response.ok || data?.success === false) {
         results.failed += 1;
-
         results.errors.push({
           unitNumber: payload.unitNumber,
           ownerName: payload.ownerName,
@@ -342,121 +170,9 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
     }
 
     setBulkResult(results);
-
     setSuccess(
-      `Bulk onboarding complete:
-${results.successful} created,
-${results.skipped} skipped,
-${results.failed} failed.`
+      `Bulk onboarding complete: ${results.successful} successful, ${results.failed} failed.`
     );
-
-    await loadOwnerUnits();
-  } catch (err) {
-    setError(err.message || "Unable to complete bulk onboarding.");
-  } finally {
-    setBulkSaving(false);
-  }
-}
-
-try {
-  for (const row of csvRows) {
-      const unitNumber = getCsvRowValue(row, [
-  "unitNumber",
-  "unit_number",
-  "Unit",
-  "unit",
-]);
-
-const ownerName = getCsvRowValue(row, [
-  "ownerName",
-  "owner_name",
-  "Owner",
-  "owner",
-]);
-
-const ownerEmail = getCsvRowValue(row, [
-  "ownerEmail",
-  "owner_email",
-  "Email",
-  "email",
-]).toLowerCase();
-
-const ownerPhone = getCsvRowValue(row, [
-  "ownerPhone",
-  "owner_phone",
-  "Phone",
-  "phone",
-]);
-
-const accountNumber = getCsvRowValue(row, [
-  "accountNumber",
-  "account_number",
-]) || unitNumber;
-
-const openingBalance = getCsvRowValue(row, [
-  "openingBalance",
-  "opening_balance",
-]) || 0;
-
-const payload = {
-  associationId: form.associationId,
-  associationName: form.associationName,
-  unitNumber,
-  ownerName,
-  ownerEmail,
-  ownerPhone,
-  accountNumber,
-  openingBalance,
-};
-
-    const existingOwner = owners.find(
-  (owner) =>
-    owner.unit_number === payload.unitNumber ||
-    owner.owner_email?.toLowerCase() ===
-      payload.ownerEmail?.toLowerCase()
-);
-  
-if (existingOwner) {
-  results.skipped += 1;
-
-  results.errors.push({
-    unitNumber: payload.unitNumber,
-    ownerName: payload.ownerName,
-    error: "Skipped: owner/unit already exists.",
-  });
-
-  continue;
-}
-
-      const response = await fetch("/api/onboarding/create-owner", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data?.success === false) {
-        results.failed += 1;
-        results.errors.push({
-          unitNumber: payload.unitNumber,
-          ownerName: payload.ownerName,
-          error: data?.error || "Unable to onboard owner.",
-        });
-      } else {
-        results.successful += 1;
-      }
-    }
-
-    setBulkResult(results);
-    setSuccess(
-  `Bulk onboarding complete:
-${results.successful} created,
-${results.skipped} skipped,
-${results.failed} failed.`
-);
 
     await loadOwnerUnits();
   } catch (err) {
@@ -841,3 +557,4 @@ function Status({ value }) {
     </span>
   );
 }
+
