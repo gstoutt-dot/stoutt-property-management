@@ -22,6 +22,8 @@ export default function OwnerUnitImport() {
   const [csvFileName, setCsvFileName] = useState("");
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
+
+const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   async function loadOwnerUnits() {
     setLoading(true);
     setError("");
