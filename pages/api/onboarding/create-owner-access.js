@@ -180,12 +180,13 @@ export default async function handler(req, res) {
       mode: "created",
       accessRecord: createdRecord,
     });
-  } catch (error) {
+    } catch (error) {
     console.error("Create owner access record failed:", error);
 
     return res.status(500).json({
       success: false,
       error: error.message || "Unable to create owner access record.",
+      details: JSON.stringify(error, null, 2),
     });
   }
 }
