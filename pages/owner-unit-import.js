@@ -409,6 +409,29 @@ setSuccess(
     <div className="flex flex-col gap-3 bg-white/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
   <h2 className="text-xl font-semibold">CSV Preview</h2>
 
+ {showBulkConfirm && (
+  <div className="mt-4 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4">
+    <p className="font-semibold text-amber-300">
+      Bulk Onboarding Confirmation Required
+    </p>
+
+    <p className="mt-2 text-sm text-slate-300">
+      You are about to create:
+    </p>
+
+    <ul className="mt-3 space-y-1 text-sm text-slate-300">
+      <li>• Owner identities</li>
+      <li>• Owner access records</li>
+      <li>• Login accounts</li>
+      <li>• Financial dashboard access</li>
+    </ul>
+
+    <p className="mt-3 text-sm text-red-300">
+      Review the roster carefully before continuing.
+    </p>
+  </div>
+)}
+
   {showBulkConfirm ? (
   <div className="flex flex-col gap-3 md:flex-row md:items-center">
     <button
