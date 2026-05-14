@@ -167,13 +167,16 @@ export default function OwnerAccessProvisioning() {
               />
 
               <button
-                type="button"
-                onClick={saveAccessRecord}
-                disabled={saving}
-                className="rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
-              >
-                {saving ? "Saving Access..." : "Save Access Record"}
-              </button>
+  type="button"
+  onClick={() => {
+    console.log("FORM DATA:", form);
+    saveAccessRecord();
+  }}
+  disabled={saving}
+  className="rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
+>
+  {saving ? "Saving Access..." : "Save Access Record"}
+</button>
             </div>
           </aside>
 
