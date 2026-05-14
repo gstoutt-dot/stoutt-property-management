@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const initialAccess = {
+  associationId: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
   associationName: "Sunset Condominium Association",
   unitNumber: "",
   ownerName: "",
