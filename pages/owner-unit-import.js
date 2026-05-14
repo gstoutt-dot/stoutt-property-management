@@ -70,6 +70,8 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   if (!file) return;
 
   setCsvFileName(file.name);
+  setShowBulkConfirm(false);
+  setBulkResult(null);
 
   const text = await file.text();
 
@@ -97,6 +99,7 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   });
 
   setCsvRows(rows);
+  setShowBulkConfirm(true);
 }
 
   async function bulkOnboardCsvRows() {
