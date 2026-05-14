@@ -409,14 +409,36 @@ setSuccess(
     <div className="flex flex-col gap-3 bg-white/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
   <h2 className="text-xl font-semibold">CSV Preview</h2>
 
-  <button
-    type="button"
-    onClick={bulkOnboardCsvRows}
-    disabled={bulkSaving || csvRows.length === 0}
-    className="rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
-  >
-    {bulkSaving ? "Onboarding CSV..." : "Start Bulk Onboarding"}
-  </button>
+  {showBulkConfirm ? (
+  <div className="flex flex-col gap-3 md:flex-row md:items-center">
+    <button
+      type="button"
+      onClick={bulkOnboardCsvRows}
+      disabled={bulkSaving || csvRows.length === 0}
+      className="rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
+    >
+      {bulkSaving ? "Onboarding CSV..." : `Confirm Onboard ${csvRows.length} Owners`}
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        setCsvRows([]);
+        setCsvFileName("");
+        setShowBulkConfirm(false);
+        setBulkResult(null);
+      }}
+      disabled={bulkSaving}
+      className="rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
+    >
+      Cancel Upload
+    </button>
+  </div>
+) : (
+  <p className="text-sm text-slate-400">
+    Upload a CSV roster to preview owner records before onboarding.
+  </p>
+)}
 </div>
 
     <table className="w-full text-left text-sm">
