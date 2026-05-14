@@ -143,6 +143,7 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const results = {
   total: csvRows.length,
   successful: 0,
+  skipped: 0,
   failed: 0,
   errors: [],
 };
@@ -272,6 +273,28 @@ const payload = {
   openingBalance,
 };
 
+    const existingOwner = owners.find(
+  (owner) =>
+    owner.association_id === form.associationId &&
+    (
+      owner.unit_number === payload.unitNumber ||
+      owner.owner_email?.toLowerCase() ===
+      payload.ownerEmail?.toLowerCase()
+    )
+);
+
+if (existingOwner) {
+  results.skipped += 1;
+
+  results.errors.push({
+    unitNumber: payload.unitNumber,
+    ownerName: payload.ownerName,
+    error: "Skipped: owner/unit already exists.",
+  });
+
+  continue;
+}
+
       const response = await fetch("/api/onboarding/create-owner", {
         method: "POST",
         headers: {
@@ -296,8 +319,11 @@ const payload = {
 
     setBulkResult(results);
     setSuccess(
-      `Bulk onboarding complete: ${results.successful} successful, ${results.failed} failed.`
-    );
+  `Bulk onboarding complete:
+${results.successful} created,
+${results.skipped} skipped,
+${results.failed} failed.`
+);
 
     await loadOwnerUnits();
   } catch (err) {
