@@ -59,7 +59,24 @@ export default async function handler(req, res) {
       });
     }
 
-    const now = new Date().toISOString();
+        const now = new Date().toISOString();
+
+    let resolvedAuthUserId = null;
+
+    const { data: authUsersData, error: authUsersError } =
+      await supabaseAdmin.auth.admin.listUsers();
+
+    if (authUsersError) {
+      throw authUsersError;
+    }
+
+    const existingAuthUser = authUsersData?.users?.find(
+      (user) => user.email?.toLowerCase() === normalizedOwnerEmail
+    );
+
+    if (existingAuthUser?.id) {
+      resolvedAuthUserId = existingAuthUser.id;
+    }
 
     const payload = {
       association_id: resolvedAssociationId,
@@ -68,6 +85,7 @@ export default async function handler(req, res) {
       unit_number: normalizedUnitNumber,
 
       owner_user_id: resolvedOwnerUserId || null,
+      auth_user_id: resolvedAuthUserId,
       owner_name: normalizedOwnerName,
       owner_email: normalizedOwnerEmail,
       owner_phone: ownerPhone || null,
