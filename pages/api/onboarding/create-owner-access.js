@@ -113,13 +113,12 @@ export default async function handler(req, res) {
       owner_email: normalizedOwnerEmail,
          
       portal_role: portalRole || "Owner",
-      access_status: accessStatus || "Pending",
-      financial_access_status: financialAccessStatus || "Pending",
-      invite_status: inviteStatus || "Not Sent",
+access_status: accessStatus || "Active",
+financial_access_status: financialAccessStatus || "Enabled",
+invite_status: inviteStatus || "Accepted",
 
       invitation_sent_at:
-        inviteStatus === "Sent" ? now : null,
-
+  inviteStatus === "Sent" || inviteStatus === "Accepted" ? now : null,
       updated_at: now,
     };
 
