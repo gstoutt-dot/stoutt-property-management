@@ -415,15 +415,7 @@ const payload = {
     owner.owner_email?.toLowerCase() ===
       payload.ownerEmail?.toLowerCase()
 );
-  (owner) =>
-    owner.association_id === form.associationId &&
-    (
-      owner.unit_number === payload.unitNumber ||
-      owner.owner_email?.toLowerCase() ===
-      payload.ownerEmail?.toLowerCase()
-    )
-);
-
+  
 if (existingOwner) {
   results.skipped += 1;
 
