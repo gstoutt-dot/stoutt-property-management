@@ -102,6 +102,18 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   setShowBulkConfirm(true);
 }
 
+  function getCsvRowValue(row, fields) {
+  for (const field of fields) {
+    const value = row[field];
+
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return String(value).trim();
+    }
+  }
+
+  return "";
+}
+
   async function bulkOnboardCsvRows() {
   setBulkSaving(true);
   setError("");
