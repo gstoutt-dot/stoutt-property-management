@@ -130,6 +130,11 @@ if (
     success: true,
     skipped: true,
     ownerUserId: existingAccessRecord.owner_user_id,
+    ownerUnit: {
+      unit_number: normalizedUnitNumber,
+      owner_name: normalizedOwnerName,
+      owner_email: normalizedOwnerEmail,
+    },
     message: "Owner already exists. No duplicate record created.",
   });
 }
