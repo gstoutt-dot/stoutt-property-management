@@ -215,9 +215,15 @@ if (!response.ok) {
   throw new Error(data?.error || "Unable to onboard owner.");
 }
 
-setSuccess(
-  `Owner onboarded successfully: Unit ${data.ownerUnit.unit_number} - ${data.ownerUnit.owner_name}`
-);
+if (data?.skipped) {
+  setSuccess(
+    `Owner already exists: Unit ${data.ownerUnit.unit_number} - ${data.ownerUnit.owner_name}`
+  );
+} else {
+  setSuccess(
+    `Owner onboarded successfully: Unit ${data.ownerUnit.unit_number} - ${data.ownerUnit.owner_name}`
+  );
+}
       setForm(initialOwner);
       await loadOwnerUnits();
     } catch (err) {
