@@ -102,10 +102,7 @@ export default async function handler(req, res) {
       auth_user_id: resolvedAuthUserId,
       owner_name: normalizedOwnerName,
       owner_email: normalizedOwnerEmail,
-      owner_phone: ownerPhone || null,
-
-      street_address: streetAddress || null,
-      
+         
       portal_role: portalRole || "Owner",
       access_status: accessStatus || "Pending",
       financial_access_status: financialAccessStatus || "Pending",
