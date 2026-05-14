@@ -129,23 +129,54 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
   try {
     for (const row of csvRows) {
-      const payload = {
-        associationId: form.associationId,
-        associationName: form.associationName,
-        unitNumber: row.unitNumber || row.unit_number || row.Unit || row.unit || "",
-        ownerName: row.ownerName || row.owner_name || row.Owner || row.owner || "",
-        ownerEmail: row.ownerEmail || row.owner_email || row.Email || row.email || "",
-        ownerPhone: row.ownerPhone || row.owner_phone || row.Phone || row.phone || "",
-        accountNumber:
-          row.accountNumber ||
-          row.account_number ||
-          row.unitNumber ||
-          row.unit_number ||
-          row.Unit ||
-          row.unit ||
-          "",
-        openingBalance: row.openingBalance || row.opening_balance || 0,
-      };
+      const unitNumber = getCsvRowValue(row, [
+  "unitNumber",
+  "unit_number",
+  "Unit",
+  "unit",
+]);
+
+const ownerName = getCsvRowValue(row, [
+  "ownerName",
+  "owner_name",
+  "Owner",
+  "owner",
+]);
+
+const ownerEmail = getCsvRowValue(row, [
+  "ownerEmail",
+  "owner_email",
+  "Email",
+  "email",
+]).toLowerCase();
+
+const ownerPhone = getCsvRowValue(row, [
+  "ownerPhone",
+  "owner_phone",
+  "Phone",
+  "phone",
+]);
+
+const accountNumber = getCsvRowValue(row, [
+  "accountNumber",
+  "account_number",
+]) || unitNumber;
+
+const openingBalance = getCsvRowValue(row, [
+  "openingBalance",
+  "opening_balance",
+]) || 0;
+
+const payload = {
+  associationId: form.associationId,
+  associationName: form.associationName,
+  unitNumber,
+  ownerName,
+  ownerEmail,
+  ownerPhone,
+  accountNumber,
+  openingBalance,
+};
 
       const response = await fetch("/api/onboarding/create-owner", {
         method: "POST",
