@@ -20,7 +20,8 @@ export default function OwnerUnitImport() {
   const [success, setSuccess] = useState("");
   const [csvRows, setCsvRows] = useState([]);
   const [csvFileName, setCsvFileName] = useState("");
-
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
   async function loadOwnerUnits() {
     setLoading(true);
     setError("");
@@ -94,6 +95,74 @@ export default function OwnerUnitImport() {
   });
 
   setCsvRows(rows);
+}
+
+  async function bulkOnboardCsvRows() {
+  setBulkSaving(true);
+  setError("");
+  setSuccess("");
+  setBulkResult(null);
+
+  const results = {
+    total: csvRows.length,
+    successful: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  try {
+    for (const row of csvRows) {
+      const payload = {
+        associationId: form.associationId,
+        associationName: form.associationName,
+        unitNumber: row.unitNumber || row.unit_number || row.Unit || row.unit || "",
+        ownerName: row.ownerName || row.owner_name || row.Owner || row.owner || "",
+        ownerEmail: row.ownerEmail || row.owner_email || row.Email || row.email || "",
+        ownerPhone: row.ownerPhone || row.owner_phone || row.Phone || row.phone || "",
+        accountNumber:
+          row.accountNumber ||
+          row.account_number ||
+          row.unitNumber ||
+          row.unit_number ||
+          row.Unit ||
+          row.unit ||
+          "",
+        openingBalance: row.openingBalance || row.opening_balance || 0,
+      };
+
+      const response = await fetch("/api/onboarding/create-owner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data?.success === false) {
+        results.failed += 1;
+        results.errors.push({
+          unitNumber: payload.unitNumber,
+          ownerName: payload.ownerName,
+          error: data?.error || "Unable to onboard owner.",
+        });
+      } else {
+        results.successful += 1;
+      }
+    }
+
+    setBulkResult(results);
+    setSuccess(
+      `Bulk onboarding complete: ${results.successful} successful, ${results.failed} failed.`
+    );
+
+    await loadOwnerUnits();
+  } catch (err) {
+    setError(err.message || "Unable to complete bulk onboarding.");
+  } finally {
+    setBulkSaving(false);
+  }
 }
 
   async function saveOwnerUnit() {
@@ -332,9 +401,18 @@ setSuccess(
 
 {csvRows.length > 0 && (
   <div className="mt-8 overflow-hidden rounded-3xl border border-white/10">
-    <div className="bg-white/10 px-5 py-4">
-      <h2 className="text-xl font-semibold">CSV Preview</h2>
-    </div>
+    <div className="flex flex-col gap-3 bg-white/10 px-5 py-4 md:flex-row md:items-center md:justify-between">
+  <h2 className="text-xl font-semibold">CSV Preview</h2>
+
+  <button
+    type="button"
+    onClick={bulkOnboardCsvRows}
+    disabled={bulkSaving || csvRows.length === 0}
+    className="rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 disabled:opacity-50"
+  >
+    {bulkSaving ? "Onboarding CSV..." : "Start Bulk Onboarding"}
+  </button>
+</div>
 
     <table className="w-full text-left text-sm">
       <thead className="bg-slate-950/40">
