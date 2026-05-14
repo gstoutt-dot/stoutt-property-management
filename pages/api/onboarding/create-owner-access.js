@@ -77,22 +77,15 @@ export default async function handler(req, res) {
         if (existingAuthUser?.id) {
       resolvedAuthUserId = existingAuthUser.id;
     } else {
-            const temporaryPassword = "SpmWelcome2026!";
-
-      const { data: createdAuthUser, error: createAuthError } =
+                  const { data: createdAuthUser, error: createAuthError } =
         await supabaseAdmin.auth.admin.createUser({
           email: normalizedOwnerEmail,
-          password: temporaryPassword,
-          email_confirm: true,
-          user_metadata: {
-            role: "owner",
-            owner_name: normalizedOwnerName,
-            unit_number: normalizedUnitNumber,
-            association_id: resolvedAssociationId,
-          },
+          password: "Owner123456!",
+          email_confirm: true
         });
 
       if (createAuthError) {
+        console.error("AUTH CREATE ERROR:", createAuthError);
         throw createAuthError;
       }
 
