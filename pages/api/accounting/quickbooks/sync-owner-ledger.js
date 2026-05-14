@@ -98,14 +98,51 @@ export default async function handler(req, res) {
     }
 
     const { data: ownerBalances, error: ownerBalanceError } =
-      await supabaseAdmin
-        .from("owner_account_balances")
-        .select("*")
-        .eq("association_id", associationId);
+  await supabaseAdmin
+    .from("owner_account_balances")
+    .select("*")
+    .eq("association_id", associationId);
 
-    if (ownerBalanceError) {
-      throw ownerBalanceError;
-    }
+if (ownerBalanceError) {
+  throw ownerBalanceError;
+}
+
+const { data: identityLinks, error: identityLinkError } =
+  await supabaseAdmin
+    .from("accounting_identity_links")
+    .select("*")
+    .eq("association_id", associationId);
+
+if (identityLinkError) {
+  throw identityLinkError;
+}
+
+const ownerIdentityRecords = (ownerBalances || []).map((balance) => {
+  const matchingLink = (identityLinks || []).find((link) => {
+    return (
+      String(link.unit_number || "").trim() ===
+        String(balance.unit_number || "").trim() ||
+      String(link.owner_user_id || "").trim() ===
+        String(balance.owner_user_id || "").trim()
+    );
+  });
+
+  return {
+    ...balance,
+    quickbooks_customer_id:
+      balance.quickbooks_customer_id ||
+      matchingLink?.quickbooks_customer_id ||
+      null,
+    quickbooks_customer_display_name:
+      matchingLink?.quickbooks_customer_display_name ||
+      balance.owner_name ||
+      null,
+    owner_user_id:
+      balance.owner_user_id ||
+      matchingLink?.owner_user_id ||
+      null,
+  };
+});
 
     const realmId = connection.realm_id;
 
@@ -166,7 +203,7 @@ const now = new Date().toISOString();
     for (const invoice of invoices) {
       const customerRef = invoice.CustomerRef || {};
       const ownerIdentity = getOwnerIdentityByCustomerId(
-        ownerBalances || [],
+        ownerIdentityRecords || []
         customerRef.value
       );
 
@@ -215,7 +252,7 @@ const now = new Date().toISOString();
     for (const payment of payments) {
       const customerRef = payment.CustomerRef || {};
       const ownerIdentity = getOwnerIdentityByCustomerId(
-        ownerBalances || [],
+        ownerIdentityRecords || []
         customerRef.value
       );
 
