@@ -27,11 +27,15 @@ export default async function handler(req, res) {
       .order("transaction_date", { ascending: false })
       .order("created_at", { ascending: false });
 
-    if (ownerUserId) {
-      query = query.eq("owner_user_id", ownerUserId);
-    } else {
-      query = query.eq("unit_number", unitNumber);
-    }
+    if (ownerUserId && unitNumber) {
+  query = query.or(
+    `owner_user_id.eq.${ownerUserId},unit_number.eq.${unitNumber}`
+  );
+} else if (ownerUserId) {
+  query = query.eq("owner_user_id", ownerUserId);
+} else {
+  query = query.eq("unit_number", unitNumber);
+}
 
     const { data, error } = await query;
 
