@@ -567,19 +567,25 @@ useEffect(() => {
       <div className="mx-auto max-w-6xl px-6 py-8">
 
         <div className="mb-8 flex items-center justify-between">
-          <div>
-            <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
-              Owner Request Portal
-            </div>
+         <div>
+  <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
+    Owner Dashboard
+  </div>
 
-            <h1 className="text-4xl font-semibold tracking-tight">
-              Request Status Center
-            </h1>
+  <h1 className="text-4xl font-semibold tracking-tight">
+    Status & Request Center
+  </h1>
 
-            <p className="mt-3 text-slate-400">
-              Submit requests and track live status updates.
-            </p>
-          </div>
+  <p className="mt-3 text-lg font-medium text-white">
+    Welcome, {ownerProfile?.ownerName || "Homeowner"}
+  </p>
+
+  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+    View your account balance, payment visibility, owner requests,
+    association updates, and service coordination from one calm
+    centralized dashboard.
+  </p>
+</div>
 
          <div className="flex items-center gap-3">
   <NotificationBell
@@ -607,11 +613,21 @@ useEffect(() => {
 
         </div>
 
-<OwnerBalanceCard
-  associationId={ownerProfile?.association_id}
-  ownerUserId={ownerProfile?.id}
-  unitNumber={ownerProfile?.unitNumber}
-/>
+<div className="mb-8">
+  <OwnerBalanceCard
+    associationId={ownerProfile?.association_id}
+    ownerUserId={ownerProfile?.id}
+    unitNumber={ownerProfile?.unitNumber}
+  />
+
+  <div className="mt-4 flex justify-end">
+    <button
+      className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-6 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
+    >
+      Make Payment
+    </button>
+  </div>
+</div>
 
 <div className="mb-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[0.06] p-6">
           <div className="mb-6">
