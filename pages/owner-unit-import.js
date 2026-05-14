@@ -65,12 +65,17 @@ export default function OwnerUnitImport() {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/onboarding/create-owner", {
+      const payload = {
+  ...form,
+  accountNumber: form.accountNumber || form.unitNumber,
+};
+
+const response = await fetch("/api/onboarding/create-owner", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
   },
-  body: JSON.stringify(form),
+  body: JSON.stringify(payload),
 });
 
 const data = await response.json();
@@ -156,16 +161,9 @@ setSuccess(
                 value={form.ownerEmail}
                 onChange={(v) => updateField("ownerEmail", v)}
               />
-              <Input
-                label="Owner Phone"
-                value={form.ownerPhone}
-                onChange={(v) => updateField("ownerPhone", v)}
-              />
-              <Input
-                label="Account Number"
-                value={form.accountNumber}
-                onChange={(v) => updateField("accountNumber", v)}
-              />
+              {/* Owner phone can be added later if needed */}
+
+             {/* Account number defaults to unit number for onboarding */}
               <Input
                 label="Opening Balance"
                 value={form.openingBalance}
