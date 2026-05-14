@@ -74,9 +74,32 @@ export default async function handler(req, res) {
       (user) => user.email?.toLowerCase() === normalizedOwnerEmail
     );
 
-    if (existingAuthUser?.id) {
+        if (existingAuthUser?.id) {
       resolvedAuthUserId = existingAuthUser.id;
+    } else {
+      const temporaryPassword = `SPM-${normalizedUnitNumber}-Welcome!`;
+
+      const { data: createdAuthUser, error: createAuthError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: normalizedOwnerEmail,
+          password: temporaryPassword,
+          email_confirm: true,
+          user_metadata: {
+            role: "owner",
+            owner_name: normalizedOwnerName,
+            unit_number: normalizedUnitNumber,
+            association_id: resolvedAssociationId,
+          },
+        });
+
+      if (createAuthError) {
+        throw createAuthError;
+      }
+
+      resolvedAuthUserId = createdAuthUser.user.id;
     }
+
+    const payload = {
 
     const payload = {
       association_id: resolvedAssociationId,
