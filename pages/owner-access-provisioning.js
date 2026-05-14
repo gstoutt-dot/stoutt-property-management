@@ -7,9 +7,9 @@ const initialAccess = {
   ownerName: "",
   ownerEmail: "",
   portalRole: "Owner",
-  accessStatus: "Pending",
-  financialAccessStatus: "Pending",
-  inviteStatus: "Not Sent",
+  accessStatus: "Active",
+  financialAccessStatus: "Enabled",
+  inviteStatus: "Accepted",
 };
 
 export default function OwnerAccessProvisioning() {
@@ -146,25 +146,25 @@ export default function OwnerAccessProvisioning() {
               <Input label="Owner Email" value={form.ownerEmail} onChange={(v) => updateField("ownerEmail", v)} />
 
               <Select
-                label="Access Status"
-                value={form.accessStatus}
-                onChange={(v) => updateField("accessStatus", v)}
-                options={["Pending", "Provisioned", "Review Required"]}
-              />
+  label="Access Status"
+  value={form.accessStatus}
+  onChange={(v) => updateField("accessStatus", v)}
+  options={["Active", "Pending"]}
+/>
 
-              <Select
-                label="Financial Access"
-                value={form.financialAccessStatus}
-                onChange={(v) => updateField("financialAccessStatus", v)}
-                options={["Pending", "Active", "Hold"]}
-              />
+<Select
+  label="Financial Access"
+  value={form.financialAccessStatus}
+  onChange={(v) => updateField("financialAccessStatus", v)}
+  options={["Enabled", "Disabled"]}
+/>
 
-              <Select
-                label="Invite Status"
-                value={form.inviteStatus}
-                onChange={(v) => updateField("inviteStatus", v)}
-                options={["Not Sent", "Ready", "Sent", "Hold"]}
-              />
+<Select
+  label="Invite Status"
+  value={form.inviteStatus}
+  onChange={(v) => updateField("inviteStatus", v)}
+  options={["Accepted", "Sent"]}
+/>
 
               <button
   type="button"
