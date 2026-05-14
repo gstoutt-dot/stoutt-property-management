@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { refreshQuickBooksAccessToken } from "../../../../lib/quickbooksTokenManager";
 
 const QUICKBOOKS_MINOR_VERSION = "75";
 
@@ -107,8 +108,43 @@ export default async function handler(req, res) {
     }
 
     const realmId = connection.realm_id;
-    const accessToken = connection.access_token;
-    const now = new Date().toISOString();
+
+let accessToken = connection.access_token;
+
+try {
+  const tokenExpiresAt = connection.access_token_expires_at
+    ? new Date(connection.access_token_expires_at)
+    : null;
+
+  const tokenExpired =
+    !tokenExpiresAt || tokenExpiresAt <= new Date();
+
+  if (tokenExpired) {
+    console.log(
+      "QuickBooks access token expired. Refreshing token..."
+    );
+
+    const refreshResult =
+      await refreshQuickBooksAccessToken(
+        associationId
+      );
+
+    accessToken = refreshResult.access_token;
+
+    console.log(
+      "QuickBooks access token refreshed successfully."
+    );
+  }
+} catch (refreshError) {
+  console.error(
+    "QuickBooks token refresh failed:",
+    refreshError
+  );
+
+  throw refreshError;
+}
+
+const now = new Date().toISOString();
 
     const invoiceData = await fetchQuickBooksQuery({
       realmId,
