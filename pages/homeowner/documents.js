@@ -2,8 +2,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function HomeownerDocuments() {
-  const documents = [
-    const [documents, setDocuments] = useState([]);
+  const [documents, setDocuments] = useState([]);
 const [loadingDocuments, setLoadingDocuments] = useState(true);
 
 useEffect(() => {
