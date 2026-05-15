@@ -99,11 +99,12 @@ export default function OwnerUnitImport() {
     }, {});
   });
 
-  setCsvRows(rows);
+setCsvRows(rows);
+setQbWarnings([]);
+setShowBulkConfirm(true);
+}
 
-  setQbWarnings([]);
-    
-  function getCsvRowValue(row, fields) {
+function getCsvRowValue(row, fields) {
   const normalizedRow = {};
 
   Object.entries(row).forEach(([key, value]) => {
