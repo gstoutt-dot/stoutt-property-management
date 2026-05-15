@@ -355,63 +355,95 @@ await loadServiceRequests();
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-12">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-yellow-400">
-              Open Requests
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold">
-              Active ticket status
-            </h2>
-          </div>
-          <p className="text-sm text-slate-400">3 open requests</p>
-        </div>
+  <div className="mb-5 flex items-end justify-between gap-4">
+    <div>
+      <p className="text-sm font-medium text-yellow-400">
+        Open Requests
+      </p>
+      <h2 className="mt-2 text-2xl font-semibold">
+        Active ticket status
+      </h2>
+    </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
-          {openRequests.map((request) => (
-            <div
-              key={request.id}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-yellow-400/40 hover:bg-white/[0.06]"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm text-slate-400">{request.id}</p>
-                  <h3 className="mt-2 text-xl font-semibold">
-                    {request.title}
-                  </h3>
-                </div>
+    <p className="text-sm text-slate-400">
+      {requestsLoading
+        ? "Loading requests..."
+        : `${liveRequests.length} open request${
+            liveRequests.length === 1 ? "" : "s"
+          }`}
+    </p>
+  </div>
 
-                <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-                  {request.priority}
-                </span>
-              </div>
+  {requestsLoading ? (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+      Loading homeowner service requests...
+    </div>
+  ) : liveRequests.length > 0 ? (
+    <div className="grid gap-5 lg:grid-cols-3">
+      {liveRequests.map((request) => (
+        <div
+          key={request.id}
+          className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-yellow-400/40 hover:bg-white/[0.06]"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-400">
+                {String(request.id || "").slice(0, 8).toUpperCase()}
+              </p>
 
-              <div className="mt-5 space-y-3 text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="text-slate-400">Category</span>
-                  <span>{request.category}</span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-slate-400">Status</span>
-                  <span className="text-yellow-300">{request.status}</span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-slate-400">Submitted</span>
-                  <span>{request.date}</span>
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
-                {request.update}
-              </div>
-
-              <button className="mt-5 w-full rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/50 hover:text-yellow-300">
-                View Ticket Details
-              </button>
+              <h3 className="mt-2 text-xl font-semibold">
+                {request.title}
+              </h3>
             </div>
-          ))}
+
+            <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+              {request.priority || "Normal"}
+            </span>
+          </div>
+
+          <div className="mt-5 space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Category</span>
+              <span>{request.request_type || "Service Request"}</span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Status</span>
+              <span className="text-yellow-300">
+                {request.status || "Received"}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Submitted</span>
+              <span>
+                {request.created_at
+                  ? new Date(request.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Recently"}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
+            {request.workflow_stage || "Owner Submitted"}
+          </div>
+
+          <button className="mt-5 w-full rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/50 hover:text-yellow-300">
+            View Ticket Details
+          </button>
         </div>
-      </section>
+      ))}
+    </div>
+  ) : (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+      No service requests have been submitted yet.
+    </div>
+  )}
+</section>
     </main>
   );
 }
