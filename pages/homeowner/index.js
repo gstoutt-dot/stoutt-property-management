@@ -235,8 +235,8 @@ const [loadError, setLoadError] = useState("");
               </div>
             </div>
 
-                                      <div
-                          <div
+                                      
+                      <div
               id="ledger-summary"
               className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-7"
             >
