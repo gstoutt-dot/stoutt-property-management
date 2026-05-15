@@ -103,10 +103,30 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 }
 
   function getCsvRowValue(row, fields) {
-  for (const field of fields) {
-    const value = row[field];
+  const normalizedRow = {};
 
-    if (value !== undefined && value !== null && String(value).trim() !== "") {
+  Object.entries(row).forEach(([key, value]) => {
+    normalizedRow[
+      String(key)
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+    ] = value;
+  });
+
+  for (const field of fields) {
+    const normalizedField = field
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+    const value = normalizedRow[normalizedField];
+
+    if (
+      value !== undefined &&
+      value !== null &&
+      String(value).trim() !== ""
+    ) {
       return String(value).trim();
     }
   }
