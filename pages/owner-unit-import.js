@@ -100,8 +100,82 @@ export default function OwnerUnitImport() {
   });
 
 setCsvRows(rows);
-setQbWarnings([]);
 setShowBulkConfirm(true);
+
+try {
+  const response = await fetch(
+    `/api/onboarding/list-accounting-identity-links?associationId=${form.associationId}`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Unable to load QuickBooks identity links.");
+  }
+
+  const accountingLinks = (data.accountingIdentityLinks || []).filter(
+    (link) => String(link.unit_number || "").trim() !== ""
+  );
+
+  const warnings = rows.map((row, index) => {
+    const unitNumber = getCsvRowValue(row, [
+      "unitNumber",
+      "unit_number",
+      "Unit",
+      "unit",
+      "Unit Number",
+      "Unit #",
+    ]);
+
+    const matches = accountingLinks.filter(
+      (link) =>
+        String(link.unit_number || "").trim() === String(unitNumber || "").trim()
+    );
+
+    if (matches.length === 0) {
+      return {
+        rowNumber: index + 2,
+        unitNumber,
+        status: "warning",
+        message: "No QuickBooks customer match found.",
+      };
+    }
+
+    if (matches.length > 1) {
+      return {
+        rowNumber: index + 2,
+        unitNumber,
+        status: "warning",
+        message: "Multiple QuickBooks customer matches found.",
+      };
+    }
+
+    return {
+      rowNumber: index + 2,
+      unitNumber,
+      status: "matched",
+      message: `QuickBooks customer matched: ${
+        matches[0].quickbooks_customer_display_name ||
+        matches[0].quickbooks_company_name ||
+        matches[0].quickbooks_customer_id ||
+        "Matched customer"
+      }`,
+    };
+  });
+
+  setQbWarnings(warnings);
+} catch (err) {
+  setQbWarnings([
+    {
+      rowNumber: "System",
+      unitNumber: "—",
+      status: "warning",
+      message:
+        err.message ||
+        "Unable to compare roster against QuickBooks identity links.",
+    },
+  ]);
+}
 }
 
 function getCsvRowValue(row, fields) {
@@ -599,9 +673,10 @@ if (data?.skipped) {
       type="button"
       onClick={() => {
         setCsvRows([]);
-        setCsvFileName("");
-        setShowBulkConfirm(false);
-        setBulkResult(null);
+setCsvFileName("");
+setShowBulkConfirm(false);
+setBulkResult(null);
+setQbWarnings([]);
       }}
       disabled={bulkSaving}
       className="rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
@@ -615,6 +690,52 @@ if (data?.skipped) {
   </p>
 )}
 </div>
+
+{qbWarnings.length > 0 && (
+  <div className="border-b border-white/10 bg-slate-950/40 px-5 py-4">
+    <p className="font-semibold text-white">
+      QuickBooks Match Review
+    </p>
+
+    <p className="mt-2 text-sm text-slate-300">
+      These are non-blocking warnings. You can continue onboarding safely.
+    </p>
+
+    <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+      <table className="w-full text-left text-sm">
+        <thead className="bg-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
+          <tr>
+            <th className="px-4 py-3">Row</th>
+            <th className="px-4 py-3">Unit</th>
+            <th className="px-4 py-3">QuickBooks Status</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y divide-white/10">
+          {qbWarnings.map((warning, index) => (
+            <tr key={index}>
+              <td className="px-4 py-3 text-slate-300">
+                {warning.rowNumber}
+              </td>
+              <td className="px-4 py-3 text-white">
+                {warning.unitNumber || "—"}
+              </td>
+              <td
+                className={`px-4 py-3 ${
+                  warning.status === "matched"
+                    ? "text-emerald-300"
+                    : "text-amber-300"
+                }`}
+              >
+                {warning.message}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
 
 {showBulkConfirm && (
   <div className="border-b border-amber-300/20 bg-amber-400/10 px-5 py-4">
