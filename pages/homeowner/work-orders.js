@@ -192,29 +192,33 @@ export default function HomeownerWorkOrders() {
             <div>
               <label className="text-sm text-slate-300">Request Title</label>
               <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
-                placeholder="Example: Pool light not working"
-              />
+  value={title}
+  onChange={(e) => setTitle(e.target.value)}
+  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
+  placeholder="Example: Pool light not working"
+/>
             </div>
 
             <div>
               <label className="text-sm text-slate-300">Description</label>
               <textarea
-                rows="5"
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
-                placeholder="Describe the issue, location, timing, and any helpful details."
-              />
+  rows="5"
+  value={description}
+  onChange={(e) => setDescription(e.target.value)}
+  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
+  placeholder="Describe the issue, location, timing, and any helpful details."
+/>
             </div>
 
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className="text-sm text-slate-300">Location</label>
                 <input
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
-                  placeholder="Building, unit, common area, etc."
-                />
+  value={location}
+  onChange={(e) => setLocation(e.target.value)}
+  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
+  placeholder="Building, unit, common area, etc."
+/>
               </div>
 
               <div>
