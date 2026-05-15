@@ -148,8 +148,90 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   errors: [],
 };
 
-  try {
-    for (const row of csvRows) {
+  const validationErrors = [];
+const seenUnits = new Set();
+const seenEmails = new Set();
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+csvRows.forEach((row, index) => {
+  const rowNumber = index + 2;
+
+  const unitNumber = getCsvRowValue(row, [
+    "unitNumber",
+    "unit_number",
+    "Unit",
+    "unit",
+    "Unit Number",
+    "Unit #",
+  ]);
+
+  const ownerName = getCsvRowValue(row, [
+    "ownerName",
+    "owner_name",
+    "Owner",
+    "owner",
+    "Owner Name",
+    "Name",
+    "Resident",
+  ]);
+
+  const ownerEmail = getCsvRowValue(row, [
+    "ownerEmail",
+    "owner_email",
+    "Email",
+    "email",
+    "Email Address",
+    "Primary Email",
+  ]).toLowerCase();
+
+  if (!unitNumber) {
+    validationErrors.push(`Row ${rowNumber}: missing unit number.`);
+  } else if (seenUnits.has(unitNumber)) {
+    validationErrors.push(`Row ${rowNumber}: duplicate unit ${unitNumber}.`);
+  } else {
+    seenUnits.add(unitNumber);
+  }
+
+  if (!ownerName) {
+    validationErrors.push(`Row ${rowNumber}: missing owner name.`);
+  }
+
+  if (!ownerEmail) {
+    validationErrors.push(`Row ${rowNumber}: missing owner email.`);
+  } else if (!emailPattern.test(ownerEmail)) {
+    validationErrors.push(`Row ${rowNumber}: invalid email ${ownerEmail}.`);
+  } else if (seenEmails.has(ownerEmail)) {
+    validationErrors.push(`Row ${rowNumber}: duplicate email ${ownerEmail}.`);
+  } else {
+    seenEmails.add(ownerEmail);
+  }
+});
+
+if (validationErrors.length > 0) {
+  setBulkResult({
+    total: csvRows.length,
+    successful: 0,
+    skipped: 0,
+    failed: csvRows.length,
+    errors: validationErrors.map((message) => ({
+      unitNumber: "Validation",
+      ownerName: "CSV Roster",
+      error: message,
+    })),
+  });
+
+  setError(
+    `CSV validation failed. Fix ${validationErrors.length} issue${
+      validationErrors.length === 1 ? "" : "s"
+    } before onboarding.`
+  );
+
+  setBulkSaving(false);
+  return;
+}
+
+try {
+  for (const row of csvRows) {
       const unitNumber = getCsvRowValue(row, [
   "unitNumber",
   "unit_number",
