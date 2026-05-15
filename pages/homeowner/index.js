@@ -349,17 +349,10 @@ const [loadError, setLoadError] = useState("");
                     </p>
                   </div>
                 </div>
-                            </div>
+              </div>
             </div>
 
-            <div className="mt-6">
-              <OwnerAccountLedger
-                associationId={ASSOCIATION_ID}
-                ownerUserId={OWNER_USER_ID}
-                unitNumber={UNIT_NUMBER}
-              />
-            </div>
-
+            
           </>
         )}
       </section>
