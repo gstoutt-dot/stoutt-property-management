@@ -534,6 +534,51 @@ if (data?.skipped) {
         ))}
       </tbody>
     </table>
+
+{bulkResult && (
+  <div className="border-t border-white/10 bg-slate-950/40 px-5 py-5">
+    <h3 className="text-lg font-semibold text-white">
+      Bulk Onboarding Results
+    </h3>
+
+    <div className="mt-4 grid gap-3 md:grid-cols-4">
+      <Metric label="Total" value={bulkResult.total || 0} />
+      <Metric label="Created" value={bulkResult.successful || 0} />
+      <Metric label="Skipped" value={bulkResult.skipped || 0} />
+      <Metric label="Failed" value={bulkResult.failed || 0} />
+    </div>
+
+    {bulkResult.errors?.length > 0 && (
+      <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
+            <tr>
+              <th className="px-4 py-3">Unit</th>
+              <th className="px-4 py-3">Owner</th>
+              <th className="px-4 py-3">Result</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-white/10">
+            {bulkResult.errors.map((item, index) => (
+              <tr key={index}>
+                <td className="px-4 py-3 text-white">
+                  {item.unitNumber || "—"}
+                </td>
+                <td className="px-4 py-3 text-slate-300">
+                  {item.ownerName || "—"}
+                </td>
+                <td className="px-4 py-3 text-slate-300">
+                  {item.error || "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
   </div>
 )}
 </section>
