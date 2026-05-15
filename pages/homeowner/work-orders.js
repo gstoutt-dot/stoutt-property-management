@@ -1,6 +1,80 @@
 import Link from "next/link";
+import { useState } from "react";
 
 export default function HomeownerWorkOrders() {
+    const [requestType, setRequestType] = useState(
+    "Common Area Maintenance"
+  );
+
+  const [priority, setPriority] = useState("Normal");
+
+  const [title, setTitle] = useState("");
+
+  const [description, setDescription] = useState("");
+
+  const [location, setLocation] = useState("");
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const [submitMessage, setSubmitMessage] = useState("");
+
+  const [submitError, setSubmitError] = useState("");
+
+  async function submitRequest() {
+    try {
+      setSubmitting(true);
+      setSubmitError("");
+      setSubmitMessage("");
+
+      const response = await fetch(
+        "/api/homeowner/service-request/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            associationId:
+              "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
+            ownerUserId:
+              "2576c2a8-e49e-4009-9d07-10aba3c63090",
+            unitNumber: "101",
+            ownerName: "Robert Mitchell",
+            ownerEmail: "unit101@sunsetcondo.com",
+            requestType,
+            priority,
+            title,
+            description,
+            location,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error || "Unable to submit service request."
+        );
+      }
+
+      setSubmitMessage(
+        "Service request submitted successfully."
+      );
+
+      setTitle("");
+      setDescription("");
+      setLocation("");
+      setPriority("Normal");
+      setRequestType("Common Area Maintenance");
+    } catch (error) {
+      setSubmitError(
+        error.message || "Unable to submit request."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
   const openRequests = [
     {
       id: "WO-1047",
@@ -77,33 +151,49 @@ export default function HomeownerWorkOrders() {
             </div>
           </div>
 
-          <form className="mt-6 space-y-5">
+          <form
+  className="mt-6 space-y-5"
+  onSubmit={(e) => {
+    e.preventDefault();
+    submitRequest();
+  }}
+>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className="text-sm text-slate-300">Request Type</label>
-                <select className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-yellow-400">
-                  <option>Common Area Maintenance</option>
-                  <option>Landscape / Irrigation</option>
-                  <option>Lighting / Electrical</option>
-                  <option>Gate / Access Control</option>
-                  <option>Plumbing</option>
-                  <option>Other</option>
-                </select>
+                <select
+  value={requestType}
+  onChange={(e) => setRequestType(e.target.value)}
+  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
+>
+  <option>Common Area Maintenance</option>
+  <option>Landscape / Irrigation</option>
+  <option>Lighting / Electrical</option>
+  <option>Gate / Access Control</option>
+  <option>Plumbing</option>
+  <option>Other</option>
+</select>
               </div>
 
               <div>
                 <label className="text-sm text-slate-300">Priority</label>
-                <select className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-yellow-400">
-                  <option>Normal</option>
-                  <option>High</option>
-                  <option>Emergency</option>
-                </select>
+                <select
+  value={priority}
+  onChange={(e) => setPriority(e.target.value)}
+  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
+>
+  <option>Normal</option>
+  <option>High</option>
+  <option>Emergency</option>
+</select>
               </div>
             </div>
 
             <div>
               <label className="text-sm text-slate-300">Request Title</label>
               <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
                 placeholder="Example: Pool light not working"
               />
