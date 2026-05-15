@@ -1,32 +1,37 @@
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function HomeownerDocuments() {
   const documents = [
-    {
-      title: "Declaration of Covenants",
-      type: "Governing Document",
-      date: "Updated Apr 2026",
-      status: "Available",
-    },
-    {
-      title: "Rules & Regulations",
-      type: "Governing Document",
-      date: "Updated Mar 2026",
-      status: "Available",
-    },
-    {
-      title: "2026 Approved Budget",
-      type: "Financial Document",
-      date: "Posted Jan 2026",
-      status: "Available",
-    },
-    {
-      title: "ARC Application Form",
-      type: "Forms & Applications",
-      date: "Updated Apr 2026",
-      status: "Available",
-    },
-  ];
+    const [documents, setDocuments] = useState([]);
+const [loadingDocuments, setLoadingDocuments] = useState(true);
+
+useEffect(() => {
+  async function loadDocuments() {
+    try {
+      setLoadingDocuments(true);
+
+      const response = await fetch(
+        "/api/homeowner/documents/list?associationId=622aaf96-ae1c-4f98-b0b2-00cc9178c2a2&limit=50"
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Unable to load documents.");
+      }
+
+      setDocuments(data.documents || []);
+    } catch (error) {
+      console.error("Unable to load homeowner documents:", error);
+      setDocuments([]);
+    } finally {
+      setLoadingDocuments(false);
+    }
+  }
+
+  loadDocuments();
+}, []);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -98,39 +103,71 @@ export default function HomeownerDocuments() {
           </div>
 
           <div className="space-y-5">
-            {documents.map((doc) => (
-              <div
-                key={doc.title}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-slate-400">{doc.type}</p>
-                    <h3 className="mt-2 text-xl font-semibold">{doc.title}</h3>
-                    <p className="mt-2 text-sm text-slate-400">{doc.date}</p>
-                  </div>
+  {loadingDocuments ? (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+      Loading homeowner documents...
+    </div>
+  ) : documents.length > 0 ? (
+    documents.map((doc) => (
+      <div
+        key={doc.id}
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-slate-400">
+              {doc.document_type || "Association Document"}
+            </p>
 
-                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-                    {doc.status}
-                  </span>
-                </div>
+            <h3 className="mt-2 text-xl font-semibold">
+              {doc.title}
+            </h3>
 
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
-                    View Document
-                  </button>
-
-                  <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-                    Download
-                  </button>
-
-                  <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-                    Ask Ava
-                  </button>
-                </div>
-              </div>
-            ))}
+            <p className="mt-2 text-sm text-slate-400">
+              {doc.posted_at
+                ? new Date(doc.posted_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "Recently Posted"}
+            </p>
           </div>
+
+          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+            {doc.status || "Available"}
+          </span>
+        </div>
+
+        <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
+          {doc.description ||
+            "Association document available for homeowner review."}
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
+            View Document
+          </button>
+
+          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
+            Download
+          </button>
+
+          <Link
+            href="/homeowner/ava"
+            className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
+          >
+            Ask Ava
+          </Link>
+        </div>
+      </div>
+    ))
+  ) : (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+      No homeowner documents are currently available.
+    </div>
+  )}
+</div>
         </div>
 
         <div className="space-y-6">
