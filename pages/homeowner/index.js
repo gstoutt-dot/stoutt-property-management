@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import OwnerAccountLedger from "../../components/OwnerAccountLedger";
 
 const ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const OWNER_USER_ID = "2576c2a8-e49e-4009-9d07-10aba3c63090";
@@ -368,9 +369,16 @@ const [loadError, setLoadError] = useState("");
                   </div>
                 </div>
               </div>
+                        </div>
+
+            <div className="mt-6">
+              <OwnerAccountLedger
+                associationId={ASSOCIATION_ID}
+                ownerUserId={OWNER_USER_ID}
+                unitNumber={UNIT_NUMBER}
+              />
             </div>
 
-            
           </>
         )}
       </section>
