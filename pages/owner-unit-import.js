@@ -180,8 +180,8 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
     setBulkResult(results);
     setSuccess(
-      `Bulk onboarding complete: ${results.successful} successful, ${results.failed} failed.`
-    );
+  `Bulk onboarding complete: ${results.successful} created, ${results.skipped} skipped, ${results.failed} failed.`
+);
 
     await loadOwnerUnits();
   } catch (err) {
