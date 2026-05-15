@@ -4,6 +4,28 @@ import { useEffect, useState } from "react";
 export default function HomeownerMessages() {
   const [messages, setMessages] = useState([]);
 const [loadingMessages, setLoadingMessages] = useState(true);
+const [selectedCategory, setSelectedCategory] = useState("All Messages");
+const filteredMessages =
+  selectedCategory === "All Messages"
+    ? messages
+    : messages.filter((message) =>
+        String(
+          message.category ||
+            message.notification_type ||
+            message.type ||
+            ""
+        )
+          .toLowerCase()
+          .includes(
+            selectedCategory
+              .replace("&", "")
+              .replace("Notices", "")
+              .replace("Updates", "")
+              .replace("Messages", "")
+              .trim()
+              .toLowerCase()
+          )
+      );
 
 useEffect(() => {
   async function loadMessages() {
@@ -155,8 +177,8 @@ useEffect(() => {
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
       Loading homeowner messages...
     </div>
-  ) : messages.length > 0 ? (
-    messages.map((message) => (
+  ) : filteredMessages.length > 0 ? (
+    filteredMessages.map((message) => (
       <div
         key={message.id}
         className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
@@ -221,7 +243,7 @@ useEffect(() => {
     ))
   ) : (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
-      No homeowner messages are available yet.
+      No homeowner messages are available for this category.
     </div>
   )}
 </div>
@@ -235,21 +257,28 @@ useEffect(() => {
 
             <div className="mt-5 space-y-3">
               {[
-                "Association Announcements",
-                "Board Meeting Notices",
-                "Service & Maintenance Updates",
-                "Compliance Notices",
-                "Architectural Review Updates",
-                "Financial Notices",
-                "Direct Messages",
-              ].map((category) => (
-                <button
-                  key={category}
-                  className="block w-full rounded-2xl border border-white/10 px-4 py-3 text-left text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-                >
-                  {category}
-                </button>
-              ))}
+  "All Messages",
+  "Association Announcements",
+  "Board Meeting Notices",
+  "Service & Maintenance Updates",
+  "Compliance Notices",
+  "Architectural Review Updates",
+  "Financial Notices",
+  "Direct Messages",
+].map((category) => (
+  <button
+    key={category}
+    type="button"
+    onClick={() => setSelectedCategory(category)}
+    className={`block w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+      selectedCategory === category
+        ? "border-yellow-400/60 bg-yellow-400/10 text-yellow-300"
+        : "border-white/10 text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
+    }`}
+  >
+    {category}
+  </button>
+))}
             </div>
           </div>
 
