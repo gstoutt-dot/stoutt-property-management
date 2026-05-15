@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function HomeownerWorkOrders() {
     const [requestType, setRequestType] = useState(
@@ -19,8 +19,37 @@ export default function HomeownerWorkOrders() {
   const [submitMessage, setSubmitMessage] = useState("");
 
   const [submitError, setSubmitError] = useState("");
+const [liveRequests, setLiveRequests] = useState([]);
+const [requestsLoading, setRequestsLoading] = useState(true);
 
-  async function submitRequest() {
+async function loadServiceRequests() {
+  try {
+    setRequestsLoading(true);
+
+    const response = await fetch(
+      "/api/homeowner/service-request/list?associationId=622aaf96-ae1c-4f98-b0b2-00cc9178c2a2&ownerUserId=2576c2a8-e49e-4009-9d07-10aba3c63090&unitNumber=101"
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Unable to load service requests.");
+    }
+
+    setLiveRequests(data.requests || []);
+  } catch (error) {
+    console.error("Unable to load homeowner service requests:", error);
+    setLiveRequests([]);
+  } finally {
+    setRequestsLoading(false);
+  }
+}
+
+useEffect(() => {
+  loadServiceRequests();
+}, []);
+
+async function submitRequest() {
     try {
       setSubmitting(true);
       setSubmitError("");
@@ -65,8 +94,10 @@ export default function HomeownerWorkOrders() {
       setTitle("");
       setDescription("");
       setLocation("");
-      setPriority("Normal");
-      setRequestType("Common Area Maintenance");
+setPriority("Normal");
+setRequestType("Common Area Maintenance");
+
+await loadServiceRequests();
     } catch (error) {
       setSubmitError(
         error.message || "Unable to submit request."
