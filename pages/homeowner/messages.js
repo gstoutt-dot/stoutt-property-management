@@ -65,73 +65,74 @@ useEffect(() => {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid gap-6 md:grid-cols-4">
-          {[
-  [
-    "Unread",
-    String(
-      messages.filter(
-        (message) => !message.read_at && message.status !== "Read"
-      ).length
-    ),
-  ],
-  [
-    "Announcements",
-    String(
-      messages.filter((message) =>
+  <div className="grid gap-6 md:grid-cols-4">
+    {[
+      [
+        "Unread",
         String(
-          message.category ||
-            message.notification_type ||
-            message.type ||
-            ""
-        )
-          .toLowerCase()
-          .includes("announcement")
-      ).length
-    ),
-  ],
-  [
-    "Service Updates",
-    String(
-      messages.filter((message) =>
+          messages.filter(
+            (message) => !message.read_at && message.status !== "Read"
+          ).length
+        ),
+      ],
+      [
+        "Announcements",
         String(
-          message.category ||
-            message.notification_type ||
-            message.type ||
-            ""
-        )
-          .toLowerCase()
-          .includes("service")
-      ).length
-    ),
-  ],
-  [
-    "Direct Messages",
-    String(
-      messages.filter((message) =>
+          messages.filter((message) =>
+            String(
+              message.category ||
+                message.notification_type ||
+                message.type ||
+                ""
+            )
+              .toLowerCase()
+              .includes("announcement")
+          ).length
+        ),
+      ],
+      [
+        "Service Updates",
         String(
-          message.category ||
-            message.notification_type ||
-            message.type ||
-            ""
-        )
-          .toLowerCase()
-          .includes("direct")
-      ).length
-    ),
-  ],
-].map(([label, value]) => (
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-            >
-              <p className="text-sm text-slate-400">{label}</p>
-              <div className="mt-3 text-4xl font-bold text-yellow-400">
-                {value}
-              </div>
-            </div>
-          ))}
+          messages.filter((message) =>
+            String(
+              message.category ||
+                message.notification_type ||
+                message.type ||
+                ""
+            )
+              .toLowerCase()
+              .includes("service")
+          ).length
+        ),
+      ],
+      [
+        "Direct Messages",
+        String(
+          messages.filter((message) =>
+            String(
+              message.category ||
+                message.notification_type ||
+                message.type ||
+                ""
+            )
+              .toLowerCase()
+              .includes("direct")
+          ).length
+        ),
+      ],
+    ].map(([label, value]) => (
+      <div
+        key={label}
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+      >
+        <p className="text-sm text-slate-400">{label}</p>
+        <div className="mt-3 text-4xl font-bold text-yellow-400">
+          {value}
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+</section>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
