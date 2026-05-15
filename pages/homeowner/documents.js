@@ -65,78 +65,61 @@ useEffect(() => {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid gap-6 md:grid-cols-4">
-          {[
-            {[
-  [
-    "Governing Docs",
-    String(
-      documents.filter((doc) =>
+  <div className="grid gap-6 md:grid-cols-4">
+    {[
+      [
+        "Governing Docs",
         String(
-          doc.document_type ||
-            doc.category ||
-            ""
-        )
-          .toLowerCase()
-          .includes("governing")
-      ).length
-    ),
-  ],
-  [
-    "Meeting Records",
-    String(
-      documents.filter((doc) =>
+          documents.filter((doc) =>
+            String(doc.document_type || doc.category || "")
+              .toLowerCase()
+              .includes("governing")
+          ).length
+        ),
+      ],
+      [
+        "Meeting Records",
         String(
-          doc.document_type ||
-            doc.category ||
-            ""
-        )
-          .toLowerCase()
-          .includes("meeting")
-      ).length
-    ),
-  ],
-  [
-    "Financial Files",
-    String(
-      documents.filter((doc) =>
+          documents.filter((doc) =>
+            String(doc.document_type || doc.category || "")
+              .toLowerCase()
+              .includes("meeting")
+          ).length
+        ),
+      ],
+      [
+        "Financial Files",
         String(
-          doc.document_type ||
-            doc.category ||
-            ""
-        )
-          .toLowerCase()
-          .includes("financial")
-      ).length
-    ),
-  ],
-  [
-    "Forms",
-    String(
-      documents.filter((doc) =>
+          documents.filter((doc) =>
+            String(doc.document_type || doc.category || "")
+              .toLowerCase()
+              .includes("financial")
+          ).length
+        ),
+      ],
+      [
+        "Forms",
         String(
-          doc.document_type ||
-            doc.category ||
-            ""
-        )
-          .toLowerCase()
-          .includes("form")
-      ).length
-    ),
-  ],
-].map(([label, value]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-            >
-              <p className="text-sm text-slate-400">{label}</p>
-              <div className="mt-3 text-4xl font-bold text-yellow-400">
-                {value}
-              </div>
-            </div>
-          ))}
+          documents.filter((doc) =>
+            String(doc.document_type || doc.category || "")
+              .toLowerCase()
+              .includes("form")
+          ).length
+        ),
+      ],
+    ].map(([label, value]) => (
+      <div
+        key={label}
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+      >
+        <p className="text-sm text-slate-400">{label}</p>
+        <div className="mt-3 text-4xl font-bold text-yellow-400">
+          {value}
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+</section>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
