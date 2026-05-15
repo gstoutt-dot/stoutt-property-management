@@ -1,32 +1,36 @@
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function HomeownerMessages() {
-  const messages = [
-    {
-      id: "MSG-7821",
-      title: "Pool Area Maintenance Notice",
-      category: "Association Notice",
-      status: "Unread",
-      date: "Apr 28, 2026",
-      preview: "The pool area will be temporarily closed for scheduled maintenance.",
-    },
-    {
-      id: "MSG-7814",
-      title: "Board Meeting Reminder",
-      category: "Meeting Notice",
-      status: "Read",
-      date: "Apr 26, 2026",
-      preview: "The next board meeting is scheduled for Thursday at 6:30 PM.",
-    },
-    {
-      id: "MSG-7799",
-      title: "Landscape Service Update",
-      category: "Service Update",
-      status: "Read",
-      date: "Apr 24, 2026",
-      preview: "Landscape crews will be onsite this week for seasonal trimming.",
-    },
-  ];
+  const [messages, setMessages] = useState([]);
+const [loadingMessages, setLoadingMessages] = useState(true);
+
+useEffect(() => {
+  async function loadMessages() {
+    try {
+      setLoadingMessages(true);
+
+      const response = await fetch(
+        "/api/homeowner/messages/list?associationId=622aaf96-ae1c-4f98-b0b2-00cc9178c2a2&limit=25"
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Unable to load messages.");
+      }
+
+      setMessages(data.messages || []);
+    } catch (error) {
+      console.error("Unable to load homeowner messages:", error);
+      setMessages([]);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }
+
+  loadMessages();
+}, []);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
