@@ -67,12 +67,60 @@ useEffect(() => {
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="grid gap-6 md:grid-cols-4">
           {[
-            ["Unread", "1"],
-            ["Announcements", "7"],
-            ["Service Updates", "4"],
-            ["Direct Messages", "2"],
-          ].map(([label, value]) => (
-            <div
+  [
+    "Unread",
+    String(
+      messages.filter(
+        (message) => !message.read_at && message.status !== "Read"
+      ).length
+    ),
+  ],
+  [
+    "Announcements",
+    String(
+      messages.filter((message) =>
+        String(
+          message.category ||
+            message.notification_type ||
+            message.type ||
+            ""
+        )
+          .toLowerCase()
+          .includes("announcement")
+      ).length
+    ),
+  ],
+  [
+    "Service Updates",
+    String(
+      messages.filter((message) =>
+        String(
+          message.category ||
+            message.notification_type ||
+            message.type ||
+            ""
+        )
+          .toLowerCase()
+          .includes("service")
+      ).length
+    ),
+  ],
+  [
+    "Direct Messages",
+    String(
+      messages.filter((message) =>
+        String(
+          message.category ||
+            message.notification_type ||
+            message.type ||
+            ""
+        )
+          .toLowerCase()
+          .includes("direct")
+      ).length
+    ),
+  ],
+].map(([label, value]) => (
               key={label}
               className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
             >
