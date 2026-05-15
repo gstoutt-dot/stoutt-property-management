@@ -102,51 +102,80 @@ useEffect(() => {
           </div>
 
           <div className="space-y-5">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-slate-400">
-                      {message.category} • {message.id}
-                    </p>
+  {loadingMessages ? (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+      Loading homeowner messages...
+    </div>
+  ) : messages.length > 0 ? (
+    messages.map((message) => (
+      <div
+        key={message.id}
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-slate-400">
+              {(message.category ||
+                message.notification_type ||
+                message.type ||
+                "Homeowner Notice")}{" "}
+              • {String(message.id || "").slice(0, 8).toUpperCase()}
+            </p>
 
-                    <h3 className="mt-2 text-xl font-semibold">
-                      {message.title}
-                    </h3>
+            <h3 className="mt-2 text-xl font-semibold">
+              {message.title ||
+                message.subject ||
+                "Homeowner Notification"}
+            </h3>
 
-                    <p className="mt-2 text-sm text-slate-400">
-                      {message.date}
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-                    {message.status}
-                  </span>
-                </div>
-
-                <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
-                  {message.preview}
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
-                    Open Message
-                  </button>
-
-                  <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-                    Mark Read
-                  </button>
-
-                  <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-                    Ask Ava
-                  </button>
-                </div>
-              </div>
-            ))}
+            <p className="mt-2 text-sm text-slate-400">
+              {message.created_at
+                ? new Date(message.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "Recently"}
+            </p>
           </div>
+
+          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+            {message.read_at ? "Read" : message.status || "Unread"}
+          </span>
+        </div>
+
+        <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
+          {message.message ||
+            message.body ||
+            message.preview ||
+            message.description ||
+            "A homeowner notification is available."}
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
+            Open Message
+          </button>
+
+          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
+            Mark Read
+          </button>
+
+          <Link
+            href="/homeowner/ava"
+            className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
+          >
+            Ask Ava
+          </Link>
+        </div>
+      </div>
+    ))
+  ) : (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+      No homeowner messages are available yet.
+    </div>
+  )}
+</div>
         </div>
 
         <div className="space-y-6">
