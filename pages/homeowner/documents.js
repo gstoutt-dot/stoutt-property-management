@@ -67,11 +67,64 @@ useEffect(() => {
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="grid gap-6 md:grid-cols-4">
           {[
-            ["Governing Docs", "8"],
-            ["Meeting Records", "14"],
-            ["Financial Files", "6"],
-            ["Forms", "11"],
-          ].map(([label, value]) => (
+            {[
+  [
+    "Governing Docs",
+    String(
+      documents.filter((doc) =>
+        String(
+          doc.document_type ||
+            doc.category ||
+            ""
+        )
+          .toLowerCase()
+          .includes("governing")
+      ).length
+    ),
+  ],
+  [
+    "Meeting Records",
+    String(
+      documents.filter((doc) =>
+        String(
+          doc.document_type ||
+            doc.category ||
+            ""
+        )
+          .toLowerCase()
+          .includes("meeting")
+      ).length
+    ),
+  ],
+  [
+    "Financial Files",
+    String(
+      documents.filter((doc) =>
+        String(
+          doc.document_type ||
+            doc.category ||
+            ""
+        )
+          .toLowerCase()
+          .includes("financial")
+      ).length
+    ),
+  ],
+  [
+    "Forms",
+    String(
+      documents.filter((doc) =>
+        String(
+          doc.document_type ||
+            doc.category ||
+            ""
+        )
+          .toLowerCase()
+          .includes("form")
+      ).length
+    ),
+  ],
+].map(([label, value]) => (
             <div
               key={label}
               className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
