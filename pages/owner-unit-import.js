@@ -101,54 +101,8 @@ export default function OwnerUnitImport() {
 
   setCsvRows(rows);
 
-try {
-  const response = await fetch(
-    `/api/onboarding/list-accounting-identity-links?associationId=${form.associationId}`
-  );
-
-  const data = await response.json();
-
-  if (response.ok && data?.links) {
-    const qbUnits = new Set(
-      data.links
-        .filter((x) => x.unit_number)
-        .map((x) => String(x.unit_number).trim())
-    );
-
-    const warnings = rows
-      .map((row) => {
-        const unitNumber = getCsvRowValue(row, [
-          "unitNumber",
-          "unit_number",
-          "Unit",
-          "unit",
-          "Unit Number",
-          "Unit #",
-        ]);
-
-        if (!unitNumber) return null;
-
-        if (!qbUnits.has(unitNumber)) {
-          return {
-            unitNumber,
-            warning:
-              "No QuickBooks customer match found. Financial review recommended.",
-          };
-        }
-
-        return null;
-      })
-      .filter(Boolean);
-
-    setQbWarnings(warnings);
-  }
-} catch (err) {
-  console.error("QB warning load failed:", err);
-}
-
-setShowBulkConfirm(true);
-}
-
+  setQbWarnings([]);
+    
   function getCsvRowValue(row, fields) {
   const normalizedRow = {};
 
