@@ -230,11 +230,29 @@ export default function HomeownerWorkOrders() {
             </div>
 
             <button
-              type="button"
-              className="w-full rounded-2xl bg-yellow-400 px-5 py-4 font-semibold text-slate-950 shadow-lg shadow-yellow-400/20 transition hover:bg-yellow-300"
-            >
-              Submit Service Request
-            </button>
+  type="submit"
+  disabled={submitting}
+  className="w-full rounded-2xl bg-yellow-400 px-5 py-4 font-semibold text-slate-950 shadow-lg shadow-yellow-400/20 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
+>
+  {submitting ? "Submitting..." : "Submit Service Request"}
+</button>
+    {submitting && (
+  <p className="text-sm text-slate-400">
+    Submitting request...
+  </p>
+)}
+
+{submitMessage && (
+  <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+    {submitMessage}
+  </div>
+)}
+
+{submitError && (
+  <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+    {submitError}
+  </div>
+)}
           </form>
         </div>
 
