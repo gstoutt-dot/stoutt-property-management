@@ -236,23 +236,23 @@ const [loadError, setLoadError] = useState("");
             </div>
 
                                       <div
+                          <div
               id="ledger-summary"
               className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-7"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-yellow-400">
-                    QuickBooks Balance Ledger Summary
+                    QuickBooks Live Balance Summary
                   </p>
 
                   <h2 className="mt-2 text-2xl font-semibold text-white">
                     Financial Visibility
                   </h2>
 
-                  <p className="mt-2 max-w-3xl text-sm text-slate-400">
-                    Live homeowner accounting summary mirrored from QuickBooks for
-                    assessment balance, payment status, account health, and ledger
-                    activity.
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+                    This summary reflects the homeowner balance information currently
+                    mirrored from QuickBooks for Unit {unitNumber}.
                   </p>
                 </div>
 
@@ -262,30 +262,42 @@ const [loadError, setLoadError] = useState("");
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-4">
-                <div className="rounded-2xl bg-slate-900/70 p-5">
-                  <p className="text-sm text-slate-400">Open Balance</p>
-                  <p className="mt-2 text-2xl font-bold text-yellow-300">
+                <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5">
+                  <p className="text-xs uppercase tracking-wide text-yellow-300">
+                    Open Balance
+                  </p>
+
+                  <p className="mt-2 text-3xl font-bold text-yellow-300">
                     {currentBalance}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-900/70 p-5">
-                  <p className="text-sm text-slate-400">Monthly Assessment</p>
+                <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">
+                    Monthly Assessment
+                  </p>
+
                   <p className="mt-2 text-2xl font-bold text-white">
                     {monthlyAssessment}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-900/70 p-5">
-                  <p className="text-sm text-slate-400">Last Payment</p>
+                <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">
+                    Last Payment
+                  </p>
+
                   <p className="mt-2 text-2xl font-bold text-white">
                     {lastPaymentDate}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-900/70 p-5">
-                  <p className="text-sm text-slate-400">Account Health</p>
-                  <p className="mt-2 text-2xl font-bold text-emerald-300">
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5">
+                  <p className="text-xs uppercase tracking-wide text-emerald-300">
+                    Account Health
+                  </p>
+
+                  <p className="mt-2 text-2xl font-bold text-emerald-200">
                     {accountHealth}
                   </p>
                 </div>
@@ -296,8 +308,9 @@ const [loadError, setLoadError] = useState("");
                   <p className="text-xs uppercase tracking-wide text-slate-500">
                     Charges
                   </p>
+
                   <p className="mt-2 text-lg font-semibold text-white">
-                    Monthly assessment: {monthlyAssessment}
+                    Monthly assessment reflected: {monthlyAssessment}
                   </p>
                 </div>
 
@@ -305,17 +318,19 @@ const [loadError, setLoadError] = useState("");
                   <p className="text-xs uppercase tracking-wide text-slate-500">
                     Payments
                   </p>
+
                   <p className="mt-2 text-lg font-semibold text-white">
-                    Last payment posted: {lastPaymentDate}
+                    Last payment date: {lastPaymentDate}
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-500">
-                    Credits
+                    Delinquency Status
                   </p>
+
                   <p className="mt-2 text-lg font-semibold text-white">
-                    Reflected in open balance
+                    {delinquencyLevel}
                   </p>
                 </div>
               </div>
@@ -326,6 +341,7 @@ const [loadError, setLoadError] = useState("");
                     <p className="text-xs uppercase tracking-wide text-slate-500">
                       Account Number
                     </p>
+
                     <p className="mt-2 font-semibold text-white">
                       {accountNumber}
                     </p>
@@ -333,17 +349,19 @@ const [loadError, setLoadError] = useState("");
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-500">
-                      Delinquency Status
+                      Payment Status
                     </p>
+
                     <p className="mt-2 font-semibold text-white">
-                      {delinquencyLevel}
+                      {paymentStatus}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-500">
-                      Ledger Activity
+                      QuickBooks Sync
                     </p>
+
                     <p className="mt-2 font-semibold text-white">
                       {syncTimestamp}
                     </p>
