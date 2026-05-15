@@ -121,11 +121,12 @@ const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   setBulkResult(null);
 
   const results = {
-    total: csvRows.length,
-    successful: 0,
-    failed: 0,
-    errors: [],
-  };
+  total: csvRows.length,
+  successful: 0,
+  skipped: 0,
+  failed: 0,
+  errors: [],
+};
 
   try {
     for (const row of csvRows) {
