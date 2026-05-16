@@ -81,7 +81,11 @@ export default async function handler(req, res) {
           String(action.title || "").trim().toLowerCase() ===
           String(request.title || "").trim().toLowerCase();
 
-        return sameOwner && sameUnit && sameTitle;
+                const sameDescription =
+          String(action.description || "").trim().toLowerCase() ===
+          String(request.description || "").trim().toLowerCase();
+
+        return sameOwner && sameUnit && (sameTitle || sameDescription);
       });
 
       if (!matchingBosAction) {
