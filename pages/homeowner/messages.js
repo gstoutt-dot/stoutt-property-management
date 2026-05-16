@@ -31,7 +31,6 @@ async function markMessageRead(notificationId) {
           ? {
               ...message,
               read_status: true,
-          status: "Read",
             }
           : message
       )
@@ -253,7 +252,7 @@ useEffect(() => {
           </div>
 
           <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-            {message.read_at ? "Read" : message.status || "Unread"}
+            {message.read_at ? "Read" : message.read_status ? "Read" : "Unread"}
           </span>
         </div>
 
@@ -273,10 +272,10 @@ useEffect(() => {
           <button
   type="button"
   onClick={() => markMessageRead(message.id)}
-  disabled={!!message.read_at || message.status === "Read"}
+  disabled={!!message.read_at || message.read_status === true}
   className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
 >
-  {message.read_at || message.status === "Read" ? "Already Read" : "Mark Read"}
+  {message.read_at || message.read_status === true ? "Already Read" : "Mark Read"}
 </button>
 
           <Link
