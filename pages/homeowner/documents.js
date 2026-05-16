@@ -5,8 +5,9 @@ import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeownerDocuments() {
   const router = useRouter();
-  const [ownerProfile, setOwnerProfile] = useState(null);
+    const [ownerProfile, setOwnerProfile] = useState(null);
   const [documents, setDocuments] = useState([]);
+const [searchTerm, setSearchTerm] = useState("");
 const [loadingDocuments, setLoadingDocuments] = useState(true);
 
 useEffect(() => {
@@ -79,6 +80,23 @@ useEffect(() => {
 
   loadDocuments();
 }, [ownerProfile?.association_id]);
+
+    const filteredDocuments = documents.filter((doc) => {
+    const searchValue = String(searchTerm || "").toLowerCase().trim();
+
+    if (!searchValue) return true;
+
+    return [
+      doc.title,
+      doc.description,
+      doc.document_type,
+      doc.category,
+      doc.status,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchValue);
+  });
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -179,7 +197,9 @@ useEffect(() => {
           </div>
 
           <div className="mb-5 rounded-3xl border border-white/10 bg-white/[0.04] p-4">
-            <input
+                        <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
               className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-yellow-400"
               placeholder="Search documents, forms, policies, or meeting records..."
             />
@@ -190,8 +210,8 @@ useEffect(() => {
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
       Loading homeowner documents...
     </div>
-  ) : documents.length > 0 ? (
-    documents.map((doc) => (
+    ) : filteredDocuments.length > 0 ? (
+    filteredDocuments.map((doc) => (
       <div
         key={doc.id}
         className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
@@ -247,7 +267,7 @@ useEffect(() => {
     ))
   ) : (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
-      No homeowner documents are currently available.
+            No documents match your current search.
     </div>
   )}
 </div>
