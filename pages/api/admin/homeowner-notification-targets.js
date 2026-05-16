@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabaseAdmin
       .from("owner_profiles")
-      .select("owner_user_id, owner_name, unit_number, user_email, association_id")
+      .select("*")
       .eq("association_id", resolvedAssociationId)
       .order("unit_number", { ascending: true });
 
