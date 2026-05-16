@@ -5,7 +5,41 @@ export default function HomeownerMessages() {
   const [messages, setMessages] = useState([]);
 const [loadingMessages, setLoadingMessages] = useState(true);
 const [selectedCategory, setSelectedCategory] = useState("All Messages");
-const filteredMessages =
+async function markMessageRead(notificationId) {
+  try {
+    const response = await fetch("/api/homeowner/messages/mark-read", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        notificationId,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Unable to mark message as read.");
+    }
+
+    setMessages((currentMessages) =>
+      currentMessages.map((message) =>
+        message.id === notificationId
+          ? {
+              ...message,
+              read_at: data.notification?.read_at || new Date().toISOString(),
+              read_status: true,
+              status: "Read",
+            }
+          : message
+      )
+    );
+  } catch (error) {
+    console.error("Unable to mark message as read:", error);
+  }
+}
+  const filteredMessages =
   selectedCategory === "All Messages"
     ? messages
     : messages.filter((message) =>
