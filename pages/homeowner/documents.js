@@ -80,9 +80,6 @@ useEffect(() => {
   loadDocuments();
 }, [ownerProfile?.association_id]);
 
-  loadDocuments();
-}, []);
-
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="relative overflow-hidden border-b border-white/10">
