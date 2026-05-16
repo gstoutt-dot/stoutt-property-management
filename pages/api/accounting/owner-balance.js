@@ -77,13 +77,41 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: identity } =
+        const { data: identity } =
       await supabaseAdmin
         .from("accounting_identity_links")
         .select("*")
         .eq("association_id", cleanAssociationId)
         .eq("unit_number", balance.unit_number)
         .maybeSingle();
+
+    let resolvedCurrentBalance = balance.current_balance;
+
+    const { data: ledgerEntries, error: ledgerError } =
+      await supabaseAdmin
+        .from("owner_account_ledger_entries")
+        .select("charge_amount,payment_amount,credit_amount")
+        .eq("association_id", cleanAssociationId)
+        .eq("unit_number", balance.unit_number);
+
+    if (!ledgerError && Array.isArray(ledgerEntries) && ledgerEntries.length > 0) {
+      const totalCharges = ledgerEntries.reduce(
+        (sum, entry) => sum + Number(entry.charge_amount || 0),
+        0
+      );
+
+      const totalPayments = ledgerEntries.reduce(
+        (sum, entry) => sum + Number(entry.payment_amount || 0),
+        0
+      );
+
+      const totalCredits = ledgerEntries.reduce(
+        (sum, entry) => sum + Number(entry.credit_amount || 0),
+        0
+      );
+
+      resolvedCurrentBalance = totalCharges - totalPayments - totalCredits;
+    }
 
     return res.status(200).json({
       success: true,
@@ -95,8 +123,8 @@ export default async function handler(req, res) {
         unit_number: balance.unit_number,
         account_number: balance.account_number,
 
-        current_balance:
-          balance.current_balance,
+                current_balance:
+          resolvedCurrentBalance,
 
         monthly_assessment:
           balance.monthly_assessment,
