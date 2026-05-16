@@ -143,7 +143,7 @@ const [loadError, setLoadError] = useState("");
       console.error("Homeowner sign out failed:", error);
     }
 
-    router.replace("/homeowner-login");
+        router.replace("/portal/owner/login");
   }
 
   return (
