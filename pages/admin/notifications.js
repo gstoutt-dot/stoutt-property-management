@@ -23,12 +23,31 @@ export default function AdminHomeownerNotifications() {
   const [priority, setPriority] = useState("Normal");
   const [unitNumber, setUnitNumber] = useState("");
   const [ownerUserId, setOwnerUserId] = useState("");
+  const [owners, setOwners] = useState([]);
+  const [units, setUnits] = useState([]);
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [recentNotifications, setRecentNotifications] = useState([]);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  async function loadNotificationTargets() {
+    try {
+      const response = await fetch(
+        `/api/admin/homeowner-notification-targets?associationId=${encodeURIComponent(
+          associationId
+        )}`
+      );
 
+      const data = await response.json();
+
+      if (data.success) {
+        setOwners(data.owners || []);
+        setUnits(data.units || []);
+      }
+    } catch (error) {
+      console.error("Notification targets load failed:", error);
+    }
+  }
   async function loadRecentNotifications() {
     try {
       const response = await fetch(
@@ -47,9 +66,10 @@ export default function AdminHomeownerNotifications() {
     }
   }
 
-  useEffect(() => {
+    useEffect(() => {
     if (associationId) {
       loadRecentNotifications();
+      loadNotificationTargets();
     }
   }, [associationId]);
 
@@ -191,17 +211,46 @@ export default function AdminHomeownerNotifications() {
                 </label>
               </div>
 
-              {sendTo === "Specific Unit" && (
+                            {sendTo === "Specific Unit" && (
                 <label className="grid gap-2">
                   <span className="text-sm font-medium text-slate-300">
-                    Target Unit Number
+                    Target Unit
                   </span>
-                  <input
+                  <select
                     value={unitNumber}
                     onChange={(event) => setUnitNumber(event.target.value)}
-                    placeholder="Example: 702"
                     className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-amber-300/70"
-                  />
+                  >
+                    <option value="">Select a unit</option>
+                    {units.map((unit) => (
+                      <option key={unit} value={unit}>
+                        Unit {unit}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {sendTo === "Specific Owner" && (
+                <label className="grid gap-2">
+                  <span className="text-sm font-medium text-slate-300">
+                    Target Owner
+                  </span>
+                  <select
+                    value={ownerUserId}
+                    onChange={(event) => setOwnerUserId(event.target.value)}
+                    className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-amber-300/70"
+                  >
+                    <option value="">Select an owner</option>
+                    {owners.map((owner) => (
+                      <option
+                        key={`${owner.unit_number}-${owner.owner_name}`}
+                        value={owner.owner_user_id || owner.unit_number}
+                      >
+                        Unit {owner.unit_number} · {owner.owner_name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               )}
 
