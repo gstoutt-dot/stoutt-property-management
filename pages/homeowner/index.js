@@ -328,7 +328,7 @@ const [loadError, setLoadError] = useState("");
               <div className="mt-6 grid gap-4 md:grid-cols-4">
                 <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5">
                   <p className="text-xs uppercase tracking-wide text-yellow-300">
-                    Open Balance
+                    Current Balance
                   </p>
 
                   <p className="mt-2 text-3xl font-bold text-yellow-300">
