@@ -1,18 +1,66 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeownerDocuments() {
+  const router = useRouter();
+  const [ownerProfile, setOwnerProfile] = useState(null);
   const [documents, setDocuments] = useState([]);
 const [loadingDocuments, setLoadingDocuments] = useState(true);
 
 useEffect(() => {
+  async function loadOwnerProfile() {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user?.email) {
+        router.replace("/portal/owner/login");
+        return;
+      }
+
+      const normalizedEmail = String(session.user.email)
+        .toLowerCase()
+        .trim();
+
+      const profileResponse = await fetch(
+        `/api/owner/profile?ownerEmail=${encodeURIComponent(
+          normalizedEmail
+        )}&authUserId=${encodeURIComponent(session.user.id || "")}`
+      );
+
+      const profileResult = await profileResponse.json();
+
+      if (!profileResponse.ok || !profileResult?.success) {
+        router.replace("/portal/owner/login");
+        return;
+      }
+
+      setOwnerProfile(profileResult.ownerProfile);
+    } catch (error) {
+      console.error("Unable to load homeowner profile for documents:", error);
+      router.replace("/portal/owner/login");
+    }
+  }
+
+  loadOwnerProfile();
+}, [router]);
+
+useEffect(() => {
   async function loadDocuments() {
+    if (!ownerProfile?.association_id) return;
+
     try {
       setLoadingDocuments(true);
 
-      const response = await fetch(
-        "/api/homeowner/documents/list?associationId=622aaf96-ae1c-4f98-b0b2-00cc9178c2a2&limit=50"
-      );
+      const params = new URLSearchParams({
+        associationId: ownerProfile.association_id,
+        limit: "50",
+      });
+
+      const response = await fetch(`/api/homeowner/documents/list?${params}`);
 
       const data = await response.json();
 
@@ -28,6 +76,9 @@ useEffect(() => {
       setLoadingDocuments(false);
     }
   }
+
+  loadDocuments();
+}, [ownerProfile?.association_id]);
 
   loadDocuments();
 }, []);
