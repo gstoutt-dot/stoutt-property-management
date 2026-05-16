@@ -115,17 +115,42 @@ async function submitRequest() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            associationId: ownerProfile?.association_id,
-            ownerUserId: ownerProfile?.id,
-            unitNumber: ownerProfile?.unitNumber,
-            ownerName: ownerProfile?.ownerName,
-            ownerEmail: ownerProfile?.email,
-            requestType,
-            priority,
-            title,
-            description,
-            location,
-          }),
+  associationId: ownerProfile?.association_id,
+
+  associationName:
+    ownerProfile?.associationName ||
+    ownerProfile?.association_name,
+
+  ownerUserId: ownerProfile?.id,
+
+  ownerName:
+    ownerProfile?.ownerName ||
+    ownerProfile?.owner_name,
+
+  ownerEmail:
+    ownerProfile?.email ||
+    ownerProfile?.owner_email,
+
+  unitNumber:
+    ownerProfile?.unitNumber ||
+    ownerProfile?.unit_number,
+
+  phoneNumber:
+    ownerProfile?.phoneNumber ||
+    ownerProfile?.phone_number ||
+    "",
+
+  propertyAddress:
+    ownerProfile?.propertyAddress ||
+    ownerProfile?.property_address ||
+    "",
+
+  requestType,
+  priority,
+  title,
+  description,
+  location,
+}),
         }
       );
 
@@ -243,15 +268,47 @@ await loadServiceRequests();
               <div>
                 <label className="text-sm text-slate-300">Request Type</label>
                 <select
+  <select
   value={requestType}
   onChange={(e) => setRequestType(e.target.value)}
   className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
 >
   <option>Common Area Maintenance</option>
-  <option>Landscape / Irrigation</option>
-  <option>Lighting / Electrical</option>
-  <option>Gate / Access Control</option>
+  <option>Building Maintenance</option>
+  <option>Roof Leak</option>
+  <option>Water Intrusion</option>
   <option>Plumbing</option>
+  <option>Electrical</option>
+  <option>Lighting / Electrical</option>
+  <option>HVAC / Air Conditioning</option>
+  <option>Elevator Issue</option>
+  <option>Landscape / Irrigation</option>
+  <option>Tree Trimming</option>
+  <option>Pool / Spa Issue</option>
+  <option>Gate / Access Control</option>
+  <option>Security Concern</option>
+  <option>Parking Violation</option>
+  <option>Noise Complaint</option>
+  <option>Pet Violation</option>
+  <option>Architectural Request</option>
+  <option>ARC Modification Request</option>
+  <option>Clubhouse Reservation</option>
+  <option>Amenity Issue</option>
+  <option>Janitorial / Cleaning</option>
+  <option>Pest Control</option>
+  <option>Trash / Recycling</option>
+  <option>Billing Question</option>
+  <option>Assessment Question</option>
+  <option>Account Review Request</option>
+  <option>Collections Question</option>
+  <option>Violation Dispute</option>
+  <option>Document Request</option>
+  <option>Insurance Request</option>
+  <option>Estoppel Request</option>
+  <option>Move In / Move Out Request</option>
+  <option>Vendor Damage Report</option>
+  <option>Vehicle Registration</option>
+  <option>General Question</option>
   <option>Other</option>
 </select>
               </div>
