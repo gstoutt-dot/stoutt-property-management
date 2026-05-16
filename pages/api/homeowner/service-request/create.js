@@ -133,7 +133,7 @@ export default async function handler(req, res) {
       amenity_date: null,
 
       status: "open",
-      source: "Homeowner Dashboard",
+      source: `Homeowner Dashboard | homeowner_request:${homeownerRequest?.id}`,
       };
 
     const { data: bosAction, error: bosError } = await supabaseAdmin
