@@ -30,9 +30,8 @@ async function markMessageRead(notificationId) {
         message.id === notificationId
           ? {
               ...message,
-              read_at: data.notification?.read_at || new Date().toISOString(),
               read_status: true,
-              status: "Read",
+          status: "Read",
             }
           : message
       )
