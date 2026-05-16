@@ -115,13 +115,11 @@ async function submitRequest() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            associationId:
-              "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-            ownerUserId:
-              "2576c2a8-e49e-4009-9d07-10aba3c63090",
-            unitNumber: "101",
-            ownerName: "Robert Mitchell",
-            ownerEmail: "unit101@sunsetcondo.com",
+            associationId: ownerProfile?.association_id,
+            ownerUserId: ownerProfile?.id,
+            unitNumber: ownerProfile?.unitNumber,
+            ownerName: ownerProfile?.ownerName,
+            ownerEmail: ownerProfile?.email,
             requestType,
             priority,
             title,
