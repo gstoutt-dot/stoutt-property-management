@@ -103,7 +103,10 @@ const [loadError, setLoadError] = useState("");
             ? requestsResult.requests.slice(0, 3)
             : []
         );
-
+        const notificationResponse = await fetch(
+          `/api/notifications/list?associationId=${resolvedAssociationId}&audience=owner&status=pending&limit=5`
+        );
+        
         const notificationData = await notificationResponse.json();
 
         const items =
