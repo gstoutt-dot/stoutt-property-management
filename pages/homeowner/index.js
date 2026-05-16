@@ -4,9 +4,9 @@ import { useRouter } from "next/router";
 import { supabase } from "../../lib/supabaseClient";
 import OwnerAccountLedger from "../../components/OwnerAccountLedger";
 
-const ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const OWNER_USER_ID = "2576c2a8-e49e-4009-9d07-10aba3c63090";
-const UNIT_NUMBER = "101";
+const FALLBACK_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const FALLBACK_OWNER_USER_ID = "2576c2a8-e49e-4009-9d07-10aba3c63090";
+const FALLBACK_UNIT_NUMBER = "101";
 
 function money(value) {
   const amount = Number(value || 0);
@@ -26,59 +26,91 @@ function prettyDate(value) {
 }
 
 export default function HomeownerDashboard() {
+    const router = useRouter();
+  const [ownerProfile, setOwnerProfile] = useState(null);
   const [balance, setBalance] = useState(null);
 const [notifications, setNotifications] = useState([]);
 const [loading, setLoading] = useState(true);
 const [loadError, setLoadError] = useState("");
 
-  useEffect(() => {
-    async function loadBalance() {
+    useEffect(() => {
+    async function loadHomeownerDashboard() {
+      setLoading(true);
+      setLoadError("");
+
       try {
-        const response = await fetch(
-          `/api/accounting/owner-balance?associationId=${ASSOCIATION_ID}&ownerUserId=${OWNER_USER_ID}&unitNumber=${UNIT_NUMBER}`
-        );
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-        const data = await response.json();
+        let resolvedOwnerProfile = null;
 
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || "Unable to load owner balance.");
+        if (session?.user?.email) {
+          const normalizedEmail = String(session.user.email)
+            .toLowerCase()
+            .trim();
+
+          const profileResponse = await fetch(
+            `/api/owner/profile?ownerEmail=${encodeURIComponent(
+              normalizedEmail
+            )}&authUserId=${encodeURIComponent(session.user.id || "")}`
+          );
+
+          const profileResult = await profileResponse.json();
+
+          if (profileResponse.ok && profileResult?.success) {
+            resolvedOwnerProfile = profileResult.ownerProfile;
+            setOwnerProfile(profileResult.ownerProfile);
+          }
         }
 
-        setBalance(data.balance);
+        const resolvedAssociationId =
+          resolvedOwnerProfile?.association_id || FALLBACK_ASSOCIATION_ID;
+
+        const resolvedOwnerUserId =
+          resolvedOwnerProfile?.id || FALLBACK_OWNER_USER_ID;
+
+        const resolvedUnitNumber =
+          resolvedOwnerProfile?.unitNumber || FALLBACK_UNIT_NUMBER;
+
+        const balanceResponse = await fetch(
+          `/api/accounting/owner-balance?associationId=${resolvedAssociationId}&ownerUserId=${resolvedOwnerUserId}&unitNumber=${resolvedUnitNumber}`
+        );
+
+        const balanceData = await balanceResponse.json();
+
+        if (!balanceResponse.ok || !balanceData.success) {
+          throw new Error(balanceData.error || "Unable to load owner balance.");
+        }
+
+        setBalance(balanceData.balance);
+
+        const notificationResponse = await fetch(
+          `/api/notifications/list?associationId=${resolvedAssociationId}&audience=owner&status=pending&limit=5`
+        );
+
+        const notificationData = await notificationResponse.json();
+
+        const items =
+          notificationData.notifications ||
+          notificationData.items ||
+          notificationData.data ||
+          [];
+
+        setNotifications(Array.isArray(items) ? items : []);
       } catch (error) {
         setLoadError(error.message || "Unable to load account details.");
+        setNotifications([]);
       } finally {
         setLoading(false);
       }
     }
 
-        async function loadNotifications() {
-      try {
-        const response = await fetch(
-          `/api/notifications/list?associationId=${ASSOCIATION_ID}&audience=owner&status=pending&limit=5`
-        );
-
-        const data = await response.json();
-
-        const items =
-          data.notifications ||
-          data.items ||
-          data.data ||
-          [];
-
-        setNotifications(Array.isArray(items) ? items : []);
-      } catch (error) {
-        console.error("Unable to load owner notifications:", error);
-        setNotifications([]);
-      }
-    }
-
-    loadBalance();
-    loadNotifications();
-  }, []);
+    loadHomeownerDashboard();
+  }, [router]);
 
   const ownerName = balance?.owner_name || "Homeowner";
-  const unitNumber = balance?.unit_number || UNIT_NUMBER;
+  const unitNumber = balance?.unit_number || ownerProfile?.unitNumber || FALLBACK_UNIT_NUMBER;
   const currentBalance = money(balance?.current_balance);
   const monthlyAssessment = money(balance?.monthly_assessment);
   const paymentStatus =
@@ -374,10 +406,10 @@ const [loadError, setLoadError] = useState("");
                         </div>
 
                         <div className="mt-6">
-              <OwnerAccountLedger
-                associationId={ASSOCIATION_ID}
-                ownerUserId={OWNER_USER_ID}
-                unitNumber={UNIT_NUMBER}
+                            <OwnerAccountLedger
+                associationId={ownerProfile?.association_id || FALLBACK_ASSOCIATION_ID}
+                ownerUserId={ownerProfile?.id || FALLBACK_OWNER_USER_ID}
+                unitNumber={ownerProfile?.unitNumber || FALLBACK_UNIT_NUMBER}
               />
             </div>
 
