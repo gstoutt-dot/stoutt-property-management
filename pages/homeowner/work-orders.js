@@ -268,7 +268,6 @@ await loadServiceRequests();
               <div>
                 <label className="text-sm text-slate-300">Request Type</label>
                 <select
-  <select
   value={requestType}
   onChange={(e) => setRequestType(e.target.value)}
   className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
