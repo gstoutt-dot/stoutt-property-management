@@ -435,10 +435,11 @@ const [loadError, setLoadError] = useState("");
                         </div>
 
                         <div className="mt-6">
-                            <OwnerAccountLedger
+                                                        <OwnerAccountLedger
                 associationId={ownerProfile?.association_id || FALLBACK_ASSOCIATION_ID}
                 ownerUserId={ownerProfile?.id || FALLBACK_OWNER_USER_ID}
                 unitNumber={ownerProfile?.unitNumber || FALLBACK_UNIT_NUMBER}
+                currentBalanceAmount={balance?.current_balance}
               />
             </div>
 
