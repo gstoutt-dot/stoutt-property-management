@@ -113,11 +113,18 @@ export default function HomePage() {
   )}
 </div>
 
-      <a
-        href="/homeowner-login"
+            <a
+        href="/portal/owner/login"
         className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
       >
         Homeowner Access
+      </a>
+
+      <a
+        href="/homeowner-login"
+        className="ml-2 whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-yellow-400/40 hover:bg-white/10 hover:text-yellow-200"
+      >
+        Admin Access
       </a>
 
       <a
