@@ -221,9 +221,13 @@ useEffect(() => {
   ) : filteredMessages.length > 0 ? (
     filteredMessages.map((message) => (
       <div
-        key={message.id}
-        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-      >
+  key={message.id}
+  className={`rounded-3xl border p-6 transition ${
+    message.read_status
+      ? "border-white/10 bg-white/[0.04]"
+      : "border-yellow-400/30 bg-yellow-400/[0.06] shadow-[0_0_30px_rgba(250,204,21,0.08)]"
+  }`}
+>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm text-slate-400">
