@@ -51,15 +51,59 @@ export default async function handler(req, res) {
       query = query.eq("unit_number", resolvedUnitNumber);
     }
 
-    const { data, error } = await query;
+        const { data: homeownerRequests, error } = await query;
 
     if (error) {
       throw error;
     }
 
+    const { data: bosActions, error: bosError } = await supabaseAdmin
+      .from("bos_actions")
+      .select("*")
+      .eq("association_id", resolvedAssociationId)
+      .order("created_at", { ascending: false });
+
+    if (bosError) {
+      throw bosError;
+    }
+
+    const matchedRequests = (homeownerRequests || []).map((request) => {
+      const matchingBosAction = (bosActions || []).find((action) => {
+        const sameOwner =
+          String(action.owner_user_id || "").trim() ===
+          String(request.owner_user_id || "").trim();
+
+        const sameUnit =
+          String(action.unit_number || action.unit || "").trim() ===
+          String(request.unit_number || "").trim();
+
+        const sameTitle =
+          String(action.title || "").trim().toLowerCase() ===
+          String(request.title || "").trim().toLowerCase();
+
+        return sameOwner && sameUnit && sameTitle;
+      });
+
+      if (!matchingBosAction) {
+        return request;
+      }
+
+      return {
+        ...request,
+        status: matchingBosAction.status || request.status,
+        workflow_stage:
+          matchingBosAction.vendor_status ||
+          matchingBosAction.status ||
+          request.workflow_stage,
+        bos_action_id: matchingBosAction.id,
+        owner_notified:
+          matchingBosAction.owner_notified || request.owner_notified || false,
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      requests: data || [],
+      requests: matchedRequests,
     });
   } catch (error) {
     console.error("List homeowner service requests failed:", error);
