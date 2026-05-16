@@ -29,6 +29,7 @@ export default function OwnerAccountLedger({
   associationId,
   ownerUserId,
   unitNumber,
+  currentBalanceAmount,
 }) {
   const [entries, setEntries] = useState([]);
   const [summary, setSummary] = useState({
@@ -95,7 +96,7 @@ export default function OwnerAccountLedger({
           </div>
 
           <h2 className="text-xl font-semibold text-white">
-            Balance Ledger Summary
+            Account Ledger Summary
           </h2>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
@@ -115,12 +116,12 @@ export default function OwnerAccountLedger({
       </div>
 
       <div className="grid gap-4 border-b border-white/10 px-6 py-5 md:grid-cols-4">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Total Charges
+                <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
+          <div className="text-xs uppercase tracking-wide text-yellow-300">
+            Current Balance Due
           </div>
-          <div className="mt-2 text-2xl font-semibold text-white">
-            {money(summary.totalCharges)}
+          <div className="mt-2 text-2xl font-semibold text-yellow-100">
+            {money(currentBalanceAmount)}
           </div>
         </div>
 
