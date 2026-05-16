@@ -132,9 +132,19 @@ const [loadError, setLoadError] = useState("");
       .replaceAll("_", " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-  const syncTimestamp = balance?.synced_at
+    const syncTimestamp = balance?.synced_at
     ? `Synced from QuickBooks on ${prettyDate(balance.synced_at)}`
     : "QuickBooks sync timestamp not available";
+
+  async function signOutHomeowner() {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Homeowner sign out failed:", error);
+    }
+
+    router.replace("/homeowner-login");
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -157,12 +167,13 @@ const [loadError, setLoadError] = useState("");
               </p>
             </div>
 
-            <Link
-              href="/homeowner-login"
+                        <button
+              type="button"
+              onClick={signOutHomeowner}
               className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
             >
               Sign Out
-            </Link>
+            </button>
           </div>
         </div>
       </section>
