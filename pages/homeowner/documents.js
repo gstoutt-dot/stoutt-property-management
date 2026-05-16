@@ -80,7 +80,26 @@ useEffect(() => {
 
   loadDocuments();
 }, [ownerProfile?.association_id]);
+  async function openDocument(documentId) {
+    try {
+      const response = await fetch(
+        `/api/homeowner/documents/signed-url?documentId=${documentId}`
+      );
 
+      const result = await response.json();
+
+      if (!response.ok || !result?.success || !result?.signedUrl) {
+        throw new Error(
+          result?.error || "Unable to open homeowner document."
+        );
+      }
+
+      window.open(result.signedUrl, "_blank");
+    } catch (error) {
+      console.error("Open homeowner document failed:", error);
+      alert(error.message || "Unable to open document.");
+    }
+  }
     const filteredDocuments = documents.filter((doc) => {
     const searchValue = String(searchTerm || "").toLowerCase().trim();
 
@@ -248,11 +267,17 @@ useEffect(() => {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-3">
-          <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
+                    <button
+            onClick={() => openDocument(doc.id)}
+            className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300"
+          >
             View Document
           </button>
 
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
+                    <button
+            onClick={() => openDocument(doc.id)}
+            className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
+          >
             Download
           </button>
 
