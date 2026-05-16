@@ -262,7 +262,7 @@ useEffect(() => {
       : "bg-yellow-400 text-slate-950"
   }`}
 >
-  {message.read_status ? "Read" : "Unread"}
+  {message.read_status ? "Read" : "Unread"} 
 </span>
         </div>
 
