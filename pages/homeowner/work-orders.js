@@ -51,8 +51,49 @@ async function loadServiceRequests() {
 }
 
 useEffect(() => {
+  async function loadOwnerProfile() {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user?.email) {
+        router.replace("/portal/owner/login");
+        return;
+      }
+
+      const normalizedEmail = String(session.user.email)
+        .toLowerCase()
+        .trim();
+
+      const profileResponse = await fetch(
+        `/api/owner/profile?ownerEmail=${encodeURIComponent(
+          normalizedEmail
+        )}&authUserId=${encodeURIComponent(session.user.id || "")}`
+      );
+
+      const profileResult = await profileResponse.json();
+
+      if (!profileResponse.ok || !profileResult?.success) {
+        router.replace("/portal/owner/login");
+        return;
+      }
+
+      setOwnerProfile(profileResult.ownerProfile);
+    } catch (error) {
+      console.error("Unable to load homeowner profile:", error);
+      router.replace("/portal/owner/login");
+    }
+  }
+
+  loadOwnerProfile();
+}, [router]);
+
+useEffect(() => {
+  if (!ownerProfile?.association_id) return;
+
   loadServiceRequests();
-}, []);
+}, [ownerProfile?.association_id, ownerProfile?.id, ownerProfile?.unitNumber]);
 
 async function submitRequest() {
     try {
