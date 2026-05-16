@@ -29,7 +29,6 @@ export default async function handler(req, res) {
       .from("homeowner_notifications")
       .update({
   read_status: true,
-  status: "Read",
 })
       .eq("id", resolvedNotificationId)
       .select("*")
