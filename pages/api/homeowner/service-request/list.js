@@ -67,26 +67,12 @@ export default async function handler(req, res) {
       throw bosError;
     }
 
-    const matchedRequests = (homeownerRequests || []).map((request) => {
-      const matchingBosAction = (bosActions || []).find((action) => {
-        const sameOwner =
-          String(action.owner_user_id || "").trim() ===
-          String(request.owner_user_id || "").trim();
+        const matchedRequests = (homeownerRequests || []).map((request) => {
+      const requestTrackingKey = `homeowner_request:${request.id}`;
 
-        const sameUnit =
-          String(action.unit_number || action.unit || "").trim() ===
-          String(request.unit_number || "").trim();
-
-        const sameTitle =
-          String(action.title || "").trim().toLowerCase() ===
-          String(request.title || "").trim().toLowerCase();
-
-                const sameDescription =
-          String(action.description || "").trim().toLowerCase() ===
-          String(request.description || "").trim().toLowerCase();
-
-        return sameOwner && sameUnit && (sameTitle || sameDescription);
-      });
+      const matchingBosAction = (bosActions || []).find((action) =>
+        String(action.source || "").includes(requestTrackingKey)
+      );
 
       if (!matchingBosAction) {
         return request;
