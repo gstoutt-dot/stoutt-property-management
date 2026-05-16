@@ -28,8 +28,9 @@ function prettyDate(value) {
 export default function HomeownerDashboard() {
     const router = useRouter();
   const [ownerProfile, setOwnerProfile] = useState(null);
-  const [balance, setBalance] = useState(null);
+    const [balance, setBalance] = useState(null);
 const [notifications, setNotifications] = useState([]);
+const [recentRequests, setRecentRequests] = useState([]);
 const [loading, setLoading] = useState(true);
 const [loadError, setLoadError] = useState("");
 
@@ -85,8 +86,22 @@ const [loadError, setLoadError] = useState("");
 
         setBalance(balanceData.balance);
 
-        const notificationResponse = await fetch(
-          `/api/notifications/list?associationId=${resolvedAssociationId}&audience=owner&status=pending&limit=5`
+                const requestParams = new URLSearchParams({
+          associationId: resolvedAssociationId,
+          ownerUserId: resolvedOwnerUserId,
+          unitNumber: resolvedUnitNumber,
+        });
+
+        const requestsResponse = await fetch(
+          `/api/homeowner/service-request/list?${requestParams}`
+        );
+
+        const requestsResult = await requestsResponse.json();
+
+        setRecentRequests(
+          Array.isArray(requestsResult?.requests)
+            ? requestsResult.requests.slice(0, 3)
+            : []
         );
 
         const notificationData = await notificationResponse.json();
