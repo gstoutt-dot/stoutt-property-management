@@ -134,8 +134,7 @@ export default async function handler(req, res) {
 
       status: "open",
       source: "Homeowner Dashboard",
-      homeowner_service_request_id: homeownerRequest?.id || null,
-    };
+      };
 
     const { data: bosAction, error: bosError } = await supabaseAdmin
       .from("bos_actions")
