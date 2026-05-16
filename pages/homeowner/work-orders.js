@@ -40,7 +40,6 @@ async function loadServiceRequests() {
     const response = await fetch(
       `/api/homeowner/service-request/list?${params}`
     );
-    );
 
     const data = await response.json();
 
