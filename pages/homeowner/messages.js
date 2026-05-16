@@ -1,52 +1,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeownerMessages() {
-  const router = useRouter();
-  const [ownerProfile, setOwnerProfile] = useState(null);
   const [messages, setMessages] = useState([]);
 const [loadingMessages, setLoadingMessages] = useState(true);
 const [selectedCategory, setSelectedCategory] = useState("All Messages");
-async function markMessageRead(notificationId) {
-  try {
-    const response = await fetch(
-      "/api/homeowner/messages/mark-read",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          notificationId,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      throw new Error(data.error || "Unable to mark message as read.");
-    }
-
-    setMessages((current) =>
-      current.map((message) =>
-        message.id === notificationId
-          ? {
-              ...message,
-              read_at: new Date().toISOString(),
-              read_status: true,
-              status: "Read",
-            }
-          : message
-      )
-    );
-  } catch (error) {
-    console.error("Unable to mark message read:", error);
-  }
-}
-  const filteredMessages =
+const filteredMessages =
   selectedCategory === "All Messages"
     ? messages
     : messages.filter((message) =>
@@ -69,63 +28,12 @@ async function markMessageRead(notificationId) {
       );
 
 useEffect(() => {
-  async function loadOwnerProfile() {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.user?.email) {
-        router.replace("/portal/owner/login");
-        return;
-      }
-
-      const normalizedEmail = String(session.user.email)
-        .toLowerCase()
-        .trim();
-
-      const profileResponse = await fetch(
-        `/api/owner/profile?ownerEmail=${encodeURIComponent(
-          normalizedEmail
-        )}&authUserId=${encodeURIComponent(session.user.id || "")}`
-      );
-
-      const profileResult = await profileResponse.json();
-
-      if (!profileResponse.ok || !profileResult?.success) {
-        router.replace("/portal/owner/login");
-        return;
-      }
-
-      setOwnerProfile(profileResult.ownerProfile);
-    } catch (error) {
-      console.error("Unable to load homeowner profile:", error);
-      router.replace("/portal/owner/login");
-    }
-  }
-
-  loadOwnerProfile();
-}, [router]);
-
-useEffect(() => {
   async function loadMessages() {
-    if (!ownerProfile?.association_id) return;
-
     try {
       setLoadingMessages(true);
 
-      const params = new URLSearchParams({
-        associationId: ownerProfile.association_id,
-        ownerUserId: ownerProfile.id || "",
-        unitNumber:
-          ownerProfile.unitNumber ||
-          ownerProfile.unit_number ||
-          "",
-        limit: "25",
-      });
-
       const response = await fetch(
-        `/api/homeowner/messages/list?${params}`
+        "/api/homeowner/messages/list?associationId=622aaf96-ae1c-4f98-b0b2-00cc9178c2a2&limit=25"
       );
 
       const data = await response.json();
@@ -144,11 +52,7 @@ useEffect(() => {
   }
 
   loadMessages();
-}, [
-  ownerProfile?.association_id,
-  ownerProfile?.id,
-  ownerProfile?.unitNumber,
-]);
+}, []);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -241,12 +145,8 @@ useEffect(() => {
     ].map(([label, value]) => (
       <div
         key={label}
-className={`rounded-3xl border p-6 transition ${
-  message.read_at
-    ? "border-white/10 bg-white/[0.04]"
-    : "border-yellow-400/30 bg-yellow-400/[0.06]"
-}`} 
->
+        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+      >
         <p className="text-sm text-slate-400">{label}</p>
         <div className="mt-3 text-4xl font-bold text-yellow-400">
           {value}
@@ -310,13 +210,7 @@ className={`rounded-3xl border p-6 transition ${
             </p>
           </div>
 
-          <span
-  className={`rounded-full px-3 py-1 text-xs ${
-    message.read_at
-      ? "bg-slate-800 text-slate-300"
-      : "bg-yellow-400 text-slate-950"
-  }`}
->
+          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
             {message.read_at ? "Read" : message.status || "Unread"}
           </span>
         </div>
@@ -334,17 +228,9 @@ className={`rounded-3xl border p-6 transition ${
             Open Message
           </button>
 
-          <button
-  onClick={() => markMessageRead(message.id)}
-  disabled={!!message.read_at}
-  className={`rounded-2xl px-5 py-3 text-sm font-semibold transition ${
-    message.read_at
-      ? "cursor-not-allowed border border-white/10 bg-slate-900 text-slate-500"
-      : "border border-white/10 text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
-  }`}
->
-  {message.read_at ? "Already Read" : "Mark Read"}
-</button>
+          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
+            Mark Read
+          </button>
 
           <Link
             href="/homeowner/ava"
@@ -446,3 +332,4 @@ className={`rounded-3xl border p-6 transition ${
     </main>
   );
 }
+
