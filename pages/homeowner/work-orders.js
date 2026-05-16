@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeownerWorkOrders() {
+  const router = useRouter();
+  const [ownerProfile, setOwnerProfile] = useState(null);
+
     const [requestType, setRequestType] = useState(
     "Common Area Maintenance"
   );
