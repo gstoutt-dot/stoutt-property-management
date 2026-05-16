@@ -101,19 +101,76 @@ export default async function handler(req, res) {
       workflow_stage: "Owner Submitted",
     };
 
-    const { data, error } = await supabaseAdmin
-      .from("homeowner_service_requests")
-      .insert(insertPayload)
-      .select()
+        const { data: homeownerRequest, error: homeownerError } =
+      await supabaseAdmin
+        .from("homeowner_service_requests")
+        .insert(insertPayload)
+        .select()
+        .single();
+
+    if (homeownerError) {
+      throw homeownerError;
+    }
+
+    const bosPayload = {
+      association_id: resolvedAssociationId,
+      association_name: "Sunset Condominium Association",
+
+      owner_user_id: resolvedOwnerUserId,
+      owner_name: normalizedOwnerName,
+      owner_email: normalizedOwnerEmail,
+      unit: normalizedUnitNumber,
+      unit_number: normalizedUnitNumber,
+
+      request_type: "maintenance",
+      title: normalizedTitle,
+      description: normalizedDescription,
+      priority: normalizedPriority.toLowerCase(),
+
+      property_address: normalizedLocation || `Unit ${normalizedUnitNumber}`,
+      best_contact_time: "",
+      amenity_selected: "",
+      amenity_date: null,
+
+      status: "open",
+      source: "Homeowner Dashboard",
+      homeowner_service_request_id: homeownerRequest?.id || null,
+    };
+
+    const { data: bosAction, error: bosError } = await supabaseAdmin
+      .from("bos_actions")
+      .insert([bosPayload])
+      .select("*")
       .single();
 
-    if (error) {
-      throw error;
+    if (bosError) {
+      throw bosError;
     }
+
+    await fetch(`${req.headers.origin || ""}/api/notifications/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        associationId: resolvedAssociationId,
+        recipientRole: "manager",
+        notificationType: "owner_request_submitted",
+        title: "New homeowner service request submitted",
+        message: `${normalizedOwnerName || "A homeowner"} submitted a new service request.`,
+        priority: normalizedPriority.toLowerCase(),
+      }),
+    }).catch((notificationError) => {
+      console.error(
+        "Homeowner service request notification failed:",
+        notificationError
+      );
+    });
 
     return res.status(200).json({
       success: true,
-      request: data,
+      request: homeownerRequest,
+      bosAction,
     });
   } catch (error) {
     console.error("Create homeowner service request failed:", error);
