@@ -9,7 +9,44 @@ export default function HomeownerMessages() {
   const [messages, setMessages] = useState([]);
 const [loadingMessages, setLoadingMessages] = useState(true);
 const [selectedCategory, setSelectedCategory] = useState("All Messages");
-const filteredMessages =
+async function markMessageRead(notificationId) {
+  try {
+    const response = await fetch(
+      "/api/homeowner/messages/mark-read",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notificationId,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Unable to mark message as read.");
+    }
+
+    setMessages((current) =>
+      current.map((message) =>
+        message.id === notificationId
+          ? {
+              ...message,
+              read_at: new Date().toISOString(),
+              read_status: true,
+              status: "Read",
+            }
+          : message
+      )
+    );
+  } catch (error) {
+    console.error("Unable to mark message read:", error);
+  }
+}
+  const filteredMessages =
   selectedCategory === "All Messages"
     ? messages
     : messages.filter((message) =>
@@ -204,8 +241,12 @@ useEffect(() => {
     ].map(([label, value]) => (
       <div
         key={label}
-        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-      >
+className={`rounded-3xl border p-6 transition ${
+  message.read_at
+    ? "border-white/10 bg-white/[0.04]"
+    : "border-yellow-400/30 bg-yellow-400/[0.06]"
+}`} 
+>
         <p className="text-sm text-slate-400">{label}</p>
         <div className="mt-3 text-4xl font-bold text-yellow-400">
           {value}
@@ -269,7 +310,13 @@ useEffect(() => {
             </p>
           </div>
 
-          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+          <span
+  className={`rounded-full px-3 py-1 text-xs ${
+    message.read_at
+      ? "bg-slate-800 text-slate-300"
+      : "bg-yellow-400 text-slate-950"
+  }`}
+>
             {message.read_at ? "Read" : message.status || "Unread"}
           </span>
         </div>
@@ -287,9 +334,17 @@ useEffect(() => {
             Open Message
           </button>
 
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-            Mark Read
-          </button>
+          <button
+  onClick={() => markMessageRead(message.id)}
+  disabled={!!message.read_at}
+  className={`rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+    message.read_at
+      ? "cursor-not-allowed border border-white/10 bg-slate-900 text-slate-500"
+      : "border border-white/10 text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
+  }`}
+>
+  {message.read_at ? "Already Read" : "Mark Read"}
+</button>
 
           <Link
             href="/homeowner/ava"
