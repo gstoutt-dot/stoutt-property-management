@@ -371,12 +371,44 @@ const [loadError, setLoadError] = useState("");
               </div>
                         </div>
 
-            <div className="mt-6">
+                        <div className="mt-6">
               <OwnerAccountLedger
                 associationId={ASSOCIATION_ID}
                 ownerUserId={OWNER_USER_ID}
                 unitNumber={UNIT_NUMBER}
               />
+            </div>
+
+            <div className="mt-8 overflow-hidden rounded-3xl border border-white/10">
+              <div className="relative">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,179,8,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(15,23,42,1),transparent_40%)]" />
+
+                <div className="relative px-8 py-8">
+                  <div className="flex flex-wrap items-center justify-between gap-6">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.35em] text-yellow-400">
+                        Homeowner Portal
+                      </p>
+
+                      <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
+                        Work Orders & Service Requests
+                      </h2>
+
+                      <p className="mt-4 max-w-4xl text-lg text-slate-300">
+                        Submit maintenance requests, track ticket status, review updates,
+                        and get AI-powered assistance from Ava.
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/homeowner/work-orders"
+                      className="rounded-full bg-yellow-400 px-6 py-4 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+                    >
+                      New Request
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </>
