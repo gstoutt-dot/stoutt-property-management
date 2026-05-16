@@ -28,10 +28,9 @@ export default async function handler(req, res) {
     const { data, error } = await supabaseAdmin
       .from("homeowner_notifications")
       .update({
-        read_at: new Date().toISOString(),
-        read_status: true,
-        status: "Read",
-      })
+  read_status: true,
+  status: "Read",
+})
       .eq("id", resolvedNotificationId)
       .select("*")
       .single();
