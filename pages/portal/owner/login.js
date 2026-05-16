@@ -26,8 +26,8 @@ export default function OwnerLoginPage() {
 
         if (!mounted) return;
 
-        if (session?.user) {
-          router.replace("/portal/owner");
+                if (session?.user) {
+          router.replace("/homeowner");
           return;
         }
       } catch (error) {
@@ -44,8 +44,8 @@ export default function OwnerLoginPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        router.replace("/portal/owner");
+            if (event === "SIGNED_IN" && session?.user) {
+        router.replace("/homeowner");
       }
     });
 
@@ -100,7 +100,7 @@ export default function OwnerLoginPage() {
         throw error;
       }
 
-      router.replace("/portal/owner");
+            router.replace("/homeowner");
     } catch (error) {
       setErrorMessage(error.message || "Unable to continue.");
     }
