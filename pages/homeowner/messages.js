@@ -5,8 +5,10 @@ export default function HomeownerMessages() {
   const [messages, setMessages] = useState([]);
 const [loadingMessages, setLoadingMessages] = useState(true);
 const [selectedCategory, setSelectedCategory] = useState("All Messages");
+  const [readStatusMessage, setReadStatusMessage] = useState("");
 async function markMessageRead(notificationId) {
   try {
+    setReadStatusMessage("");
     const response = await fetch("/api/homeowner/messages/mark-read", {
       method: "POST",
       headers: {
@@ -35,8 +37,9 @@ async function markMessageRead(notificationId) {
           : message
       )
     );
-  } catch (error) {
+    } catch (error) {
     console.error("Unable to mark message as read:", error);
+    setReadStatusMessage(error.message || "Unable to mark message as read.");
   }
 }
   const filteredMessages =
@@ -206,8 +209,14 @@ useEffect(() => {
             />
           </div>
 
-          <div className="space-y-5">
-  {loadingMessages ? (
+<div className="space-y-5">
+  {readStatusMessage && (
+    <div className="rounded-3xl border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200">
+      {readStatusMessage}
+    </div>
+  )}
+
+{loadingMessages ? (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
       Loading homeowner messages...
     </div>
