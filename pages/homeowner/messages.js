@@ -262,9 +262,14 @@ useEffect(() => {
             Open Message
           </button>
 
-          <button className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-            Mark Read
-          </button>
+          <button
+  type="button"
+  onClick={() => markMessageRead(message.id)}
+  disabled={!!message.read_at || message.status === "Read"}
+  className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {message.read_at || message.status === "Read" ? "Already Read" : "Mark Read"}
+</button>
 
           <Link
             href="/homeowner/ava"
