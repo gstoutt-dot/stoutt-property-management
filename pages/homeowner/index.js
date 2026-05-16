@@ -496,39 +496,75 @@ const [loadError, setLoadError] = useState("");
             </Link>
           </div>
 
-          <div className="mt-6 space-y-4">
-                        {[
-              [
-                "Open Maintenance Request",
-                "Under Review",
-                "Kitchen sink leak reported. Management is reviewing the request.",
-              ],
-                            [
-                "Account Review Request",
-                "Received",
-                "Balance confirmation request received by management.",
-                "/homeowner/account-review",
-              ],
-              [
-                "Statement Request",
-                "Completed",
-                "Your most recent account statement is available in documents.",
-              ],
-             ].map(([title, status, description, href]) => (
-                            <Link
-                key={title}
-                href={href || "#"}
+                    <div className="mt-6 space-y-4">
+            {recentRequests.length > 0 ? (
+              recentRequests.map((request) => {
+                const rawStatus = String(request.status || "Received");
+                const normalizedStatus = rawStatus
+                  .replaceAll("_", " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase());
+
+                const progress = rawStatus.toLowerCase().includes("completed")
+                  ? 100
+                  : rawStatus.toLowerCase().includes("dispatched")
+                  ? 75
+                  : rawStatus.toLowerCase().includes("review") ||
+                    rawStatus.toLowerCase().includes("manager") ||
+                    rawStatus.toLowerCase().includes("board")
+                  ? 50
+                  : 25;
+
+                return (
+                  <Link
+                    key={request.id}
+                    href="/homeowner/work-orders"
+                    className="block rounded-2xl border border-white/10 bg-slate-900/70 p-5 transition hover:border-yellow-400/40 hover:bg-white/[0.03]"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="font-semibold text-white">
+                        {request.title || "Open Maintenance Request"}
+                      </h3>
+
+                      <span className="rounded-full bg-yellow-400/15 px-3 py-1 text-xs font-semibold text-yellow-300">
+                        {normalizedStatus}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm text-slate-400">
+                      {request.workflow_stage ||
+                        request.description ||
+                        "Your request has been received by management."}
+                    </p>
+
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-yellow-400"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <Link
+                href="/homeowner/work-orders"
                 className="block rounded-2xl border border-white/10 bg-slate-900/70 p-5 transition hover:border-yellow-400/40 hover:bg-white/[0.03]"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="font-semibold text-white">{title}</h3>
+                  <h3 className="font-semibold text-white">
+                    Open Maintenance Request
+                  </h3>
+
                   <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-300">
-                    {status}
+                    Ready
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-400">{description}</p>
-                </Link>
-            ))}
+
+                <p className="mt-2 text-sm text-slate-400">
+                  Submit and track homeowner service requests from your dashboard.
+                </p>
+              </Link>
+            )}
           </div>
         </div>
 
