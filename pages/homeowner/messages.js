@@ -179,9 +179,13 @@ useEffect(() => {
       ],
     ].map(([label, value]) => (
       <div
-        key={label}
-        className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-      >
+  key={message.id}
+  className={`rounded-3xl border p-6 transition ${
+    message.read_status
+      ? "border-white/10 bg-white/[0.04]"
+      : "border-yellow-400/30 bg-yellow-400/[0.06] shadow-[0_0_30px_rgba(250,204,21,0.08)]"
+  }`}
+>
         <p className="text-sm text-slate-400">{label}</p>
         <div className="mt-3 text-4xl font-bold text-yellow-400">
           {value}
@@ -251,9 +255,15 @@ useEffect(() => {
             </p>
           </div>
 
-          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-            {message.read_at ? "Read" : message.read_status ? "Read" : "Unread"}
-          </span>
+          <span
+  className={`rounded-full px-3 py-1 text-xs font-medium ${
+    message.read_status
+      ? "bg-slate-800 text-slate-300"
+      : "bg-yellow-400 text-slate-950"
+  }`}
+>
+  {message.read_status ? "Read" : "Unread"}
+</span>
         </div>
 
         <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
