@@ -3,7 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
-      const { associationId, association_id } = req.query || {};
+      const { associationId, association_id } = req.query || {}; 
 
       const resolvedAssociationId = String(
         associationId || association_id || ""
