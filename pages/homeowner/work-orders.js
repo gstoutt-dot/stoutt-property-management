@@ -26,7 +26,7 @@ export default function HomeownerWorkOrders() {
   const [submitError, setSubmitError] = useState("");
 const [liveRequests, setLiveRequests] = useState([]);
 const [requestsLoading, setRequestsLoading] = useState(true);
-
+const [selectedRequestId, setSelectedRequestId] = useState(null);
 async function loadServiceRequests() {
   try {
     setRequestsLoading(true);
@@ -538,9 +538,78 @@ await loadServiceRequests();
             {request.workflow_stage || "Owner Submitted"}
           </div>
 
-          <button className="mt-5 w-full rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/50 hover:text-yellow-300">
-            View Ticket Details
-          </button>
+          <button
+  onClick={() =>
+    setSelectedRequestId(
+      selectedRequestId === request.id
+        ? null
+        : request.id
+    )
+  }
+  className="mt-5 w-full rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/50 hover:text-yellow-300"
+>
+  {selectedRequestId === request.id
+    ? "Hide Ticket Details"
+    : "View Ticket Details"}
+</button>
+
+{selectedRequestId === request.id && (
+  <div className="mt-4 space-y-4 rounded-2xl border border-yellow-400/20 bg-slate-950/70 p-4">
+    <div>
+      <p className="text-xs uppercase tracking-wide text-slate-500">
+        Description
+      </p>
+
+      <p className="mt-2 text-sm text-slate-200">
+        {request.description || "No description provided."}
+      </p>
+    </div>
+
+    <div className="grid gap-4 md:grid-cols-2">
+      <div>
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          Location
+        </p>
+
+        <p className="mt-2 text-sm text-slate-200">
+          {request.location || "Not specified"}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          Workflow Stage
+        </p>
+
+        <p className="mt-2 text-sm text-yellow-300">
+          {request.workflow_stage || "Owner Submitted"}
+        </p>
+      </div>
+    </div>
+
+    <div className="grid gap-4 md:grid-cols-2">
+      <div>
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          Unit Number
+        </p>
+
+        <p className="mt-2 text-sm text-slate-200">
+          {request.unit_number || "Unknown"}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          Submitted By
+        </p>
+
+        <p className="mt-2 text-sm text-slate-200">
+          {request.owner_name || "Homeowner"}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
         </div>
       ))}
     </div>
