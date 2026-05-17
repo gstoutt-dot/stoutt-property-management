@@ -543,15 +543,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
+                <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
           <div className="flex items-end justify-between gap-6">
             <div className="max-w-3xl">
               <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
                 Selected properties
               </div>
+
               <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
                 Curated examples of real property environments behind the standard.
               </h2>
+
               <p className="mt-5 text-base leading-8 text-white/70">
                 A controlled glimpse into the types of communities and property settings
                 that have shaped the operating discipline behind Stoutt Property Management.
@@ -577,6 +579,7 @@ export default function HomePage() {
                   <h3 className="text-lg font-semibold text-white transition group-hover:text-yellow-200">
                     {property.title}
                   </h3>
+
                   <p className="mt-3 text-sm leading-7 text-white/70 transition group-hover:text-yellow-100/90">
                     {property.text}
                   </p>
@@ -585,9 +588,16 @@ export default function HomePage() {
             ))}
           </div>
 
-          </div>
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <a href="/proposal" className={premiumButton}>
+              Request a Proposal
+            </a>
 
-<div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <a href="/portal/owner/login" className={subtleButton}>
+              Homeowner Access
+            </a>
+          </div>
+        </section>
 
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div
@@ -598,10 +608,12 @@ export default function HomePage() {
                 <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300/80">
                   Next step
                 </div>
+
                 <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                   If your community is ready for a more responsive management
                   partner, let’s talk.
                 </h2>
+
                 <p className="mt-5 text-base leading-8 text-yellow-100/90 sm:text-lg">
                   Request a proposal and start the conversation with a company
                   built for stronger service, better systems, and long-term
@@ -613,7 +625,8 @@ export default function HomePage() {
                 <a href="/proposal" className={premiumButton}>
                   Request a Proposal
                 </a>
-                <a href="/homeowner-login" className={subtleButton}>
+
+                <a href="/portal/owner/login" className={subtleButton}>
                   Homeowner Access
                 </a>
               </div>
