@@ -37,21 +37,23 @@ const [avaResponse, setAvaResponse] = useState("");
       }
 
       const profileResponse = await fetch(
-        `/api/homeowner/profile?email=${encodeURIComponent(userEmail)}`
-      );
+  `/api/owner/profile?ownerEmail=${encodeURIComponent(
+    userEmail
+  )}&authUserId=${encodeURIComponent(session.user.id || "")}`
+);
 
-      const profileData = await profileResponse.json();
+const profileData = await profileResponse.json();
 
-      if (!profileResponse.ok || !profileData?.success || !profileData?.profile) {
-        throw new Error(profileData?.error || "Unable to load homeowner profile.");
-      }
+if (!profileResponse.ok || !profileData?.success || !profileData?.ownerProfile) {
+  throw new Error(profileData?.error || "Unable to load homeowner profile.");
+}
 
-      const profile = profileData.profile;
-      setOwnerProfile(profile);
+const profile = profileData.ownerProfile;
+setOwnerProfile(profile);
 
-      const associationId = profile.association_id;
-      const ownerUserId = profile.owner_user_id;
-      const unitNumber = profile.unit_number;
+const associationId = profile.association_id;
+const ownerUserId = profile.id;
+const unitNumber = profile.unitNumber;
 
       const [balanceResponse, messagesResponse, requestsResponse] =
         await Promise.all([
