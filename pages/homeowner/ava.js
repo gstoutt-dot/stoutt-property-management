@@ -9,8 +9,8 @@ export default function HomeownerAva() {
   const [messages, setMessages] = useState([]);
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
-  const [selectedPrompt, setSelectedPrompt] = useState("Explain my balance");
-
+const [selectedPrompt, setSelectedPrompt] = useState("Explain my balance");
+const [avaResponse, setAvaResponse] = useState("");
   useEffect(() => {
     loadAvaContext();
   }, []);
@@ -175,6 +175,104 @@ export default function HomeownerAva() {
     quickActions.find((action) => action.prompt === selectedPrompt) ||
     quickActions[0];
 
+  function handleAskAva() {
+  const prompt = String(selectedPrompt || "")
+    .trim()
+    .toLowerCase();
+
+  if (!prompt) {
+    setAvaResponse(
+      "Please enter a question for Ava."
+    );
+
+    return;
+  }
+
+  if (
+    prompt.includes("balance") ||
+    prompt.includes("payment") ||
+    prompt.includes("assessment") ||
+    prompt.includes("due")
+  ) {
+    setAvaResponse(
+      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. Account health is currently listed as ${
+        balance?.account_health || "not available"
+      }.`
+    );
+
+    return;
+  }
+
+  if (
+    prompt.includes("message") ||
+    prompt.includes("notice") ||
+    prompt.includes("letter")
+  ) {
+    if (latestMessage) {
+      setAvaResponse(
+        `Your latest notice is "${
+          latestMessage.title ||
+          latestMessage.subject ||
+          "Recent Notice"
+        }". You currently have ${unreadMessages} unread message(s).`
+      );
+    } else {
+      setAvaResponse(
+        "There are currently no recent notices available for your account."
+      );
+    }
+
+    return;
+  }
+
+  if (
+    prompt.includes("request") ||
+    prompt.includes("work order") ||
+    prompt.includes("maintenance")
+  ) {
+    if (latestRequest) {
+      setAvaResponse(
+        `Your latest homeowner request is currently marked as "${
+          latestRequest.status || "Received"
+        }".`
+      );
+    } else {
+      setAvaResponse(
+        "There are currently no homeowner requests associated with your account."
+      );
+    }
+
+    return;
+  }
+
+  if (
+    prompt.includes("document") ||
+    prompt.includes("rules") ||
+    prompt.includes("forms")
+  ) {
+    setAvaResponse(
+      "Association documents, forms, governing documents, and financial files are available in the Documents section."
+    );
+
+    return;
+  }
+
+  if (
+    prompt.includes("emergency") ||
+    prompt.includes("urgent")
+  ) {
+    setAvaResponse(
+      "For emergencies or urgent property issues, please contact management or emergency services directly instead of relying only on the portal."
+    );
+
+    return;
+  }
+
+  setAvaResponse(
+    "Ava is still learning. Please try asking about balances, payments, notices, documents, or homeowner requests."
+  );
+}
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="relative overflow-hidden border-b border-white/10">
@@ -246,23 +344,25 @@ export default function HomeownerAva() {
             </div>
 
             <div className="max-w-[88%] rounded-3xl rounded-tl-sm bg-slate-900 p-5 text-sm leading-6 text-slate-300">
-              {loading ? (
-                "I’m loading your homeowner information now."
-              ) : (
-                <>
-                  <p>{selectedAction?.description}</p>
+  {loading ? (
+    "I’m loading your homeowner information now."
+  ) : (
+    <>
+      <p>
+        {avaResponse || selectedAction?.description}
+      </p>
 
-                  {selectedAction?.href ? (
-                    <Link
-                      href={selectedAction.href}
-                      className="mt-4 inline-flex rounded-2xl border border-yellow-400/40 px-4 py-2 text-xs font-semibold text-yellow-300 hover:bg-yellow-400/10"
-                    >
-                      Open Related Page
-                    </Link>
-                  ) : null}
-                </>
-              )}
-            </div>
+      {selectedAction?.href ? (
+        <Link
+          href={selectedAction.href}
+          className="mt-4 inline-flex rounded-2xl border border-yellow-400/40 px-4 py-2 text-xs font-semibold text-yellow-300 hover:bg-yellow-400/10"
+        >
+          Open Related Page
+        </Link>
+      ) : null}
+    </>
+  )}
+</div>
           </div>
 
           <div className="mt-6 rounded-3xl border border-white/10 bg-slate-900 p-4">
@@ -282,8 +382,8 @@ export default function HomeownerAva() {
 
               <button
                 type="button"
-                onClick={() => setSelectedPrompt(selectedPrompt)}
-                className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300"
+              onClick={handleAskAva}
+              className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300"
               >
                 Ask Ava
               </button>
