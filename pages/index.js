@@ -585,8 +585,9 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-        </section>
+          </div>
+
+<div className="mt-10 flex flex-col gap-4 sm:flex-row">
 
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div
