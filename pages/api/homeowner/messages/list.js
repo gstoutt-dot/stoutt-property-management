@@ -63,15 +63,51 @@ export default async function handler(req, res) {
       query = query.is("owner_user_id", null);
     }
 
-    const { data, error } = await query;
+    const { data: notifications, error } = await query;
 
     if (error) {
       throw error;
     }
 
+    const notificationIds = (notifications || [])
+      .map((notification) => notification.id)
+      .filter(Boolean);
+
+    let readRecords = [];
+
+    if (resolvedOwnerUserId && notificationIds.length > 0) {
+      const { data: reads, error: readsError } = await supabaseAdmin
+        .from("homeowner_notification_reads")
+        .select("*")
+        .eq("association_id", resolvedAssociationId)
+        .eq("owner_user_id", resolvedOwnerUserId)
+        .in("notification_id", notificationIds);
+
+      if (readsError) {
+        throw readsError;
+      }
+
+      readRecords = reads || [];
+    }
+
+    const readRecordsByNotificationId = new Map(
+      readRecords.map((record) => [record.notification_id, record])
+    );
+
+    const messages = (notifications || []).map((notification) => {
+      const readRecord = readRecordsByNotificationId.get(notification.id);
+
+      return {
+        ...notification,
+        read_status: readRecord?.read_status === true,
+        read_at: readRecord?.read_at || null,
+        read_record_id: readRecord?.id || null,
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      messages: data || [],
+      messages,
     });
   } catch (error) {
     console.error("List homeowner messages failed:", error);
