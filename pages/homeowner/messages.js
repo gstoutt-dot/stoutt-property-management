@@ -17,8 +17,12 @@ async function markMessageRead(notificationId) {
       body: JSON.stringify({
   notificationId,
   associationId: ownerProfile?.association_id || "",
-  ownerUserId: ownerProfile?.id || "",
-  unitNumber:
+  ownerUserId:
+  ownerProfile?.owner_user_id ||
+  ownerProfile?.ownerUserId ||
+  ownerProfile?.id ||
+  "",
+    unitNumber:
     ownerProfile?.unitNumber ||
     ownerProfile?.unit_number ||
     "",
