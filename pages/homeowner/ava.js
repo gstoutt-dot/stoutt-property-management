@@ -17,6 +17,7 @@ export default function HomeownerAva() {
       role: "ava",
       message:
         "Hello. I’m Ava, your homeowner assistant. I can help explain balances, notices, documents, payments, and homeowner requests using your live homeowner information.",
+      actions: [],
     },
   ]);
 
@@ -171,12 +172,13 @@ export default function HomeownerAva() {
         )
       : "Not available";
 
-  function pushAvaResponse(message) {
+  function pushAvaResponse(message, actions = []) {
     setConversation((current) => [
       ...current,
       {
         role: "ava",
         message,
+        actions,
       },
     ]);
   }
@@ -211,9 +213,17 @@ export default function HomeownerAva() {
       prompt.includes("due")
     ) {
       pushAvaResponse(
-        `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. Account health is currently listed as ${
-          balance?.account_health || "not available"
-        }.`
+        `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`,
+        [
+          {
+            label: "Open Payment Center",
+            href: "/homeowner/payment",
+          },
+          {
+            label: "Request Account Review",
+            href: "/homeowner/account-review",
+          },
+        ]
       );
 
       return;
@@ -221,42 +231,39 @@ export default function HomeownerAva() {
 
     if (
       prompt.includes("message") ||
-      prompt.includes("notice") ||
-      prompt.includes("letter")
+      prompt.includes("notice")
     ) {
-      if (latestMessage) {
-        pushAvaResponse(
-          `Your latest notice is "${
-            latestMessage.title ||
-            latestMessage.subject ||
-            "Recent Notice"
-          }". You currently have ${unreadMessages} unread message(s).`
-        );
-      } else {
-        pushAvaResponse(
-          "There are currently no recent notices available for your account."
-        );
-      }
+      pushAvaResponse(
+        latestMessage
+          ? `You currently have ${unreadMessages} unread notice(s).`
+          : "There are currently no recent notices available.",
+        [
+          {
+            label: "View Messages",
+            href: "/homeowner/messages",
+          },
+        ]
+      );
 
       return;
     }
 
     if (
       prompt.includes("request") ||
-      prompt.includes("work order") ||
-      prompt.includes("maintenance")
+      prompt.includes("maintenance") ||
+      prompt.includes("work order")
     ) {
-      if (latestRequest) {
-        pushAvaResponse(
-          `Your latest homeowner request is currently marked as "${
-            latestRequest.status || "Received"
-          }".`
-        );
-      } else {
-        pushAvaResponse(
-          "There are currently no homeowner requests associated with your account."
-        );
-      }
+      pushAvaResponse(
+        latestRequest
+          ? `Your latest homeowner request is currently marked as "${latestRequest.status || "Received"}".`
+          : "You currently do not have any active homeowner requests.",
+        [
+          {
+            label: "Create Maintenance Request",
+            href: "/homeowner/work-orders",
+          },
+        ]
+      );
 
       return;
     }
@@ -267,7 +274,34 @@ export default function HomeownerAva() {
       prompt.includes("forms")
     ) {
       pushAvaResponse(
-        "Association documents, forms, governing documents, and financial files are available in the Documents section."
+        "Association documents, forms, governing documents, and financial files are available in the Documents section.",
+        [
+          {
+            label: "Open Documents",
+            href: "/homeowner/documents",
+          },
+        ]
+      );
+
+      return;
+    }
+
+    if (
+      prompt.includes("management") ||
+      prompt.includes("help")
+    ) {
+      pushAvaResponse(
+        "I can help route you to the correct homeowner workflow or management resource.",
+        [
+          {
+            label: "View Messages",
+            href: "/homeowner/messages",
+          },
+          {
+            label: "Open Work Orders",
+            href: "/homeowner/work-orders",
+          },
+        ]
       );
 
       return;
@@ -389,7 +423,21 @@ export default function HomeownerAva() {
                     : "max-w-[88%] rounded-3xl rounded-tl-sm bg-slate-900 p-5 text-sm leading-6 text-slate-300"
                 }
               >
-                {entry.message}
+                <p>{entry.message}</p>
+
+                {entry.actions?.length > 0 ? (
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {entry.actions.map((action) => (
+                      <Link
+                        key={action.href}
+                        href={action.href}
+                        className="rounded-2xl border border-yellow-400/30 px-4 py-2 text-xs font-semibold text-yellow-300 hover:bg-yellow-400/10"
+                      >
+                        {action.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ))}
 
@@ -487,79 +535,6 @@ export default function HomeownerAva() {
                   request(s)
                 </p>
               </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm font-medium text-yellow-400">
-              Quick Actions
-            </p>
-
-            <div className="mt-5 grid gap-3">
-              {quickActions.map((action) => (
-                <button
-                  key={action.label}
-                  type="button"
-                  onClick={() => {
-                    setSelectedPrompt(
-                      action.prompt
-                    );
-                  }}
-                  className="rounded-2xl border border-white/10 px-4 py-3 text-left text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-6">
-            <p className="text-sm font-medium text-yellow-300">
-              Ava Safety Guardrails
-            </p>
-
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Ava can explain live homeowner
-              information and guide you to the
-              right portal page. Ava does not
-              provide legal advice, financial
-              advice, or emergency support.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm font-medium text-yellow-400">
-              Helpful Links
-            </p>
-
-            <div className="mt-5 grid gap-3">
-              <Link
-                href="/homeowner/payment"
-                className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-              >
-                Go to Payment Center
-              </Link>
-
-              <Link
-                href="/homeowner/messages"
-                className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-              >
-                View Messages
-              </Link>
-
-              <Link
-                href="/homeowner/documents"
-                className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-              >
-                Open Documents
-              </Link>
-
-              <Link
-                href="/homeowner/work-orders"
-                className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-              >
-                Submit Work Order
-              </Link>
             </div>
           </div>
         </div>
