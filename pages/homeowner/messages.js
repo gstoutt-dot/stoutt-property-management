@@ -1,96 +1,221 @@
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../../lib/supabaseClient";
+
+const FALLBACK_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function HomeownerMessages() {
+  const router = useRouter();
+
+  const [ownerProfile, setOwnerProfile] = useState(null);
   const [messages, setMessages] = useState([]);
-const [loadingMessages, setLoadingMessages] = useState(true);
-const [selectedCategory, setSelectedCategory] = useState("All Messages");
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All Messages");
   const [readStatusMessage, setReadStatusMessage] = useState("");
-async function markMessageRead(notificationId) {
-  try {
-    setReadStatusMessage("");
-    const response = await fetch("/api/homeowner/messages/mark-read", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-  notificationId,
-  associationId: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-  ownerUserId: message.owner_user_id || "",
-  unitNumber: message.unit_number || "",
-}),
-    });
 
-    const data = await response.json();
+  const ownerAssociationId =
+    ownerProfile?.association_id ||
+    ownerProfile?.associationId ||
+    FALLBACK_ASSOCIATION_ID;
 
-    if (!response.ok || !data.success) {
-      throw new Error(data.error || "Unable to mark message as read.");
+  const ownerUserId =
+    ownerProfile?.owner_user_id ||
+    ownerProfile?.ownerUserId ||
+    ownerProfile?.id ||
+    "";
+
+  const ownerUnitNumber =
+    ownerProfile?.unitNumber ||
+    ownerProfile?.unit_number ||
+    "";
+
+  const filteredMessages = useMemo(() => {
+    if (selectedCategory === "All Messages") {
+      return messages;
     }
 
-    setMessages((currentMessages) =>
-      currentMessages.map((message) =>
-        message.id === notificationId
-          ? {
-              ...message,
-              read_status: true,
-            }
-          : message
+    return messages.filter((message) =>
+      String(
+        message.category ||
+          message.notification_type ||
+          message.type ||
+          ""
       )
-    );
-    } catch (error) {
-    console.error("Unable to mark message as read:", error);
-    setReadStatusMessage(error.message || "Unable to mark message as read.");
-  }
-}
-  const filteredMessages =
-  selectedCategory === "All Messages"
-    ? messages
-    : messages.filter((message) =>
-        String(
-          message.category ||
-            message.notification_type ||
-            message.type ||
-            ""
+        .toLowerCase()
+        .includes(
+          selectedCategory
+            .replace("&", "")
+            .replace("Notices", "")
+            .replace("Updates", "")
+            .replace("Messages", "")
+            .trim()
+            .toLowerCase()
         )
+    );
+  }, [messages, selectedCategory]);
+
+  useEffect(() => {
+    async function loadOwnerProfile() {
+      try {
+        setLoadingProfile(true);
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.user?.email) {
+          router.replace("/portal/owner/login");
+          return;
+        }
+
+        const normalizedEmail = String(session.user.email)
           .toLowerCase()
-          .includes(
-            selectedCategory
-              .replace("&", "")
-              .replace("Notices", "")
-              .replace("Updates", "")
-              .replace("Messages", "")
-              .trim()
-              .toLowerCase()
-          )
-      );
+          .trim();
 
-useEffect(() => {
-  async function loadMessages() {
+        const profileResponse = await fetch(
+          `/api/owner/profile?ownerEmail=${encodeURIComponent(
+            normalizedEmail
+          )}&authUserId=${encodeURIComponent(session.user.id || "")}`
+        );
+
+        const profileResult = await profileResponse.json();
+
+        if (!profileResponse.ok || !profileResult?.success) {
+          router.replace("/portal/owner/login");
+          return;
+        }
+
+        setOwnerProfile(profileResult.ownerProfile || null);
+      } catch (error) {
+        console.error("Unable to load homeowner profile:", error);
+        router.replace("/portal/owner/login");
+      } finally {
+        setLoadingProfile(false);
+      }
+    }
+
+    loadOwnerProfile();
+  }, [router]);
+
+  useEffect(() => {
+    async function loadMessages() {
+      if (loadingProfile) return;
+      if (!ownerAssociationId) return;
+
+      try {
+        setLoadingMessages(true);
+
+        const params = new URLSearchParams({
+          associationId: ownerAssociationId,
+          ownerUserId,
+          unitNumber: ownerUnitNumber,
+          limit: "25",
+        });
+
+        const response = await fetch(`/api/homeowner/messages/list?${params}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Unable to load messages.");
+        }
+
+        setMessages(data.messages || []);
+      } catch (error) {
+        console.error("Unable to load homeowner messages:", error);
+        setMessages([]);
+      } finally {
+        setLoadingMessages(false);
+      }
+    }
+
+    loadMessages();
+  }, [loadingProfile, ownerAssociationId, ownerUserId, ownerUnitNumber]);
+
+  async function markMessageRead(notificationId) {
     try {
-      setLoadingMessages(true);
+      setReadStatusMessage("");
 
-      const response = await fetch(
-        "/api/homeowner/messages/list?associationId=622aaf96-ae1c-4f98-b0b2-00cc9178c2a2&limit=25"
-      );
+      const response = await fetch("/api/homeowner/messages/mark-read", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notificationId,
+          associationId: ownerAssociationId,
+          ownerUserId,
+          unitNumber: ownerUnitNumber,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "Unable to load messages.");
+        throw new Error(data.error || "Unable to mark message as read.");
       }
 
-      setMessages(data.messages || []);
+      setMessages((currentMessages) =>
+        currentMessages.map((message) =>
+          message.id === notificationId
+            ? {
+                ...message,
+                read_status: true,
+                read_at:
+                  data.readRecord?.read_at ||
+                  data.notification?.read_at ||
+                  new Date().toISOString(),
+                read_record_id:
+                  data.readRecord?.id || message.read_record_id || null,
+              }
+            : message
+        )
+      );
     } catch (error) {
-      console.error("Unable to load homeowner messages:", error);
-      setMessages([]);
-    } finally {
-      setLoadingMessages(false);
+      console.error("Unable to mark message as read:", error);
+      setReadStatusMessage(
+        error.message || "Unable to mark message as read."
+      );
     }
   }
 
-  loadMessages();
-}, []);
+  const unreadCount = messages.filter(
+    (message) => message.read_status !== true
+  ).length;
+
+  const announcementCount = messages.filter((message) =>
+    String(
+      message.category ||
+        message.notification_type ||
+        message.type ||
+        ""
+    )
+      .toLowerCase()
+      .includes("announcement")
+  ).length;
+
+  const serviceUpdateCount = messages.filter((message) =>
+    String(
+      message.category ||
+        message.notification_type ||
+        message.type ||
+        ""
+    )
+      .toLowerCase()
+      .includes("service")
+  ).length;
+
+  const directMessageCount = messages.filter((message) =>
+    String(
+      message.category ||
+        message.notification_type ||
+        message.type ||
+        ""
+    )
+      .toLowerCase()
+      .includes("direct")
+  ).length;
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -125,74 +250,25 @@ useEffect(() => {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-  <div className="grid gap-6 md:grid-cols-4">
-    {[
-      [
-        "Unread",
-        String(
-          messages.filter(
-            (message) => !message.read_at && message.status !== "Read"
-          ).length
-        ),
-      ],
-      [
-        "Announcements",
-        String(
-          messages.filter((message) =>
-            String(
-              message.category ||
-                message.notification_type ||
-                message.type ||
-                ""
-            )
-              .toLowerCase()
-              .includes("announcement")
-          ).length
-        ),
-      ],
-      [
-        "Service Updates",
-        String(
-          messages.filter((message) =>
-            String(
-              message.category ||
-                message.notification_type ||
-                message.type ||
-                ""
-            )
-              .toLowerCase()
-              .includes("service")
-          ).length
-        ),
-      ],
-      [
-        "Direct Messages",
-        String(
-          messages.filter((message) =>
-            String(
-              message.category ||
-                message.notification_type ||
-                message.type ||
-                ""
-            )
-              .toLowerCase()
-              .includes("direct")
-          ).length
-        ),
-      ],
-    ].map(([label, value]) => (
-      <div
-  key={label}
-  className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
->
-        <p className="text-sm text-slate-400">{label}</p>
-        <div className="mt-3 text-4xl font-bold text-yellow-400">
-          {value}
+        <div className="grid gap-6 md:grid-cols-4">
+          {[
+            ["Unread", String(unreadCount)],
+            ["Announcements", String(announcementCount)],
+            ["Service Updates", String(serviceUpdateCount)],
+            ["Direct Messages", String(directMessageCount)],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+            >
+              <p className="text-sm text-slate-400">{label}</p>
+              <div className="mt-3 text-4xl font-bold text-yellow-400">
+                {value}
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    ))}
-  </div>
-</section>
+      </section>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
@@ -210,102 +286,110 @@ useEffect(() => {
             />
           </div>
 
-<div className="space-y-5">
-  {readStatusMessage && (
-    <div className="rounded-3xl border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200">
-      {readStatusMessage}
-    </div>
-  )}
+          <div className="space-y-5">
+            {readStatusMessage && (
+              <div className="rounded-3xl border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200">
+                {readStatusMessage}
+              </div>
+            )}
 
-{loadingMessages ? (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
-      Loading homeowner messages...
-    </div>
-  ) : filteredMessages.length > 0 ? (
-    filteredMessages.map((message) => (
-      <div
-  key={message.id}
-  className={`rounded-3xl border p-6 transition ${
-    message.read_status
-      ? "border-white/10 bg-white/[0.04]"
-      : "border-yellow-400/30 bg-yellow-400/[0.06] shadow-[0_0_30px_rgba(250,204,21,0.08)]"
-  }`}
->
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-400">
-              {(message.category ||
-                message.notification_type ||
-                message.type ||
-                "Homeowner Notice")}{" "}
-              • {String(message.id || "").slice(0, 8).toUpperCase()}
-            </p>
+            {loadingMessages || loadingProfile ? (
+              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+                Loading homeowner messages...
+              </div>
+            ) : filteredMessages.length > 0 ? (
+              filteredMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`rounded-3xl border p-6 transition ${
+                    message.read_status
+                      ? "border-white/10 bg-white/[0.04]"
+                      : "border-yellow-400/30 bg-yellow-400/[0.06] shadow-[0_0_30px_rgba(250,204,21,0.08)]"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-slate-400">
+                        {(message.category ||
+                          message.notification_type ||
+                          message.type ||
+                          "Homeowner Notice")}{" "}
+                        • {String(message.id || "").slice(0, 8).toUpperCase()}
+                      </p>
 
-            <h3 className="mt-2 text-xl font-semibold">
-              {message.title ||
-                message.subject ||
-                "Homeowner Notification"}
-            </h3>
+                      <h3 className="mt-2 text-xl font-semibold">
+                        {message.title ||
+                          message.subject ||
+                          "Homeowner Notification"}
+                      </h3>
 
-            <p className="mt-2 text-sm text-slate-400">
-              {message.created_at
-                ? new Date(message.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : "Recently"}
-            </p>
+                      <p className="mt-2 text-sm text-slate-400">
+                        {message.created_at
+                          ? new Date(message.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )
+                          : "Recently"}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        message.read_status
+                          ? "bg-slate-800 text-slate-300"
+                          : "bg-yellow-400 text-slate-950"
+                      }`}
+                    >
+                      {message.read_status ? "Read" : "Unread"}
+                    </span>
+                  </div>
+
+                  <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
+                    {message.message ||
+                      message.body ||
+                      message.preview ||
+                      message.description ||
+                      "A homeowner notification is available."}
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => markMessageRead(message.id)}
+                      disabled={message.read_status === true}
+                      className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Open Message
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => markMessageRead(message.id)}
+                      disabled={message.read_status === true}
+                      className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {message.read_status ? "Already Read" : "Mark Read"}
+                    </button>
+
+                    <Link
+                      href="/homeowner/ava"
+                      className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
+                    >
+                      Ask Ava
+                    </Link>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
+                No homeowner messages are available for this category.
+              </div>
+            )}
           </div>
-
-          <span
-  className={`rounded-full px-3 py-1 text-xs font-medium ${
-    message.read_status
-      ? "bg-slate-800 text-slate-300"
-      : "bg-yellow-400 text-slate-950"
-  }`}
->
-  {message.read_status ? "Read" : "Unread"} 
-</span>
-        </div>
-
-        <div className="mt-5 rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">
-          {message.message ||
-            message.body ||
-            message.preview ||
-            message.description ||
-            "A homeowner notification is available."}
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          <button className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300">
-            Open Message
-          </button>
-
-          <button
-  type="button"
-  onClick={() => markMessageRead(message.id)}
-  disabled={!!message.read_at || message.read_status === true}
-  className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
->
-  {message.read_at || message.read_status === true ? "Already Read" : "Mark Read"}
-</button>
-
-          <Link
-            href="/homeowner/ava"
-            className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
-          >
-            Ask Ava
-          </Link>
-        </div>
-      </div>
-    ))
-  ) : (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm text-slate-300">
-      No homeowner messages are available for this category.
-    </div>
-  )}
-</div>
         </div>
 
         <div className="space-y-6">
@@ -316,28 +400,28 @@ useEffect(() => {
 
             <div className="mt-5 space-y-3">
               {[
-  "All Messages",
-  "Association Announcements",
-  "Board Meeting Notices",
-  "Service & Maintenance Updates",
-  "Compliance Notices",
-  "Architectural Review Updates",
-  "Financial Notices",
-  "Direct Messages",
-].map((category) => (
-  <button
-    key={category}
-    type="button"
-    onClick={() => setSelectedCategory(category)}
-    className={`block w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
-      selectedCategory === category
-        ? "border-yellow-400/60 bg-yellow-400/10 text-yellow-300"
-        : "border-white/10 text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
-    }`}
-  >
-    {category}
-  </button>
-))}
+                "All Messages",
+                "Association Announcements",
+                "Board Meeting Notices",
+                "Service & Maintenance Updates",
+                "Compliance Notices",
+                "Architectural Review Updates",
+                "Financial Notices",
+                "Direct Messages",
+              ].map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={`block w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                    selectedCategory === category
+                      ? "border-yellow-400/60 bg-yellow-400/10 text-yellow-300"
+                      : "border-white/10 text-slate-200 hover:border-yellow-400/40 hover:text-yellow-300"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -356,9 +440,12 @@ useEffect(() => {
               deadlines or next steps.
             </p>
 
-            <button className="mt-5 rounded-2xl border border-yellow-400/40 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400 hover:text-slate-950">
+            <Link
+              href="/homeowner/ava"
+              className="mt-5 inline-flex rounded-2xl border border-yellow-400/40 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400 hover:text-slate-950"
+            >
               Ask Ava
-            </button>
+            </Link>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
@@ -391,4 +478,3 @@ useEffect(() => {
     </main>
   );
 }
-
