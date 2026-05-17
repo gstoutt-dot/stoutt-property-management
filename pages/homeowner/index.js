@@ -255,12 +255,12 @@ const [loadError, setLoadError] = useState("");
 
                 <div className="mt-6 flex flex-wrap gap-3">
                                     <Link
-  href={balance?.payment_link || "/homeowner/account-review"}
-  target={balance?.payment_link ? "_blank" : "_self"}
+href={balance?.payment_link || "/homeowner"}
+target={balance?.payment_link ? "_blank" : "_self"}
   rel={balance?.payment_link ? "noopener noreferrer" : undefined}
   className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
 >
-  Make Payment
+  Make Payment Coming Soon
 </Link>
 
                   <button
@@ -648,12 +648,12 @@ const [loadError, setLoadError] = useState("");
               </Link>
 
               <Link
-  href={balance?.payment_link || "/homeowner/account-review"}
-  target={balance?.payment_link ? "_blank" : "_self"}
+href={balance?.payment_link || "/homeowner"}
+target={balance?.payment_link ? "_blank" : "_self"}
   rel={balance?.payment_link ? "noopener noreferrer" : undefined}
   className="block rounded-2xl bg-slate-900/70 p-4 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
 >
-  Make Payment
+  Make Payment Coming Soon
 </Link>
 
               <Link
