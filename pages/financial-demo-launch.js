@@ -58,11 +58,11 @@ export default function FinancialDemoLaunch() {
       <div className="relative mx-auto max-w-7xl px-6 py-8">
         <header className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
           <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
-            SPM Boardroom Demo
+            SPM Boardroom
           </p>
 
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            Financial Operations Demo Launch
+            Association Operations Onboarding Launch
           </h1>
 
           <p className="mt-4 max-w-3xl text-slate-300">
@@ -86,7 +86,7 @@ export default function FinancialDemoLaunch() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold">
-              Recommended Live Demo Sequence
+              Recommended Live Sequence
             </h2>
 
             <div className="mt-6 grid gap-4">
