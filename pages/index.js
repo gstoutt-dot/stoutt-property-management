@@ -586,12 +586,6 @@ export default function HomePage() {
           </div>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <a href="/proposal" className={premiumButton}>
-              Request a Proposal
-            <a href="/portal/owner/login" className={subtleButton}>
-  Homeowner Access
-</a>
-          </div>
         </section>
 
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
