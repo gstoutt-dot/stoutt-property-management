@@ -340,7 +340,7 @@ useEffect(() => {
             </p>
 
             <button className="mt-5 rounded-2xl border border-yellow-400/40 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400 hover:text-slate-950">
-            href="/homeowner/ava"
+           Ask Ava
                 </button>
           </div>
 
