@@ -281,15 +281,12 @@ useEffect(() => {
             Download
           </button>
 
-          <button
-  type="button"
-  onClick={() => {
-    window.location.href = "/homeowner/ava";
-  }}
+          <a
+  href="/homeowner/ava"
   className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/50 hover:text-yellow-300"
 >
   Ask Ava
-</button>
+</a>
         </div>
       </div>
     ))
