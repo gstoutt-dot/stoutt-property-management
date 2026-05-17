@@ -2,49 +2,49 @@ const demoFlow = [
   {
     title: "1. Association Onboarding",
     description:
-      "Show how a new HOA or condominium association enters the SPM financial operations system.",
+      "Entering a new HOA or Condominium Association into the SPM financial operations system platform.",
     href: "/association-onboarding",
     status: "Ready",
   },
   {
     title: "2. Owner / Unit Import",
     description:
-      "Show owner and unit records being prepared for accounting visibility.",
+      "Entering owner and unit records for preparation of accounting visibility.",
     href: "/owner-unit-import",
     status: "Ready",
   },
   {
     title: "3. Owner Identity Mapping",
     description:
-      "Show the bridge between unit owners, portal identities, and QuickBooks customers.",
+      "Shows the bridge between unit owners, portal identities, and QuickBooks customers.",
     href: "/owner-identity-mapping",
     status: "Ready",
   },
   {
     title: "4. Owner Access Provisioning",
     description:
-      "Show secure owner login activation and financial visibility readiness.",
+      "Shows secure owner login activation and financial visibility readiness.",
     href: "/owner-access-provisioning",
     status: "Ready",
   },
   {
     title: "5. Owner Financial Dashboard",
     description:
-      "Show the owner-facing financial experience with balance and payment visibility.",
+      "Shows the owner-facing financial experience with balance and payment visibility.",
     href: "/owner-financial-dashboard-preview",
     status: "Ready",
   },
   {
     title: "6. Board Financial Visibility",
     description:
-      "Show board-level account health, delinquency, and financial rollup visibility.",
+      "Shows board-level account health, delinquency, and financial rollup visibility.",
     href: "/board-financial-visibility",
     status: "Ready",
   },
   {
     title: "7. QuickBooks Command Center",
     description:
-      "Show the live accounting synchronization center and green financial summary.",
+      "Shows the live accounting synchronization center and green financial summary.",
     href: "/accounting/quickbooks-live",
     status: "Green",
   },
@@ -66,17 +66,16 @@ export default function FinancialDemoLaunch() {
           </h1>
 
           <p className="mt-4 max-w-3xl text-slate-300">
-            A clean presentation path for showing how SPM onboards an
-            association, imports owners, connects accounting records, activates
-            owner visibility, and delivers board-ready financial transparency.
+            SPM onboarding sequence: Upload association, imports owners, connects accounting records, activate
+            owner visibility, and deliver board-ready financial transparency.
           </p>
         </header>
 
         <section className="mt-8 grid gap-4 md:grid-cols-4">
-          <Metric label="Demo Modules" value="7" />
-          <Metric label="Primary Focus" value="Financial Ops" />
+          <Metric label="Modules" value="7" />
+          <Metric label="Primary Focus" value="Onboarding" />
           <Metric label="Accounting Sync" value="Green" />
-          <Metric label="Sales Readiness" value="Boardroom" />
+          <Metric label="Operation Readiness" value="Boardroom" />
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -86,7 +85,7 @@ export default function FinancialDemoLaunch() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold">
-              Recommended Live Sequence
+              Onboarding Live Sequence
             </h2>
 
             <div className="mt-6 grid gap-4">
@@ -134,7 +133,7 @@ export default function FinancialDemoLaunch() {
             </div>
 
             <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-              <h2 className="text-2xl font-semibold">Talk Track</h2>
+              <h2 className="text-2xl font-semibold">Onboarding Track</h2>
 
               <div className="mt-6 space-y-3">
                 <TalkPoint text="We onboard the association first." />
