@@ -10,7 +10,7 @@ const initialForm = {
   boardPresident: "",
   boardEmail: "",
   managementContact: "",
-  quickbooksStatus: "Not Connected",
+  quickbooksStatus: "Ready",
   onboardingStage: "Association Intake",
 };
 
