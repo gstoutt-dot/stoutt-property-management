@@ -469,9 +469,9 @@ export default function HomeownerMessages() {
               ))}
             </div>
 
-            <button className="mt-5 w-full rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300">
-              Manage Preferences
-            </button>
+            <div className="mt-5 rounded-2xl border border-white/10 bg-slate-900/70 px-5 py-4 text-sm text-slate-400">
+  Notification preference management will be available in a future update.
+</div>
           </div>
         </div>
       </section>
