@@ -176,7 +176,7 @@ export default function AssociationOnboarding() {
 
             <div className="rounded-[2rem] border border-emerald-300/20 bg-emerald-400/10 p-6">
               <p className="font-semibold text-emerald-200">
-                Sales Demo Positioning
+                High Value Positioning
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 SPM can onboard an association, import owners and units, connect
