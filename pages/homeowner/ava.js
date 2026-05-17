@@ -207,27 +207,42 @@ export default function HomeownerAva() {
     ]);
 
     if (
-      prompt.includes("balance") ||
-      prompt.includes("payment") ||
-      prompt.includes("assessment") ||
-      prompt.includes("due")
-    ) {
-      pushAvaResponse(
-        `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`,
-        [
-          {
-            label: "Open Payment Center",
-            href: "/homeowner/payment",
-          },
-          {
-            label: "Request Account Review",
-            href: "/homeowner/account-review",
-          },
-        ]
-      );
+  prompt.includes("balance") ||
+  prompt.includes("payment") ||
+  prompt.includes("assessment") ||
+  prompt.includes("due") ||
+  prompt.includes("account review") ||
+  prompt.includes("review my account") ||
+  prompt.includes("account issue") ||
+  prompt.includes("balance wrong") ||
+  prompt.includes("wrong balance") ||
+  prompt.includes("payment missing") ||
+  prompt.includes("payment not showing") ||
+  prompt.includes("missing payment") ||
+  prompt.includes("statement") ||
+  prompt.includes("late fee") ||
+  prompt.includes("delinquency") ||
+  prompt.includes("charge") ||
+  prompt.includes("fee") ||
+  prompt.includes("assessment issue") ||
+  prompt.includes("account help")
+) {
+  pushAvaResponse(
+    `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. If something looks incorrect, management can review your account through the account review workflow.`,
+    [
+      {
+        label: "Open Payment Center",
+        href: "/homeowner/payment",
+      },
+      {
+        label: "Request Account Review",
+        href: "/homeowner/account-review",
+      },
+    ]
+  );
 
-      return;
-    }
+  return;
+}
 
     if (
       prompt.includes("message") ||
