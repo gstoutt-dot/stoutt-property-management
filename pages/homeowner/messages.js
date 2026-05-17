@@ -16,16 +16,9 @@ async function markMessageRead(notificationId) {
       },
       body: JSON.stringify({
   notificationId,
-  associationId: ownerProfile?.association_id || "",
-  ownerUserId:
-  ownerProfile?.owner_user_id ||
-  ownerProfile?.ownerUserId ||
-  ownerProfile?.id ||
-  "",
-    unitNumber:
-    ownerProfile?.unitNumber ||
-    ownerProfile?.unit_number ||
-    "",
+  associationId: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
+  ownerUserId: message.owner_user_id || "",
+  unitNumber: message.unit_number || "",
 }),
     });
 
