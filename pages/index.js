@@ -188,20 +188,28 @@ export default function HomePage() {
         </a>
 
         <a
-          href="/homeowner-login"
-          className="rounded-2xl border border-amber-400/40 bg-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950"
-          onClick={() => setMobileOpen(false)}
-        >
-          Homeowner Access
-        </a>
+  href="/portal/owner/login"
+  className="rounded-2xl border border-amber-400/40 bg-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950"
+  onClick={() => setMobileOpen(false)}
+>
+  Homeowner Access
+</a>
 
-        <a
-          href="/proposal"
-          className="rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
-          onClick={() => setMobileOpen(false)}
-        >
-          Request a Proposal
-        </a>
+<a
+  href="/homeowner-login"
+  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-white/85 transition hover:border-yellow-400/40 hover:bg-white/10 hover:text-yellow-200"
+  onClick={() => setMobileOpen(false)}
+>
+  Admin Access
+</a>
+
+<a
+  href="/proposal"
+  className="rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.18)]"
+  onClick={() => setMobileOpen(false)}
+>
+  Request a Proposal
+</a>
       </div>
     </div>
   )}
@@ -580,10 +588,9 @@ export default function HomePage() {
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <a href="/proposal" className={premiumButton}>
               Request a Proposal
-            </a>
-            <a href="/homeowner-login" className={subtleButton}>
-              Homeowner Access
-            </a>
+            <a href="/portal/owner/login" className={subtleButton}>
+  Homeowner Access
+</a>
           </div>
         </section>
 
