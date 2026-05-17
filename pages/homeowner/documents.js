@@ -339,9 +339,12 @@ useEffect(() => {
               form or process.
             </p>
 
-            <button className="mt-5 rounded-2xl border border-yellow-400/40 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400 hover:text-slate-950">
-           Ask Ava
-                </button>
+            <Link
+  href="/homeowner/ava"
+  className="mt-5 inline-flex rounded-2xl border border-yellow-400/40 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400 hover:text-slate-950"
+>
+  Ask Ava
+</Link>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
