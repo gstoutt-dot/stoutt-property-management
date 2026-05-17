@@ -15,8 +15,14 @@ async function markMessageRead(notificationId) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        notificationId,
-      }),
+  notificationId,
+  associationId: ownerProfile?.association_id || "",
+  ownerUserId: ownerProfile?.id || "",
+  unitNumber:
+    ownerProfile?.unitNumber ||
+    ownerProfile?.unit_number ||
+    "",
+}),
     });
 
     const data = await response.json();
