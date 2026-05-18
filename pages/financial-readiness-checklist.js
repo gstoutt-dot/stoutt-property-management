@@ -103,10 +103,7 @@ export default function FinancialReadinessChecklist() {
               Launch Flow
             </a>
 
-            <a href="/portal/owner" className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
-              View Owner Dashboard
-            </a>
-          </div>
+            </div>
         </header>
 
         <section className="mt-8 grid gap-4 md:grid-cols-4">
