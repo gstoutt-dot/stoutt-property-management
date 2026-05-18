@@ -1181,8 +1181,11 @@ if (workflowAction === "accounting_review") {
     return { status: "completed" };
   }
 
-  if (workflowAction === "notify_owner") {
-    return { status: "manager_review" };
+    if (workflowAction === "notify_owner") {
+    return {
+      owner_notified: true,
+      owner_notified_at: new Date().toISOString(),
+    };
   }
 
   return { status: "open" };
