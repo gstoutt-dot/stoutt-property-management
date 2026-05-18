@@ -215,13 +215,7 @@ export default function BoardApprovalQueue() {
 
           <div className="mt-7 flex flex-wrap gap-3">
             
-            <Link
-              href="/portal/board"
-              className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10"
-            >
-              Back to Board Hub
-            </Link>
-                <NotificationBell
+            <NotificationBell
   recipientRole="board"
   label="Board Updates"
 />
