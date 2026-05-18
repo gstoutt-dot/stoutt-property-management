@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Link from "next/link";
 import { bosSignals, aiEvents } from "../../lib/bosData";
 
 export default function ViolationReview() {
+  const [selectedItem, setSelectedItem] = useState(null);
   const violationSignals = bosSignals.filter(
     (item) =>
       item.module === "Violations" ||
@@ -99,11 +101,11 @@ export default function ViolationReview() {
             <div className="mt-6 space-y-4">
 
               {violationSignals.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.route}
-                  className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
-                >
+                <button
+  key={item.id}
+  onClick={() => setSelectedItem({ type: "violation", data: item })}
+  className="block w-full text-left rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
+>
                   <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
                     {item.id} · {item.module}
                   </p>
@@ -119,7 +121,7 @@ export default function ViolationReview() {
                   <p className="mt-2 text-xs text-slate-500">
                     Owner: {item.owner} · Status: {item.status}
                   </p>
-                </Link>
+                </button>
               ))}
 
             </div>
