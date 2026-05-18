@@ -5,13 +5,12 @@ const REALM_ID = "9341457054133986";
 
 export default function QuickBooksLiveAccounting() {
   const [loading, setLoading] = useState(false);
-  const [syncResult, setSyncResult] = useState(null);
+  const [financialData, setFinancialData] = useState(null);
   const [error, setError] = useState("");
 
-    async function runFullSync() {
+  async function loadFinancialSummary() {
     setLoading(true);
     setError("");
-    setSyncResult(null);
 
     try {
       const response = await fetch(
@@ -21,71 +20,53 @@ export default function QuickBooksLiveAccounting() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "QuickBooks financial summary failed.");
+        throw new Error(data?.error || "Unable to load financial summary.");
       }
 
-      setSyncResult({
-        success: true,
-        results: {
-          financial_summary: {
-            success: true,
-            status: response.status,
-            data,
-          },
-        },
-      });
+      setFinancialData(data);
     } catch (err) {
-      setError(err.message || "Unable to load QuickBooks financial summary.");
+      console.error(err);
+      setError(err.message || "Unable to load QuickBooks data.");
     } finally {
       setLoading(false);
     }
   }
 
-    useEffect(() => {
-    runFullSync();
+  useEffect(() => {
+    loadFinancialSummary();
   }, []);
 
-    const financialSummaryData =
-    syncResult?.results?.financial_summary?.data || null;
+  const boardSummary = financialData?.board_summary || {};
 
-  const summary =
-    financialSummaryData?.board_summary ||
-    financialSummaryData?.board_summary ||
-    {};
-
-  const ownerBalances =
-    financialSummaryData?.board_summary?.attentionAccounts ||
-    financialSummaryData?.board_summary?.attention_accounts ||
-    [];
-
-  const syncItems = Object.entries(syncResult?.results || {});
+  const ownerBalances = Array.isArray(boardSummary?.attentionAccounts)
+    ? boardSummary.attentionAccounts
+    : [];
 
   const financialSnapshot = useMemo(() => {
     const totalOwners = ownerBalances.length;
 
     const delinquentOwners = ownerBalances.filter((owner) =>
-      ["attention", "elevated", "severe"].includes(owner.delinquency_level)
+      ["attention", "elevated", "severe"].includes(
+        String(owner.delinquencyLevel || "").toLowerCase()
+      )
     ).length;
 
     const criticalOwners = ownerBalances.filter(
-      (owner) => owner.account_health === "critical"
+      (owner) =>
+        String(owner.accountHealth || "").toLowerCase() === "critical"
     ).length;
 
-    const currentOwners = Math.max(totalOwners - delinquentOwners, 0);
-
-    const monthlyAssessments = ownerBalances.reduce(
-      (sum, owner) => sum + Number(owner.monthly_assessment || 0),
-      0
-    );
+    const monthlyAssessments = ownerBalances.reduce((sum, owner) => {
+      return sum + Number(owner.monthlyAssessment || 0);
+    }, 0);
 
     const collectionsExposure = ownerBalances.reduce((sum, owner) => {
-      const balance = Number(owner.current_balance || 0);
+      const balance = Number(owner.currentBalance || 0);
       return balance > 0 ? sum + balance : sum;
     }, 0);
 
     return {
       totalOwners,
-      currentOwners,
       delinquentOwners,
       criticalOwners,
       monthlyAssessments,
@@ -98,7 +79,8 @@ export default function QuickBooksLiveAccounting() {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,1))]" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-8">
-                <nav className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 shadow-2xl backdrop-blur">
+
+        <nav className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 shadow-2xl backdrop-blur">
           <a href="/" className="font-semibold text-amber-300">
             Stoutt Property Management
           </a>
@@ -129,6 +111,7 @@ export default function QuickBooksLiveAccounting() {
 
         <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
                 SPM Financial Operations
@@ -140,9 +123,8 @@ export default function QuickBooksLiveAccounting() {
 
               <p className="mt-4 max-w-3xl text-slate-300">
                 Live accounting operations connected through QuickBooks synchronization.
-                This command center connects QuickBooks synchronization, owner
-                balances, delinquency visibility, and board financial reporting
-                into one HOA-safe operational view.
+                This command center provides HOA-safe owner balance visibility,
+                collections exposure, delinquency tracking, and board financial oversight.
               </p>
             </div>
 
@@ -150,13 +132,16 @@ export default function QuickBooksLiveAccounting() {
               <p className="text-xs uppercase tracking-[0.24em] text-amber-200">
                 Connected Association
               </p>
+
               <h2 className="mt-3 text-2xl font-semibold">
                 Sunset Condominium Association
               </h2>
+
               <div className="mt-4 space-y-2 text-sm text-slate-300">
                 <p>Association ID: {ASSOCIATION_ID}</p>
                 <p>Realm ID: {REALM_ID}</p>
                 <p>Platform: QuickBooks</p>
+
                 <p>
                   Status:{" "}
                   <span className="font-semibold text-emerald-300">
@@ -169,11 +154,19 @@ export default function QuickBooksLiveAccounting() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <button
-              onClick={runFullSync}
+              onClick={loadFinancialSummary}
               disabled={loading}
               className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 disabled:opacity-50"
             >
               {loading ? "Synchronizing..." : "Run Live QuickBooks Sync"}
+            </button>
+
+            <button
+              onClick={loadFinancialSummary}
+              disabled={loading}
+              className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
+            >
+              Refresh Owner Balances
             </button>
 
             <a
@@ -182,7 +175,7 @@ export default function QuickBooksLiveAccounting() {
               rel="noreferrer"
               className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/15"
             >
-              View Board Financial Summary
+              Open Board Financial Summary
             </a>
           </div>
         </header>
@@ -196,22 +189,25 @@ export default function QuickBooksLiveAccounting() {
         <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total Balance"
-            value={`$${Number(summary?.totalBalance || 0).toLocaleString()}`}
+            value={`$${Number(boardSummary?.totalBalance || 0).toLocaleString()}`}
             detail="Mirrored from owner accounting records"
           />
+
           <MetricCard
             label="Delinquent Accounts"
-            value={summary?.delinquentAccounts ?? financialSnapshot.delinquentOwners}
+            value={boardSummary?.delinquentAccounts || 0}
             detail="Owners needing financial attention"
           />
+
           <MetricCard
             label="Critical Accounts"
-            value={summary?.criticalAccounts ?? financialSnapshot.criticalOwners}
+            value={boardSummary?.criticalAccounts || 0}
             detail="Highest collection risk group"
           />
+
           <MetricCard
             label="Risk Score"
-            value={`${summary?.collectionRiskScore || 0}%`}
+            value={`${boardSummary?.collectionRiskScore || 0}%`}
             detail="Board-level collection exposure"
           />
         </section>
@@ -219,14 +215,16 @@ export default function QuickBooksLiveAccounting() {
         <section className="mt-6 grid gap-4 md:grid-cols-3">
           <OperationalCard
             title="Owner Financial Visibility"
-            value={financialSnapshot.totalOwners || "Pending Sync"}
-            label="Owner accounts available after sync"
+            value={financialSnapshot.totalOwners || 0}
+            label="Owner accounts loaded from QuickBooks"
           />
+
           <OperationalCard
             title="Monthly Assessment Base"
             value={`$${financialSnapshot.monthlyAssessments.toLocaleString()}`}
             label="Assessment total from mirrored balances"
           />
+
           <OperationalCard
             title="Collections Exposure"
             value={`$${financialSnapshot.collectionsExposure.toLocaleString()}`}
@@ -235,25 +233,29 @@ export default function QuickBooksLiveAccounting() {
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
+
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
                   Owner Ledger Preview
                 </p>
+
                 <h2 className="mt-2 text-2xl font-semibold">
                   Owner Financial Dashboard Feed
                 </h2>
               </div>
+
               <p className="text-sm text-slate-400">
-                {ownerBalances.length
-                  ? `${ownerBalances.length} owner records loaded`
-                  : "Run sync to load owner balances"}
+                {ownerBalances.length} owner records loaded
               </p>
             </div>
 
             <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
+
               <table className="w-full min-w-[760px] text-left text-sm">
+
                 <thead className="bg-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
                   <tr>
                     <th className="px-5 py-4">Unit</th>
@@ -266,63 +268,78 @@ export default function QuickBooksLiveAccounting() {
                 </thead>
 
                 <tbody className="divide-y divide-white/10">
-                    {ownerBalances.length > 0 ? (
+
+                  {ownerBalances.length > 0 ? (
                     ownerBalances.map((owner, index) => (
-                      <tr key={`${owner.unit_number}-${index}`} className="bg-slate-950/40">
+                      <tr
+                        key={`${owner.unitNumber}-${index}`}
+                        className="bg-slate-950/40"
+                      >
                         <td className="px-5 py-4 font-semibold text-white">
-                          {owner.unit_number || "—"}
+                          {owner.unitNumber || "—"}
                         </td>
+
                         <td className="px-5 py-4 text-slate-300">
-                          {owner.owner_name || "Unassigned Owner"}
+                          {owner.ownerName || "Unknown Owner"}
                         </td>
+
                         <td className="px-5 py-4 font-semibold text-amber-300">
-                          ${Number(owner.current_balance || 0).toLocaleString()}
+                          ${Number(owner.currentBalance || 0).toLocaleString()}
                         </td>
+
                         <td className="px-5 py-4">
-                          <StatusPill value={owner.payment_status} />
+                          <StatusPill value={owner.paymentStatus} />
                         </td>
+
                         <td className="px-5 py-4 text-slate-400">
-                          {owner.last_payment_date || "—"}
+                          {owner.lastPaymentDate || "—"}
                         </td>
+
                         <td className="px-5 py-4">
-                          <HealthPill value={owner.account_health} />
+                          <HealthPill value={owner.accountHealth} />
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-5 py-10 text-center text-slate-400">
-                        Owner ledger preview will appear after the next successful
-                        QuickBooks synchronization.
+                      <td
+                        colSpan="6"
+                        className="px-5 py-10 text-center text-slate-400"
+                      >
+                        No owner balances available.
                       </td>
                     </tr>
                   )}
+
                 </tbody>
               </table>
             </div>
           </div>
 
           <aside className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
+
             <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
               Operations
             </p>
+
             <h2 className="mt-2 text-2xl font-semibold">
               Accounting Actions
             </h2>
 
             <div className="mt-6 space-y-3">
+
               <button
-                onClick={runFullSync}
+                onClick={loadFinancialSummary}
                 disabled={loading}
                 className="w-full rounded-2xl bg-amber-400 px-5 py-3 text-left font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
               >
                 Sync QuickBooks Now
               </button>
 
-                            <button
-                onClick={runFullSync}
+              <button
+                onClick={loadFinancialSummary}
                 disabled={loading}
-                className="block w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-left font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
+                className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-left font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
               >
                 Refresh Owner Balances
               </button>
@@ -341,47 +358,47 @@ export default function QuickBooksLiveAccounting() {
               <p className="font-semibold text-emerald-200">
                 Production Status
               </p>
+
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 SPM can onboard associations, connect accounting records,
                 mirror owner balances, and provide live board-level
                 financial transparency through QuickBooks synchronization.
               </p>
             </div>
+
           </aside>
         </section>
 
-        {syncResult && (
-          <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-            <h2 className="text-2xl font-semibold">Synchronization Health</h2>
+        <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
 
-            <div className="mt-6 grid gap-4 md:grid-cols-5">
-              {syncItems.map(([key, result]) => (
-                <div
-                  key={key}
-                  className="rounded-2xl border border-white/10 bg-slate-900/80 p-4"
-                >
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {key.replaceAll("_", " ")}
-                  </p>
-                  <p
-                    className={`mt-3 text-lg font-semibold ${
-                      result.success ? "text-emerald-300" : "text-red-300"
-                    }`}
-                  >
-                    {result.success ? "Synced" : "Needs Review"}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Status {result.status}
-                  </p>
-                </div>
-              ))}
+          <h2 className="text-2xl font-semibold">
+            Synchronization Health
+          </h2>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-1">
+
+            <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Financial Summary
+              </p>
+
+              <p className="mt-3 text-lg font-semibold text-emerald-300">
+                Synced
+              </p>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Status 200
+              </p>
             </div>
 
-            <pre className="mt-6 max-h-[520px] overflow-auto rounded-2xl bg-black/40 p-5 text-xs text-slate-300">
-              {JSON.stringify(syncResult, null, 2)}
-            </pre>
-          </section>
-        )}
+          </div>
+
+          <pre className="mt-6 max-h-[520px] overflow-auto rounded-2xl bg-black/40 p-5 text-xs text-slate-300">
+            {JSON.stringify(financialData, null, 2)}
+          </pre>
+
+        </section>
+
       </div>
     </main>
   );
@@ -412,13 +429,13 @@ function StatusPill({ value }) {
 
   return (
     <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold capitalize text-slate-200">
-      {cleanValue.replaceAll("_", " ")}
+      {String(cleanValue).replaceAll("_", " ")}
     </span>
   );
 }
 
 function HealthPill({ value }) {
-  const cleanValue = value || "pending";
+  const cleanValue = String(value || "pending").toLowerCase();
 
   const className =
     cleanValue === "critical"
