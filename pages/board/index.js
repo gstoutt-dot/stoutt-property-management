@@ -177,13 +177,7 @@ export default function BoardModuleHub() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Metric label="Board Tools" value={boardPages.length} />
-<Metric label="Primary Tools" value={liveCount} highlight />
-<Metric label="Association Tools" value={reviewCount} />
-<Metric label="Board Function" value="Association Oversight" />
-        </div>
-
+        
         <div className="grid gap-6 lg:grid-cols-2">
           {boardPages.map((page) => (
             <div
