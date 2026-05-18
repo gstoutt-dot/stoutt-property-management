@@ -42,8 +42,8 @@ const readinessItems = [
     href: "/portal/owner",
   },
   {
-    area: "Demo Flow",
-    item: "Boardroom demo sequence available from financial demo launch center.",
+    area: "Readiness Flow",
+    item: "Boardroom sequence available from financial launch center.",
     status: "Ready",
     href: "/financial-demo-launch",
   },
@@ -89,7 +89,7 @@ export default function FinancialReadinessChecklist() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            A live board-demo readiness view confirming that association onboarding,
+            A live board readiness view confirming that association onboarding,
             owner onboarding, QuickBooks synchronization, owner visibility, and
             board financial oversight are aligned for presentation.
           </p>
@@ -100,7 +100,7 @@ export default function FinancialReadinessChecklist() {
             </a>
 
             <a href="/financial-demo-launch" className="rounded-2xl border border-amber-300/30 px-5 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10">
-              Launch Demo Flow
+              Launch Flow
             </a>
 
             <a href="/portal/owner" className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
@@ -113,7 +113,7 @@ export default function FinancialReadinessChecklist() {
           <Metric label="Readiness Items" value={readinessItems.length} />
           <Metric label="Ready / Green" value={readyCount} />
           <Metric label="Primary Priority" value="Financial Ops" />
-          <Metric label="Demo Confidence" value="High" />
+          <Metric label="Confidence" value="High" />
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -167,7 +167,7 @@ export default function FinancialReadinessChecklist() {
           <aside className="space-y-6">
             <div className="rounded-[2rem] border border-emerald-300/20 bg-emerald-400/10 p-6 shadow-2xl">
               <p className="text-sm uppercase tracking-[0.24em] text-emerald-200">
-                Demo Readiness
+                Financial Operation Readiness
               </p>
 
               <h2 className="mt-3 text-2xl font-semibold">
@@ -186,7 +186,7 @@ export default function FinancialReadinessChecklist() {
 
               <div className="mt-6 space-y-3">
                 <NavLink label="Financial Operations Overview" href="/financial-operations-overview" />
-                <NavLink label="Financial Demo Launch" href="/financial-demo-launch" />
+                <NavLink label="Financial Readiness Launch" href="/financial-demo-launch" />
                 <NavLink label="Financial Onboarding Command" href="/financial-onboarding-command" />
                 <NavLink label="QuickBooks Command Center" href="/accounting/quickbooks-live" />
                 <NavLink label="Board Dashboard" href="/board" />
