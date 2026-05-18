@@ -25,42 +25,42 @@ const boardPages = [
   },
   {
     title: "Violation Review",
-    status: "Built / Needs Review",
+    status: "Available",
     href: "/board/violation-review",
     description:
       "Board review area for covenant enforcement and violation decisions.",
   },
   {
     title: "Architectural Approvals",
-    status: "Built / Needs Review",
+    status: "Available",
     href: "/board/architectural-approvals",
     description:
       "Architectural request review module for ARC and board decisions.",
   },
   {
     title: "Maintenance Review",
-    status: "Built / Needs Review",
+    status: "Available",
     href: "/board/maintenance-review",
     description:
       "Board visibility into major repairs, work orders, and maintenance escalations.",
   },
   {
     title: "Financial Review",
-    status: "Built / Needs Review",
+    status: "Available",
     href: "/board/financial-review",
     description:
       "Budget exceptions, delinquency trends, reserve items, and financial approvals.",
   },
   {
     title: "Documents",
-    status: "Built / Needs Review",
+    status: "Available",
     href: "/board/documents",
     description:
       "Association documents, records, packets, and board reference materials.",
   },
   {
     title: "Vendors",
-    status: "Built / Needs Review",
+    status: "Available",
     href: "/board/vendors",
     description:
       "Vendor visibility and board-level vendor review areas.",
