@@ -144,17 +144,17 @@ export default function BoardModuleHub() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="mb-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300">
-                Board Portal Module
-              </div>
+  Executive Board Operations
+</div>
 
-              <h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">
-                Board Hub
-              </h1>
+<h1 className="mt-5 text-6xl font-black tracking-tight md:text-8xl">
+  BOARD DASHBOARD
+</h1>
 
-              <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-                Central command for board-level visibility, approvals, decision
-                tracking, and operational oversight across the BOS workflow.
-              </p>
+<p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
+  Simple operational visibility for board members, approvals, financial awareness,
+  association activity, and community oversight.
+</p>
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl">
