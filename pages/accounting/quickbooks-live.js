@@ -81,6 +81,35 @@ export default function QuickBooksLiveAccounting() {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,1))]" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-8">
+                <nav className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 shadow-2xl backdrop-blur">
+          <a href="/" className="font-semibold text-amber-300">
+            Stoutt Property Management
+          </a>
+
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/portal/owner/login"
+              className="rounded-2xl border border-amber-300/30 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
+            >
+              Homeowner Access
+            </a>
+
+            <a
+              href="/portal/manager"
+              className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200"
+            >
+              Admin Access
+            </a>
+
+            <a
+              href="/board"
+              className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200"
+            >
+              Board Dashboard
+            </a>
+          </div>
+        </nav>
+
         <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -93,7 +122,7 @@ export default function QuickBooksLiveAccounting() {
               </h1>
 
               <p className="mt-4 max-w-3xl text-slate-300">
-                Live accounting operations for Sunset Condominium Association.
+                Live accounting operations connected through QuickBooks synchronization.
                 This command center connects QuickBooks synchronization, owner
                 balances, delinquency visibility, and board financial reporting
                 into one HOA-safe operational view.
@@ -294,12 +323,12 @@ export default function QuickBooksLiveAccounting() {
 
             <div className="mt-6 rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
               <p className="font-semibold text-emerald-200">
-                Demo Message
+                Production Status
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-300">
-                SPM can onboard an association, connect its accounting records,
-                mirror owner balances, and provide immediate board-level
-                financial transparency.
+                SPM can onboard associations, connect accounting records,
+                mirror owner balances, and provide live board-level
+                financial transparency through QuickBooks synchronization.
               </p>
             </div>
           </aside>
