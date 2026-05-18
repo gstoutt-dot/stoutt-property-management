@@ -147,7 +147,7 @@ export default function BoardModuleHub() {
   Executive Board Operations
 </div>
 
-<h1 className="mt-5 text-5xl font-black tracking-tight md:text-7xl">
+<h1 className="mt-5 text-4xl font-bold tracking-tight md:text-6xl">
   BOARD DASHBOARD
 </h1>
 
