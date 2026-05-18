@@ -52,12 +52,10 @@ export default function QuickBooksLiveAccounting() {
     financialSummaryData?.board_summary || null;
 
     const ownerBalances =
+    financialSummaryData?.attentionAccounts ||
     financialSummaryData?.attention_accounts ||
     financialSummaryData?.owner_balances ||
     financialSummaryData?.owners ||
-    syncResult?.results?.balances?.data?.owner_balances ||
-    syncResult?.results?.live_balances?.data?.owner_balances ||
-    syncResult?.results?.sync_live_balances?.data?.owner_balances ||
     [];
 
   const syncItems = Object.entries(syncResult?.results || {});
