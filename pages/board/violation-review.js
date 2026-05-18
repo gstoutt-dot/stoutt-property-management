@@ -20,7 +20,7 @@ export default function ViolationReview() {
 
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Board Operating System
+              Community Compliance Review
             </p>
 
             <h1 className="mt-2 text-2xl font-semibold">
@@ -29,12 +29,8 @@ export default function ViolationReview() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Home</Link>
-            <Link href="/board/performance-dashboard">Dashboard</Link>
-            <Link href="/board/workflow-engine">Workflow</Link>
-            <Link href="/board/command-center">Command Center</Link>
-            <Link href="/board/compliance-legal-review">Legal</Link>
-          </nav>
+  <Link href="/board">Board Dashboard</Link>
+</nav>
 
         </div>
       </section>
@@ -44,17 +40,17 @@ export default function ViolationReview() {
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
 
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Compliance Intake Active
-          </p>
+  Violation Review Queue
+</p>
 
-          <h2 className="mt-3 text-4xl font-semibold">
-            AI-captured rule complaints now enter violations review.
-          </h2>
+<h2 className="mt-3 text-4xl font-semibold">
+  Review community compliance concerns and violation activity.
+</h2>
 
-          <p className="mt-4 max-w-3xl text-slate-300">
-            Complaints captured by the AI assistant can now route directly
-            into the violations queue for management and board escalation.
-          </p>
+<p className="mt-4 max-w-3xl text-slate-300">
+  Review reported violations, compliance concerns, and items requiring
+  board awareness or action.
+</p>
 
         </div>
 
@@ -62,7 +58,7 @@ export default function ViolationReview() {
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-sm text-slate-400">
-              Violation Signals
+              Open Violations
             </p>
 
             <p className="mt-3 text-4xl font-semibold text-amber-300">
@@ -72,7 +68,7 @@ export default function ViolationReview() {
 
           <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
             <p className="text-sm text-violet-100">
-              AI Violation Events
+              Reported Complaints
             </p>
 
             <p className="mt-3 text-4xl font-semibold text-violet-200">
@@ -82,7 +78,7 @@ export default function ViolationReview() {
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-sm text-slate-400">
-              Total Active Items
+              Active Review Items
             </p>
 
             <p className="mt-3 text-4xl font-semibold text-amber-300">
@@ -132,13 +128,13 @@ export default function ViolationReview() {
 
           <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
 
-            <h3 className="text-xl font-semibold text-violet-100">
-              AI Complaint Intake Queue
-            </h3>
+           <h3 className="text-xl font-semibold text-violet-100">
+  Complaint Activity
+</h3>
 
-            <p className="mt-2 text-sm text-violet-100/70">
-              Complaints originating from AI assistant intake.
-            </p>
+<p className="mt-2 text-sm text-violet-100/70">
+  Community complaints and reported compliance concerns.
+</p>
 
             <div className="mt-6 space-y-4">
 
@@ -174,17 +170,16 @@ export default function ViolationReview() {
 
         <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
 
-          <h3 className="text-xl font-semibold text-amber-200">
-            BOS Wiring Status
-          </h3>
+  <h3 className="text-xl font-semibold text-amber-200">
+    Community Standards
+  </h3>
 
-          <p className="mt-3 text-slate-300">
-            Violation Review now receives compliance signals and
-            AI-generated complaint events.
-          </p>
+  <p className="mt-3 text-slate-300">
+    This area helps board members monitor community compliance concerns,
+    review reported violations, and maintain association standards.
+  </p>
 
-        </div>
-
+</div>
       </section>
 
     </main>
