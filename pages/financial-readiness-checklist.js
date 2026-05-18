@@ -3,41 +3,49 @@ const readinessItems = [
     area: "Association Profile",
     item: "Association name, property type, board contact, and management contact captured.",
     status: "Ready",
+    href: "/financial-onboarding-command",
   },
   {
     area: "Owner Roster",
     item: "Owner and unit records imported and reviewed before portal activation.",
     status: "Ready",
+    href: "/portal/owner",
   },
   {
     area: "Identity Mapping",
     item: "Owners mapped to units, portal identities, and QuickBooks customer records.",
     status: "Ready",
+    href: "/accounting/quickbooks-live",
   },
   {
     area: "Owner Access",
     item: "Owner portal access prepared with financial visibility controls.",
     status: "Ready",
+    href: "/portal/owner/login",
   },
   {
     area: "QuickBooks Sync",
     item: "QuickBooks synchronization center operational and financial summary green.",
     status: "Green",
+    href: "/accounting/quickbooks-live",
   },
   {
     area: "Board Visibility",
     item: "Board can view owner balances, delinquency exposure, and account health.",
     status: "Ready",
+    href: "/board",
   },
   {
     area: "Owner Dashboard",
     item: "Owner-facing financial dashboard preview available for balance visibility.",
     status: "Ready",
+    href: "/portal/owner",
   },
   {
     area: "Demo Flow",
     item: "Boardroom demo sequence available from financial demo launch center.",
     status: "Ready",
+    href: "/financial-demo-launch",
   },
 ];
 
@@ -51,6 +59,26 @@ export default function FinancialReadinessChecklist() {
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,1))]" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-8">
+        <nav className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 shadow-2xl backdrop-blur">
+          <a href="/" className="font-semibold text-amber-300">
+            Stoutt Property Management
+          </a>
+
+          <div className="flex flex-wrap gap-3">
+            <a href="/portal/owner/login" className="rounded-2xl border border-amber-300/30 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10">
+              Homeowner Access
+            </a>
+
+            <a href="/portal/manager" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
+              Admin Access
+            </a>
+
+            <a href="/board" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
+              Board Dashboard
+            </a>
+          </div>
+        </nav>
+
         <header className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
           <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
             SPM Financial Readiness
@@ -61,10 +89,24 @@ export default function FinancialReadinessChecklist() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            A board-demo readiness view confirming that association onboarding,
+            A live board-demo readiness view confirming that association onboarding,
             owner onboarding, QuickBooks synchronization, owner visibility, and
             board financial oversight are aligned for presentation.
           </p>
+
+          <div className="mt-7 flex flex-wrap gap-3">
+            <a href="/accounting/quickbooks-live" className="rounded-2xl bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-amber-200">
+              Open QuickBooks Command Center
+            </a>
+
+            <a href="/financial-demo-launch" className="rounded-2xl border border-amber-300/30 px-5 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10">
+              Launch Demo Flow
+            </a>
+
+            <a href="/portal/owner" className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
+              View Owner Dashboard
+            </a>
+          </div>
         </header>
 
         <section className="mt-8 grid gap-4 md:grid-cols-4">
@@ -91,6 +133,7 @@ export default function FinancialReadinessChecklist() {
                     <th className="px-5 py-4">Area</th>
                     <th className="px-5 py-4">Readiness Item</th>
                     <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4">Open</th>
                   </tr>
                 </thead>
 
@@ -100,11 +143,19 @@ export default function FinancialReadinessChecklist() {
                       <td className="px-5 py-4 font-semibold text-white">
                         {item.area}
                       </td>
+
                       <td className="px-5 py-4 leading-6 text-slate-300">
                         {item.item}
                       </td>
+
                       <td className="px-5 py-4">
                         <Status value={item.status} />
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <a href={item.href} className="rounded-xl border border-amber-300/30 px-3 py-2 text-xs font-semibold text-amber-200 transition hover:bg-amber-300/10">
+                          Open
+                        </a>
                       </td>
                     </tr>
                   ))}
@@ -124,9 +175,9 @@ export default function FinancialReadinessChecklist() {
               </h2>
 
               <p className="mt-4 text-sm leading-6 text-slate-300">
-                The current build supports the business message: SPM can onboard
-                an association, connect financial records, give owners balance
-                visibility, and provide boards with calm financial oversight.
+                SPM can onboard an association, connect financial records,
+                give owners balance visibility, and provide boards with calm
+                financial oversight.
               </p>
             </div>
 
@@ -138,6 +189,8 @@ export default function FinancialReadinessChecklist() {
                 <NavLink label="Financial Demo Launch" href="/financial-demo-launch" />
                 <NavLink label="Financial Onboarding Command" href="/financial-onboarding-command" />
                 <NavLink label="QuickBooks Command Center" href="/accounting/quickbooks-live" />
+                <NavLink label="Board Dashboard" href="/board" />
+                <NavLink label="Owner Dashboard" href="/portal/owner" />
               </div>
             </div>
 
@@ -145,10 +198,10 @@ export default function FinancialReadinessChecklist() {
               <p className="font-semibold text-amber-200">
                 Next Production Move
               </p>
+
               <p className="mt-2 text-sm leading-6 text-slate-300">
-                After this checklist, the next major upgrade should be connecting
-                the onboarding pages to Supabase-backed association and owner
-                records instead of static preview data.
+                Continue connecting onboarding, QuickBooks sync, owner financial
+                visibility, and board reporting into the Board Dashboard.
               </p>
             </div>
           </aside>
