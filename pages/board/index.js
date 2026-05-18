@@ -110,9 +110,9 @@ function statusStyle(status) {
     return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
   }
 
-  if (status === "Built / Needs Review") {
-    return "border-yellow-400/30 bg-yellow-400/10 text-yellow-300";
-  }
+  if (status === "Available") {
+  return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+}
 
   return "border-slate-400/30 bg-slate-400/10 text-slate-300";
 }
@@ -125,8 +125,8 @@ export default function BoardModuleHub() {
   ).length;
 
   const reviewCount = boardPages.filter(
-    (p) => p.status === "Built / Needs Review"
-  ).length;
+  (p) => p.status === "Available"
+).length;
 
   const handleLogout = () => {
     localStorage.removeItem("spmPortalLoggedIn");
@@ -207,10 +207,10 @@ export default function BoardModuleHub() {
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Metric label="Board Pages Listed" value={boardPages.length} />
-          <Metric label="Live / Ready" value={liveCount} highlight />
-          <Metric label="Needs Review" value={reviewCount} />
-          <Metric label="Workflow Role" value="Decision Layer" />
+          <Metric label="Board Tools" value={boardPages.length} />
+<Metric label="Primary Tools" value={liveCount} highlight />
+<Metric label="Association Tools" value={reviewCount} />
+<Metric label="Board Function" value="Association Oversight" />
         </div>
 
         <section className="mb-10 rounded-[2rem] border border-amber-400/20 bg-amber-400/[0.06] p-8">
@@ -277,21 +277,20 @@ export default function BoardModuleHub() {
         </div>
 
         <section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-8">
-          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Module Rule
-          </div>
+  <div className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+    Board Operations
+  </div>
 
-          <h2 className="text-3xl font-bold">
-            Source of Truth
-          </h2>
+  <h2 className="text-3xl font-bold">
+    Simple Access to Association Information
+  </h2>
 
-          <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
-            The official live board workflow is Approval Queue, Command Center,
-            and BOS Action Center. All other board pages should currently be
-            treated as review inventory until finalized, merged, or retired into
-            the unified operational workflow.
-          </p>
-        </section>
+  <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
+    This dashboard gives board members a clear place to review approvals,
+    association activity, financial information, documents, vendors, meetings,
+    messages, and other board responsibilities.
+  </p>
+</section>
       </section>
     </main>
   );
