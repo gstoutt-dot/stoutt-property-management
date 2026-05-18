@@ -8,25 +8,34 @@ export default function QuickBooksLiveAccounting() {
   const [syncResult, setSyncResult] = useState(null);
   const [error, setError] = useState("");
 
-  async function runFullSync() {
+    async function runFullSync() {
     setLoading(true);
     setError("");
     setSyncResult(null);
 
     try {
       const response = await fetch(
-        `/api/accounting/quickbooks/sync-all?association_id=${ASSOCIATION_ID}`
+        `/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`
       );
 
       const data = await response.json();
 
-      if (!response.ok && response.status !== 207) {
-        throw new Error(data?.error || "QuickBooks sync failed.");
+      if (!response.ok) {
+        throw new Error(data?.error || "QuickBooks financial summary failed.");
       }
 
-      setSyncResult(data);
+      setSyncResult({
+        success: true,
+        results: {
+          financial_summary: {
+            success: true,
+            status: response.status,
+            data,
+          },
+        },
+      });
     } catch (err) {
-      setError(err.message || "Unable to run QuickBooks sync.");
+      setError(err.message || "Unable to load QuickBooks financial summary.");
     } finally {
       setLoading(false);
     }
@@ -35,7 +44,8 @@ export default function QuickBooksLiveAccounting() {
   const summary =
     syncResult?.results?.financial_summary?.data?.board_summary || null;
 
-  const ownerBalances =
+    const ownerBalances =
+    summary?.attention_accounts ||
     syncResult?.results?.balances?.data?.owner_balances ||
     syncResult?.results?.live_balances?.data?.owner_balances ||
     syncResult?.results?.sync_live_balances?.data?.owner_balances ||
@@ -249,8 +259,8 @@ export default function QuickBooksLiveAccounting() {
                 </thead>
 
                 <tbody className="divide-y divide-white/10">
-                  {ownerBalances.length > 0 ? (
-                    ownerBalances.slice(0, 10).map((owner, index) => (
+                    {ownerBalances.length > 0 ? (
+                    ownerBalances.map((owner, index) => (
                       <tr key={`${owner.unit_number}-${index}`} className="bg-slate-950/40">
                         <td className="px-5 py-4 font-semibold text-white">
                           {owner.unit_number || "—"}
@@ -302,14 +312,13 @@ export default function QuickBooksLiveAccounting() {
                 Sync QuickBooks Now
               </button>
 
-              <a
-                href={`/api/accounting/quickbooks/sync-live-balances?association_id=${ASSOCIATION_ID}`}
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15"
+                            <button
+                onClick={runFullSync}
+                disabled={loading}
+                className="block w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-left font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
               >
                 Refresh Owner Balances
-              </a>
+              </button>
 
               <a
                 href={`/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`}
