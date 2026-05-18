@@ -213,32 +213,6 @@ export default function BoardModuleHub() {
 <Metric label="Board Function" value="Association Oversight" />
         </div>
 
-        <section className="mb-10 rounded-[2rem] border border-amber-400/20 bg-amber-400/[0.06] p-8">
-          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Verification Workflow
-          </div>
-
-          <h2 className="text-4xl font-black">
-  Board Review Process
-</h2>
-
-          <p className="mt-4 max-w-4xl text-base leading-8 text-slate-300">
-  Requests requiring board review are verified by management before
-  being routed to the board for approvals, financial decisions,
-  vendor authorization, or community direction.
-</p>
-
-          <div className="mt-8 space-y-4">
-            {BOARD_WORKFLOW.map((step, index) => (
-              <WorkflowStep
-                key={step.title}
-                step={step}
-                index={index}
-              />
-            ))}
-          </div>
-        </section>
-
         <div className="grid gap-6 lg:grid-cols-2">
           {boardPages.map((page) => (
             <div
