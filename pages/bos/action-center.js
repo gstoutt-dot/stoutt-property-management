@@ -528,104 +528,74 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             Live Workflow Actions
           </p>
 
-         <p className="mt-2 text-sm text-white/50">
-  {isFinancialRequest(item)
-    ? "Move this accounting request through financial review and owner coordination."
-    : "Move this request through the SPM/BOS operating chain."}
-</p>
+          <p className="mt-2 text-sm text-white/50">
+            {isFinancialRequest(item)
+              ? "Move this accounting request through financial review and owner coordination."
+              : "Move this request through the SPM/BOS operating chain."}
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <WorkflowButton
-            label={
-  isFinancialRequest(item)
-    ? "Accounting Verified"
-    : "Manager Verified"
-}
+            label={isFinancialRequest(item) ? "Accounting Verified" : "Manager Verified"}
             disabled={busy}
             onClick={() => onUpdate(item, "manager_verified")}
           />
 
-        {isFinancialRequest(item) &&
- !item.accounting_review_started_at && (
-  <WorkflowButton
-    label="Accounting Review"
-    disabled={busy}
-    onClick={() => onUpdate(item, "accounting_review")}
-  />
-)}
-{isFinancialRequest(item) &&
- item.accounting_review_started_at &&
- item.status !== "completed" && (
-  <Pill text="Accounting Review Active" tone="gold" />
-)}
-          {!isFinancialRequest(item) && (
-  <>
-    <WorkflowButton
-      label="Send to Board"
-      disabled={busy}
-      onClick={() => onUpdate(item, "send_to_board")}
-    />
+          {isFinancialRequest(item) &&
+            !item.accounting_review_started_at && (
+              <WorkflowButton
+                label="Accounting Review"
+                disabled={busy}
+                onClick={() => onUpdate(item, "accounting_review")}
+              />
+            )}
 
-    <WorkflowButton
-      label="Request Clarification"
-      disabled={busy}
-      onClick={() => onUpdate(item, "request_clarification")}
-    />
-  </>
-)}
+          {isFinancialRequest(item) &&
+            item.accounting_review_started_at &&
+            item.status !== "completed" && (
+              <Pill text="Accounting Review Active" tone="gold" />
+            )}
 
           {!isFinancialRequest(item) && (
-  <>
-    <WorkflowButton
-      label="Dispatch Vendor"
-      disabled={busy}
-      onClick={() => onUpdate(item, "dispatch_vendor")}
-    />
-
-    <WorkflowButton
-      label="Vendor Accepted"
-      disabled={busy}
-      onClick={() => onUpdate(item, "vendor_accepted")}
-    />
-
-    <WorkflowButton
-      label="Vendor In Progress"
-      disabled={busy}
-      onClick={() => onUpdate(item, "vendor_in_progress")}
-    />
-  </>
-)}
+            <WorkflowButton
+              label="Send to Board"
+              disabled={busy}
+              onClick={() => onUpdate(item, "send_to_board")}
+            />
+          )}
 
           {!item.owner_notified && (
-  <WorkflowButton
-    label="Notify Owner"
-    disabled={busy}
-    onClick={() => onUpdate(item, "notify_owner")}
-  />
-)}
-{item.owner_notified &&
- item.status !== "completed" && (
-  <Pill text="Owner Updated" tone="green" />
-)}
-         {item.status !== "completed" && (
-  <WorkflowButton
-    label="Mark Complete"
-    disabled={busy}
-    strong
-    onClick={() => onUpdate(item, "mark_complete")}
-  />
-)}
-{item.status === "completed" && (
-  <Pill
-    text={
-      isFinancialRequest(item)
-        ? "Financial Resolution Complete"
-        : "Workflow Complete"
-    }
-    tone="green"
-  />
-)}
+            <WorkflowButton
+              label="Notify Owner"
+              disabled={busy}
+              onClick={() => onUpdate(item, "notify_owner")}
+            />
+          )}
+
+          {item.owner_notified && item.status !== "completed" && (
+            <Pill text="Owner Updated" tone="green" />
+          )}
+
+          {item.status !== "completed" && (
+            <WorkflowButton
+              label="Mark Complete"
+              disabled={busy}
+              strong
+              onClick={() => onUpdate(item, "mark_complete")}
+            />
+          )}
+
+          {item.status === "completed" && (
+            <Pill
+              text={
+                isFinancialRequest(item)
+                  ? "Financial Resolution Complete"
+                  : "Workflow Complete"
+              }
+              tone="green"
+            />
+          )}
         </div>
       </div>
     </div>
