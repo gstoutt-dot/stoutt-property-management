@@ -660,19 +660,14 @@ function Timeline({ item }) {
   : item.board_sent_at || item.board_decision_at,
     },
     {
-      key: "dispatch",
-      label: isAccountingRequest
-  ? "Owner Update"
-  : "Vendor Dispatch",
-      complete: isAccountingRequest
-  ? item.owner_notified || item.status === "completed"
-  : item.status === "dispatched" ||
-    item.status === "completed" ||
-    Boolean(item.dispatched),
-      date: isAccountingRequest
-  ? item.owner_notified_at
-  : item.dispatched_at,
-    },
+  key: "dispatch",
+  label: "Notify Owner",
+  complete:
+    item.owner_notified ||
+    item.status === "completed",
+  date:
+    item.owner_notified_at,
+},
     {
       key: "complete",
       label: isAccountingRequest
