@@ -160,14 +160,7 @@ export default function QuickBooksLiveAccounting() {
               Refresh Owner Balances
             </button>
 
-            <a
-              href={`/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/15"
-            >
-              Open Board Financial Summary
-            </a>
+            
           </div>
         </header>
 
@@ -321,14 +314,7 @@ export default function QuickBooksLiveAccounting() {
                 Refresh Owner Balances
               </button>
 
-              <a
-                href={`/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`}
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15"
-              >
-                Open Board Financial Summary
-              </a>
+              
             </div>
 
             <div className="mt-6 rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
