@@ -1,20 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
-
-const ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const REALM_ID = "9341457054133986";
+import { useRouter } from "next/router";
 
 export default function QuickBooksLiveAccounting() {
+  const router = useRouter();
+
+  const associationId = String(
+    router.query.association_id ||
+      router.query.associationId ||
+      ""
+  ).trim();
+
   const [loading, setLoading] = useState(false);
   const [financialData, setFinancialData] = useState(null);
   const [error, setError] = useState("");
 
   async function loadFinancialSummary() {
+    if (!associationId) {
+      setError("Missing association_id. Open this page with a valid association_id.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
       const response = await fetch(
-        `/api/accounting/quickbooks/financial-summary?association_id=${ASSOCIATION_ID}`
+        `/api/accounting/quickbooks/financial-summary?association_id=${associationId}`
       );
 
       const data = await response.json();
@@ -32,14 +43,22 @@ export default function QuickBooksLiveAccounting() {
   }
 
   useEffect(() => {
+    if (!router.isReady) return;
     loadFinancialSummary();
-  }, []);
+  }, [router.isReady, associationId]);
 
   const boardSummary =
     financialData?.board_summary ||
     financialData?.boardSummary ||
     financialData?.summary ||
     {};
+
+  const associationName =
+    financialData?.association_name ||
+    financialData?.associationName ||
+    boardSummary?.associationName ||
+    boardSummary?.association_name ||
+    "Association Financial Profile";
 
   const ownerBalances = useMemo(() => {
     return extractOwnerBalances(financialData);
@@ -126,17 +145,16 @@ export default function QuickBooksLiveAccounting() {
               </p>
 
               <h2 className="mt-3 text-2xl font-semibold">
-                Sunset Condominium Association
+                {associationName}
               </h2>
 
               <div className="mt-4 space-y-2 text-sm text-slate-300">
-                <p>Association ID: {ASSOCIATION_ID}</p>
-                <p>Realm ID: {REALM_ID}</p>
+                <p>Association ID: {associationId || "Missing"}</p>
                 <p>Platform: QuickBooks</p>
                 <p>
                   Status:{" "}
                   <span className="font-semibold text-emerald-300">
-                    Operational
+                    {financialData ? "Operational" : "Pending"}
                   </span>
                 </p>
               </div>
@@ -146,7 +164,7 @@ export default function QuickBooksLiveAccounting() {
           <div className="mt-8 flex flex-wrap gap-3">
             <button
               onClick={loadFinancialSummary}
-              disabled={loading}
+              disabled={loading || !associationId}
               className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 disabled:opacity-50"
             >
               {loading ? "Synchronizing..." : "Run Live QuickBooks Sync"}
@@ -154,13 +172,11 @@ export default function QuickBooksLiveAccounting() {
 
             <button
               onClick={loadFinancialSummary}
-              disabled={loading}
+              disabled={loading || !associationId}
               className="rounded-2xl border border-white/10 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
             >
               Refresh Owner Balances
             </button>
-
-            
           </div>
         </header>
 
@@ -173,25 +189,42 @@ export default function QuickBooksLiveAccounting() {
         <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total Balance"
-            value={`$${Number(boardSummary?.totalBalance || boardSummary?.total_balance || financialSnapshot.collectionsExposure || 0).toLocaleString()}`}
+            value={`$${Number(
+              boardSummary?.totalBalance ||
+                boardSummary?.total_balance ||
+                financialSnapshot.collectionsExposure ||
+                0
+            ).toLocaleString()}`}
             detail="Mirrored from owner accounting records"
           />
 
           <MetricCard
             label="Delinquent Accounts"
-            value={boardSummary?.delinquentAccounts || boardSummary?.delinquent_accounts || financialSnapshot.delinquentOwners}
+            value={
+              boardSummary?.delinquentAccounts ||
+              boardSummary?.delinquent_accounts ||
+              financialSnapshot.delinquentOwners
+            }
             detail="Owners needing financial attention"
           />
 
           <MetricCard
             label="Critical Accounts"
-            value={boardSummary?.criticalAccounts || boardSummary?.critical_accounts || financialSnapshot.criticalOwners}
+            value={
+              boardSummary?.criticalAccounts ||
+              boardSummary?.critical_accounts ||
+              financialSnapshot.criticalOwners
+            }
             detail="Highest collection risk group"
           />
 
           <MetricCard
             label="Risk Score"
-            value={`${boardSummary?.collectionRiskScore || boardSummary?.collection_risk_score || 0}%`}
+            value={`${
+              boardSummary?.collectionRiskScore ||
+              boardSummary?.collection_risk_score ||
+              0
+            }%`}
             detail="Board-level collection exposure"
           />
         </section>
@@ -279,7 +312,7 @@ export default function QuickBooksLiveAccounting() {
                   ) : (
                     <tr>
                       <td colSpan="6" className="px-5 py-10 text-center text-slate-400">
-                        No owner balances available from the current response.
+                        No owner balances available from the current association response.
                       </td>
                     </tr>
                   )}
@@ -300,7 +333,7 @@ export default function QuickBooksLiveAccounting() {
             <div className="mt-6 space-y-3">
               <button
                 onClick={loadFinancialSummary}
-                disabled={loading}
+                disabled={loading || !associationId}
                 className="w-full rounded-2xl bg-amber-400 px-5 py-3 text-left font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
               >
                 Sync QuickBooks Now
@@ -308,13 +341,11 @@ export default function QuickBooksLiveAccounting() {
 
               <button
                 onClick={loadFinancialSummary}
-                disabled={loading}
+                disabled={loading || !associationId}
                 className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-left font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
               >
                 Refresh Owner Balances
               </button>
-
-              
             </div>
 
             <div className="mt-6 rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
@@ -323,44 +354,11 @@ export default function QuickBooksLiveAccounting() {
               </p>
 
               <p className="mt-2 text-sm leading-6 text-slate-300">
-                SPM can onboard associations, connect accounting records,
-                mirror owner balances, and provide live board-level
-                financial transparency through QuickBooks synchronization.
+                SPM connects each association through its own association ID,
+                QuickBooks connection, owner records, and accounting mirror.
               </p>
             </div>
           </aside>
-        </section>
-
-        <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-          <h2 className="text-2xl font-semibold">Synchronization Health</h2>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-1">
-            <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                Financial Summary
-              </p>
-
-              <p className={`mt-3 text-lg font-semibold ${financialData ? "text-emerald-300" : "text-amber-300"}`}>
-                {financialData ? "Synced" : "Pending"}
-              </p>
-
-              <p className="mt-1 text-sm text-slate-400">
-                {financialData ? "Status 200" : "Waiting for response"}
-              </p>
-            </div>
-          </div>
-
-          <pre className="mt-6 max-h-[520px] overflow-auto rounded-2xl bg-black/40 p-5 text-xs text-slate-300">
-            {JSON.stringify(
-              {
-                extractedOwnerCount: ownerBalances.length,
-                extractedOwners: ownerBalances,
-                rawResponse: financialData,
-              },
-              null,
-              2
-            )}
-          </pre>
         </section>
       </div>
     </main>
