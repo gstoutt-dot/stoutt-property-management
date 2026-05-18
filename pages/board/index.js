@@ -19,7 +19,7 @@ const boardPages = [
   },
   {
     title: "Violation Review",
-    status: "Available",
+    status: "Live / Ready",
     href: "/board/violation-review",
     description:
       "Board review area for covenant enforcement and violation decisions.",
