@@ -193,19 +193,15 @@ export default function BoardApprovalQueue() {
           </Link>
 
           <nav className="hidden gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Portal</Link>
-            <Link href="/bos/action-center">BOS Action Center</Link>
-            <Link href="/board/command-center">Command Center</Link>
-            <Link href="/board/maintenance-review">Maintenance</Link>
-            <Link href="/board/financial-review">Financials</Link>
-          </nav>
+  <Link href="/board">Board Dashboard</Link>
+</nav>
         </div>
       </header>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-10 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Approval Workflow
+            Board Review Center
           </p>
 
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
@@ -213,18 +209,12 @@ export default function BoardApprovalQueue() {
           </h1>
 
           <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-300">
-            Live approval layer for BOS actions routed from management. Items
-            appear here after the manager sends them to board review.
-          </p>
+  Review requests requiring board approval, vendor authorization,
+  financial decisions, and community action.
+</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href="/bos/action-center"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Open BOS Action Center
-            </Link>
-
+            
             <Link
               href="/portal/board"
               className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10"
@@ -239,11 +229,27 @@ export default function BoardApprovalQueue() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-4">
-          <Metric label="Pending Board Review" value={actions.length} highlight />
-          <Metric label="High Priority" value={highPriority} />
-          <Metric label="Decision Layer" value="Live" />
-          <Metric label="Source" value="BOS" />
-        </div>
+  <Metric
+    label="Pending Approvals"
+    value={actions.length}
+    highlight
+  />
+
+  <Metric
+    label="Urgent Requests"
+    value={highPriority}
+  />
+
+  <Metric
+    label="Board Status"
+    value="Active"
+  />
+
+  <Metric
+    label="Association Activity"
+    value="Live"
+  />
+</div>
 
         {systemMessage && (
           <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
@@ -291,52 +297,9 @@ export default function BoardApprovalQueue() {
             )}
           </div>
 
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Board Actions</h2>
+          </section>
 
-              <div className="mt-5 space-y-3 text-sm text-slate-300">
-                <p>• Approve request</p>
-                <p>• Request clarification</p>
-                <p>• Return to manager review</p>
-                <p>• Approve and dispatch vendor</p>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-amber-400/20 bg-amber-300/10 p-6 shadow-xl">
-              <h2 className="text-xl font-semibold text-amber-200">
-                Workflow Rule
-              </h2>
-
-              <p className="mt-4 leading-7 text-slate-300">
-                This queue only shows requests with BOS status:
-              </p>
-
-              <div className="mt-4 rounded-xl border border-amber-400/20 bg-slate-950 px-4 py-3 font-mono text-sm text-amber-200">
-                board_review
-              </div>
-
-              <p className="mt-4 text-sm leading-6 text-slate-400">
-                When the board acts, the item moves out of this queue and back
-                into the live BOS operating chain.
-              </p>
-            </div>
-          </aside>
         </section>
-
-        <section className="mt-10 rounded-3xl border border-amber-400/20 bg-gradient-to-r from-amber-300/10 to-slate-900 p-8 shadow-2xl">
-          <h2 className="text-2xl font-semibold text-amber-200">
-            The Board’s Decision Command Center
-          </h2>
-
-          <p className="mt-4 max-w-4xl leading-8 text-slate-300">
-            Ava creates the intake, management verifies the request, and the
-            board receives only the items that require oversight, approval, or
-            direction. This creates a cleaner, faster, and more accountable
-            decision process.
-          </p>
-        </section>
-      </section>
     </main>
   );
 }
@@ -376,12 +339,12 @@ function ApprovalCard({ item, onDecision, updatingId }) {
       <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
         <p>
           <span className="text-slate-500">Association:</span>{" "}
-          {item.association_name || "Demo Association"}
+          {item.association_name || "Association"}
         </p>
 
         <p>
           <span className="text-slate-500">Owner:</span>{" "}
-          {item.owner_name || "Ava Caller"}
+          {item.owner_name || "Resident"}
         </p>
 
         <p>
