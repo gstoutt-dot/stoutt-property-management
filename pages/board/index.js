@@ -79,28 +79,28 @@ const BOARD_WORKFLOW = [
     title: "Board Review Queue",
     description:
       "Items requiring board direction, funding approval, or policy interpretation route into the Board Approval Queue.",
-    status: "Board Visibility Layer",
+    status: "Pending Board Review",
     complete: true,
   },
   {
     title: "Board Decision",
     description:
       "Board members approve, reject, defer, or request clarification before vendor dispatch or operational execution.",
-    status: "Board Action Required",
+    status: "Awaiting Decision",
     complete: false,
   },
   {
     title: "Vendor Authorization",
     description:
       "Approved items move into dispatch with vendor assignment, work scope, and operational tracking.",
-    status: "Triggered After Approval",
+    status: "Pending Authorization",
     complete: false,
   },
   {
     title: "Completion & Audit Trail",
     description:
       "Final completion, vendor confirmation, timestamps, and operational history remain visible for accountability.",
-    status: "Permanent Board Record",
+    status: "Completed & Archived",
     complete: false,
   },
 ];
@@ -144,7 +144,7 @@ export default function BoardModuleHub() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="mb-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300">
-  Executive Board Operations
+  Board Operations Center
 </div>
 
 <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-6xl">
@@ -152,8 +152,8 @@ export default function BoardModuleHub() {
 </h1>
 
 <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-  Simple operational visibility for board members, approvals, financial awareness,
-  association activity, and community oversight.
+  Simple operational visibility for board approvals, financial awareness,
+  association activity, and community operations.
 </p>
             </div>
 
@@ -219,15 +219,14 @@ export default function BoardModuleHub() {
           </div>
 
           <h2 className="text-4xl font-black">
-            Board Oversight Chain
-          </h2>
+  Board Review Process
+</h2>
 
           <p className="mt-4 max-w-4xl text-base leading-8 text-slate-300">
-            The board exists as the decision and authorization layer inside the
-            BOS operational workflow. Requests move from Ava intake through
-            management verification before entering the board review chain when
-            approval or direction is required.
-          </p>
+  Requests requiring board review are verified by management before
+  being routed to the board for approvals, financial decisions,
+  vendor authorization, or community direction.
+</p>
 
           <div className="mt-8 space-y-4">
             {BOARD_WORKFLOW.map((step, index) => (
