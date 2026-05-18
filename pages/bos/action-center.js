@@ -91,7 +91,8 @@ export default function BOSActionCenter() {
         vendor_status: "completed",
         internal_note: "Request marked complete.",
       },
-      notify_owner: {
+            notify_owner: {
+        status: "owner_notified",
         owner_notified: true,
         owner_notified_at: now,
         internal_note: "Owner notification marked as sent.",
