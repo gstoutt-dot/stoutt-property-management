@@ -7,21 +7,15 @@ const boardPages = [
     status: "Live / Ready",
     href: "/portal/approval-queue",
     description:
-      "Review items routed from management for board decisions and final approval.",
+      "Review requests requiring board approval, vendor authorization, or community decisions."
   },
-  {
-    title: "Command Center",
-    status: "Live / Ready",
-    href: "/board/command-center",
-    description:
-      "Board-level intelligence, metrics, pending decisions, and clean decision history.",
-  },
+  
   {
     title: "BOS Action Center",
     status: "Live / Ready",
     href: "/bos/action-center",
     description:
-      "Live operational workflow visibility from Ava intake through approval and vendor completion.",
+      "Track requests, approvals, vendor activity, and operational progress across the association."
   },
   {
     title: "Violation Review",
