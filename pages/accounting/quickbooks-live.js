@@ -45,7 +45,7 @@ export default function QuickBooksLiveAccounting() {
     syncResult?.results?.financial_summary?.data?.board_summary || null;
 
     const ownerBalances =
-    summary?.attention_accounts ||
+    syncResult?.results?.financial_summary?.data?.attention_accounts ||
     syncResult?.results?.balances?.data?.owner_balances ||
     syncResult?.results?.live_balances?.data?.owner_balances ||
     syncResult?.results?.sync_live_balances?.data?.owner_balances ||
