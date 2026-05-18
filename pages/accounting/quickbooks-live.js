@@ -45,17 +45,17 @@ export default function QuickBooksLiveAccounting() {
     runFullSync();
   }, []);
 
-  const financialSummaryData =
+    const financialSummaryData =
     syncResult?.results?.financial_summary?.data || null;
 
   const summary =
-    financialSummaryData?.board_summary || null;
+    financialSummaryData?.board_summary ||
+    financialSummaryData?.board_summary ||
+    {};
 
-    const ownerBalances =
-    financialSummaryData?.attentionAccounts ||
-    financialSummaryData?.attention_accounts ||
-    financialSummaryData?.owner_balances ||
-    financialSummaryData?.owners ||
+  const ownerBalances =
+    financialSummaryData?.board_summary?.attentionAccounts ||
+    financialSummaryData?.board_summary?.attention_accounts ||
     [];
 
   const syncItems = Object.entries(syncResult?.results || {});
