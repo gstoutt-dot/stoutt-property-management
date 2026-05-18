@@ -163,46 +163,17 @@ export default function BoardModuleHub() {
               </p>
 
               <div className="mt-4 flex flex-col gap-3">
-                <button
-                  onClick={() => router.push("/software-dashboard")}
-                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-                >
-                  Back to Software Dashboard
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="rounded-xl border border-red-300/20 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-400/15"
-                >
-                  Logout / Switch Role
-                </button>
-              </div>
+  <button
+    onClick={handleLogout}
+    className="rounded-xl border border-red-300/20 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-400/15"
+  >
+    Logout / Switch Role
+  </button>
+</div>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link
-              href="/portal/approval-queue"
-              className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg hover:bg-amber-300"
-            >
-              Approval Queue
-            </Link>
-
-            <Link
-              href="/bos/action-center"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-6 py-3 font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              BOS Action Center
-            </Link>
-
-            <Link
-              href="/board/command-center"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-6 py-3 font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Command Center
-            </Link>
           </div>
-        </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
