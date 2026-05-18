@@ -4,10 +4,10 @@ import { useRouter } from "next/router";
 export default function QuickBooksLiveAccounting() {
   const router = useRouter();
 
-  const associationId = String(
-    router.query.association_id ||
-      router.query.associationId ||
-      ""
+    const associationId = String(
+    router?.query?.association_id ||
+    router?.query?.associationId ||
+    ""
   ).trim();
 
   const [loading, setLoading] = useState(false);
