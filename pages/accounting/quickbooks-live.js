@@ -25,7 +25,6 @@ export default function QuickBooksLiveAccounting() {
 
       setFinancialData(data);
     } catch (err) {
-      console.error(err);
       setError(err.message || "Unable to load QuickBooks data.");
     } finally {
       setLoading(false);
@@ -36,11 +35,15 @@ export default function QuickBooksLiveAccounting() {
     loadFinancialSummary();
   }, []);
 
-  const boardSummary = financialData?.board_summary || {};
+  const boardSummary =
+    financialData?.board_summary ||
+    financialData?.boardSummary ||
+    financialData?.summary ||
+    {};
 
-  const ownerBalances = Array.isArray(boardSummary?.attentionAccounts)
-    ? boardSummary.attentionAccounts
-    : [];
+  const ownerBalances = useMemo(() => {
+    return extractOwnerBalances(financialData);
+  }, [financialData]);
 
   const financialSnapshot = useMemo(() => {
     const totalOwners = ownerBalances.length;
@@ -52,13 +55,13 @@ export default function QuickBooksLiveAccounting() {
     ).length;
 
     const criticalOwners = ownerBalances.filter(
-      (owner) =>
-        String(owner.accountHealth || "").toLowerCase() === "critical"
+      (owner) => String(owner.accountHealth || "").toLowerCase() === "critical"
     ).length;
 
-    const monthlyAssessments = ownerBalances.reduce((sum, owner) => {
-      return sum + Number(owner.monthlyAssessment || 0);
-    }, 0);
+    const monthlyAssessments = ownerBalances.reduce(
+      (sum, owner) => sum + Number(owner.monthlyAssessment || 0),
+      0
+    );
 
     const collectionsExposure = ownerBalances.reduce((sum, owner) => {
       const balance = Number(owner.currentBalance || 0);
@@ -79,31 +82,21 @@ export default function QuickBooksLiveAccounting() {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,1))]" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-8">
-
         <nav className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 shadow-2xl backdrop-blur">
           <a href="/" className="font-semibold text-amber-300">
             Stoutt Property Management
           </a>
 
           <div className="flex flex-wrap gap-3">
-            <a
-              href="/portal/owner/login"
-              className="rounded-2xl border border-amber-300/30 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
-            >
+            <a href="/portal/owner/login" className="rounded-2xl border border-amber-300/30 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10">
               Homeowner Access
             </a>
 
-            <a
-              href="/portal/manager"
-              className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200"
-            >
+            <a href="/portal/manager" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
               Admin Access
             </a>
 
-            <a
-              href="/board"
-              className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200"
-            >
+            <a href="/board" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
               Board Dashboard
             </a>
           </div>
@@ -111,7 +104,6 @@ export default function QuickBooksLiveAccounting() {
 
         <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-amber-300">
                 SPM Financial Operations
@@ -141,7 +133,6 @@ export default function QuickBooksLiveAccounting() {
                 <p>Association ID: {ASSOCIATION_ID}</p>
                 <p>Realm ID: {REALM_ID}</p>
                 <p>Platform: QuickBooks</p>
-
                 <p>
                   Status:{" "}
                   <span className="font-semibold text-emerald-300">
@@ -189,25 +180,25 @@ export default function QuickBooksLiveAccounting() {
         <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total Balance"
-            value={`$${Number(boardSummary?.totalBalance || 0).toLocaleString()}`}
+            value={`$${Number(boardSummary?.totalBalance || boardSummary?.total_balance || financialSnapshot.collectionsExposure || 0).toLocaleString()}`}
             detail="Mirrored from owner accounting records"
           />
 
           <MetricCard
             label="Delinquent Accounts"
-            value={boardSummary?.delinquentAccounts || 0}
+            value={boardSummary?.delinquentAccounts || boardSummary?.delinquent_accounts || financialSnapshot.delinquentOwners}
             detail="Owners needing financial attention"
           />
 
           <MetricCard
             label="Critical Accounts"
-            value={boardSummary?.criticalAccounts || 0}
+            value={boardSummary?.criticalAccounts || boardSummary?.critical_accounts || financialSnapshot.criticalOwners}
             detail="Highest collection risk group"
           />
 
           <MetricCard
             label="Risk Score"
-            value={`${boardSummary?.collectionRiskScore || 0}%`}
+            value={`${boardSummary?.collectionRiskScore || boardSummary?.collection_risk_score || 0}%`}
             detail="Board-level collection exposure"
           />
         </section>
@@ -215,7 +206,7 @@ export default function QuickBooksLiveAccounting() {
         <section className="mt-6 grid gap-4 md:grid-cols-3">
           <OperationalCard
             title="Owner Financial Visibility"
-            value={financialSnapshot.totalOwners || 0}
+            value={financialSnapshot.totalOwners}
             label="Owner accounts loaded from QuickBooks"
           />
 
@@ -233,9 +224,7 @@ export default function QuickBooksLiveAccounting() {
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
@@ -253,9 +242,7 @@ export default function QuickBooksLiveAccounting() {
             </div>
 
             <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
-
               <table className="w-full min-w-[760px] text-left text-sm">
-
                 <thead className="bg-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
                   <tr>
                     <th className="px-5 py-4">Unit</th>
@@ -268,13 +255,9 @@ export default function QuickBooksLiveAccounting() {
                 </thead>
 
                 <tbody className="divide-y divide-white/10">
-
                   {ownerBalances.length > 0 ? (
                     ownerBalances.map((owner, index) => (
-                      <tr
-                        key={`${owner.unitNumber}-${index}`}
-                        className="bg-slate-950/40"
-                      >
+                      <tr key={`${owner.unitNumber}-${index}`} className="bg-slate-950/40">
                         <td className="px-5 py-4 font-semibold text-white">
                           {owner.unitNumber || "—"}
                         </td>
@@ -302,22 +285,17 @@ export default function QuickBooksLiveAccounting() {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="6"
-                        className="px-5 py-10 text-center text-slate-400"
-                      >
-                        No owner balances available.
+                      <td colSpan="6" className="px-5 py-10 text-center text-slate-400">
+                        No owner balances available from the current response.
                       </td>
                     </tr>
                   )}
-
                 </tbody>
               </table>
             </div>
           </div>
 
           <aside className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-
             <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
               Operations
             </p>
@@ -327,7 +305,6 @@ export default function QuickBooksLiveAccounting() {
             </h2>
 
             <div className="mt-6 space-y-3">
-
               <button
                 onClick={loadFinancialSummary}
                 disabled={loading}
@@ -365,43 +342,158 @@ export default function QuickBooksLiveAccounting() {
                 financial transparency through QuickBooks synchronization.
               </p>
             </div>
-
           </aside>
         </section>
 
         <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-
-          <h2 className="text-2xl font-semibold">
-            Synchronization Health
-          </h2>
+          <h2 className="text-2xl font-semibold">Synchronization Health</h2>
 
           <div className="mt-6 grid gap-4 md:grid-cols-1">
-
             <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
                 Financial Summary
               </p>
 
-              <p className="mt-3 text-lg font-semibold text-emerald-300">
-                Synced
+              <p className={`mt-3 text-lg font-semibold ${financialData ? "text-emerald-300" : "text-amber-300"}`}>
+                {financialData ? "Synced" : "Pending"}
               </p>
 
               <p className="mt-1 text-sm text-slate-400">
-                Status 200
+                {financialData ? "Status 200" : "Waiting for response"}
               </p>
             </div>
-
           </div>
 
           <pre className="mt-6 max-h-[520px] overflow-auto rounded-2xl bg-black/40 p-5 text-xs text-slate-300">
-            {JSON.stringify(financialData, null, 2)}
+            {JSON.stringify(
+              {
+                extractedOwnerCount: ownerBalances.length,
+                extractedOwners: ownerBalances,
+                rawResponse: financialData,
+              },
+              null,
+              2
+            )}
           </pre>
-
         </section>
-
       </div>
     </main>
   );
+}
+
+function extractOwnerBalances(source) {
+  const found = [];
+
+  function normalizeOwner(owner) {
+    return {
+      unitNumber:
+        owner.unitNumber ||
+        owner.unit_number ||
+        owner.unit ||
+        owner.property_unit ||
+        owner.propertyUnit ||
+        "",
+
+      ownerName:
+        owner.ownerName ||
+        owner.owner_name ||
+        owner.name ||
+        owner.customer_name ||
+        owner.customerName ||
+        "",
+
+      currentBalance:
+        owner.currentBalance ??
+        owner.current_balance ??
+        owner.balance ??
+        owner.totalBalance ??
+        owner.total_balance ??
+        0,
+
+      paymentStatus:
+        owner.paymentStatus ||
+        owner.payment_status ||
+        owner.status ||
+        "unknown",
+
+      lastPaymentDate:
+        owner.lastPaymentDate ||
+        owner.last_payment_date ||
+        owner.lastPayment ||
+        owner.last_payment ||
+        "",
+
+      accountHealth:
+        owner.accountHealth ||
+        owner.account_health ||
+        owner.health ||
+        "pending",
+
+      monthlyAssessment:
+        owner.monthlyAssessment ??
+        owner.monthly_assessment ??
+        owner.assessment ??
+        0,
+
+      delinquencyLevel:
+        owner.delinquencyLevel ||
+        owner.delinquency_level ||
+        owner.paymentStatus ||
+        owner.payment_status ||
+        "",
+    };
+  }
+
+  function looksLikeOwnerRecord(item) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+
+    return Boolean(
+      item.ownerName ||
+        item.owner_name ||
+        item.unitNumber ||
+        item.unit_number ||
+        item.currentBalance !== undefined ||
+        item.current_balance !== undefined
+    );
+  }
+
+  function walk(value) {
+    if (!value) return;
+
+    if (Array.isArray(value)) {
+      if (value.some(looksLikeOwnerRecord)) {
+        value.forEach((item) => {
+          if (looksLikeOwnerRecord(item)) {
+            found.push(normalizeOwner(item));
+          }
+        });
+      } else {
+        value.forEach(walk);
+      }
+
+      return;
+    }
+
+    if (typeof value === "object") {
+      Object.values(value).forEach(walk);
+    }
+  }
+
+  walk(source);
+
+  const unique = [];
+  const seen = new Set();
+
+  found.forEach((owner) => {
+    const key = `${owner.unitNumber}-${owner.ownerName}-${owner.currentBalance}`;
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(owner);
+    }
+  });
+
+  return unique;
 }
 
 function MetricCard({ label, value, detail }) {
@@ -425,11 +517,9 @@ function OperationalCard({ title, value, label }) {
 }
 
 function StatusPill({ value }) {
-  const cleanValue = value || "unknown";
-
   return (
     <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold capitalize text-slate-200">
-      {String(cleanValue).replaceAll("_", " ")}
+      {String(value || "unknown").replaceAll("_", " ")}
     </span>
   );
 }
@@ -447,9 +537,7 @@ function HealthPill({ value }) {
       : "border-white/10 bg-white/10 text-slate-300";
 
   return (
-    <span
-      className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${className}`}
-    >
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${className}`}>
       {cleanValue}
     </span>
   );
