@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const REALM_ID = "9341457054133986";
@@ -41,11 +41,20 @@ export default function QuickBooksLiveAccounting() {
     }
   }
 
+    useEffect(() => {
+    runFullSync();
+  }, []);
+
+  const financialSummaryData =
+    syncResult?.results?.financial_summary?.data || null;
+
   const summary =
-    syncResult?.results?.financial_summary?.data?.board_summary || null;
+    financialSummaryData?.board_summary || null;
 
     const ownerBalances =
-    syncResult?.results?.financial_summary?.data?.attention_accounts ||
+    financialSummaryData?.attention_accounts ||
+    financialSummaryData?.owner_balances ||
+    financialSummaryData?.owners ||
     syncResult?.results?.balances?.data?.owner_balances ||
     syncResult?.results?.live_balances?.data?.owner_balances ||
     syncResult?.results?.sync_live_balances?.data?.owner_balances ||
