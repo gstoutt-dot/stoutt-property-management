@@ -40,7 +40,7 @@ const boardPages = [
   },
   {
     title: "Financial Review",
-    status: "Available",
+    status: "Live / Ready",
     href: "/board/financial-review",
     description:
       "Budget exceptions, delinquency trends, reserve items, and financial approvals.",
