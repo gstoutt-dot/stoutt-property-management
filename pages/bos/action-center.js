@@ -128,16 +128,26 @@ export default function BOSActionCenter() {
       }
     }
 
-        const updatedAction = {
+            const safePayload = workflowAction === "notify_owner"
+      ? {
+          owner_notified: true,
+          owner_notified_at: now,
+          internal_note: "Owner notification marked as sent.",
+        }
+      : fullPayload;
+
+    const updatedAction = {
       ...item,
-      ...fullPayload,
+      ...safePayload,
     };
 
-    await createNotificationEvent(
-      supabase,
-      updatedAction,
-      getNotificationEventType(workflowAction)
-    );
+    if (workflowAction !== "notify_owner") {
+      await createNotificationEvent(
+        supabase,
+        updatedAction,
+        getNotificationEventType(workflowAction)
+      );
+    }
 
     await loadActions();
 
