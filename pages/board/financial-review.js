@@ -1,13 +1,82 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getSignalsByType, bosMetrics, aiEvents } from "../../lib/bosData";
+import { supabase } from "../../lib/supabaseClient";
+
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function FinancialReview() {
   const [selectedItem, setSelectedItem] = useState(null);
-  const financialSignals = getSignalsByType("Financial");
+  const [actions, setActions] = useState([]);
+  const [ownerBalances, setOwnerBalances] = useState([]);
+  const [systemMessage, setSystemMessage] = useState("");
 
-  const financialAiEvents = aiEvents.filter(
-    (event) => event.route === "/board/financial-review"
+  useEffect(() => {
+    loadFinancialData();
+
+    const interval = setInterval(() => {
+      loadFinancialData();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadFinancialData() {
+    const { data: financialActions, error: actionsError } = await supabase
+      .from("bos_actions")
+      .select("*")
+      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .or("request_type.ilike.%financial%,category.ilike.%financial%,title.ilike.%financial%,description.ilike.%financial%,request_type.ilike.%payment%,category.ilike.%payment%,title.ilike.%payment%,description.ilike.%payment%,request_type.ilike.%statement%,category.ilike.%statement%,title.ilike.%statement%,description.ilike.%statement%,request_type.ilike.%balance%,category.ilike.%balance%,title.ilike.%balance%,description.ilike.%balance%,request_type.ilike.%delinquency%,category.ilike.%delinquency%,title.ilike.%delinquency%,description.ilike.%delinquency%")
+      .order("created_at", { ascending: false });
+
+    if (actionsError) {
+      console.error("Unable to load financial review items:", actionsError);
+      setSystemMessage("Unable to load financial review items.");
+      return;
+    }
+
+    const { data: balances, error: balancesError } = await supabase
+      .from("owner_account_balances")
+      .select("*")
+      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .order("current_balance", { ascending: false });
+
+    if (balancesError) {
+      console.warn("Unable to load owner balance records:", balancesError);
+    }
+
+    setActions(financialActions || []);
+    setOwnerBalances(balances || []);
+  }
+
+  const financialSignals = useMemo(() => actions, [actions]);
+
+  const financialAiEvents = useMemo(
+    () =>
+      actions.filter((item) =>
+        String(item.source || item.description || "")
+          .toLowerCase()
+          .includes("ava")
+      ),
+    [actions]
+  );
+
+  const highRiskItems = useMemo(
+    () =>
+      ownerBalances.filter((item) =>
+        ["elevated", "severe", "critical"].includes(
+          String(item.delinquency_level || item.account_health || "")
+            .toLowerCase()
+        )
+      ),
+    [ownerBalances]
+  );
+
+  const openFinancialItems = useMemo(
+    () =>
+      financialSignals.filter(
+        (item) => String(item.status || "open").toLowerCase() !== "completed"
+      ),
+    [financialSignals]
   );
 
   return (
@@ -46,35 +115,41 @@ export default function FinancialReview() {
 </p>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-4">
+                <div className="mt-8 grid gap-5 md:grid-cols-4">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm text-slate-400">Financial Alerts</p>
+            <p className="text-sm text-slate-400">Financial Requests</p>
             <p className="mt-3 text-4xl font-semibold text-amber-300">
-              {bosMetrics.financialAlerts}
+              {financialSignals.length}
             </p>
           </div>
 
           <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
-            <p className="text-sm text-violet-100">Reported Financial Issues</p>
+            <p className="text-sm text-violet-100">Owner / Ava Reports</p>
             <p className="mt-3 text-4xl font-semibold text-violet-200">
               {financialAiEvents.length}
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm text-slate-400">High Risk Items</p>
-            <p className="mt-3 text-4xl font-semibold text-amber-300">
-              {bosMetrics.highRiskItems}
+          <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
+            <p className="text-sm text-red-100">High Risk Accounts</p>
+            <p className="mt-3 text-4xl font-semibold text-red-200">
+              {highRiskItems.length}
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-sm text-slate-400">Open Financial Items</p>
             <p className="mt-3 text-4xl font-semibold text-amber-300">
-              {bosMetrics.openItems}
+              {openFinancialItems.length}
             </p>
           </div>
         </div>
+
+        {systemMessage && (
+          <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </div>
+        )}
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
@@ -99,24 +174,30 @@ export default function FinancialReview() {
     >
       <button
         onClick={() =>
+                <button
+        onClick={() =>
           setSelectedItem(isOpen ? null : { type: "financial", data: item })
         }
         className="block w-full text-left"
       >
-                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-                    {item.id} · Financial
-                  </p>
+        <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+          {item.id} · {formatCategory(item.category || item.request_type || "Financial")}
+        </p>
 
-                  <h4 className="mt-2 font-semibold">{item.title}</h4>
+        <h4 className="mt-2 font-semibold">
+          {item.title || "Financial Review Item"}
+        </h4>
 
-                  <p className="mt-2 text-sm text-slate-400">
-                    Next Action: {item.nextAction}
-                  </p>
+        <p className="mt-2 text-sm text-slate-400">
+          Current Status: {formatStatus(item.status)}
+        </p>
 
-                  <p className="mt-2 text-xs text-slate-500">
-                    Owner: {item.owner}
-                  </p>
-                        <p className="mt-4 text-sm font-semibold text-amber-300">
+        <p className="mt-2 text-xs text-slate-500">
+          Owner: {item.owner_name || "Resident"} · Unit:{" "}
+          {item.property_address || "Pending"}
+        </p>
+
+        <p className="mt-4 text-sm font-semibold text-amber-300">
           {isOpen ? "Hide Details" : "View Details"}
         </p>
       </button>
@@ -128,13 +209,46 @@ export default function FinancialReview() {
           </h5>
 
           <div className="mt-4 grid gap-3 text-sm text-slate-300">
-            <p><span className="text-slate-500">Item ID:</span> {item.id}</p>
-            <p><span className="text-slate-500">Category:</span> Financial</p>
-            <p><span className="text-slate-500">Title:</span> {item.title}</p>
-            <p><span className="text-slate-500">Owner:</span> {item.owner}</p>
-            <p><span className="text-slate-500">Status:</span> {item.status || "Pending Review"}</p>
-            <p><span className="text-slate-500">Priority:</span> {item.priority || "Standard"}</p>
-            <p><span className="text-slate-500">Next Action:</span> {item.nextAction}</p>
+            <p>
+              <span className="text-slate-500">Item ID:</span> {item.id}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Category:</span>{" "}
+              {formatCategory(item.category || item.request_type || "Financial")}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Title:</span>{" "}
+              {item.title || "Financial Review Item"}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Owner:</span>{" "}
+              {item.owner_name || "Resident"}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Unit:</span>{" "}
+              {item.property_address || "Pending"}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Status:</span>{" "}
+              {formatStatus(item.status)}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Priority:</span>{" "}
+              {titleCase(item.priority || "standard")}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Created:</span>{" "}
+              {item.created_at
+                ? new Date(item.created_at).toLocaleString()
+                : "N/A"}
+            </p>
           </div>
         </div>
       )}
