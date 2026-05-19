@@ -519,45 +519,104 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
+  const completed = isCompleted(item);
+  const financial = isFinancialRequest(item);
+  const workflowType = getWorkflowType(item);
+
+  const needsBoard =
+    workflowType === "architectural" ||
+    workflowType === "amenity" ||
+    workflowType === "violation";
+
+  const labels = financial
+    ? {
+        verify: "Verify Accounting Intake",
+        notify: "Notify Owner",
+        complete: "Complete Financial Resolution",
+        completed: "Financial Resolution Complete",
+        description:
+          "Move this financial request through accounting review, owner coordination, and financial resolution.",
+      }
+    : workflowType === "architectural"
+    ? {
+        verify: "Verify ARC Request",
+        notify: "Notify Owner",
+        complete: "Complete ARC Review",
+        completed: "ARC Review Complete",
+        description:
+          "Move this architectural request through manager review, board review, owner update, and completion.",
+      }
+    : workflowType === "amenity"
+    ? {
+        verify: "Verify Amenity Request",
+        notify: "Notify Owner",
+        complete: "Complete Amenity Request",
+        completed: "Amenity Request Complete",
+        description:
+          "Move this amenity request through management review, approval routing, owner update, and completion.",
+      }
+    : workflowType === "violation"
+    ? {
+        verify: "Verify Violation Intake",
+        notify: "Notify Owner",
+        complete: "Complete Violation Review",
+        completed: "Violation Review Complete",
+        description:
+          "Move this violation request through manager review, board visibility, owner update, and completion.",
+      }
+    : workflowType === "documents"
+    ? {
+        verify: "Verify Document Request",
+        notify: "Notify Owner",
+        complete: "Complete Document Request",
+        completed: "Document Request Complete",
+        description:
+          "Move this document request through management review, owner update, and completion.",
+      }
+    : {
+        verify: "Verify Work Order",
+        notify: "Notify Owner",
+        complete: "Complete Work Order",
+        completed: "Work Order Complete",
+        description:
+          "Move this work order through manager review, owner update, and completion. Vendor controls are hidden for launch.",
+      };
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-5">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
           </p>
 
           <p className="mt-2 text-sm text-white/50">
-            {isFinancialRequest(item)
-              ? "Move this accounting request through financial review and owner coordination."
-              : "Move this request through the SPM/BOS operating chain."}
+            {labels.description}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <WorkflowButton
-            label={isFinancialRequest(item) ? "Accounting Verified" : "Manager Verified"}
-            disabled={busy}
-            onClick={() => onUpdate(item, "manager_verified")}
-          />
+          {!completed && item.status !== "manager_review" && (
+            <WorkflowButton
+              label={labels.verify}
+              disabled={busy}
+              onClick={() => onUpdate(item, "manager_verified")}
+            />
+          )}
 
-          {isFinancialRequest(item) &&
-            !item.accounting_review_started_at && (
-              <WorkflowButton
-                label="Accounting Review"
-                disabled={busy}
-                onClick={() => onUpdate(item, "accounting_review")}
-              />
-            )}
+          {financial && !item.accounting_review_started_at && !completed && (
+            <WorkflowButton
+              label="Start Accounting Review"
+              disabled={busy}
+              onClick={() => onUpdate(item, "accounting_review")}
+            />
+          )}
 
-          {isFinancialRequest(item) &&
-            item.accounting_review_started_at &&
-            item.status !== "completed" && (
-              <Pill text="Accounting Review Active" tone="gold" />
-            )}
+          {financial && item.accounting_review_started_at && !completed && (
+            <Pill text="Accounting Review Active" tone="gold" />
+          )}
 
-          {!isFinancialRequest(item) && (
+          {!financial && needsBoard && item.status !== "board_review" && !completed && (
             <WorkflowButton
               label="Send to Board"
               disabled={busy}
@@ -565,37 +624,36 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {!item.owner_notified && (
+          {!completed && item.status !== "needs_clarification" && (
             <WorkflowButton
-              label="Notify Owner"
+              label="Request Clarification"
+              disabled={busy}
+              onClick={() => onUpdate(item, "request_clarification")}
+            />
+          )}
+
+          {!item.owner_notified && !completed && (
+            <WorkflowButton
+              label={labels.notify}
               disabled={busy}
               onClick={() => onUpdate(item, "notify_owner")}
             />
           )}
 
-          {item.owner_notified && item.status !== "completed" && (
+          {item.owner_notified && !completed && (
             <Pill text="Owner Updated" tone="green" />
           )}
 
-          {item.status !== "completed" && (
+          {!completed && (
             <WorkflowButton
-              label="Mark Complete"
+              label={labels.complete}
               disabled={busy}
               strong
               onClick={() => onUpdate(item, "mark_complete")}
             />
           )}
 
-          {item.status === "completed" && (
-            <Pill
-              text={
-                isFinancialRequest(item)
-                  ? "Financial Resolution Complete"
-                  : "Workflow Complete"
-              }
-              tone="green"
-            />
-          )}
+          {completed && <Pill text={labels.completed} tone="green" />}
         </div>
       </div>
     </div>
