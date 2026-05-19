@@ -1,211 +1,341 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
+
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function BoardMessages() {
-  const messages = [
-    {
-      subject: "Manager Update — Pool Light Work Order",
-      from: "Community Manager",
-      type: "Manager Update",
-      status: "New",
-      date: "Apr 24, 2026",
-      notes:
-        "Vendor confirmed replacement scheduling for pool light repair. Work expected within 48 hours.",
-    },
-    {
-      subject: "Owner Escalation — Parking Concern",
-      from: "Unit Owner",
-      type: "Owner Escalation",
-      status: "Pending Review",
-      date: "Apr 23, 2026",
-      notes:
-        "Owner submitted concern regarding repeat overnight guest parking violations for board review.",
-    },
-    {
-      subject: "AI Call Summary — Delinquent Account Inquiry",
-      from: "AI Assistant",
-      type: "AI Summary",
-      status: "Reviewed",
-      date: "Apr 22, 2026",
-      notes:
-        "AI assistant handled owner balance inquiry, cited account status, and logged follow-up for management review.",
-    },
-  ];
+  const [messages, setMessages] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadMessages();
+
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadMessages() {
+    try {
+      setLoadingMessages(true);
+      setSystemMessage("");
+
+      const { data, error } = await supabase
+        .from("association_board_messages")
+        .select("*")
+        .eq("association_id", DEFAULT_ASSOCIATION_ID)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setMessages(data || []);
+    } catch (error) {
+      console.error("Unable to load board messages:", error);
+      setMessages([]);
+      setSystemMessage(error.message || "Unable to load board messages.");
+    } finally {
+      setLoadingMessages(false);
+    }
+  }
+
+  async function markReviewed(message) {
+    if (!message?.id) return;
+
+    const { error } = await supabase
+      .from("association_board_messages")
+      .update({
+        status: "reviewed",
+        reviewed: true,
+        reviewed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", message.id);
+
+    if (error) {
+      console.error("Unable to mark board message reviewed:", error);
+      setSystemMessage("Unable to mark message reviewed.");
+      return;
+    }
+
+    await loadMessages();
+    setSystemMessage("Message marked reviewed.");
+  }
+
+  const newMessages = useMemo(
+    () =>
+      messages.filter(
+        (message) =>
+          String(message.status || "").toLowerCase() === "new" ||
+          !message.reviewed
+      ),
+    [messages]
+  );
+
+  const escalations = useMemo(
+    () =>
+      messages.filter((message) =>
+        String(message.message_type || "")
+          .toLowerCase()
+          .includes("escalation")
+      ),
+    [messages]
+  );
+
+  const aiSummaries = useMemo(
+    () =>
+      messages.filter((message) =>
+        String(message.message_type || "")
+          .toLowerCase()
+          .includes("ai")
+      ),
+    [messages]
+  );
+
+  const urgentMessages = useMemo(
+    () =>
+      messages.filter((message) =>
+        ["high", "urgent", "critical"].includes(
+          String(message.priority || "").toLowerCase()
+        )
+      ),
+    [messages]
+  );
+
+  const messageTypes = useMemo(() => {
+    const types = messages
+      .map((message) =>
+        String(message.message_type || "board_message").toLowerCase()
+      )
+      .filter(Boolean);
+
+    return ["all", ...Array.from(new Set(types))];
+  }, [messages]);
+
+  const filteredMessages = useMemo(() => {
+    if (filter === "all") return messages;
+
+    return messages.filter(
+      (message) =>
+        String(message.message_type || "board_message").toLowerCase() === filter
+    );
+  }, [messages, filter]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%)]" />
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-yellow-300">
+                Board Communications Center
+              </p>
 
-        <div className="relative mx-auto max-w-7xl px-6 py-8">
-
-          <div className="mb-10 flex items-center justify-between">
-            <Link href="/board" className="text-xl font-semibold tracking-wide">
-              Stoutt Property Management
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-6 text-sm text-slate-300">
-              <Link href="/board" className="hover:text-white">
-                Board Portal
-              </Link>
-
-              <Link href="/board/violation-review" className="hover:text-white">
-                Violations
-              </Link>
-
-              <Link href="/board/architectural-approvals" className="hover:text-white">
-                ARC Approvals
-              </Link>
-
-              <Link href="/board/maintenance-review" className="hover:text-white">
-                Maintenance
-              </Link>
-
-              <Link href="/board/financial-review" className="hover:text-white">
-                Financials
-              </Link>
-            </nav>
-
-          </div>
-
-          <div className="max-w-3xl py-16">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-300">
-              Board Communications Center
-            </p>
-
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Board communications, updates and escalations in one queue.
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              Review manager updates, owner escalations, vendor notes,
-              board correspondence, and AI call summaries from a unified
-              communications dashboard.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#messages"
-                className="rounded-full bg-yellow-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200"
-              >
-                View Messages
-              </a>
-
-              <Link
-                href="/board"
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Back to Board Portal
-              </Link>
+              <h1 className="mt-3 text-4xl font-bold">
+                Board Messages
+              </h1>
             </div>
-          </div>
 
+            <Link
+              href="/board"
+              className="text-lg font-medium text-white hover:text-yellow-300"
+            >
+              Board Dashboard
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pt-12">
+        <div className="rounded-3xl border border-yellow-300/20 bg-gradient-to-r from-slate-900 to-slate-950 p-10">
+          <p className="text-sm uppercase tracking-[0.3em] text-yellow-300">
+            Communications Queue
+          </p>
+
+          <h2 className="mt-5 text-3xl font-bold leading-tight md:text-5xl">
+            Review board communications, owner escalations, manager updates, and operational notices.
+          </h2>
+
+          <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
+            Board members can monitor association communications, management
+            updates, owner escalations, vendor notices, and Ava summaries from
+            one live message center.
+          </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-5 md:grid-cols-4">
-          {[
-            ["3", "New Messages"],
-            ["1", "Owner Escalation"],
-            ["1", "AI Summaries"],
-            ["0", "Urgent Items"],
-          ].map(([number, label]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="text-3xl font-bold text-yellow-300">
-                {number}
-              </div>
-
-              <div className="mt-2 text-sm text-slate-300">
-                {label}
-              </div>
-            </div>
-          ))}
+          <Metric label="Messages" value={messages.length} />
+          <Metric label="New / Unreviewed" value={newMessages.length} />
+          <Metric label="Owner Escalations" value={escalations.length} />
+          <Metric label="Urgent Items" value={urgentMessages.length} />
         </div>
+
+        {systemMessage && (
+          <div className="mt-6 rounded-2xl border border-yellow-300/20 bg-yellow-300/10 px-5 py-4 text-sm font-semibold text-yellow-200">
+            {systemMessage}
+          </div>
+        )}
       </section>
 
-      <section id="messages" className="mx-auto max-w-7xl px-6 pb-20">
+      <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
-              Message Queue
+              Live Message Queue
             </p>
 
             <h2 className="mt-2 text-3xl font-bold">
-              Board Messages
+              Association Communications
             </h2>
           </div>
 
-          <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10">
-            New Message
-          </button>
+          <select
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+            className="rounded-full border border-yellow-300/20 bg-slate-950 px-5 py-3 text-sm font-semibold text-yellow-300 outline-none"
+          >
+            {messageTypes.map((type) => (
+              <option key={type} value={type}>
+                {type === "all" ? "All Messages" : titleCase(type)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-5">
-          {messages.map((msg) => (
-            <article
-              key={`${msg.subject}-${msg.date}`}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-                <div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-2xl font-semibold">
-                      {msg.subject}
-                    </h3>
-
-                    <span className="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-semibold text-yellow-200">
-                      {msg.status}
-                    </span>
-
-                    <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
-                      {msg.type}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 grid gap-2 text-sm text-slate-300 md:grid-cols-3">
-                    <p>
-                      <span className="text-slate-500">From:</span> {msg.from}
-                    </p>
-
-                    <p>
-                      <span className="text-slate-500">Date:</span> {msg.date}
-                    </p>
-
-                    <p>
-                      <span className="text-slate-500">Status:</span> {msg.status}
-                    </p>
-                  </div>
-
-                  <p className="mt-5 max-w-3xl leading-7 text-slate-300">
-                    {msg.notes}
-                  </p>
-
-                </div>
-
-                <div className="flex flex-wrap gap-3 lg:justify-end">
-                  <button className="rounded-full bg-yellow-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200">
-                    Open
-                  </button>
-
-                  <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                    Reply
-                  </button>
-
-                  <button className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10">
-                    Mark Reviewed
-                  </button>
-                </div>
-
-              </div>
-            </article>
-          ))}
+          {loadingMessages ? (
+            <Empty message="Loading board messages..." />
+          ) : filteredMessages.length === 0 ? (
+            <Empty message="No board messages are currently available for this view." />
+          ) : (
+            filteredMessages.map((message) => (
+              <MessageCard
+                key={message.id}
+                message={message}
+                onReviewed={markReviewed}
+              />
+            ))
+          )}
         </div>
-
       </section>
     </main>
   );
+}
+
+function MessageCard({ message, onReviewed }) {
+  const reviewed =
+    Boolean(message.reviewed) ||
+    String(message.status || "").toLowerCase() === "reviewed";
+
+  return (
+    <article className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+      <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <h3 className="text-2xl font-semibold">
+              {message.subject || "Board Message"}
+            </h3>
+
+            <span className="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-semibold text-yellow-200">
+              {titleCase(message.status || "new")}
+            </span>
+
+            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
+              {titleCase(message.message_type || "board_message")}
+            </span>
+
+            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
+              {titleCase(message.priority || "normal")}
+            </span>
+          </div>
+
+          <div className="mt-3 grid gap-2 text-sm text-slate-300 md:grid-cols-4">
+            <p>
+              <span className="text-slate-500">From:</span>{" "}
+              {message.sender_name || "Association"}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Role:</span>{" "}
+              {message.sender_role || "Board"}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Received:</span>{" "}
+              {formatDate(message.created_at)}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Status:</span>{" "}
+              {titleCase(message.status || "new")}
+            </p>
+          </div>
+
+          <p className="mt-5 max-w-4xl leading-7 text-slate-300">
+            {message.message_body || "No message body available."}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-3 lg:justify-end">
+          {!reviewed && (
+            <button
+              onClick={() => onReviewed(message)}
+              className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10"
+            >
+              Mark Reviewed
+            </button>
+          )}
+
+          {reviewed && (
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-300">
+              Reviewed
+            </span>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+      <div className="text-3xl font-bold text-yellow-300">{value}</div>
+      <div className="mt-2 text-sm text-slate-300">{label}</div>
+    </div>
+  );
+}
+
+function Empty({ message }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] p-8 text-center text-sm text-slate-400">
+      {message}
+    </div>
+  );
+}
+
+function formatDate(value) {
+  if (!value) return "N/A";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
