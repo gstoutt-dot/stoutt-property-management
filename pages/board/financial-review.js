@@ -49,12 +49,9 @@ export default function FinancialReview() {
 
       console.log("FINANCIAL SUMMARY API RESPONSE:", balanceJson);
 
-      const balanceRows =
-        balanceJson?.owner_balances ||
-        balanceJson?.ownerBalances ||
-        balanceJson?.balances ||
-        balanceJson?.data?.owner_balances ||
-        balanceJson?.data?.ownerBalances ||
+            const balanceRows =
+        balanceJson?.accounts_needing_attention ||
+        balanceJson?.accountsNeedingAttention ||
         [];
 
       setOwnerBalances(Array.isArray(balanceRows) ? balanceRows : []);
@@ -101,10 +98,16 @@ export default function FinancialReview() {
     [ownerBalances]
   );
 
-  const totalOutstanding = useMemo(
+    const totalOutstanding = useMemo(
     () =>
       ownerBalances.reduce((sum, item) => {
-        const value = Number(item.current_balance || 0);
+        const value = Number(
+          item.current_balance ??
+          item.currentBalance ??
+          item.balance ??
+          0
+        );
+
         return Number.isFinite(value) ? sum + value : sum;
       }, 0),
     [ownerBalances]
