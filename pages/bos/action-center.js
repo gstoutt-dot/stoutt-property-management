@@ -596,7 +596,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {!completed && item.status !== "manager_review" && (
+          {!completed && (
             <WorkflowButton
               label={labels.verify}
               disabled={busy}
@@ -604,7 +604,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {financial && !item.accounting_review_started_at && !completed && (
+          {financial && !completed && (
             <WorkflowButton
               label="Start Accounting Review"
               disabled={busy}
@@ -612,11 +612,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {financial && item.accounting_review_started_at && !completed && (
-            <Pill text="Accounting Review Active" tone="gold" />
-          )}
-
-          {!financial && needsBoard && item.status !== "board_review" && !completed && (
+          {!financial && needsBoard && !completed && (
             <WorkflowButton
               label="Send to Board"
               disabled={busy}
@@ -624,7 +620,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {!completed && item.status !== "needs_clarification" && (
+          {!completed && (
             <WorkflowButton
               label="Request Clarification"
               disabled={busy}
@@ -632,16 +628,12 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {!item.owner_notified && !completed && (
+          {!completed && (
             <WorkflowButton
               label={labels.notify}
               disabled={busy}
               onClick={() => onUpdate(item, "notify_owner")}
             />
-          )}
-
-          {item.owner_notified && !completed && (
-            <Pill text="Owner Updated" tone="green" />
           )}
 
           {!completed && (
@@ -653,7 +645,12 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {completed && <Pill text={labels.completed} tone="green" />}
+          {completed && (
+            <Pill
+              text={labels.completed}
+              tone="green"
+            />
+          )}
         </div>
       </div>
     </div>
