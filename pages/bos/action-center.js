@@ -625,8 +625,7 @@ function Timeline({ item }) {
     {
       key: "owner",
       label: "Notify Owner",
-      complete:
-              complete:
+      complete:              
         item.status === "owner_notified" ||
         item.status === "completed",
       date: item.updated_at || item.owner_notified_at,
