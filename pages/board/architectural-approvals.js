@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { bosSignals } from "../../lib/bosData";
+import { bosSignals } from "../../lib/bosData"; 
 
 export default function ArchitecturalApprovals() {
   const arcSignals = bosSignals.filter(
