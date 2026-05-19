@@ -45,7 +45,9 @@ export default function FinancialReview() {
         `/api/accounting/quickbooks/financial-summary?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
 
-      const balanceJson = await balanceResponse.json();
+            const balanceJson = await balanceResponse.json();
+
+      console.log("FINANCIAL SUMMARY API RESPONSE:", balanceJson);
 
       const balanceRows =
         balanceJson?.owner_balances ||
