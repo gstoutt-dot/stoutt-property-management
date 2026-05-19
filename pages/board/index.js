@@ -26,7 +26,7 @@ const boardPages = [
   },
   {
     title: "Architectural Approvals",
-    status: "Available",
+    status: "Live / Ready",
     href: "/board/architectural-approvals",
     description:
       "Architectural request review module for ARC and board decisions.",
