@@ -20,7 +20,7 @@ export default function ArchitecturalApprovals() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Board Operating System
+              Architecturl Review Center
             </p>
 
             <h1 className="mt-2 text-2xl font-semibold">
@@ -29,34 +29,30 @@ export default function ArchitecturalApprovals() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Home</Link>
-            <Link href="/board/workflow-engine">Workflow</Link>
-            <Link href="/board/action-items">Action Items</Link>
-            <Link href="/board/meeting-packet">Meeting Packet</Link>
-            <Link href="/board/command-center">Command Center</Link>
-          </nav>
+  <Link href="/board">Board Dashboard</Link>
+</nav>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            ARC Review Routing Active
-          </p>
+  Architectural Review Queue
+</p>
 
-          <h2 className="mt-3 text-4xl font-semibold">
-            Architectural approvals now connect to the BOS workflow layer.
-          </h2>
+<h2 className="mt-3 text-4xl font-semibold">
+  Review homeowner architectural requests and approval activity.
+</h2>
 
-          <p className="mt-4 max-w-3xl text-slate-300">
-            ARC requests can now surface into workflow, action items, meeting
-            packets, and board oversight through the shared BOS data layer.
-          </p>
+<p className="mt-4 max-w-3xl text-slate-300">
+  Review pending ARC requests, homeowner submissions, approval conditions,
+  and architectural review decisions.
+</p>
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-4">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm text-slate-400">ARC Signals</p>
+            <p className="text-sm text-slate-400">ARC Requests</p>
             <p className="mt-3 text-4xl font-semibold text-amber-300">
               {arcSignals.length}
             </p>
@@ -70,7 +66,7 @@ export default function ArchitecturalApprovals() {
           </div>
 
           <div className="rounded-3xl border border-red-300/20 bg-red-500/10 p-6">
-            <p className="text-sm text-red-100">High Risk</p>
+            <p className="text-sm text-red-100">Priority Reviews</p>
             <p className="mt-3 text-4xl font-semibold text-red-200">
               {
                 arcSignals.filter(
@@ -83,7 +79,7 @@ export default function ArchitecturalApprovals() {
           </div>
 
           <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-6">
-            <p className="text-sm text-emerald-100">Future ARC Feeds</p>
+            <p className="text-sm text-emerald-100">Community Activity</p>
             <p className="mt-3 text-4xl font-semibold text-emerald-200">4</p>
           </div>
         </div>
@@ -121,39 +117,39 @@ export default function ArchitecturalApprovals() {
 
           <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
             <h3 className="text-xl font-semibold text-emerald-100">
-              Future ARC Data Feeds
+              ARC Review Activity
             </h3>
 
             <div className="mt-6 grid gap-4">
               <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
-                Owner Application Intake
+                Owner Applications
               </div>
 
               <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
-                Committee Vote Tracking
+                Committee Decisions
               </div>
 
               <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
-                Conditional Approval Monitoring
+                Conditional Approvals
               </div>
 
               <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
-                Completion Inspection Feed
+                Final Inspections
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
-          <h3 className="text-xl font-semibold text-amber-200">
-            BOS Wiring Status
-          </h3>
+  <h3 className="text-xl font-semibold text-amber-200">
+    Architectural Review Process
+  </h3>
 
-          <p className="mt-3 text-slate-300">
-            Architectural Approvals now connects to BOS workflow, action,
-            meeting packet, and board oversight logic.
-          </p>
-        </div>
+  <p className="mt-3 text-slate-300">
+    This area helps board members review homeowner architectural requests,
+    monitor ARC activity, and track approval decisions.
+  </p>
+</div>
       </section>
     </main>
   );
