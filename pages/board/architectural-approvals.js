@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Link from "next/link";
 import { bosSignals } from "../../lib/bosData"; 
 
 export default function ArchitecturalApprovals() {
+  const [selectedItem, setSelectedItem] = useState(null);
   const arcSignals = bosSignals.filter(
     (item) =>
       item.module === "ARC Approvals" ||
@@ -89,29 +91,91 @@ export default function ArchitecturalApprovals() {
             <h3 className="text-xl font-semibold">ARC Review Queue</h3>
 
             <div className="mt-6 space-y-4">
-              {arcSignals.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.route}
-                  className="block rounded-2xl border border-white/10 bg-slate-900 p-5 hover:border-amber-300/30"
-                >
-                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-                    {item.id} · {item.module}
-                  </p>
+              {arcSignals.map((item) => {
+  const isOpen =
+    selectedItem?.id === item.id;
 
-                  <h4 className="mt-2 font-semibold">{item.title}</h4>
+  return (
+    <div
+      key={item.id}
+      className="rounded-2xl border border-white/10 bg-slate-900 p-5"
+    >
+      <button
+        onClick={() =>
+          setSelectedItem(isOpen ? null : item)
+        }
+        className="block w-full text-left"
+      >
+        <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+          {item.id} · {item.module}
+        </p>
 
-                  <p className="mt-2 text-sm text-slate-400">
-                    Review Action: Confirm committee decision, owner notice,
-                    approval conditions, and deadline tracking.
-                  </p>
+        <h4 className="mt-2 font-semibold">
+          {item.title}
+        </h4>
 
-                  <p className="mt-2 text-xs text-slate-500">
-                    Owner: {item.owner} · Due: {item.dueDate} · Status:{" "}
-                    {item.status}
-                  </p>
-                </Link>
-              ))}
+        <p className="mt-2 text-sm text-slate-400">
+          Review Action: Confirm committee decision, owner notice,
+          approval conditions, and deadline tracking.
+        </p>
+
+        <p className="mt-2 text-xs text-slate-500">
+          Owner: {item.owner} · Due: {item.dueDate} · Status:{" "}
+          {item.status}
+        </p>
+
+        <p className="mt-4 text-sm font-semibold text-amber-300">
+          {isOpen ? "Hide Details" : "View Details"}
+        </p>
+      </button>
+
+      {isOpen && (
+        <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-5">
+          <h5 className="text-lg font-semibold text-amber-200">
+            Full ARC Request Details
+          </h5>
+
+          <div className="mt-4 grid gap-3 text-sm text-slate-300">
+            <p>
+              <span className="text-slate-500">Request ID:</span>{" "}
+              {item.id}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Category:</span>{" "}
+              {item.module}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Title:</span>{" "}
+              {item.title}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Owner:</span>{" "}
+              {item.owner}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Due Date:</span>{" "}
+              {item.dueDate}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Status:</span>{" "}
+              {item.status}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Risk Level:</span>{" "}
+              {item.riskLevel || "Standard"}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+})}
             </div>
           </div>
 
