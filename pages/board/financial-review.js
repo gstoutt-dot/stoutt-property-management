@@ -201,7 +201,7 @@ export default function FinancialReview() {
           {isOpen ? "Hide Details" : "View Details"}
         </p>
       </button>
-
+      </button>
       {isOpen && (
         <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-5">
           <h5 className="text-lg font-semibold text-amber-200">
