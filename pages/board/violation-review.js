@@ -1,17 +1,50 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { bosSignals, aiEvents } from "../../lib/bosData";
+import { supabase } from "../../lib/supabaseClient";
 
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 export default function ViolationReview() {
   const [selectedItem, setSelectedItem] = useState(null);
-  const violationSignals = bosSignals.filter(
-    (item) =>
-      item.module === "Violations" ||
-      item.type === "Compliance"
-  );
+  const [actions, setActions] = useState([]);
+  const [systemMessage, setSystemMessage] = useState("");
 
-  const aiViolationEvents = aiEvents.filter(
-    (event) => event.route === "/board/violation-review"
+  useEffect(() => {
+    loadViolationActions();
+
+    const interval = setInterval(() => {
+      loadViolationActions();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadViolationActions() {
+    const { data, error } = await supabase
+      .from("bos_actions")
+      .select("*")
+      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .or("request_type.ilike.%violation%,category.ilike.%violation%,title.ilike.%violation%,description.ilike.%violation%,request_type.ilike.%compliance%,category.ilike.%compliance%,title.ilike.%compliance%,description.ilike.%compliance%")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Unable to load violation review items:", error);
+      setSystemMessage("Unable to load violation review items.");
+      return;
+    }
+
+    setActions(data || []);
+  }
+
+  const violationSignals = useMemo(() => actions, [actions]);
+
+  const aiViolationEvents = useMemo(
+    () =>
+      actions.filter((item) =>
+        String(item.source || item.description || "")
+          .toLowerCase()
+          .includes("ava")
+      ),
+    [actions]
   );
 
   return (
@@ -70,7 +103,7 @@ export default function ViolationReview() {
 
           <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
             <p className="text-sm text-violet-100">
-              Reported Complaints
+              Ava / Owner Reports
             </p>
 
             <p className="mt-3 text-4xl font-semibold text-violet-200">
@@ -119,19 +152,19 @@ export default function ViolationReview() {
         className="block w-full text-left"
       >
         <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-          {item.id} · {item.module}
+          {item.id} · {formatCategory(item.category || item.request_type)}
         </p>
 
         <h4 className="mt-2 font-semibold">
-          {item.title}
+          {item.title || "Violation Review Item"}
         </h4>
 
         <p className="mt-2 text-sm text-slate-400">
-          Next Action: {item.nextAction}
+          Current Status: {formatStatus(item.status)}
         </p>
 
         <p className="mt-2 text-xs text-slate-500">
-          Owner: {item.owner} · Status: {item.status}
+          Owner: {item.owner_name || "Resident"} · Unit: {item.property_address || "Pending"}
         </p>
 
         <p className="mt-4 text-sm font-semibold text-amber-300">
@@ -146,12 +179,13 @@ export default function ViolationReview() {
           </h5>
 
           <div className="mt-4 grid gap-3 text-sm text-slate-300">
-            <p><span className="text-slate-500">Violation ID:</span> {item.id}</p>
-            <p><span className="text-slate-500">Category:</span> {item.module}</p>
-            <p><span className="text-slate-500">Title:</span> {item.title}</p>
-            <p><span className="text-slate-500">Owner:</span> {item.owner}</p>
-            <p><span className="text-slate-500">Status:</span> {item.status}</p>
-            <p><span className="text-slate-500">Next Action:</span> {item.nextAction}</p>
+            <p><span className="text-slate-500">Review ID:</span> {item.id}</p>
+            <p><span className="text-slate-500">Category:</span> {formatCategory(item.category || item.request_type)}</p>
+            <p><span className="text-slate-500">Title:</span> {item.title || "Violation Review Item"}</p>
+            <p><span className="text-slate-500">Owner:</span> {item.owner_name || "Resident"}</p>
+            <p><span className="text-slate-500">Unit:</span> {item.property_address || "Pending"}</p>
+            <p><span className="text-slate-500">Status:</span> {formatStatus(item.status)}</p>
+            <p><span className="text-slate-500">Created:</span> {item.created_at ? new Date(item.created_at).toLocaleString() : "N/A"}</p>
           </div>
         </div>
       )}
@@ -180,22 +214,21 @@ export default function ViolationReview() {
                   key={event.id}
                   className="rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5"
                 >
-                  <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
-                    {event.id} · {event.type}
+                                    <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+                    {event.id} · {formatCategory(event.category || event.request_type)}
                   </p>
 
                   <h4 className="mt-2 font-semibold">
-                    {event.event}
+                    {event.title || "Owner Compliance Report"}
                   </h4>
 
                   <p className="mt-2 text-sm text-slate-300">
-                    Source: {event.source}
+                    Source: {event.source || "Owner / Ava Intake"}
                   </p>
 
                   <p className="mt-2 text-xs text-slate-400">
-                    Status: {event.status} · Priority: {event.priority}
+                    Status: {formatStatus(event.status)} · Priority: {titleCase(event.priority || "medium")}
                   </p>
-
                 </div>
               ))}
 
@@ -221,4 +254,18 @@ export default function ViolationReview() {
 
     </main>
   );
+}
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatCategory(category) {
+  return titleCase(String(category || "General").replace(/_/g, " "));
+}
+
+function formatStatus(status) {
+  return titleCase(status || "Open");
 }
