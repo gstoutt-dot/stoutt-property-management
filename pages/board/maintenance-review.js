@@ -48,10 +48,6 @@ export default function MaintenanceReview() {
     [actions]
   );
 
-  const maintenanceAiEvents = aiEvents.filter(
-    (event) => event.route === "/board/maintenance-review"
-  );
-
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-white/10">
