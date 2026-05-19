@@ -307,31 +307,75 @@ export default function FinancialReview() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
+                <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
           <h3 className="text-xl font-semibold text-emerald-100">
             Live Financial Visibility
           </h3>
 
+          <p className="mt-2 text-sm text-emerald-100/70">
+            Board-level visibility into synced owner balances, payment status,
+            account health, and delinquency risk.
+          </p>
+
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <FinancialTile
-              label="Synced Owner Accounts"
-              value={ownerBalances.length}
-            />
+            <FinancialTile label="Synced Owner Accounts" value={ownerBalances.length} />
+            <FinancialTile label="Total Outstanding Balance" value={formatCurrency(totalOutstanding)} />
+            <FinancialTile label="Delinquency Watchlist" value={highRiskAccounts.length} />
+            <FinancialTile label="QuickBooks Mirror" value={ownerBalances.length > 0 ? "Active" : "Pending"} />
+          </div>
 
-            <FinancialTile
-              label="Total Outstanding Balance"
-              value={formatCurrency(totalOutstanding)}
-            />
+          <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
+            <h4 className="text-lg font-semibold text-emerald-100">
+              Owner Balance Snapshot
+            </h4>
 
-            <FinancialTile
-              label="Delinquency Watchlist"
-              value={highRiskAccounts.length}
-            />
+            <div className="mt-4 space-y-3">
+              {ownerBalances.length === 0 ? (
+                <Empty message="No synced owner balance records are currently available." />
+              ) : (
+                ownerBalances.slice(0, 10).map((owner) => (
+                  <div
+                    key={owner.id || owner.owner_user_id || owner.unit_number}
+                    className="grid gap-3 rounded-2xl border border-white/10 bg-slate-900/80 p-4 text-sm md:grid-cols-5"
+                  >
+                    <div>
+                      <p className="text-slate-500">Owner</p>
+                      <p className="mt-1 font-semibold text-white">
+                        {owner.owner_name || "Owner"}
+                      </p>
+                    </div>
 
-            <FinancialTile
-              label="QuickBooks Mirror"
-              value={ownerBalances.length > 0 ? "Active" : "Pending"}
-            />
+                    <div>
+                      <p className="text-slate-500">Unit</p>
+                      <p className="mt-1 text-slate-200">
+                        {owner.unit_number || "Pending"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-500">Balance</p>
+                      <p className="mt-1 font-semibold text-emerald-100">
+                        {formatCurrency(owner.current_balance)}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-500">Payment Status</p>
+                      <p className="mt-1 text-slate-200">
+                        {formatStatus(owner.payment_status)}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-500">Account Health</p>
+                      <p className="mt-1 text-slate-200">
+                        {formatStatus(owner.account_health || owner.delinquency_level)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
