@@ -23,47 +23,43 @@ export default function Documents() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Board Operating System
+              Document Center
             </p>
             <h1 className="mt-2 text-2xl font-semibold">Documents</h1>
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Home</Link>
-            <Link href="/board/records-management">Records</Link>
-            <Link href="/board/meeting-packet">Meeting Packet</Link>
-            <Link href="/board/compliance-legal-review">Legal</Link>
-            <Link href="/board/command-center">Command Center</Link>
-          </nav>
+  <Link href="/board">Board Dashboard</Link>
+</nav>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Document Intelligence Active
-          </p>
+  Association Documents
+</p>
 
-          <h2 className="mt-3 text-4xl font-semibold">
-            Documents now connect to BOS governance activity.
-          </h2>
+<h2 className="mt-3 text-4xl font-semibold">
+  Review association records, supporting documents, and board materials.
+</h2>
 
-          <p className="mt-4 max-w-3xl text-slate-300">
-            Document oversight can now surface legal, financial, compliance,
-            risk, and AI-generated events that require supporting records.
-          </p>
+<p className="mt-4 max-w-3xl text-slate-300">
+  Access board-related documents, compliance records, legal materials,
+  meeting support files, and operational documentation.
+</p>
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-4">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm text-slate-400">Document-Linked Signals</p>
+            <p className="text-sm text-slate-400">Board Documents</p>
             <p className="mt-3 text-4xl font-semibold text-amber-300">
               {documentSignals.length}
             </p>
           </div>
 
           <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
-            <p className="text-sm text-violet-100">AI Document Events</p>
+            <p className="text-sm text-violet-100">Document Activity</p>
             <p className="mt-3 text-4xl font-semibold text-violet-200">
               {aiDocumentEvents.length}
             </p>
@@ -81,14 +77,14 @@ export default function Documents() {
           </div>
 
           <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-6">
-            <p className="text-sm text-emerald-100">Future Doc Feeds</p>
+            <p className="text-sm text-emerald-100">Document Categories</p>
             <p className="mt-3 text-4xl font-semibold text-emerald-200">4</p>
           </div>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <h3 className="text-xl font-semibold">Document Support Queue</h3>
+            <h3 className="text-xl font-semibold">Document Review Queue</h3>
 
             <div className="mt-6 space-y-4">
               {documentSignals.map((item) => (
@@ -104,8 +100,8 @@ export default function Documents() {
                   <h4 className="mt-2 font-semibold">{item.title}</h4>
 
                   <p className="mt-2 text-sm text-slate-400">
-                    Document Need: Attach or verify supporting records,
-                    approvals, board notes, and related evidence.
+                    Supporting records, approvals, meeting notes,
+                     and related association documentation.
                   </p>
 
                   <p className="mt-2 text-xs text-slate-500">
@@ -118,13 +114,12 @@ export default function Documents() {
 
           <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
             <h3 className="text-xl font-semibold text-violet-100">
-              AI Document Intake Queue
-            </h3>
+  Document Activity
+</h3>
 
-            <p className="mt-2 text-sm text-violet-100/70">
-              AI-originated matters that may require transcript, file, or
-              supporting-document retention.
-            </p>
+<p className="mt-2 text-sm text-violet-100/70">
+  Recent document-related activity and supporting records.
+</p>
 
             <div className="mt-6 space-y-4">
               {aiDocumentEvents.map((event) => (
@@ -154,7 +149,7 @@ export default function Documents() {
 
         <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
           <h3 className="text-xl font-semibold text-emerald-100">
-            Future Document Feeds
+            Association Document Library
           </h3>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -171,21 +166,21 @@ export default function Documents() {
             </div>
 
             <div className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5">
-              AI Transcript Archive
+              Meeting & Communication Records
             </div>
           </div>
         </div>
 
         <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
-          <h3 className="text-xl font-semibold text-amber-200">
-            BOS Wiring Status
-          </h3>
+  <h3 className="text-xl font-semibold text-amber-200">
+    Board Records & Documentation
+  </h3>
 
-          <p className="mt-3 text-slate-300">
-            Documents now receives governance signals and AI-originated matters
-            that may require supporting document retention.
-          </p>
-        </div>
+  <p className="mt-3 text-slate-300">
+    This area helps board members organize and review association records,
+    supporting documents, legal materials, and operational files.
+  </p>
+</div>
       </section>
     </main>
   );
