@@ -519,6 +519,7 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
+  const completed = isCompleted(item);
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
@@ -529,73 +530,42 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
           </p>
 
           <p className="mt-2 text-sm text-white/50">
-            {isFinancialRequest(item)
-              ? "Move this accounting request through financial review and owner coordination."
-              : "Move this request through the SPM/BOS operating chain."}
+            Move this request through the same owner-visible progress path:
+            Manager Verified → Board Review → Notify Owner → Completed.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <WorkflowButton
-            label={isFinancialRequest(item) ? "Accounting Verified" : "Manager Verified"}
-            disabled={busy}
-            onClick={() => onUpdate(item, "manager_verified")}
-          />
-
-          {isFinancialRequest(item) &&
-            !item.accounting_review_started_at && (
+          {!completed && (
+            <>
               <WorkflowButton
-                label="Accounting Review"
+                label="Manager Verified"
                 disabled={busy}
-                onClick={() => onUpdate(item, "accounting_review")}
+                onClick={() => onUpdate(item, "manager_verified")}
               />
-            )}
 
-          {isFinancialRequest(item) &&
-            item.accounting_review_started_at &&
-            item.status !== "completed" && (
-              <Pill text="Accounting Review Active" tone="gold" />
-            )}
+              <WorkflowButton
+                label="Send to Board"
+                disabled={busy}
+                onClick={() => onUpdate(item, "send_to_board")}
+              />
 
-          {!isFinancialRequest(item) && (
-            <WorkflowButton
-              label="Send to Board"
-              disabled={busy}
-              onClick={() => onUpdate(item, "send_to_board")}
-            />
+              <WorkflowButton
+                label="Notify Owner"
+                disabled={busy}
+                onClick={() => onUpdate(item, "notify_owner")}
+              />
+
+              <WorkflowButton
+                label="Mark Complete"
+                disabled={busy}
+                strong
+                onClick={() => onUpdate(item, "mark_complete")}
+              />
+            </>
           )}
 
-          {!item.owner_notified && (
-            <WorkflowButton
-              label="Notify Owner"
-              disabled={busy}
-              onClick={() => onUpdate(item, "notify_owner")}
-            />
-          )}
-
-          {item.owner_notified && item.status !== "completed" && (
-            <Pill text="Owner Updated" tone="green" />
-          )}
-
-          {item.status !== "completed" && (
-            <WorkflowButton
-              label="Mark Complete"
-              disabled={busy}
-              strong
-              onClick={() => onUpdate(item, "mark_complete")}
-            />
-          )}
-
-          {item.status === "completed" && (
-            <Pill
-              text={
-                isFinancialRequest(item)
-                  ? "Financial Resolution Complete"
-                  : "Workflow Complete"
-              }
-              tone="green"
-            />
-          )}
+          {completed && <Pill text="Workflow Complete" tone="green" />}
         </div>
       </div>
     </div>
@@ -619,9 +589,6 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 }
 
 function Timeline({ item }) {
-  
- const isAccountingRequest = isFinancialRequest(item);
-  
   const steps = [
     {
       key: "intake",
@@ -635,48 +602,31 @@ function Timeline({ item }) {
       complete:
         item.status === "manager_review" ||
         item.status === "board_review" ||
-        item.status === "dispatched" ||
-        item.status === "completed" ||
-        item.dispatched,
+        item.status === "completed",
       date: item.manager_updated_at,
     },
     {
       key: "board",
-      label: isAccountingRequest ? "Accounting Review" : "Board Review",
-      complete: isAccountingRequest
-  ? Boolean(item.accounting_review_started_at) ||
-    item.status === "board_review" ||
-    item.status === "completed"
-  : item.status === "board_review" ||
-    item.status === "board_approved" ||
-    item.status === "dispatched" ||
-    item.status === "completed" ||
-    item.dispatched,
-      date: isAccountingRequest
-  ? item.accounting_review_started_at ||
-    item.manager_updated_at ||
-    item.board_sent_at ||
-    item.board_decision_at
-  : item.board_sent_at || item.board_decision_at,
+      label: "Board Review",
+      complete:
+        item.status === "board_review" ||
+        item.status === "completed",
+      date: item.board_sent_at || item.board_decision_at,
     },
     {
-  key: "dispatch",
-  label: "Notify Owner",
-  complete:
-    Boolean(item.owner_notified) ||
-    Boolean(item.owner_notified_at) ||
-    item.status === "completed",
-  date:
-    item.owner_notified_at,
-},
+      key: "owner",
+      label: "Notify Owner",
+      complete:
+        Boolean(item.owner_notified) ||
+        Boolean(item.owner_notified_at) ||
+        item.status === "completed",
+      date: item.owner_notified_at,
+    },
     {
       key: "complete",
-      label: isAccountingRequest
-  ? "Financial Resolution"
-  : "Completed",
-      complete:
-        item.status === "completed" || item.vendor_status === "completed",
-      date: item.completed_at || item.vendor_updated_at,
+      label: "Completed",
+      complete: item.status === "completed",
+      date: item.completed_at,
     },
   ];
 
@@ -723,14 +673,6 @@ function Timeline({ item }) {
           </div>
         ))}
       </div>
-
-      {item.owner_notified && (
-  <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-    {isAccountingRequest
-      ? "Owner financial update has been marked as sent."
-      : "Owner notification has been marked as sent."}
-  </div>
-)}
     </div>
   );
 }
@@ -769,7 +711,7 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Badge item={item} />
           <PriorityBadge priority={item.priority} />
-          <VendorBadge status={item.vendor_status} item={item} />
+          {/* Vendor workflow temporarily removed from BOS action controls */}
         </div>
 
         <div className="mt-6 rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6">
