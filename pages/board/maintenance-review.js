@@ -94,7 +94,7 @@ export default function MaintenanceReview() {
           </div>
 
           <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
-            <p className="text-sm text-violet-100">Reported Issues</p>
+            <p className="text-sm text-violet-100">Ava / Owner Reports</p>
             <p className="mt-3 text-4xl font-semibold text-violet-200">
               {maintenanceAiEvents.length}
             </p>
@@ -128,17 +128,20 @@ export default function MaintenanceReview() {
         className="block w-full text-left"
       >
         <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-          {item.id} · {item.module}
+          {item.id} · {formatCategory(item.category || item.request_type)}
         </p>
 
-        <h4 className="mt-2 font-semibold">{item.title}</h4>
+                <h4 className="mt-2 font-semibold">
+          {item.title || "Maintenance Request"}
+        </h4>
 
         <p className="mt-2 text-sm text-slate-400">
-          Next Action: {item.nextAction}
+          Current Status: {formatStatus(item.status)}
         </p>
 
         <p className="mt-2 text-xs text-slate-500">
-          Owner: {item.owner} · Due: {item.dueDate}
+                    Owner: {item.owner_name || "Resident"} · Unit:{" "}
+          {item.property_address || "Pending"}
         </p>
 
         <p className="mt-4 text-sm font-semibold text-amber-300">
@@ -154,7 +157,7 @@ export default function MaintenanceReview() {
 
           <div className="mt-4 grid gap-3 text-sm text-slate-300">
             <p><span className="text-slate-500">Request ID:</span> {item.id}</p>
-            <p><span className="text-slate-500">Category:</span> {item.module}</p>
+            <p><span className="text-slate-500">Category:</span> {formatCategory(item.category || item.request_type)}</p>
             <p><span className="text-slate-500">Title:</span> {item.title}</p>
             <p><span className="text-slate-500">Owner:</span> {item.owner}</p>
             <p><span className="text-slate-500">Due Date:</span> {item.dueDate}</p>
