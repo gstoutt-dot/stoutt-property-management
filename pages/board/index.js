@@ -47,7 +47,7 @@ const boardPages = [
   },
   {
     title: "Documents",
-    status: "Available",
+    status: "Live / Ready",
     href: "/board/documents",
     description:
       "Association documents, records, packets, and board reference materials.",
