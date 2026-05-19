@@ -33,7 +33,7 @@ const boardPages = [
   },
   {
     title: "Maintenance Review",
-    status: "Available",
+    status: "Live / Ready",
     href: "/board/maintenance-review",
     description:
       "Board visibility into major repairs, work orders, and maintenance escalations.",
