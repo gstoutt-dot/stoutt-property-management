@@ -186,7 +186,7 @@ export default function FinancialReview() {
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-emerald-300/20 p-5">
-              Delinquency Watchlist
+              Budget Variances
             </div>
 
             <div className="rounded-2xl border border-emerald-300/20 p-5">
