@@ -1,251 +1,358 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
 
-const tasks = [
-  {
-    title: "Finalize Pool Lighting Vendor Agreement",
-    priority: "High",
-    owner: "Board President",
-    due: "May 8, 2026",
-    status: "Ready for Vote",
-    source: "Approval Queue / Motion Center",
-    note: "Contract packet is complete and waiting for final board approval.",
-  },
-  {
-    title: "Review Updated Collection Policy Language",
-    priority: "High",
-    owner: "Treasurer",
-    due: "May 10, 2026",
-    status: "Board Review",
-    source: "Policy Library / Resolution Tracker",
-    note: "Attorney comments have been added and need board confirmation.",
-  },
-  {
-    title: "Prepare Annual Budget Adoption Packet",
-    priority: "Medium",
-    owner: "Manager / Treasurer",
-    due: "May 30, 2026",
-    status: "In Progress",
-    source: "Budget Planning / Annual Requirements",
-    note: "Draft budget, reserve schedule, and approval motion are being prepared.",
-  },
-  {
-    title: "Complete Insurance Renewal Comparison",
-    priority: "Medium",
-    owner: "Board President",
-    due: "June 12, 2026",
-    status: "Awaiting Review",
-    source: "Insurance Center / Compliance Calendar",
-    note: "Carrier options and coverage summary are ready for board review.",
-  },
-];
-
-const ownerLoad = [
-  ["Board President", "6"],
-  ["Treasurer", "5"],
-  ["Secretary", "3"],
-  ["Manager", "9"],
-  ["Committee Chairs", "4"],
-];
-
-const linkedAreas = [
-  "Action Items",
-  "Resolutions",
-  "Motions",
-  "Approvals",
-  "Compliance Calendar",
-  "Budget Planning",
-  "Legal Review",
-  "Vendor Performance",
-];
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function BoardTaskCommand() {
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadTasks();
+
+    const interval = setInterval(() => {
+      loadTasks();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadTasks() {
+    try {
+      setLoadingTasks(true);
+      setSystemMessage("");
+
+      const { data, error } = await supabase
+        .from("association_board_tasks")
+        .select("*")
+        .eq("association_id", DEFAULT_ASSOCIATION_ID)
+        .order("due_date", { ascending: true });
+
+      if (error) throw error;
+
+      setTasks(data || []);
+    } catch (error) {
+      console.error("Unable to load board tasks:", error);
+      setTasks([]);
+      setSystemMessage(error.message || "Unable to load board tasks.");
+    } finally {
+      setLoadingTasks(false);
+    }
+  }
+
+  async function markComplete(task) {
+    if (!task?.id) return;
+
+    const { error } = await supabase
+      .from("association_board_tasks")
+      .update({
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", task.id);
+
+    if (error) {
+      setSystemMessage("Unable to mark task complete.");
+      return;
+    }
+
+    await loadTasks();
+    setSystemMessage("Task marked complete.");
+  }
+
+  const openTasks = tasks.filter(
+    (task) => String(task.status || "").toLowerCase() !== "completed"
+  );
+
+  const highPriority = tasks.filter((task) =>
+    ["high", "urgent", "critical"].includes(
+      String(task.priority || "").toLowerCase()
+    )
+  );
+
+  const dueThisMonth = tasks.filter((task) => isDueThisMonth(task.due_date));
+
+  const overdue = tasks.filter(
+    (task) =>
+      task.due_date &&
+      new Date(task.due_date) < startOfToday() &&
+      String(task.status || "").toLowerCase() !== "completed"
+  );
+
+  const taskOwners = useMemo(() => {
+    const counts = {};
+
+    tasks.forEach((task) => {
+      const owner = task.assigned_to || "Unassigned";
+      counts[owner] = (counts[owner] || 0) + 1;
+    });
+
+    return Object.entries(counts);
+  }, [tasks]);
+
+  const statusTypes = useMemo(() => {
+    const types = tasks
+      .map((task) => String(task.status || "open").toLowerCase())
+      .filter(Boolean);
+
+    return ["all", ...Array.from(new Set(types))];
+  }, [tasks]);
+
+  const filteredTasks = useMemo(() => {
+    if (filter === "all") return tasks;
+
+    return tasks.filter(
+      (task) => String(task.status || "open").toLowerCase() === filter
+    );
+  }, [tasks, filter]);
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide">
-            Stoutt Board Portal
-          </Link>
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-yellow-300">
+                Board Task Command
+              </p>
 
-          <nav className="hidden gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Portal</Link>
-            <Link href="/board/violation-review">Violations</Link>
-            <Link href="/board/architectural-approvals">ARC Approvals</Link>
-            <Link href="/board/maintenance-review">Maintenance</Link>
-            <Link href="/board/financial-review">Financials</Link>
-          </nav>
+              <h1 className="mt-3 text-4xl font-bold">
+                Task Command Center
+              </h1>
+            </div>
+
+            <Link
+              href="/board"
+              className="text-lg font-medium text-white hover:text-yellow-300"
+            >
+              Board Dashboard
+            </Link>
+          </div>
         </div>
-      </header>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pt-12">
+        <div className="rounded-3xl border border-yellow-300/20 bg-gradient-to-r from-slate-900 to-slate-950 p-10">
+          <p className="text-sm uppercase tracking-[0.3em] text-yellow-300">
+            Board Execution Queue
+          </p>
+
+          <h2 className="mt-5 text-3xl font-bold leading-tight md:text-5xl">
+            Track board assignments, deadlines, responsibilities, and completion status.
+          </h2>
+
+          <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
+            Board members can monitor open tasks, assigned responsibilities,
+            due dates, governance follow-up, financial planning items, vendor
+            matters, and operational priorities from one live command center.
+          </p>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="mb-10 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8 shadow-2xl">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Operating Cockpit
-          </p>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Board Task Command Center
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            A master operating view for board tasks, approvals, resolutions,
-            motions, compliance deadlines, vendor follow-ups, legal items,
-            budget assignments, manager responsibilities, and priority
-            escalations.
-          </p>
+        <div className="grid gap-5 md:grid-cols-4">
+          <Metric label="Open Tasks" value={openTasks.length} />
+          <Metric label="High Priority" value={highPriority.length} />
+          <Metric label="Due This Month" value={dueThisMonth.length} />
+          <Metric label="Overdue" value={overdue.length} />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-amber-400/20 bg-amber-300/10 p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-amber-200">
-              Why This Matters
-            </h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Boards need one place to see what is actually open, who owns it,
-              when it is due, and which governance workflow it connects to. This
-              command center turns scattered responsibilities into a clear
-              operating system.
-            </p>
+        {systemMessage && (
+          <div className="mt-6 rounded-2xl border border-yellow-300/20 bg-yellow-300/10 px-5 py-4 text-sm font-semibold text-yellow-200">
+            {systemMessage}
           </div>
+        )}
+      </section>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <h2 className="text-xl font-semibold">Cross-Module Visibility</h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Tasks can flow in from resolutions, motions, approvals, compliance
-              deadlines, budget planning, legal review, maintenance, vendors,
-              inspections, and manager assignments.
-            </p>
-          </div>
+      <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-20 lg:grid-cols-3">
+        <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
+                Live Task Queue
+              </p>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <h2 className="text-xl font-semibold">Executive Control</h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              The board can review priorities, overdue items, ownership gaps,
-              and completion history without digging through emails, minutes,
-              packets, or separate spreadsheets.
-            </p>
-          </div>
-        </div>
+              <h2 className="mt-2 text-3xl font-bold">
+                Board Tasks
+              </h2>
+            </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-4">
-          {[
-            ["Open Tasks", "27"],
-            ["High Priority", "8"],
-            ["Due This Month", "13"],
-            ["Overdue", "3"],
-          ].map(([label, value]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl"
+            <select
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              className="rounded-full border border-yellow-300/20 bg-slate-950 px-5 py-3 text-sm font-semibold text-yellow-300 outline-none"
             >
-              <p className="text-sm text-slate-400">{label}</p>
-              <p className="mt-3 text-3xl font-bold text-amber-300">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        <section className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold">Priority Task Queue</h2>
-                <p className="mt-2 text-sm text-slate-400">
-                  Board tasks organized by owner, priority, due date, source,
-                  and current status.
-                </p>
-              </div>
-
-              <button className="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950">
-                Add Task
-              </button>
-            </div>
-
-            <div className="space-y-5">
-              {tasks.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-slate-900/80 p-5"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
-                        {item.priority} Priority · Due {item.due}
-                      </p>
-                      <h3 className="mt-2 text-xl font-semibold">
-                        {item.title}
-                      </h3>
-                    </div>
-
-                    <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
-                      {item.status}
-                    </span>
-                  </div>
-
-                  <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
-                    <p>
-                      <span className="text-slate-500">Owner:</span>{" "}
-                      {item.owner}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Source:</span>{" "}
-                      {item.source}
-                    </p>
-                    <p className="md:col-span-2">
-                      <span className="text-slate-500">Task Note:</span>{" "}
-                      {item.note}
-                    </p>
-                  </div>
-                </div>
+              {statusTypes.map((status) => (
+                <option key={status} value={status}>
+                  {status === "all" ? "All Tasks" : titleCase(status)}
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Owner Workload</h2>
+          <div className="space-y-5">
+            {loadingTasks ? (
+              <Empty message="Loading board tasks..." />
+            ) : filteredTasks.length === 0 ? (
+              <Empty message="No board tasks are currently available for this view." />
+            ) : (
+              filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onComplete={markComplete}
+                />
+              ))
+            )}
+          </div>
+        </div>
 
-              <div className="mt-5 space-y-3">
-                {ownerLoad.map(([owner, count]) => (
+        <aside className="space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+            <h2 className="text-xl font-semibold">
+              Assignment Load
+            </h2>
+
+            <div className="mt-5 space-y-3">
+              {taskOwners.length === 0 ? (
+                <Empty message="No assignments available." />
+              ) : (
+                taskOwners.map(([owner, count]) => (
                   <div
                     key={owner}
                     className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm"
                   >
                     <span className="text-slate-300">{owner}</span>
-                    <span className="font-semibold text-amber-300">
+                    <span className="font-semibold text-yellow-300">
                       {count}
                     </span>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </div>
+          </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Linked Workflows</h2>
-              <div className="mt-5 grid gap-3">
-                {linkedAreas.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-slate-300"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
-        </section>
+          <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-emerald-100">
+              Task Operations
+            </h2>
 
-        <section className="mt-10 rounded-3xl border border-amber-400/20 bg-gradient-to-r from-amber-300/10 to-slate-900 p-8 shadow-2xl">
-          <h2 className="text-2xl font-semibold text-amber-200">
-            One Place for Board Execution
-          </h2>
-          <p className="mt-4 max-w-4xl leading-8 text-slate-300">
-            This is where the Board Portal starts to operate like a true command
-            system. Every task can be connected to the motion, resolution,
-            document, approval, deadline, vendor, legal matter, budget item, or
-            manager assignment that created it — giving the board a clear path
-            from decision to completion.
-          </p>
-        </section>
+            <p className="mt-4 leading-7 text-slate-300">
+              This page is the board’s live execution layer for assignments,
+              governance follow-up, deadlines, financial planning, vendor
+              matters, and operational accountability.
+            </p>
+          </div>
+        </aside>
       </section>
     </main>
   );
+}
+
+function TaskCard({ task, onComplete }) {
+  const completed = String(task.status || "").toLowerCase() === "completed";
+
+  return (
+    <article className="rounded-2xl border border-white/10 bg-slate-900/80 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">
+            {titleCase(task.priority || "normal")} Priority · Due{" "}
+            {formatDate(task.due_date)}
+          </p>
+
+          <h3 className="mt-2 text-xl font-semibold">
+            {task.title || "Board Task"}
+          </h3>
+        </div>
+
+        <span className="rounded-full border border-yellow-300/30 px-4 py-1 text-sm text-yellow-200">
+          {titleCase(task.status || "open")}
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
+        <p>
+          <span className="text-slate-500">Assigned To:</span>{" "}
+          {task.assigned_to || "Unassigned"}
+        </p>
+
+        <p>
+          <span className="text-slate-500">Source:</span>{" "}
+          {task.task_source || "Board Operations"}
+        </p>
+
+        <p className="md:col-span-2">
+          <span className="text-slate-500">Task Note:</span>{" "}
+          {task.task_note || "No task note available."}
+        </p>
+      </div>
+
+      {!completed && (
+        <button
+          onClick={() => onComplete(task)}
+          className="mt-5 rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10"
+        >
+          Mark Complete
+        </button>
+      )}
+    </article>
+  );
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+      <div className="text-3xl font-bold text-yellow-300">{value}</div>
+      <div className="mt-2 text-sm text-slate-300">{label}</div>
+    </div>
+  );
+}
+
+function Empty({ message }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
+      {message}
+    </div>
+  );
+}
+
+function formatDate(value) {
+  if (!value) return "N/A";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function startOfToday() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function isDueThisMonth(value) {
+  if (!value) return false;
+
+  const date = new Date(value);
+  const now = new Date();
+
+  return (
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  );
+}
+
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
