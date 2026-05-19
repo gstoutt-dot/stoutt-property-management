@@ -332,47 +332,85 @@ export default function FinancialReview() {
               {ownerBalances.length === 0 ? (
                 <Empty message="No synced owner balance records are currently available." />
               ) : (
-                ownerBalances.slice(0, 10).map((owner) => (
-                  <div
-                    key={owner.id || owner.owner_user_id || owner.unit_number}
-                    className="grid gap-3 rounded-2xl border border-white/10 bg-slate-900/80 p-4 text-sm md:grid-cols-5"
-                  >
-                    <div>
-                      <p className="text-slate-500">Owner</p>
-                      <p className="mt-1 font-semibold text-white">
-                        {owner.owner_name || "Owner"}
-                      </p>
-                    </div>
+                ownerBalances.slice(0, 10).map((owner, index) => {
+  const ownerName =
+    owner.owner_name ||
+    owner.ownerName ||
+    owner.customer_name ||
+    "Owner";
 
-                    <div>
-                      <p className="text-slate-500">Unit</p>
-                      <p className="mt-1 text-slate-200">
-                        {owner.unit_number || "Pending"}
-                      </p>
-                    </div>
+  const unitNumber =
+    owner.unit_number ||
+    owner.unitNumber ||
+    owner.unit ||
+    "Pending";
 
-                    <div>
-                      <p className="text-slate-500">Balance</p>
-                      <p className="mt-1 font-semibold text-emerald-100">
-                        {formatCurrency(owner.current_balance)}
-                      </p>
-                    </div>
+  const balance =
+    owner.current_balance ??
+    owner.currentBalance ??
+    owner.balance ??
+    0;
 
-                    <div>
-                      <p className="text-slate-500">Payment Status</p>
-                      <p className="mt-1 text-slate-200">
-                        {formatStatus(owner.payment_status)}
-                      </p>
-                    </div>
+  const paymentStatus =
+    owner.payment_status ||
+    owner.paymentStatus ||
+    "unknown";
 
-                    <div>
-                      <p className="text-slate-500">Account Health</p>
-                      <p className="mt-1 text-slate-200">
-                        {formatStatus(owner.account_health || owner.delinquency_level)}
-                      </p>
-                    </div>
-                  </div>
-                ))
+  const accountHealth =
+    owner.account_health ||
+    owner.accountHealth ||
+    owner.delinquency_level ||
+    owner.delinquencyLevel ||
+    "normal";
+
+  return (
+    <div
+      key={
+        owner.id ||
+        owner.owner_user_id ||
+        owner.ownerUserId ||
+        unitNumber ||
+        index
+      }
+      className="grid gap-3 rounded-2xl border border-white/10 bg-slate-900/80 p-4 text-sm md:grid-cols-5"
+    >
+      <div>
+        <p className="text-slate-500">Owner</p>
+        <p className="mt-1 font-semibold text-white">
+          {ownerName}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-slate-500">Unit</p>
+        <p className="mt-1 text-slate-200">
+          {unitNumber}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-slate-500">Balance</p>
+        <p className="mt-1 font-semibold text-emerald-100">
+          {formatCurrency(balance)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-slate-500">Payment Status</p>
+        <p className="mt-1 text-slate-200">
+          {formatStatus(paymentStatus)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-slate-500">Account Health</p>
+        <p className="mt-1 text-slate-200">
+          {formatStatus(accountHealth)}
+        </p>
+      </div>
+    </div>
+  );
+})
               )}
             </div>
           </div>
