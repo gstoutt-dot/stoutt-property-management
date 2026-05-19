@@ -1,11 +1,51 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { bosSignals, aiEvents } from "../../lib/bosData";
+import { supabase } from "../../lib/supabaseClient";
+
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function MaintenanceReview() {
   const [selectedItem, setSelectedItem] = useState(null);
-  const maintenanceSignals = bosSignals.filter(
-    (item) => item.module === "Maintenance" || item.type === "Operations"
+  const [actions, setActions] = useState([]);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadMaintenanceActions();
+
+    const interval = setInterval(() => {
+      loadMaintenanceActions();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadMaintenanceActions() {
+    const { data, error } = await supabase
+      .from("bos_actions")
+      .select("*")
+      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .or("request_type.ilike.%maintenance%,category.ilike.%maintenance%,title.ilike.%maintenance%,description.ilike.%maintenance%,request_type.ilike.%repair%,category.ilike.%repair%,title.ilike.%repair%,description.ilike.%repair%,request_type.ilike.%plumbing%,request_type.ilike.%electrical%,request_type.ilike.%roof%,request_type.ilike.%hvac%")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Unable to load maintenance review items:", error);
+      setSystemMessage("Unable to load maintenance review items.");
+      return;
+    }
+
+    setActions(data || []);
+  }
+
+  const maintenanceSignals = useMemo(() => actions, [actions]);
+
+  const maintenanceAiEvents = useMemo(
+    () =>
+      actions.filter((item) =>
+        String(item.source || item.description || "")
+          .toLowerCase()
+          .includes("ava")
+      ),
+    [actions]
   );
 
   const maintenanceAiEvents = aiEvents.filter(
