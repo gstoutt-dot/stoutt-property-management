@@ -115,28 +115,13 @@ export default function BoardCalendar() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-8">
-          <div className="mb-10 flex items-center justify-between">
-            <Link href="/board" className="text-xl font-semibold tracking-wide">
-              Stoutt Property Management
+                    <div className="mb-10 flex items-center justify-between">
+            <Link
+              href="/board"
+              className="text-xl font-semibold tracking-wide text-yellow-300 hover:text-yellow-200"
+            >
+              Board Dashboard
             </Link>
-
-            <nav className="hidden md:flex items-center gap-6 text-sm text-slate-300">
-              <Link href="/board" className="hover:text-white">
-                Board Dashboard
-              </Link>
-
-              <Link href="/board/documents" className="hover:text-white">
-                Documents
-              </Link>
-
-              <Link href="/board/vendors" className="hover:text-white">
-                Vendors
-              </Link>
-
-              <Link href="/board/financial-review" className="hover:text-white">
-                Financials
-              </Link>
-            </nav>
           </div>
 
           <div className="max-w-3xl py-16">
