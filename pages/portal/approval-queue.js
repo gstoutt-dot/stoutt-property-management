@@ -63,15 +63,7 @@ export default function BoardApprovalQueue() {
         board_decision_at: now,
         internal_note: "Board returned request to manager review.",
       },
-      dispatch_vendor: {
-        status: "dispatched",
-        board_decision: "approved_for_dispatch",
-        board_decision_at: now,
-        dispatched: true,
-        dispatched_at: now,
-        vendor_status: "pending",
-        internal_note: "Board approved and vendor dispatch was initiated.",
-      },
+    // Vendor dispatch temporarily removed from board workflow
     };
 
     const fullPayload = decisionMap[decision];
@@ -359,12 +351,7 @@ function ApprovalCard({ item, onDecision, updatingId }) {
           onClick={() => onDecision(item, "approve")}
         />
 
-        <DecisionButton
-          label="Dispatch Vendor"
-          disabled={busy}
-          strong
-          onClick={() => onDecision(item, "dispatch_vendor")}
-        />
+        {/* Vendor dispatch temporarily removed from board workflow */}
 
         <DecisionButton
           label="Request Clarification"
@@ -459,9 +446,7 @@ function buildFallbackPayload(decision) {
     return { status: "manager_review" };
   }
 
-  if (decision === "dispatch_vendor") {
-    return { status: "dispatched", dispatched: true };
-  }
+    // Vendor dispatch temporarily removed
 
   return { status: "board_review" };
 }
@@ -470,7 +455,7 @@ function getBoardNotificationEventType(decision) {
     approve: "board_approved",
     request_clarification: "manager_review",
     return_to_manager: "manager_review",
-    dispatch_vendor: "vendor_dispatched",
+    // Vendor dispatch temporarily removed
   };
 
   return map[decision] || "board_review";
@@ -480,7 +465,7 @@ function getDecisionMessage(decision) {
     approve: "Board approved the request.",
     request_clarification: "Board requested clarification.",
     return_to_manager: "Request returned to manager review.",
-    dispatch_vendor: "Board approved and vendor dispatch was initiated.",
+    // Vendor dispatch temporarily removed
   };
 
   return messages[decision] || "Board queue updated.";
