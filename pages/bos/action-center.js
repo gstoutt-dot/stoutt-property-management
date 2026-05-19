@@ -519,33 +519,38 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
+  const completed = isCompleted(item);
+  const workflowType = getWorkflowType(item);
+  const labels = getWorkflowButtonLabels(item);
+  const needsBoard = requestNeedsBoardReview(item);
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-5">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
           </p>
 
           <p className="mt-2 text-sm text-white/50">
-            {isFinancialRequest(item)
-              ? "Move this accounting request through financial review and owner coordination."
-              : "Move this request through the SPM/BOS operating chain."}
+            {labels.description}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <WorkflowButton
-            label={isFinancialRequest(item) ? "Accounting Verified" : "Manager Verified"}
-            disabled={busy}
-            onClick={() => onUpdate(item, "manager_verified")}
-          />
+          {!completed && item.status !== "manager_review" && (
+            <WorkflowButton
+              label={labels.verify}
+              disabled={busy}
+              onClick={() => onUpdate(item, "manager_verified")}
+            />
+          )}
 
           {isFinancialRequest(item) &&
-            !item.accounting_review_started_at && (
+            !item.accounting_review_started_at &&
+            !completed && (
               <WorkflowButton
-                label="Accounting Review"
+                label="Start Accounting Review"
                 disabled={busy}
                 onClick={() => onUpdate(item, "accounting_review")}
               />
@@ -553,48 +558,52 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
 
           {isFinancialRequest(item) &&
             item.accounting_review_started_at &&
-            item.status !== "completed" && (
+            !completed && (
               <Pill text="Accounting Review Active" tone="gold" />
             )}
 
-          {!isFinancialRequest(item) && (
+          {!isFinancialRequest(item) &&
+            needsBoard &&
+            item.status !== "board_review" &&
+            !completed && (
+              <WorkflowButton
+                label={labels.board}
+                disabled={busy}
+                onClick={() => onUpdate(item, "send_to_board")}
+              />
+            )}
+
+          {!completed && item.status !== "needs_clarification" && (
             <WorkflowButton
-              label="Send to Board"
+              label="Request Clarification"
               disabled={busy}
-              onClick={() => onUpdate(item, "send_to_board")}
+              onClick={() => onUpdate(item, "request_clarification")}
             />
           )}
 
-          {!item.owner_notified && (
+          {!item.owner_notified && !completed && (
             <WorkflowButton
-              label="Notify Owner"
+              label={labels.notify}
               disabled={busy}
               onClick={() => onUpdate(item, "notify_owner")}
             />
           )}
 
-          {item.owner_notified && item.status !== "completed" && (
+          {item.owner_notified && !completed && (
             <Pill text="Owner Updated" tone="green" />
           )}
 
-          {item.status !== "completed" && (
+          {!completed && (
             <WorkflowButton
-              label="Mark Complete"
+              label={labels.complete}
               disabled={busy}
               strong
               onClick={() => onUpdate(item, "mark_complete")}
             />
           )}
 
-          {item.status === "completed" && (
-            <Pill
-              text={
-                isFinancialRequest(item)
-                  ? "Financial Resolution Complete"
-                  : "Workflow Complete"
-              }
-              tone="green"
-            />
+          {completed && (
+            <Pill text={labels.completed} tone="green" />
           )}
         </div>
       </div>
