@@ -264,26 +264,12 @@ export default function BOSActionCenter() {
             </p>
           </div>
 
-          <div className="hidden md:flex gap-3">
+                    <div className="hidden md:flex gap-3">
             <a
-              href="/portal/manager"
+              href="/board"
               className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/10 transition"
             >
-              Manager
-            </a>
-
-            <a
-              href="/portal/board"
-              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 hover:border-yellow-400/30 hover:text-yellow-300 transition"
-            >
-              Board
-            </a>
-
-            <a
-              href="/bos/dispatch-feed"
-              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-white/70 hover:border-yellow-400/30 hover:text-yellow-300 transition"
-            >
-              Dispatch
+              Dashboard
             </a>
           </div>
         </div>
