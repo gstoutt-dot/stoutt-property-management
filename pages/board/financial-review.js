@@ -40,10 +40,9 @@ export default function FinancialReview() {
       setActions(financialActions || []);
     }
 
-    const { data: balances, error: balancesError } = await supabase
+        const { data: balances, error: balancesError } = await supabase
       .from("owner_account_balances")
-      .select("*")
-      .eq("association_id", DEFAULT_ASSOCIATION_ID);
+      .select("*");
 
     if (balancesError) {
       console.warn("Unable to load owner balance records:", balancesError);
