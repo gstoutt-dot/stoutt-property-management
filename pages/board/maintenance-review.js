@@ -155,15 +155,43 @@ export default function MaintenanceReview() {
             Full Maintenance Details
           </h5>
 
-          <div className="mt-4 grid gap-3 text-sm text-slate-300">
-            <p><span className="text-slate-500">Request ID:</span> {item.id}</p>
-            <p><span className="text-slate-500">Category:</span> {formatCategory(item.category || item.request_type)}</p>
-            <p><span className="text-slate-500">Title:</span> {item.title}</p>
-            <p><span className="text-slate-500">Owner:</span> {item.owner}</p>
-            <p><span className="text-slate-500">Due Date:</span> {item.dueDate}</p>
-            <p><span className="text-slate-500">Status:</span> {item.status || "Pending Review"}</p>
-            <p><span className="text-slate-500">Next Action:</span> {item.nextAction}</p>
-          </div>
+         <div className="mt-4 grid gap-3 text-sm text-slate-300">
+  <p>
+    <span className="text-slate-500">Request ID:</span> {item.id}
+  </p>
+
+  <p>
+    <span className="text-slate-500">Category:</span>{" "}
+    {formatCategory(item.category || item.request_type)}
+  </p>
+
+  <p>
+    <span className="text-slate-500">Title:</span>{" "}
+    {item.title || "Maintenance Request"}
+  </p>
+
+  <p>
+    <span className="text-slate-500">Owner:</span>{" "}
+    {item.owner_name || "Resident"}
+  </p>
+
+  <p>
+    <span className="text-slate-500">Unit:</span>{" "}
+    {item.property_address || "Pending"}
+  </p>
+
+  <p>
+    <span className="text-slate-500">Status:</span>{" "}
+    {formatStatus(item.status)}
+  </p>
+
+  <p>
+    <span className="text-slate-500">Created:</span>{" "}
+    {item.created_at
+      ? new Date(item.created_at).toLocaleString()
+      : "N/A"}
+  </p>
+</div>
         </div>
       )}
     </div>
@@ -182,27 +210,31 @@ export default function MaintenanceReview() {
 </p>
 
             <div className="mt-6 space-y-4">
-              {maintenanceAiEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5"
-                >
-                  <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
-                    {event.id} · {event.type}
-                  </p>
+  {maintenanceAiEvents.map((event) => (
+    <div
+      key={event.id}
+      className="rounded-2xl border border-violet-300/20 bg-slate-950/60 p-5"
+    >
+      <p className="text-xs uppercase tracking-[0.2em] text-violet-200">
+        {event.id} ·{" "}
+        {formatCategory(event.category || event.request_type)}
+      </p>
 
-                  <h4 className="mt-2 font-semibold">{event.event}</h4>
+      <h4 className="mt-2 font-semibold">
+        {event.title || "Maintenance Activity"}
+      </h4>
 
-                  <p className="mt-2 text-sm text-slate-300">
-                    Source: {event.source}
-                  </p>
+      <p className="mt-2 text-sm text-slate-300">
+        Source: {event.source || "Owner / Ava Intake"}
+      </p>
 
-                  <p className="mt-2 text-xs text-slate-400">
-                    Status: {event.status} · Priority: {event.priority}
-                  </p>
-                </div>
-              ))}
-            </div>
+      <p className="mt-2 text-xs text-slate-400">
+        Status: {formatStatus(event.status)} · Priority:{" "}
+        {titleCase(event.priority || "medium")}
+      </p>
+    </div>
+  ))}
+</div>
           </div>
         </div>
 
@@ -219,4 +251,20 @@ export default function MaintenanceReview() {
       </section>
     </main>
   );
+}
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatCategory(category) {
+  return titleCase(
+    String(category || "General").replace(/_/g, " ")
+  );
+}
+
+function formatStatus(status) {
+  return titleCase(status || "Open");
 }
