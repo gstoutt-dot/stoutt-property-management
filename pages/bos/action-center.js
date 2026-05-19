@@ -608,17 +608,19 @@ function Timeline({ item }) {
     {
       key: "manager",
       label: "Manager Verified",
-      complete:
+        complete:
         item.status === "manager_review" ||
         item.status === "board_review" ||
+        item.status === "owner_notified" ||
         item.status === "completed",
       date: item.manager_updated_at,
     },
     {
       key: "board",
       label: "Board Review",
-      complete:
+        complete:
         item.status === "board_review" ||
+        item.status === "owner_notified" ||
         item.status === "completed",
       date: item.board_sent_at || item.board_decision_at,
     },
