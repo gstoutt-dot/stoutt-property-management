@@ -528,18 +528,44 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
     workflowType === "amenity" ||
     workflowType === "violation";
 
+  const managerDone =
+    item.status === "manager_review" ||
+    item.status === "board_review" ||
+    item.status === "board_approved" ||
+    item.status === "dispatched" ||
+    completed ||
+    item.dispatched;
+
+  const boardDone =
+    item.status === "board_review" ||
+    item.status === "board_approved" ||
+    item.status === "dispatched" ||
+    completed ||
+    item.dispatched;
+
+  const ownerDone =
+    Boolean(item.owner_notified) ||
+    Boolean(item.owner_notified_at) ||
+    completed;
+
+  const accountingDone =
+    Boolean(item.accounting_review_started_at) ||
+    completed;
+
   const labels = financial
     ? {
         verify: "Verify Accounting Intake",
+        review: "Start Accounting Review",
         notify: "Notify Owner",
         complete: "Complete Financial Resolution",
         completed: "Financial Resolution Complete",
         description:
-          "Move this financial request through accounting review, owner coordination, and financial resolution.",
+          "Move this financial request through accounting review, owner coordination, and final resolution.",
       }
     : workflowType === "architectural"
     ? {
         verify: "Verify ARC Request",
+        board: "Send to Board",
         notify: "Notify Owner",
         complete: "Complete ARC Review",
         completed: "ARC Review Complete",
@@ -549,6 +575,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
     : workflowType === "amenity"
     ? {
         verify: "Verify Amenity Request",
+        board: "Send to Board",
         notify: "Notify Owner",
         complete: "Complete Amenity Request",
         completed: "Amenity Request Complete",
@@ -558,6 +585,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
     : workflowType === "violation"
     ? {
         verify: "Verify Violation Intake",
+        board: "Send to Board",
         notify: "Notify Owner",
         complete: "Complete Violation Review",
         completed: "Violation Review Complete",
@@ -579,7 +607,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
         complete: "Complete Work Order",
         completed: "Work Order Complete",
         description:
-          "Move this work order through manager review, owner update, and completion. Vendor controls are hidden for launch.",
+          "Move this work order through manager review, owner update, and completion.",
       };
 
   return (
@@ -596,7 +624,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {!completed && (
+          {!completed && !managerDone && (
             <WorkflowButton
               label={labels.verify}
               disabled={busy}
@@ -604,17 +632,17 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {financial && !completed && (
+          {financial && !completed && managerDone && !accountingDone && (
             <WorkflowButton
-              label="Start Accounting Review"
+              label={labels.review}
               disabled={busy}
               onClick={() => onUpdate(item, "accounting_review")}
             />
           )}
 
-          {!financial && needsBoard && !completed && (
+          {!financial && needsBoard && !completed && managerDone && !boardDone && (
             <WorkflowButton
-              label="Send to Board"
+              label={labels.board}
               disabled={busy}
               onClick={() => onUpdate(item, "send_to_board")}
             />
@@ -628,7 +656,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {!completed && (
+          {!completed && managerDone && (!needsBoard || boardDone) && !ownerDone && (
             <WorkflowButton
               label={labels.notify}
               disabled={busy}
@@ -636,7 +664,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
             />
           )}
 
-          {!completed && (
+          {!completed && managerDone && ownerDone && (
             <WorkflowButton
               label={labels.complete}
               disabled={busy}
@@ -646,10 +674,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
           )}
 
           {completed && (
-            <Pill
-              text={labels.completed}
-              tone="green"
-            />
+            <Pill text={labels.completed} tone="green" />
           )}
         </div>
       </div>
