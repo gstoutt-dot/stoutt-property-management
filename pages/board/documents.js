@@ -1,51 +1,63 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function Documents() {
   const [documents, setDocuments] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
     loadDocuments();
-
-    const interval = setInterval(() => {
-      loadDocuments();
-    }, 10000);
-
-    return () => clearInterval(interval);
   }, []);
 
   async function loadDocuments() {
-    setSystemMessage("");
+    try {
+      setLoadingDocuments(true);
+      setSystemMessage("");
 
-    const possibleTables = [
-      "association_documents",
-      "documents",
-      "association_document_records",
-      "board_documents",
-    ];
+      const params = new URLSearchParams({
+        associationId: DEFAULT_ASSOCIATION_ID,
+        limit: "100",
+      });
 
-    for (const table of possibleTables) {
-      const { data, error } = await supabase
-        .from(table)
-        .select("*")
-        .eq("association_id", DEFAULT_ASSOCIATION_ID)
-        .order("created_at", { ascending: false });
+      const response = await fetch(`/api/homeowner/documents/list?${params}`);
+      const data = await response.json();
 
-      if (!error && Array.isArray(data)) {
-        setDocuments(data);
-        return;
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Unable to load association documents.");
       }
-    }
 
-    setDocuments([]);
-    setSystemMessage(
-      "No association document records were found in the connected document tables."
-    );
+      setDocuments(data.documents || []);
+    } catch (error) {
+      console.error("Unable to load board documents:", error);
+      setDocuments([]);
+      setSystemMessage(error.message || "Unable to load association documents.");
+    } finally {
+      setLoadingDocuments(false);
+    }
+  }
+
+  async function openDocument(documentId) {
+    try {
+      const response = await fetch(
+        `/api/homeowner/documents/signed-url?documentId=${documentId}`
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success || !result?.signedUrl) {
+        throw new Error(result?.error || "Unable to open document.");
+      }
+
+      window.open(result.signedUrl, "_blank");
+    } catch (error) {
+      console.error("Open board document failed:", error);
+      alert(error.message || "Unable to open document.");
+    }
   }
 
   const categories = useMemo(() => {
@@ -57,25 +69,41 @@ export default function Documents() {
   }, [documents]);
 
   const filteredDocuments = useMemo(() => {
-    if (selectedCategory === "all") {
-      return documents;
-    }
+    const searchValue = String(searchTerm || "").toLowerCase().trim();
 
-    return documents.filter(
-      (doc) => getDocumentCategory(doc) === selectedCategory
-    );
-  }, [documents, selectedCategory]);
+    return documents.filter((doc) => {
+      const matchesCategory =
+        selectedCategory === "all" ||
+        getDocumentCategory(doc) === selectedCategory;
+
+      const matchesSearch =
+        !searchValue ||
+        [
+          doc.title,
+          doc.description,
+          doc.document_type,
+          doc.category,
+          doc.status,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(searchValue);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [documents, selectedCategory, searchTerm]);
 
   const governingDocs = documents.filter((doc) =>
-    ["declaration", "covenants", "bylaws", "rules", "regulations"].some((term) =>
-      `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`
-        .toLowerCase()
-        .includes(term)
+    ["governing", "declaration", "covenants", "bylaws", "rules", "regulations"].some(
+      (term) =>
+        `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`
+          .toLowerCase()
+          .includes(term)
     )
   );
 
   const financialDocs = documents.filter((doc) =>
-    ["budget", "financial", "reserve", "audit", "insurance"].some((term) =>
+    ["financial", "budget", "reserve", "audit", "insurance"].some((term) =>
       `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`
         .toLowerCase()
         .includes(term)
@@ -113,9 +141,9 @@ export default function Documents() {
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
-            This library provides board members with direct access to the
-            association documents stored for their community. As new associations
-            are onboarded, their uploaded records will appear here automatically.
+            Board members can access the association records stored for their
+            community. As new associations are onboarded, their uploaded
+            documents will appear here automatically.
           </p>
         </div>
 
@@ -136,11 +164,11 @@ export default function Documents() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-xl font-semibold">
-                Document Library
+                Association Document Library
               </h3>
 
               <p className="mt-2 text-sm text-slate-400">
-                Board-accessible association documents retrieved from Supabase.
+                Board-accessible documents retrieved from the association document library.
               </p>
             </div>
 
@@ -157,12 +185,27 @@ export default function Documents() {
             </select>
           </div>
 
+          <div className="mt-5 rounded-3xl border border-white/10 bg-slate-950/70 p-4">
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-amber-400"
+              placeholder="Search documents, policies, financial records, forms, or meeting records..."
+            />
+          </div>
+
           <div className="mt-6 space-y-4">
-            {filteredDocuments.length === 0 ? (
+            {loadingDocuments ? (
+              <Empty message="Loading association documents..." />
+            ) : filteredDocuments.length === 0 ? (
               <Empty message="No association documents are currently available in this category." />
             ) : (
               filteredDocuments.map((doc, index) => (
-                <DocumentCard key={doc.id || index} document={doc} />
+                <DocumentCard
+                  key={doc.id || index}
+                  document={doc}
+                  onOpen={openDocument}
+                />
               ))
             )}
           </div>
@@ -185,7 +228,7 @@ export default function Documents() {
   );
 }
 
-function DocumentCard({ document }) {
+function DocumentCard({ document, onOpen }) {
   const title = getDocumentTitle(document);
   const category = getDocumentCategory(document);
   const description =
@@ -193,14 +236,6 @@ function DocumentCard({ document }) {
     document.summary ||
     document.notes ||
     "Association document available for board review.";
-
-  const url =
-    document.public_url ||
-    document.file_url ||
-    document.document_url ||
-    document.url ||
-    document.signed_url ||
-    "";
 
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-900 p-5">
@@ -219,31 +254,39 @@ function DocumentCard({ document }) {
           </p>
 
           <div className="mt-4 grid gap-2 text-xs text-slate-500 md:grid-cols-3">
-            <p>Type: {titleCase(document.document_type || document.type || category)}</p>
-            <p>Status: {titleCase(document.status || "available")}</p>
             <p>
-              Uploaded:{" "}
-              {document.created_at
+              Type:{" "}
+              {titleCase(document.document_type || document.type || category)}
+            </p>
+
+            <p>Status: {titleCase(document.status || "available")}</p>
+
+            <p>
+              Posted:{" "}
+              {document.posted_at
+                ? new Date(document.posted_at).toLocaleDateString()
+                : document.created_at
                 ? new Date(document.created_at).toLocaleDateString()
                 : "N/A"}
             </p>
           </div>
         </div>
 
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => onOpen(document.id)}
             className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
           >
             Open Document
-          </a>
-        ) : (
-          <span className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-400">
-            Stored Record
-          </span>
-        )}
+          </button>
+
+          <button
+            onClick={() => onOpen(document.id)}
+            className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-300 hover:border-amber-400/30 hover:text-amber-300"
+          >
+            Download
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -282,6 +325,7 @@ function getDocumentCategory(document) {
     document.category ||
       document.document_category ||
       document.folder ||
+      document.document_type ||
       document.type ||
       "general"
   ).toLowerCase();
