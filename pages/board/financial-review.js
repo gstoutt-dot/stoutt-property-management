@@ -40,15 +40,25 @@ export default function FinancialReview() {
       setActions(financialActions || []);
     }
 
-        const { data: balances, error: balancesError } = await supabase
-      .from("owner_account_balances")
-      .select("*");
+            try {
+      const balanceResponse = await fetch(
+        `/api/accounting/quickbooks/financial-summary?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
 
-    if (balancesError) {
-      console.warn("Unable to load owner balance records:", balancesError);
+      const balanceJson = await balanceResponse.json();
+
+      const balanceRows =
+        balanceJson?.owner_balances ||
+        balanceJson?.ownerBalances ||
+        balanceJson?.balances ||
+        balanceJson?.data?.owner_balances ||
+        balanceJson?.data?.ownerBalances ||
+        [];
+
+      setOwnerBalances(Array.isArray(balanceRows) ? balanceRows : []);
+    } catch (balanceError) {
+      console.warn("Unable to load owner balance records:", balanceError);
       setOwnerBalances([]);
-    } else {
-      setOwnerBalances(balances || []);
     }
   }
 
