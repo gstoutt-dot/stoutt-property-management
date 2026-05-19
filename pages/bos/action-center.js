@@ -91,9 +91,8 @@ export default function BOSActionCenter() {
         vendor_status: "completed",
         internal_note: "Request marked complete.",
       },
-                  notify_owner: {
-        owner_notified: true,
-        owner_notified_at: now,
+                        notify_owner: {
+        status: "owner_notified",
         internal_note: "Owner notification marked as sent.",
       },
     };
@@ -627,10 +626,10 @@ function Timeline({ item }) {
       key: "owner",
       label: "Notify Owner",
       complete:
-        Boolean(item.owner_notified) ||
-        Boolean(item.owner_notified_at) ||
+              complete:
+        item.status === "owner_notified" ||
         item.status === "completed",
-      date: item.owner_notified_at,
+      date: item.updated_at || item.owner_notified_at,
     },
     {
       key: "complete",
@@ -1134,11 +1133,8 @@ if (workflowAction === "accounting_review") {
     return { status: "completed" };
   }
 
-     if (workflowAction === "notify_owner") {
-    return {
-      owner_notified: true,
-      owner_notified_at: new Date().toISOString(),
-    };
+       if (workflowAction === "notify_owner") {
+    return { status: "owner_notified" };
   }
 
   return { status: "open" };
