@@ -44,9 +44,10 @@ export default function BOSActionCenter() {
     const now = new Date().toISOString();
 
     const workflowMap = {
-            manager_verified: {
+      manager_verified: {
         status: "manager_review",
         manager_updated_at: now,
+        accounting_review_started_at: now,
         internal_note: "Manager verified intake and moved request into review.",
       },
       accounting_review: {
@@ -518,176 +519,83 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 
 function WorkflowControls({ item, onUpdate, updatingId }) {
   const busy = updatingId === item.id;
-  const workflowType = getWorkflowType(item);
-  const completed = isCompleted(item);
-  const managerComplete =
-    item.status === "manager_review" ||
-    item.status === "board_review" ||
-    item.status === "board_approved" ||
-    item.status === "completed";
-
-  const boardRequired =
-    workflowType === "architectural" ||
-    workflowType === "amenity" ||
-    workflowType === "violation";
-
-  const boardComplete =
-    item.status === "board_review" ||
-    item.status === "board_approved" ||
-    item.status === "completed";
-
-  const ownerComplete =
-    Boolean(item.owner_notified) ||
-    Boolean(item.owner_notified_at) ||
-    item.status === "completed";
-
-  const accountingComplete =
-    Boolean(item.accounting_review_started_at) ||
-    item.status === "completed";
-
-  const labels =
-    workflowType === "accounting"
-      ? {
-          description:
-            "Move this financial request through manager review, accounting review, owner update, and financial resolution.",
-          verify: "Verify Accounting Request",
-          review: "Start Accounting Review",
-          notify: "Notify Owner",
-          complete: "Complete Financial Resolution",
-          completed: "Financial Resolution Complete",
-        }
-      : workflowType === "architectural"
-      ? {
-          description:
-            "Move this architectural request through manager review, board review, owner update, and completion.",
-          verify: "Verify ARC Request",
-          board: "Send to Board",
-          notify: "Notify Owner",
-          complete: "Complete ARC Review",
-          completed: "ARC Review Complete",
-        }
-      : workflowType === "amenity"
-      ? {
-          description:
-            "Move this amenity request through manager review, approval review, owner update, and completion.",
-          verify: "Verify Amenity Request",
-          board: "Send to Board",
-          notify: "Notify Owner",
-          complete: "Complete Amenity Request",
-          completed: "Amenity Request Complete",
-        }
-      : workflowType === "violation"
-      ? {
-          description:
-            "Move this violation request through manager review, board visibility, owner update, and completion.",
-          verify: "Verify Violation Request",
-          board: "Send to Board",
-          notify: "Notify Owner",
-          complete: "Complete Violation Review",
-          completed: "Violation Review Complete",
-        }
-      : workflowType === "documents"
-      ? {
-          description:
-            "Move this document request through manager review, owner update, and completion.",
-          verify: "Verify Document Request",
-          notify: "Notify Owner",
-          complete: "Complete Document Request",
-          completed: "Document Request Complete",
-        }
-      : {
-          description:
-            "Move this work order through manager review, owner update, and completion.",
-          verify: "Verify Work Order",
-          notify: "Notify Owner",
-          complete: "Complete Work Order",
-          completed: "Work Order Complete",
-        };
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
           </p>
 
-          <p className="mt-2 text-sm text-white/50">{labels.description}</p>
+          <p className="mt-2 text-sm text-white/50">
+            {isFinancialRequest(item)
+              ? "Move this accounting request through financial review and owner coordination."
+              : "Move this request through the SPM/BOS operating chain."}
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {!completed && !managerComplete && (
-            <WorkflowButton
-              label={labels.verify}
-              disabled={busy}
-              onClick={() => onUpdate(item, "manager_verified")}
-            />
-          )}
+          <WorkflowButton
+            label={isFinancialRequest(item) ? "Accounting Verified" : "Manager Verified"}
+            disabled={busy}
+            onClick={() => onUpdate(item, "manager_verified")}
+          />
 
-          {!completed &&
-            workflowType === "accounting" &&
-            managerComplete &&
-            !accountingComplete && (
+          {isFinancialRequest(item) &&
+            !item.accounting_review_started_at && (
               <WorkflowButton
-                label={labels.review}
+                label="Accounting Review"
                 disabled={busy}
                 onClick={() => onUpdate(item, "accounting_review")}
               />
             )}
 
-          {!completed &&
-            boardRequired &&
-            managerComplete &&
-            !boardComplete && (
-              <WorkflowButton
-                label={labels.board}
-                disabled={busy}
-                onClick={() => onUpdate(item, "send_to_board")}
-              />
+          {isFinancialRequest(item) &&
+            item.accounting_review_started_at &&
+            item.status !== "completed" && (
+              <Pill text="Accounting Review Active" tone="gold" />
             )}
 
-          {!completed &&
-            managerComplete &&
-            workflowType !== "accounting" &&
-            (!boardRequired || boardComplete) &&
-            !ownerComplete && (
-              <WorkflowButton
-                label={labels.notify}
-                disabled={busy}
-                onClick={() => onUpdate(item, "notify_owner")}
-              />
-            )}
-
-          {!completed &&
-            workflowType === "accounting" &&
-            managerComplete &&
-            accountingComplete &&
-            !ownerComplete && (
-              <WorkflowButton
-                label={labels.notify}
-                disabled={busy}
-                onClick={() => onUpdate(item, "notify_owner")}
-              />
-            )}
-
-          {!completed && ownerComplete && (
+          {!isFinancialRequest(item) && (
             <WorkflowButton
-              label={labels.complete}
+              label="Send to Board"
+              disabled={busy}
+              onClick={() => onUpdate(item, "send_to_board")}
+            />
+          )}
+
+          {!item.owner_notified && (
+            <WorkflowButton
+              label="Notify Owner"
+              disabled={busy}
+              onClick={() => onUpdate(item, "notify_owner")}
+            />
+          )}
+
+          {item.owner_notified && item.status !== "completed" && (
+            <Pill text="Owner Updated" tone="green" />
+          )}
+
+          {item.status !== "completed" && (
+            <WorkflowButton
+              label="Mark Complete"
               disabled={busy}
               strong
               onClick={() => onUpdate(item, "mark_complete")}
             />
           )}
 
-          {!completed && (
-            <WorkflowButton
-              label="Request Clarification"
-              disabled={busy}
-              onClick={() => onUpdate(item, "request_clarification")}
+          {item.status === "completed" && (
+            <Pill
+              text={
+                isFinancialRequest(item)
+                  ? "Financial Resolution Complete"
+                  : "Workflow Complete"
+              }
+              tone="green"
             />
           )}
-
-          {completed && <Pill text={labels.completed} tone="green" />}
         </div>
       </div>
     </div>
@@ -711,36 +619,10 @@ function WorkflowButton({ label, onClick, disabled, strong }) {
 }
 
 function Timeline({ item }) {
-  const workflowType = getWorkflowType(item);
-
-  const managerComplete =
-    item.status === "manager_review" ||
-    item.status === "board_review" ||
-    item.status === "board_approved" ||
-    item.status === "completed";
-
-  const boardRequired =
-    workflowType === "architectural" ||
-    workflowType === "amenity" ||
-    workflowType === "violation";
-
-  const boardComplete =
-    item.status === "board_review" ||
-    item.status === "board_approved" ||
-    item.status === "completed";
-
-  const accountingComplete =
-    Boolean(item.accounting_review_started_at) ||
-    item.status === "completed";
-
-  const ownerComplete =
-    Boolean(item.owner_notified) ||
-    Boolean(item.owner_notified_at) ||
-    item.status === "completed";
-
-  const completed = isCompleted(item);
-
-  let steps = [
+  
+ const isAccountingRequest = isFinancialRequest(item);
+  
+  const steps = [
     {
       key: "intake",
       label: "Ava Intake",
@@ -749,65 +631,52 @@ function Timeline({ item }) {
     },
     {
       key: "manager",
-      label:
-        workflowType === "accounting"
-          ? "Manager Review"
-          : workflowType === "architectural"
-          ? "ARC Intake Review"
-          : workflowType === "amenity"
-          ? "Amenity Review"
-          : workflowType === "violation"
-          ? "Violation Review"
-          : workflowType === "documents"
-          ? "Document Review"
-          : "Work Order Review",
-      complete: managerComplete,
+      label: "Manager Verified",
+      complete:
+        item.status === "manager_review" ||
+        item.status === "board_review" ||
+        item.status === "dispatched" ||
+        item.status === "completed" ||
+        item.dispatched,
       date: item.manager_updated_at,
     },
-  ];
-
-  if (workflowType === "accounting") {
-    steps.push({
-      key: "accounting",
-      label: "Accounting Review",
-      complete: accountingComplete,
-      date: item.accounting_review_started_at,
-    });
-  }
-
-  if (boardRequired) {
-    steps.push({
-      key: "board",
-      label: "Board Review",
-      complete: boardComplete,
-      date: item.board_sent_at || item.board_decision_at,
-    });
-  }
-
-  steps = [
-    ...steps,
     {
-      key: "owner",
-      label: "Notify Owner",
-      complete: ownerComplete,
-      date: item.owner_notified_at,
+      key: "board",
+      label: isAccountingRequest ? "Accounting Review" : "Board Review",
+      complete: isAccountingRequest
+  ? Boolean(item.accounting_review_started_at) ||
+    item.status === "board_review" ||
+    item.status === "completed"
+  : item.status === "board_review" ||
+    item.status === "board_approved" ||
+    item.status === "dispatched" ||
+    item.status === "completed" ||
+    item.dispatched,
+      date: isAccountingRequest
+  ? item.accounting_review_started_at ||
+    item.manager_updated_at ||
+    item.board_sent_at ||
+    item.board_decision_at
+  : item.board_sent_at || item.board_decision_at,
     },
     {
+  key: "dispatch",
+  label: "Notify Owner",
+  complete:
+    Boolean(item.owner_notified) ||
+    Boolean(item.owner_notified_at) ||
+    item.status === "completed",
+  date:
+    item.owner_notified_at,
+},
+    {
       key: "complete",
-      label:
-        workflowType === "accounting"
-          ? "Financial Resolution"
-          : workflowType === "architectural"
-          ? "ARC Complete"
-          : workflowType === "amenity"
-          ? "Amenity Complete"
-          : workflowType === "violation"
-          ? "Violation Complete"
-          : workflowType === "documents"
-          ? "Document Complete"
-          : "Work Order Complete",
-      complete: completed,
-      date: item.completed_at,
+      label: isAccountingRequest
+  ? "Financial Resolution"
+  : "Completed",
+      complete:
+        item.status === "completed" || item.vendor_status === "completed",
+      date: item.completed_at || item.vendor_updated_at,
     },
   ];
 
@@ -856,12 +725,12 @@ function Timeline({ item }) {
       </div>
 
       {item.owner_notified && (
-        <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-          {workflowType === "accounting"
-            ? "Owner financial update has been marked as sent."
-            : "Owner notification has been marked as sent."}
-        </div>
-      )}
+  <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+    {isAccountingRequest
+      ? "Owner financial update has been marked as sent."
+      : "Owner notification has been marked as sent."}
+  </div>
+)}
     </div>
   );
 }
