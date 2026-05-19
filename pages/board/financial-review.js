@@ -169,90 +169,56 @@ export default function FinancialReview() {
 
   return (
     <div
-      key={item.id}
-      className="rounded-2xl border border-white/10 bg-slate-900 p-5"
-    >
-      <button
-        onClick={() =>
-                <button
-        onClick={() =>
-          setSelectedItem(isOpen ? null : { type: "financial", data: item })
-        }
-        className="block w-full text-left"
-      >
-        <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-          {item.id} · {formatCategory(item.category || item.request_type || "Financial")}
-        </p>
+  key={item.id}
+  className="rounded-2xl border border-white/10 bg-slate-900 p-5"
+>
+  <button
+    onClick={() =>
+      setSelectedItem(isOpen ? null : { type: "financial", data: item })
+    }
+    className="block w-full text-left"
+  >
+    <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
+      {item.id} · {formatCategory(item.category || item.request_type || "Financial")}
+    </p>
 
-        <h4 className="mt-2 font-semibold">
-          {item.title || "Financial Review Item"}
-        </h4>
+    <h4 className="mt-2 font-semibold">
+      {item.title || "Financial Review Item"}
+    </h4>
 
-        <p className="mt-2 text-sm text-slate-400">
-          Current Status: {formatStatus(item.status)}
-        </p>
+    <p className="mt-2 text-sm text-slate-400">
+      Current Status: {formatStatus(item.status)}
+    </p>
 
-        <p className="mt-2 text-xs text-slate-500">
-          Owner: {item.owner_name || "Resident"} · Unit:{" "}
-          {item.property_address || "Pending"}
-        </p>
+    <p className="mt-2 text-xs text-slate-500">
+      Owner: {item.owner_name || "Resident"} · Unit:{" "}
+      {item.property_address || "Pending"}
+    </p>
 
-          <p className="mt-4 text-sm font-semibold text-amber-300">
-          {isOpen ? "Hide Details" : "View Details"}
-        </p>
-      </button>
-     
-      {isOpen && (
-        <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-5">
-          <h5 className="text-lg font-semibold text-amber-200">
-            Full Financial Review Details
-          </h5>
+    <p className="mt-4 text-sm font-semibold text-amber-300">
+      {isOpen ? "Hide Details" : "View Details"}
+    </p>
+  </button>
 
-          <div className="mt-4 grid gap-3 text-sm text-slate-300">
-            <p>
-              <span className="text-slate-500">Item ID:</span> {item.id}
-            </p>
+  {isOpen && (
+    <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-5">
+      <h5 className="text-lg font-semibold text-amber-200">
+        Full Financial Review Details
+      </h5>
 
-            <p>
-              <span className="text-slate-500">Category:</span>{" "}
-              {formatCategory(item.category || item.request_type || "Financial")}
-            </p>
-
-            <p>
-              <span className="text-slate-500">Title:</span>{" "}
-              {item.title || "Financial Review Item"}
-            </p>
-
-            <p>
-              <span className="text-slate-500">Owner:</span>{" "}
-              {item.owner_name || "Resident"}
-            </p>
-
-            <p>
-              <span className="text-slate-500">Unit:</span>{" "}
-              {item.property_address || "Pending"}
-            </p>
-
-            <p>
-              <span className="text-slate-500">Status:</span>{" "}
-              {formatStatus(item.status)}
-            </p>
-
-            <p>
-              <span className="text-slate-500">Priority:</span>{" "}
-              {titleCase(item.priority || "standard")}
-            </p>
-
-            <p>
-              <span className="text-slate-500">Created:</span>{" "}
-              {item.created_at
-                ? new Date(item.created_at).toLocaleString()
-                : "N/A"}
-            </p>
-          </div>
-        </div>
-      )}
+      <div className="mt-4 grid gap-3 text-sm text-slate-300">
+        <p><span className="text-slate-500">Item ID:</span> {item.id}</p>
+        <p><span className="text-slate-500">Category:</span> {formatCategory(item.category || item.request_type || "Financial")}</p>
+        <p><span className="text-slate-500">Title:</span> {item.title || "Financial Review Item"}</p>
+        <p><span className="text-slate-500">Owner:</span> {item.owner_name || "Resident"}</p>
+        <p><span className="text-slate-500">Unit:</span> {item.property_address || "Pending"}</p>
+        <p><span className="text-slate-500">Status:</span> {formatStatus(item.status)}</p>
+        <p><span className="text-slate-500">Priority:</span> {titleCase(item.priority || "standard")}</p>
+        <p><span className="text-slate-500">Created:</span> {item.created_at ? new Date(item.created_at).toLocaleString() : "N/A"}</p>
+      </div>
     </div>
+  )}
+</div>
   );
 })}
     
