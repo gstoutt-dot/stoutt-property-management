@@ -1,19 +1,51 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { bosSignals } from "../../lib/bosData"; 
+import { supabase } from "../../lib/supabaseClient";
+
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function ArchitecturalApprovals() {
   const [selectedItem, setSelectedItem] = useState(null);
-  const arcSignals = bosSignals.filter(
-    (item) =>
-      item.module === "ARC Approvals" ||
-      item.type === "Architectural"
-  );
+  const [actions, setActions] = useState([]);
+  const [systemMessage, setSystemMessage] = useState("");
 
-  const pendingArcItems = arcSignals.filter(
-    (item) =>
-      item.status === "Pending Review" ||
-      item.status === "Board Review"
+  useEffect(() => {
+    loadArcActions();
+
+    const interval = setInterval(() => {
+      loadArcActions();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadArcActions() {
+    const { data, error } = await supabase
+      .from("bos_actions")
+      .select("*")
+      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .or("request_type.ilike.%architectural%,category.ilike.%architectural%,title.ilike.%architectural%,description.ilike.%architectural%,request_type.ilike.%arc%,category.ilike.%arc%,title.ilike.%arc%,description.ilike.%arc%,request_type.ilike.%modification%,category.ilike.%modification%,title.ilike.%modification%,description.ilike.%modification%")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Unable to load architectural review items:", error);
+      setSystemMessage("Unable to load architectural review items.");
+      return;
+    }
+
+    setActions(data || []);
+  }
+
+  const arcSignals = useMemo(() => actions, [actions]);
+
+  const pendingArcItems = useMemo(
+    () =>
+      actions.filter((item) =>
+        ["open", "manager_review", "board_review", "owner_notified"].includes(
+          String(item.status || "open").toLowerCase()
+        )
+      ),
+    [actions]
   );
 
   return (
@@ -22,7 +54,7 @@ export default function ArchitecturalApprovals() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Architecturl Review Center
+              Architectural Review Center
             </p>
 
             <h1 className="mt-2 text-2xl font-semibold">
@@ -82,7 +114,9 @@ export default function ArchitecturalApprovals() {
 
           <div className="rounded-3xl border border-emerald-300/20 bg-emerald-500/10 p-6">
             <p className="text-sm text-emerald-100">Community Activity</p>
-            <p className="mt-3 text-4xl font-semibold text-emerald-200">4</p>
+                        <p className="mt-3 text-4xl font-semibold text-emerald-200">
+              {arcSignals.length}
+            </p>
           </div>
         </div>
 
@@ -107,11 +141,11 @@ export default function ArchitecturalApprovals() {
         className="block w-full text-left"
       >
         <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-          {item.id} · {item.module}
+          {item.id} · {formatCategory(item.category || item.request_type)}
         </p>
 
         <h4 className="mt-2 font-semibold">
-          {item.title}
+          {item.title || "Architectural Review Request"}
         </h4>
 
         <p className="mt-2 text-sm text-slate-400">
@@ -120,8 +154,9 @@ export default function ArchitecturalApprovals() {
         </p>
 
         <p className="mt-2 text-xs text-slate-500">
-          Owner: {item.owner} · Due: {item.dueDate} · Status:{" "}
-          {item.status}
+          Owner: {item.owner_name || "Resident"} · Unit:{" "}
+          {item.property_address || "Pending"} · Status:{" "}
+          {formatStatus(item.status)}
         </p>
 
         <p className="mt-4 text-sm font-semibold text-amber-300">
@@ -143,32 +178,32 @@ export default function ArchitecturalApprovals() {
 
             <p>
               <span className="text-slate-500">Category:</span>{" "}
-              {item.module}
+              {formatCategory(item.category || item.request_type)}
             </p>
 
             <p>
               <span className="text-slate-500">Title:</span>{" "}
-              {item.title}
+              {item.title || "Architectural Review Request"}
             </p>
 
             <p>
               <span className="text-slate-500">Owner:</span>{" "}
-              {item.owner}
+              {item.owner_name || "Resident"}
             </p>
 
-            <p>
-              <span className="text-slate-500">Due Date:</span>{" "}
-              {item.dueDate}
+                        <p>
+              <span className="text-slate-500">Unit:</span>{" "}
+              {item.property_address || "Pending"}
             </p>
 
             <p>
               <span className="text-slate-500">Status:</span>{" "}
-              {item.status}
+                            {formatStatus(item.status)}
             </p>
 
             <p>
               <span className="text-slate-500">Risk Level:</span>{" "}
-              {item.riskLevel || "Standard"}
+              {titleCase(item.priority || "standard")}
             </p>
           </div>
         </div>
@@ -217,4 +252,18 @@ export default function ArchitecturalApprovals() {
       </section>
     </main>
   );
+}
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatCategory(category) {
+  return titleCase(String(category || "General").replace(/_/g, " "));
+}
+
+function formatStatus(status) {
+  return titleCase(status || "Open");
 }
