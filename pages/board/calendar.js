@@ -111,50 +111,43 @@ export default function BoardCalendar() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-white/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.18),transparent_35%),radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_30%)]" />
+            <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-yellow-300">
+                Association Operations Calendar
+              </p>
 
-        <div className="relative mx-auto max-w-7xl px-6 py-8">
-                    <div className="mb-10 flex items-center justify-between">
+              <h1 className="mt-3 text-4xl font-bold">
+                Board Calendar
+              </h1>
+            </div>
+
             <Link
               href="/board"
-              className="text-xl font-semibold tracking-wide text-yellow-300 hover:text-yellow-200"
+              className="text-lg font-medium text-white hover:text-yellow-300"
             >
               Board Dashboard
             </Link>
           </div>
+        </div>
+      </section>
 
-          <div className="max-w-3xl py-16">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-300">
-              Board Calendar
-            </p>
+      <section className="mx-auto max-w-7xl px-6 pt-12">
+        <div className="rounded-3xl border border-yellow-300/20 bg-gradient-to-r from-slate-900 to-slate-950 p-10">
+          <p className="text-sm uppercase tracking-[0.3em] text-yellow-300">
+            Calendar Operations Queue
+          </p>
 
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Board meetings, deadlines, inspections, and schedules in one place.
-            </h1>
+          <h2 className="mt-5 text-3xl font-bold leading-tight md:text-5xl">
+            Review board meetings, inspections, deadlines, and association scheduling activity.
+          </h2>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              Track board meetings, annual meetings, vendor schedules,
-              inspections, contract renewals, compliance deadlines, and
-              association calendar items from one live board calendar.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#calendar-events"
-                className="rounded-full bg-yellow-300 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-200"
-              >
-                View Calendar
-              </a>
-
-              <Link
-                href="/board"
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Back to Board Dashboard
-              </Link>
-            </div>
-          </div>
+          <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
+            Track live board scheduling activity including meetings, vendor walkthroughs,
+            inspections, compliance deadlines, insurance renewals, and association operational events.
+          </p>
         </div>
       </section>
 
