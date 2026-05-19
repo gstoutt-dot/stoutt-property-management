@@ -14,7 +14,7 @@ export default function FinancialReview() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Board Operating System
+              Financial Review Center
             </p>
 
             <h1 className="mt-2 text-2xl font-semibold">
@@ -23,30 +23,25 @@ export default function FinancialReview() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Home</Link>
-            <Link href="/board/performance-dashboard">Dashboard</Link>
-            <Link href="/board/command-center">Command Center</Link>
-            <Link href="/board/quickbooks-integration">QuickBooks</Link>
-            <Link href="/board/workflow-engine">Workflow</Link>
-          </nav>
+  <Link href="/board">Board Dashboard</Link>
+</nav>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Financial Signal Feed Active
-          </p>
+  Financial Review Queue
+</p>
 
-          <h2 className="mt-3 text-4xl font-semibold">
-            AI delinquency and balance inquiries now surface into Financial
-            Review.
-          </h2>
+<h2 className="mt-3 text-4xl font-semibold">
+  Review financial activity, delinquency trends, and board-related financial items.
+</h2>
 
-          <p className="mt-4 max-w-3xl text-slate-300">
-            Financial Review now receives shared BOS financial signals and
-            AI-captured owner balance or delinquency-related events.
-          </p>
+<p className="mt-4 max-w-3xl text-slate-300">
+  Review financial concerns, delinquency activity, balance-related issues,
+  and financial items requiring board awareness or approval.
+</p>
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-4">
@@ -58,7 +53,7 @@ export default function FinancialReview() {
           </div>
 
           <div className="rounded-3xl border border-violet-300/20 bg-violet-500/10 p-6">
-            <p className="text-sm text-violet-100">AI Financial Events</p>
+            <p className="text-sm text-violet-100">Reported Financial Issues</p>
             <p className="mt-3 text-4xl font-semibold text-violet-200">
               {financialAiEvents.length}
             </p>
@@ -72,7 +67,7 @@ export default function FinancialReview() {
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm text-slate-400">Open BOS Items</p>
+            <p className="text-sm text-slate-400">Open Financial Items</p>
             <p className="mt-3 text-4xl font-semibold text-amber-300">
               {bosMetrics.openItems}
             </p>
@@ -82,12 +77,12 @@ export default function FinancialReview() {
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <h3 className="text-xl font-semibold">
-              Active Financial Exceptions
-            </h3>
+  Financial Review Queue
+</h3>
 
-            <p className="mt-2 text-sm text-slate-400">
-              Signals originating from shared BOS financial data.
-            </p>
+<p className="mt-2 text-sm text-slate-400">
+  Financial items requiring board review or awareness.
+</p>
 
             <div className="mt-6 space-y-4">
               {financialSignals.map((item) => (
@@ -116,13 +111,12 @@ export default function FinancialReview() {
 
           <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-6">
             <h3 className="text-xl font-semibold text-violet-100">
-              AI-Captured Financial Events
-            </h3>
+  Financial Activity
+</h3>
 
-            <p className="mt-2 text-sm text-violet-100/70">
-              Owner balance, delinquency, and financial inquiries captured by
-              the AI assistant.
-            </p>
+<p className="mt-2 text-sm text-violet-100/70">
+  Delinquency activity, owner financial concerns, and reported financial issues.
+</p>
 
             <div className="mt-6 space-y-4">
               {financialAiEvents.map((event) => (
@@ -151,12 +145,12 @@ export default function FinancialReview() {
 
         <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
           <h3 className="text-xl font-semibold text-emerald-100">
-            Future QuickBooks Data Feeds
+            Financial Visibility
           </h3>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-emerald-300/20 p-5">
-              Budget Variance Feed
+              Delinquency Watchlist
             </div>
 
             <div className="rounded-2xl border border-emerald-300/20 p-5">
@@ -164,25 +158,25 @@ export default function FinancialReview() {
             </div>
 
             <div className="rounded-2xl border border-emerald-300/20 p-5">
-              Cash Position Snapshot
+              Cash Position
             </div>
 
             <div className="rounded-2xl border border-emerald-300/20 p-5">
-              Reserve Balance Signals
+              Reserve Balances
             </div>
           </div>
         </div>
 
         <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
-          <h3 className="text-xl font-semibold text-amber-200">
-            BOS Wiring Status
-          </h3>
+  <h3 className="text-xl font-semibold text-amber-200">
+    Financial Oversight
+  </h3>
 
-          <p className="mt-3 text-slate-300">
-            Financial Review now receives financial BOS signals and
-            AI-generated delinquency or balance inquiry events.
-          </p>
-        </div>
+  <p className="mt-3 text-slate-300">
+    This area helps board members monitor financial activity,
+    delinquency trends, owner financial concerns, and association financial visibility.
+  </p>
+</div>
       </section>
     </main>
   );
