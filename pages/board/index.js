@@ -131,13 +131,13 @@ function statusStyle(status) {
 export default function BoardModuleHub() {
   const router = useRouter();
 
-  const handleLogout = () => {
+    const handleLogout = () => {
     localStorage.removeItem("spmPortalLoggedIn");
     localStorage.removeItem("spmPortalUser");
     localStorage.removeItem("spmPortalUserName");
     localStorage.removeItem("spmPortalRole");
 
-    router.push("/homeowner-login");
+    router.push("/admin-login");
   };
 
   return (
