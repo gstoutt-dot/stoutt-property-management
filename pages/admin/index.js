@@ -90,6 +90,7 @@ const sections = [
       "Controlled areas for violations, legal review, insurance, risk tracking, and policy reference.",
     items: [
   { title: "Compliance Dashboard", href: "/board/compliance-dashboard" },
+  { title: "Compliance Calendar", href: "/board/compliance-calendar" },
   { title: "Violation Review", href: "/board/violation-review" },
   { title: "Legal Review", href: "/board/legal-review" },
   { title: "Insurance & Risk", href: "/board/insurance-risk" },
