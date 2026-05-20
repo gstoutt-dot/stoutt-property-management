@@ -232,11 +232,11 @@ export default function InsuranceRisk() {
             </div>
 
             <Link
-              href="/admin/operations/new"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Risk Record
-            </Link>
+  href="/admin/operations/new?request_type=Insurance%20%26%20Risk&return_path=/board/insurance-risk&return_label=Insurance%20%26%20Risk"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Risk Record
+</Link>
           </div>
 
           <div className="space-y-5">
