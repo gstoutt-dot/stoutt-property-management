@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { supabase } from "../../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
@@ -18,6 +19,23 @@ const requestTypes = [
 ];
 
 export default function NewAdminOperation() {
+  const router = useRouter();
+
+  const returnPath =
+    typeof router.query.return_path === "string"
+      ? router.query.return_path
+      : "/admin";
+
+  const returnLabel =
+    typeof router.query.return_label === "string"
+      ? router.query.return_label
+      : "Admin Dashboard";
+
+  const defaultRequestType =
+    typeof router.query.request_type === "string"
+      ? router.query.request_type
+      : "Special Project";
+
   const [form, setForm] = useState({
     request_type: "Special Project",
     title: "",
@@ -34,6 +52,15 @@ export default function NewAdminOperation() {
 
   const [saving, setSaving] = useState(false);
   const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    setForm((current) => ({
+      ...current,
+      request_type: defaultRequestType,
+    }));
+  }, [router.isReady, defaultRequestType]);
 
   function updateField(field, value) {
     setForm((current) => ({
@@ -80,20 +107,6 @@ export default function NewAdminOperation() {
       if (error) throw error;
 
       setSystemMessage("Operational record submitted successfully.");
-
-      setForm({
-        request_type: "Special Project",
-        title: "",
-        description: "",
-        priority: "Normal",
-        assigned_to: "",
-        due_date: "",
-        board_review_required: false,
-        owner_visible: false,
-        vendor_visible: false,
-        routing_target: "Admin Dashboard",
-        recommended_action: "",
-      });
     } catch (error) {
       console.error("Unable to submit admin operation:", error);
       setSystemMessage(error.message || "Unable to submit operational record.");
@@ -107,20 +120,20 @@ export default function NewAdminOperation() {
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-10">
           <div className="flex flex-wrap items-center gap-3">
-  <Link
-    href={returnPath}
-    className="text-sm font-semibold text-amber-300 hover:text-amber-200"
-  >
-    ← Back to {returnLabel}
-  </Link>
+            <Link
+              href={returnPath}
+              className="text-sm font-semibold text-amber-300 hover:text-amber-200"
+            >
+              ← Back to {returnLabel}
+            </Link>
 
-  <Link
-    href="/admin"
-    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-  >
-    Admin Dashboard
-  </Link>
-</div>
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+          </div>
 
           <div className="mt-6 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
             Admin Operations Intake
@@ -181,14 +194,12 @@ export default function NewAdminOperation() {
           </div>
 
           <label className="mt-5 block">
-            <span className="text-sm font-semibold text-slate-300">
-              Title
-            </span>
+            <span className="text-sm font-semibold text-slate-300">Title</span>
 
             <input
               value={form.title}
               onChange={(event) => updateField("title", event.target.value)}
-              placeholder="Example: Prepare 2026 annual budget package"
+              placeholder="Example: Review collections policy update"
               className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-amber-400/50"
             />
           </label>
@@ -314,10 +325,10 @@ export default function NewAdminOperation() {
             </button>
 
             <Link
-              href="/admin"
+              href={returnPath}
               className="rounded-2xl border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              Cancel
+              Return to {returnLabel}
             </Link>
           </div>
         </form>
