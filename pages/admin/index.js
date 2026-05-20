@@ -89,12 +89,13 @@ const sections = [
     description:
       "Controlled areas for violations, legal review, insurance, risk tracking, and policy reference.",
     items: [
-      { title: "Violation Review", href: "/board/violation-review" },
-      { title: "Legal Review", href: "/board/legal-review" },
-      { title: "Insurance & Risk", href: "/board/insurance-risk" },
-      { title: "Policy Library", href: "/board/policy-library" },
-      { title: "Maintenance Review", href: "/board/maintenance-review" },
-    ],
+  { title: "Compliance Dashboard", href: "/board/compliance-dashboard" },
+  { title: "Violation Review", href: "/board/violation-review" },
+  { title: "Legal Review", href: "/board/legal-review" },
+  { title: "Insurance & Risk", href: "/board/insurance-risk" },
+  { title: "Policy Library", href: "/board/policy-library" },
+  { title: "Maintenance Review", href: "/board/maintenance-review" },
+],
   },
   {
     title: "Infrastructure & Expansion",
