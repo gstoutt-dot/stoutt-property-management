@@ -1,39 +1,47 @@
 import Link from "next/link";
 
 const intelligenceMetrics = [
-  { label: "Associations", value: "1", status: "Active" },
-  { label: "Open Approvals", value: "14", status: "Attention Needed" },
-  { label: "Financial Sync", value: "QB", status: "Connected" },
-  { label: "Operations", value: "Live", status: "Stable" },
+  { label: "Associations", value: "1", status: "Active", tone: "stable" },
+  { label: "Open Approvals", value: "14", status: "Needs Review", tone: "attention" },
+  { label: "Financial Sync", value: "QB", status: "Connected", tone: "stable" },
+  { label: "Operations", value: "Live", status: "Stable", tone: "stable" },
 ];
 
 const priorityAlerts = [
   {
     title: "Urgent Approvals Pending",
-    level: "High Priority",
+    level: "Critical",
+    count: "4 Items",
     detail:
-      "Multiple approvals have remained unresolved for more than 48 hours and require board or management action.",
+      "Board or management approvals have remained unresolved and require immediate review.",
+    action: "Review pending board decisions and clear approval bottlenecks.",
     href: "/portal/approval-queue",
   },
   {
     title: "Vendor Escalation Review",
-    level: "Operational Attention",
+    level: "Needs Review",
+    count: "2 Follow-Ups",
     detail:
-      "Open vendor tasks and maintenance items require follow-up coordination and status verification.",
+      "Open vendor tasks and maintenance items require coordination, confirmation, or status updates.",
+    action: "Open BOS Action Center and verify vendor progress.",
     href: "/bos/action-center",
   },
   {
     title: "Financial Review Alerts",
-    level: "Financial Oversight",
+    level: "Needs Review",
+    count: "3 Items",
     detail:
-      "Delinquency review and reserve-related financial visibility items require administrative review.",
+      "Delinquency, reserve, or financial visibility items require administrative review.",
+    action: "Review financial exceptions and confirm next administrative steps.",
     href: "/board/financial-review",
   },
   {
     title: "Governance Deadlines",
-    level: "Board Governance",
+    level: "Upcoming",
+    count: "1 Deadline",
     detail:
-      "Meeting preparation, voting workflows, and governance records require upcoming review.",
+      "Meeting preparation, voting workflows, or governance records need upcoming attention.",
+    action: "Review meeting agenda and governance calendar items.",
     href: "/portal/board/meetings",
   },
 ];
@@ -42,22 +50,32 @@ const operationalHealth = [
   {
     title: "QuickBooks Synchronization",
     status: "Connected",
+    detail: "Production accounting sync is available.",
+    tone: "stable",
   },
   {
     title: "Notification Routing",
     status: "Operational",
+    detail: "Routing layer is prepared for workflow alerts.",
+    tone: "stable",
   },
   {
     title: "Association Workflow Engine",
     status: "Stable",
+    detail: "Core BOS workflow lifecycle is active.",
+    tone: "stable",
   },
   {
     title: "Board Operations",
     status: "Live",
+    detail: "Board command surfaces are online.",
+    tone: "stable",
   },
   {
     title: "Owner Portal Access",
     status: "Online",
+    detail: "Owner dashboard and login foundation are active.",
+    tone: "stable",
   },
 ];
 
@@ -133,6 +151,30 @@ const sections = [
   },
 ];
 
+function toneStyle(tone) {
+  if (tone === "attention") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (tone === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
+}
+
+function priorityStyle(level) {
+  if (level === "Critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (level === "Needs Review") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+}
+
 export default function AdminDashboard() {
   return (
     <main className="min-h-screen bg-[#020617] text-white">
@@ -168,7 +210,11 @@ export default function AdminDashboard() {
                   {metric.value}
                 </div>
 
-                <div className="mt-2 inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                <div
+                  className={`mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(
+                    metric.tone
+                  )}`}
+                >
                   {metric.status}
                 </div>
               </div>
@@ -204,17 +250,37 @@ export default function AdminDashboard() {
                 >
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <div className="mb-3 inline-flex rounded-full border border-red-400/20 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200">
-                        {alert.level}
+                      <div className="flex flex-wrap gap-2">
+                        <div
+                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                            alert.level
+                          )}`}
+                        >
+                          {alert.level}
+                        </div>
+
+                        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                          {alert.count}
+                        </div>
                       </div>
 
-                      <h3 className="text-2xl font-bold">
+                      <h3 className="mt-4 text-2xl font-bold">
                         {alert.title}
                       </h3>
 
                       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
                         {alert.detail}
                       </p>
+
+                      <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+                          Recommended Action
+                        </p>
+
+                        <p className="mt-2 text-sm leading-6 text-slate-300">
+                          {alert.action}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
@@ -235,22 +301,37 @@ export default function AdminDashboard() {
               <h2 className="mt-3 text-3xl font-bold">
                 System Status
               </h2>
+
+              <p className="mt-3 text-sm leading-7 text-slate-400">
+                Stability indicators for the systems that support daily association
+                operations and administrative control.
+              </p>
             </div>
 
             <div className="space-y-4">
               {operationalHealth.map((item) => (
                 <div
                   key={item.title}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#020617]/60 px-4 py-4"
+                  className="rounded-2xl border border-white/10 bg-[#020617]/60 px-4 py-4"
                 >
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      {item.title}
-                    </p>
-                  </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        {item.title}
+                      </p>
 
-                  <div className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                    {item.status}
+                      <p className="mt-2 text-xs leading-5 text-slate-500">
+                        {item.detail}
+                      </p>
+                    </div>
+
+                    <div
+                      className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(
+                        item.tone
+                      )}`}
+                    >
+                      {item.status}
+                    </div>
                   </div>
                 </div>
               ))}
