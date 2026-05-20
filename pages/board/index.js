@@ -165,24 +165,27 @@ function routeForBoardRecord(record) {
   const target = String(record.routing_target || "").toLowerCase();
   const type = String(record.request_type || "").toLowerCase();
 
+  if (type.includes("insurance") || type.includes("risk")) {
+    return "/board/insurance-risk";
+  }
+
+  if (target.includes("financial") || type.includes("financial")) {
+    return "/board/financial-review";
+  }
+
   if (target.includes("approval")) return "/portal/approval-queue";
   if (target.includes("bos")) return "/bos/action-center";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("vendor")) return "/board/vendors";
-  if (target.includes("legal")) return "/board/legal-review";
-  if (target.includes("risk")) return "/board/insurance-risk";
+  if (target.includes("vendor") || type.includes("vendor")) return "/board/vendors";
+  if (target.includes("legal") || type.includes("legal")) return "/board/legal-review";
 
-  if (type.includes("insurance")) return "/board/insurance-risk";
-  if (type.includes("risk")) return "/board/insurance-risk";
   if (type.includes("budget")) return "/board/budget-planning";
-  if (type.includes("financial")) return "/board/financial-review";
   if (type.includes("violation")) return "/board/violation-review";
   if (type.includes("architectural")) return "/board/architectural-approvals";
   if (type.includes("maintenance")) return "/board/maintenance-review";
-  if (type.includes("vendor")) return "/board/vendors";
   if (type.includes("policy")) return "/board/policy-library";
   if (type.includes("meeting")) return "/portal/board/meetings";
   if (type.includes("election")) return "/board/elections";
+  if (type.includes("capital")) return "/board/capital-projects";
 
   return "/portal/approval-queue";
 }
@@ -336,10 +339,10 @@ export default function BoardModuleHub() {
             </div>
 
             <Link
-              href="/admin/operations/new"
+  href="/board"
               className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
             >
-              New Record
+              Board Dashboard
             </Link>
           </div>
 
