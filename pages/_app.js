@@ -55,9 +55,8 @@ function PortalGate({ children }) {
 
     const cleanPath = router.asPath.split("?")[0].split("#")[0];
 
-        const publicRoutes = [
-      "/portal/owner/login",
-      "/homeowner-login",
+            const publicRoutes = [
+      "/admin-login",
     ];
 
     if (publicRoutes.includes(cleanPath)) {
@@ -86,7 +85,7 @@ function PortalGate({ children }) {
 
     if (loggedIn !== "true") {
       setCheckingAccess(false);
-      router.replace("/homeowner-login");
+      router.replace("/admin-login");
       return;
     }
 
@@ -118,7 +117,7 @@ function PortalGate({ children }) {
   }
 
   if (denied) {
-    return <AccessDenied onReturn={() => router.push("/software-dashboard")} />;
+    return <AccessDenied onReturn={() => router.push("/admin")} />;
   }
 
   return children;
