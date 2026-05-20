@@ -1,253 +1,430 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const motions = [
-  {
-    id: "MOT-2026-021",
-    title: "Approve Pool Lighting Replacement Proposal",
-    madeBy: "Board President",
-    secondedBy: "Treasurer",
-    meetingDate: "April 24, 2026",
-    vote: "5-0",
-    result: "Passed",
-    linkedResolution: "RES-2026-014",
-    docs: "Vendor proposal, inspection photos, maintenance note",
-  },
-  {
-    id: "MOT-2026-020",
-    title: "Adopt Updated Collection Follow-Up Timeline",
-    madeBy: "Treasurer",
-    secondedBy: "Secretary",
-    meetingDate: "April 24, 2026",
-    vote: "4-1",
-    result: "Passed",
-    linkedResolution: "RES-2026-013",
-    docs: "Policy draft, delinquency report, attorney comments",
-  },
-  {
-    id: "MOT-2026-019",
-    title: "Table Gate Access Modernization Until Vendor Packet Is Complete",
-    madeBy: "Director At Large",
-    secondedBy: "Vice President",
-    meetingDate: "April 24, 2026",
-    vote: "5-0",
-    result: "Tabled",
-    linkedResolution: "Pending",
-    docs: "Vendor comparison, missing insurance certificate",
-  },
-];
+const DEFAULT_ASSOCIATION_ID =
+  "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
-const votingRecord = [
-  ["President", "Yes", "Yes", "Yes"],
-  ["Vice President", "Yes", "Yes", "Yes"],
-  ["Treasurer", "Yes", "Yes", "Yes"],
-  ["Secretary", "Yes", "No", "Yes"],
-  ["Director", "Yes", "Yes", "Yes"],
-];
+const closedStatuses = ["completed", "archived", "closed"];
 
-export default function BoardMotionCenter() {
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value === "high") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function resultStyle(status) {
+  const value = String(status || "").toLowerCase();
+
+  if (value.includes("approved")) {
+    return "border-emerald-400/30 bg-emerald-400/10 text-emerald-200";
+  }
+
+  if (value.includes("denied")) {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value.includes("review")) {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-200";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function MotionCenter() {
+  const [records, setRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] =
+    useState(true);
+
+  const [systemMessage, setSystemMessage] =
+    useState("");
+
+  useEffect(() => {
+    loadMotionRecords({ showLoading: true });
+
+    const interval = setInterval(() => {
+      loadMotionRecords({ showLoading: false });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadMotionRecords({
+    showLoading = false,
+  } = {}) {
+    try {
+      if (showLoading) {
+        setLoadingRecords(true);
+      }
+
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message ||
+            "Unable to load motion records."
+        );
+      }
+
+      const motionRecords = (
+        payload.openRecords || []
+      ).filter((record) => {
+        const requestType = String(
+          record.request_type || ""
+        ).toLowerCase();
+
+        const status = String(
+          record.status || ""
+        ).toLowerCase();
+
+        return (
+          (requestType.includes("board packet") ||
+            requestType.includes("meeting") ||
+            requestType.includes("special") ||
+            requestType.includes("compliance") ||
+            requestType.includes("legal")) &&
+          !closedStatuses.includes(status)
+        );
+      });
+
+      setRecords(motionRecords);
+    } catch (error) {
+      console.error(
+        "Unable to load motion records:",
+        error
+      );
+
+      setSystemMessage(
+        error.message ||
+          "Unable to load motion records."
+      );
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
+  const executiveItems = useMemo(
+    () =>
+      records.filter((record) =>
+        ["critical", "high"].includes(
+          String(record.priority || "").toLowerCase()
+        )
+      ),
+    [records]
+  );
+
+  const boardReviewItems = useMemo(
+    () =>
+      records.filter((record) =>
+        Boolean(record.board_review_required)
+      ),
+    [records]
+  );
+
+  const pendingItems = useMemo(
+    () =>
+      records.filter((record) =>
+        String(record.status || "")
+          .toLowerCase()
+          .includes("review")
+      ),
+    [records]
+  );
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide">
-            Stoutt Board Portal
-          </Link>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+              Stoutt Property Management
+            </div>
 
-          <nav className="hidden gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Portal</Link>
-            <Link href="/board/violation-review">Violations</Link>
-            <Link href="/board/architectural-approvals">ARC Approvals</Link>
-            <Link href="/board/maintenance-review">Maintenance</Link>
-            <Link href="/board/financial-review">Financials</Link>
-          </nav>
+            <h1 className="mt-3 text-3xl font-semibold">
+              Motion Center
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+
+            <Link
+              href="/board"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Main Page
+            </Link>
+          </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-10 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Governance
+            Governance Decision Layer
           </p>
+
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Board Motion Center
+            Centralized Board Motion Oversight
           </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            Capture every formal board motion from the moment it is made,
-            seconded, voted on, linked to a resolution, and archived for future
-            reference.
+
+          <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-300">
+            Board motions now flow directly from the
+            Admin Operations Intake system to create
+            a centralized governance decision trail
+            connected to board packets, compliance,
+            meetings, legal review and operational
+            follow-up actions.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-amber-400/20 bg-amber-300/10 p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-amber-200">
-              Why This Matters
-            </h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Motions are where board decisions officially begin. This center
-              keeps the association’s decision trail clear, organized, and easy
-              to verify.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <h2 className="text-xl font-semibold">Clean Voting History</h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Each motion tracks who made it, who seconded it, the meeting date,
-              the vote result, and the supporting documents behind the action.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <h2 className="text-xl font-semibold">Connected Governance</h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Passed motions can connect directly to resolutions, action items,
-              contracts, budget approvals, compliance matters, and board packets.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-10 grid gap-6 md:grid-cols-4">
+        <section className="grid gap-6 md:grid-cols-4">
           {[
-            ["Motions This Year", "38"],
-            ["Passed", "31"],
-            ["Tabled", "5"],
-            ["Failed", "2"],
+            ["Motion Records", records.length],
+            [
+              "Executive Items",
+              executiveItems.length,
+            ],
+            [
+              "Board Reviews",
+              boardReviewItems.length,
+            ],
+            ["Pending Decisions", pendingItems.length],
           ].map(([label, value]) => (
             <div
               key={label}
               className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl"
             >
-              <p className="text-sm text-slate-400">{label}</p>
-              <p className="mt-3 text-3xl font-bold text-amber-300">{value}</p>
+              <p className="text-sm text-slate-400">
+                {label}
+              </p>
+
+              <p className="mt-3 text-3xl font-bold text-amber-300">
+                {value}
+              </p>
             </div>
           ))}
-        </div>
+        </section>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold">Recent Motions</h2>
-                <p className="mt-2 text-sm text-slate-400">
-                  Formal motions ready for review, linking, or archive.
-                </p>
+        {systemMessage && (
+          <section className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </section>
+        )}
+
+        <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
+                Distributed Operational Rendering
               </div>
 
-              <button className="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950">
-                Add Motion
-              </button>
+              <h2 className="mt-3 text-3xl font-semibold">
+                Live Motion Records
+              </h2>
+
+              <p className="mt-3 max-w-4xl leading-7 text-slate-400">
+                These records originate from the Admin
+                Operations Intake and render here as
+                governance decision records.
+              </p>
             </div>
 
-            <div className="space-y-5">
-              {motions.map((item) => (
+            <Link
+              href="/admin/operations/new?request_type=Board%20Packet&return_path=/board/motion-center&return_label=Motion%20Center"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Motion Record
+            </Link>
+          </div>
+
+          <div className="space-y-5">
+            {loadingRecords ? (
+              <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 text-sm text-slate-400">
+                Loading motion records...
+              </div>
+            ) : records.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-white/10 bg-slate-900/70 p-8">
+                <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                  Clear
+                </div>
+
+                <h3 className="mt-4 text-2xl font-semibold">
+                  No motion records available
+                </h3>
+
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                  Create operational governance
+                  records and they will appear here
+                  automatically.
+                </p>
+              </div>
+            ) : (
+              records.map((record) => (
                 <div
-                  key={item.id}
+                  key={record.id}
                   className="rounded-2xl border border-white/10 bg-slate-900/80 p-5"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
-                        {item.id}
-                      </p>
-                      <h3 className="mt-2 text-xl font-semibold">
-                        {item.title}
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                            record.priority
+                          )}`}
+                        >
+                          {record.priority ||
+                            "Normal"}
+                        </span>
+
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${resultStyle(
+                            record.status
+                          )}`}
+                        >
+                          {record.status ||
+                            "Submitted"}
+                        </span>
+                      </div>
+
+                      <h3 className="mt-3 text-xl font-semibold">
+                        {record.title}
                       </h3>
                     </div>
 
-                    <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
-                      {item.result}
-                    </span>
+                    <div className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
+                      {formatDate(record.due_date)}
+                    </div>
                   </div>
 
                   <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
                     <p>
-                      <span className="text-slate-500">Made By:</span>{" "}
-                      {item.madeBy}
+                      <span className="text-slate-500">
+                        Assigned To:
+                      </span>{" "}
+                      {record.assigned_to ||
+                        "Unassigned"}
                     </p>
-                    <p>
-                      <span className="text-slate-500">Seconded By:</span>{" "}
-                      {item.secondedBy}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Meeting Date:</span>{" "}
-                      {item.meetingDate}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Vote:</span> {item.vote}
-                    </p>
+
                     <p>
                       <span className="text-slate-500">
-                        Linked Resolution:
+                        Request Type:
                       </span>{" "}
-                      {item.linkedResolution}
+                      {record.request_type}
                     </p>
-                    <p>
-                      <span className="text-slate-500">Documents:</span>{" "}
-                      {item.docs}
+
+                    <p className="md:col-span-2">
+                      <span className="text-slate-500">
+                        Description:
+                      </span>{" "}
+                      {record.description ||
+                        "No description provided."}
                     </p>
                   </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="mt-10 grid gap-8 lg:grid-cols-2">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+            <h2 className="text-2xl font-semibold">
+              Governance Intelligence
+            </h2>
+
+            <div className="mt-6 space-y-4">
+              {[
+                "Track board decisions from intake to approval",
+                "Connect motions to meeting packets",
+                "Support governance transparency",
+                "Create operational accountability",
+                "Document executive decision trails",
+                "Maintain searchable governance history",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-slate-300"
+                >
+                  {item}
                 </div>
               ))}
             </div>
           </div>
 
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Voting Record Snapshot</h2>
+          <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6 shadow-xl">
+            <h2 className="text-2xl font-semibold text-amber-200">
+              Connected Governance Architecture
+            </h2>
 
-              <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-900 text-slate-400">
-                    <tr>
-                      <th className="px-4 py-3">Member</th>
-                      <th className="px-4 py-3">M1</th>
-                      <th className="px-4 py-3">M2</th>
-                      <th className="px-4 py-3">M3</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {votingRecord.map((row) => (
-                      <tr key={row[0]} className="border-t border-white/10">
-                        {row.map((cell) => (
-                          <td key={cell} className="px-4 py-3 text-slate-300">
-                            {cell}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <p className="mt-5 leading-8 text-slate-300">
+              Motion Center now connects directly to:
+            </p>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Motion Archive</h2>
-              <div className="mt-5 space-y-3 text-sm text-slate-300">
-                <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
-                  2026 Annual Budget Adoption Motion
+            <div className="mt-6 grid gap-3">
+              {[
+                "Meeting Packet",
+                "Action Items",
+                "Voting Center",
+                "Signature Approval Log",
+                "Compliance Dashboard",
+                "Legal Review",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 text-sm text-slate-200"
+                >
+                  {item}
                 </div>
-                <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
-                  Reserve Study Engagement Motion
-                </div>
-                <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
-                  Insurance Appraisal Authorization Motion
-                </div>
-              </div>
+              ))}
             </div>
-          </aside>
+          </div>
         </section>
 
         <section className="mt-10 rounded-3xl border border-amber-400/20 bg-gradient-to-r from-amber-300/10 to-slate-900 p-8 shadow-2xl">
           <h2 className="text-2xl font-semibold text-amber-200">
-            Governance Advantage
+            Every Governance Decision Should Be Traceable
           </h2>
-          <p className="mt-4 max-w-4xl leading-8 text-slate-300">
-            This is the type of board recordkeeping that separates Stoutt
-            Property Management from ordinary management companies. Every
-            decision is traceable, every vote is documented, every resolution is
-            connected, and every board action has a clear path from discussion to
-            completion.
+
+          <p className="mt-4 max-w-5xl leading-8 text-slate-300">
+            This motion tracking system transforms
+            board governance into a connected
+            operational intelligence layer where
+            decisions, approvals, packet materials,
+            compliance actions and board follow-up
+            remain fully organized and searchable.
           </p>
         </section>
       </section>
