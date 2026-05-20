@@ -64,6 +64,7 @@ const sections = [
   { title: "Documents", href: "/board/documents" },
   { title: "Meetings", href: "/portal/board/meetings" },
   { title: "Meeting Packet", href: "/board/meeting-packet" },
+  { title: "Action Items", href: "/board/action-items" },
   { title: "Committee Center", href: "/board/committee-center" },
   { title: "Signature Approval Log", href: "/board/signature-approval-log" },
   { title: "Member Voting", href: "/portal/board/member-voting" },
