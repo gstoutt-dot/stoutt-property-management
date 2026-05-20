@@ -1,45 +1,131 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-export default function BoardLegalReview() {
-  const legalItems = [
-    {
-      title: "Violation enforcement review",
-      category: "Compliance",
-      status: "Attorney Review",
-      priority: "High",
-      desc: "Enforcement matter requires review before additional fines or legal action are pursued.",
-    },
-    {
-      title: "Vendor contract language question",
-      category: "Contract",
-      status: "Manager Review",
-      priority: "Medium",
-      desc: "Service agreement contains renewal and termination language requiring confirmation.",
-    },
-    {
-      title: "Owner demand letter received",
-      category: "Owner Dispute",
-      status: "Board Sensitive",
-      priority: "High",
-      desc: "Owner correspondence raises legal concerns and should be routed through controlled review.",
-    },
-    {
-      title: "Statutory deadline question",
-      category: "Florida Compliance",
-      status: "Research Needed",
-      priority: "Medium",
-      desc: "Upcoming board action may require confirmation of notice, timing or statutory process.",
-    },
-  ];
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
-  const workflow = [
-    "Identify board-sensitive legal or compliance issue",
-    "Collect supporting documents and communication history",
-    "Determine whether attorney referral is required",
-    "Prepare manager summary and risk explanation",
-    "Track attorney response and board direction",
-    "Archive legal review record and final action",
-  ];
+const closedStatuses = ["completed", "archived", "closed"];
+
+const workflow = [
+  "Identify board-sensitive legal or compliance issue",
+  "Collect supporting documents and communication history",
+  "Determine whether attorney referral is required",
+  "Prepare manager summary and risk explanation",
+  "Track attorney response and board direction",
+  "Archive legal review record and final action",
+];
+
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value === "high") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function BoardLegalReview() {
+  const [records, setRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadLegalRecords({ showLoading: true });
+
+    const interval = setInterval(() => {
+      loadLegalRecords({ showLoading: false });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadLegalRecords({ showLoading = false } = {}) {
+    try {
+      if (showLoading) {
+        setLoadingRecords(true);
+      }
+
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message || "Unable to load legal review records."
+        );
+      }
+
+      const legalRecords = (payload.openRecords || []).filter((record) => {
+        const requestType = String(record.request_type || "").toLowerCase();
+        const status = String(record.status || "").toLowerCase();
+
+        return (
+          requestType.includes("legal") &&
+          !closedStatuses.includes(status)
+        );
+      });
+
+      setRecords(legalRecords);
+    } catch (error) {
+      console.error("Unable to load legal review records:", error);
+      setSystemMessage(
+        error.message || "Unable to load legal review records."
+      );
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
+  const boardReviewCount = useMemo(
+    () => records.filter((record) => Boolean(record.board_review_required)).length,
+    [records]
+  );
+
+  const highPriorityCount = useMemo(
+    () =>
+      records.filter((record) =>
+        ["critical", "high"].includes(
+          String(record.priority || "").toLowerCase()
+        )
+      ).length,
+    [records]
+  );
+
+  const attorneyReviewCount = useMemo(
+    () =>
+      records.filter((record) =>
+        String(record.assigned_to || "").toLowerCase().includes("attorney")
+      ).length,
+    [records]
+  );
+
+  const nextDueRecord = useMemo(() => {
+    return [...records]
+      .filter((record) => Boolean(record.due_date))
+      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0];
+  }, [records]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -49,28 +135,18 @@ export default function BoardLegalReview() {
             <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
               Stoutt Property Management
             </div>
+
             <h1 className="mt-1 text-2xl font-semibold">
               Legal Review & Risk Center
             </h1>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/board" className="hover:text-amber-300">
-              Board Portal
-            </Link>
-            <Link href="/board/violation-review" className="hover:text-amber-300">
-              Violations
-            </Link>
-            <Link href="/board/architectural-approvals" className="hover:text-amber-300">
-              ARC Approvals
-            </Link>
-            <Link href="/board/maintenance-review" className="hover:text-amber-300">
-              Maintenance
-            </Link>
-            <Link href="/board/financial-review" className="hover:text-amber-300">
-              Financials
-            </Link>
-          </nav>
+          <Link
+            href="/admin"
+            className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+          >
+            Admin Dashboard
+          </Link>
         </div>
       </header>
 
@@ -83,22 +159,27 @@ export default function BoardLegalReview() {
           <div className="mt-5 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
             <div>
               <h2 className="text-4xl font-semibold leading-tight">
-                Keep legal-sensitive matters organized, documented and under control.
+                Legal review records now flow from the Admin Operations Intake.
               </h2>
+
               <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
-                Track attorney referrals, demand letters, enforcement questions,
-                statutory concerns, contract review issues, litigation exposure and
-                board-sensitive legal matters from one controlled review center.
+                Legal-sensitive matters created from the Admin Dashboard now appear
+                here for attorney referral tracking, document control, risk review,
+                statutory questions, board-sensitive issues, and compliance oversight.
               </p>
             </div>
 
             <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 p-6">
-              <div className="text-sm text-slate-300">Legal Risk Items</div>
-              <div className="mt-2 text-6xl font-semibold text-amber-300">
-                4
+              <div className="text-sm text-slate-300">
+                Active Legal Items
               </div>
+
+              <div className="mt-2 text-6xl font-semibold text-amber-300">
+                {records.length}
+              </div>
+
               <div className="mt-4 text-slate-300">
-                2 require attorney or board-level review.
+                Live records requiring controlled legal visibility.
               </div>
             </div>
           </div>
@@ -106,69 +187,154 @@ export default function BoardLegalReview() {
 
         <section className="mt-10 grid gap-6 md:grid-cols-4">
           {[
-            ["Attorney Review", "1"],
-            ["Board Sensitive", "2"],
-            ["Contract Questions", "1"],
-            ["Research Needed", "1"],
+            ["Open Legal Records", records.length],
+            ["High Priority", highPriorityCount],
+            ["Board Review", boardReviewCount],
+            ["Attorney Review", attorneyReviewCount],
           ].map(([label, value]) => (
             <div
               key={label}
               className="rounded-3xl border border-white/10 bg-white/5 p-7"
             >
               <div className="text-sm text-slate-400">{label}</div>
-              <div className="mt-3 text-4xl font-semibold text-amber-300">
+
+              <div className="mt-3 text-3xl font-semibold text-amber-300">
                 {value}
               </div>
             </div>
           ))}
         </section>
 
+        {systemMessage && (
+          <section className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </section>
+        )}
+
         <section className="mt-14">
-          <div className="mb-8">
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Legal Queue
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
+                Distributed Operational Rendering
+              </div>
+
+              <h3 className="mt-3 text-3xl font-semibold">
+                Live Legal Review Records
+              </h3>
+
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                These records originate from the Admin Operations Intake and are
+                rendered here because their request type is Legal Review.
+              </p>
             </div>
-            <h3 className="mt-3 text-3xl font-semibold">
-              Matters Requiring Controlled Review
-            </h3>
+
+            <Link
+              href="/admin/operations/new"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Legal Record
+            </Link>
           </div>
 
           <div className="space-y-5">
-            {legalItems.map((item) => (
-              <div
-                key={item.title}
-                className="rounded-3xl border border-white/10 bg-slate-900 p-6 hover:border-amber-400/40 transition"
-              >
-                <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr_0.75fr_0.6fr] lg:items-center">
-                  <div>
-                    <h4 className="text-xl font-semibold">{item.title}</h4>
-                    <p className="mt-3 leading-relaxed text-slate-300">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                      Category
-                    </div>
-                    <div className="mt-2 text-slate-200">{item.category}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                      Status
-                    </div>
-                    <div className="mt-2 text-amber-300">{item.status}</div>
-                  </div>
-
-                  <div>
-                    <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-300">
-                      {item.priority}
-                    </span>
-                  </div>
-                </div>
+            {loadingRecords ? (
+              <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-sm text-slate-400">
+                Loading legal review records...
               </div>
-            ))}
+            ) : records.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-white/10 bg-slate-900/70 p-8">
+                <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                  Clear
+                </div>
+
+                <h4 className="mt-4 text-2xl font-semibold">
+                  No open legal review records
+                </h4>
+
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                  Create a new admin operational record with request type Legal
+                  Review and it will appear here automatically.
+                </p>
+              </div>
+            ) : (
+              records.map((record) => (
+                <article
+                  key={record.id}
+                  className="rounded-3xl border border-white/10 bg-slate-900 p-6 transition hover:border-amber-400/40"
+                >
+                  <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr_0.75fr_0.7fr] lg:items-center">
+                    <div>
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                            record.priority
+                          )}`}
+                        >
+                          {record.priority || "Normal"}
+                        </span>
+
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                          {record.status || "Submitted"}
+                        </span>
+
+                        {record.board_review_required && (
+                          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                            Board Review
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="mt-4 text-xl font-semibold">
+                        {record.title}
+                      </h4>
+
+                      <p className="mt-3 leading-relaxed text-slate-300">
+                        {record.description ||
+                          "Legal review record submitted for controlled review."}
+                      </p>
+
+                      {record.recommended_action && (
+                        <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
+                          <div className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                            Recommended Action
+                          </div>
+
+                          <p className="mt-2 text-sm leading-6 text-slate-300">
+                            {record.recommended_action}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                        Assigned To
+                      </div>
+
+                      <div className="mt-2 text-slate-200">
+                        {record.assigned_to || "Unassigned"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                        Due Date
+                      </div>
+
+                      <div className="mt-2 text-amber-300">
+                        {formatDate(record.due_date)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-300">
+                        {record.routing_target || "Admin Dashboard"}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </section>
 
@@ -177,6 +343,7 @@ export default function BoardLegalReview() {
             <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
               Legal Workflow
             </div>
+
             <h3 className="mt-3 text-3xl font-semibold">
               Review & Referral Path
             </h3>
@@ -197,6 +364,7 @@ export default function BoardLegalReview() {
             <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
               Board Risk Protection
             </div>
+
             <h3 className="mt-3 text-3xl font-semibold">
               Legal Issues Need Process, Not Panic
             </h3>
@@ -204,13 +372,13 @@ export default function BoardLegalReview() {
             <div className="mt-8 space-y-5 text-slate-300 leading-relaxed">
               <p>
                 Board-sensitive legal issues become more manageable when the
-                supporting facts, documents, communications and risk questions are
+                supporting facts, documents, communications, and risk questions are
                 organized before attorney involvement or board action.
               </p>
 
               <p>
                 This module helps SPM separate routine manager review from matters
-                that require legal counsel, board direction or formal documentation.
+                that require legal counsel, board direction, or formal documentation.
               </p>
             </div>
 
@@ -219,6 +387,24 @@ export default function BoardLegalReview() {
               should remain with association counsel.
             </div>
           </div>
+        </section>
+
+        <section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+          <h3 className="text-xl font-semibold text-amber-200">
+            Distributed Rendering Status
+          </h3>
+
+          <p className="mt-3 text-slate-300">
+            Legal Review now receives live operational records from the centralized
+            Admin Operations Intake system while remaining visible from the main
+            Admin Dashboard priority queue.
+          </p>
+
+          {nextDueRecord && (
+            <p className="mt-3 text-sm text-slate-400">
+              Next due legal item: {formatDate(nextDueRecord.due_date)}
+            </p>
+          )}
         </section>
       </main>
     </div>
