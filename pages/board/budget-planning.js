@@ -133,23 +133,14 @@ export default function BoardBudgetPlanning() {
             </h1>
           </div>
 
-          <nav className="hidden items-center gap-6 text-sm md:flex">
-            <Link href="/admin" className="hover:text-amber-300">
-              Admin Dashboard
-            </Link>
-
-            <Link href="/admin/operations/new" className="hover:text-amber-300">
-              New Record
-            </Link>
-
-            <Link href="/board" className="hover:text-amber-300">
-              Board Portal
-            </Link>
-
-            <Link href="/board/financial-review" className="hover:text-amber-300">
-              Financials
-            </Link>
-          </nav>
+          <div className="flex items-center gap-3">
+  <Link
+    href="/admin"
+    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+  >
+    Admin Dashboard
+  </Link>
+</div>
         </div>
       </header>
 
