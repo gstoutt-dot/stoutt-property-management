@@ -236,11 +236,11 @@ export default function BoardMeetings() {
             </Link>
 
             <Link
-              href="/portal/board/voting-center"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Voting Center
-            </Link>
+  href="/board/voting-center"
+  className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+>
+  Voting Center
+</Link>
           </div>
         </div>
 
