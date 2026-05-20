@@ -106,12 +106,21 @@ export default function NewAdminOperation() {
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-10">
-          <Link
-            href="/admin"
-            className="text-sm font-semibold text-amber-300 hover:text-amber-200"
-          >
-            ← Back to Admin Dashboard
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+  <Link
+    href={returnPath}
+    className="text-sm font-semibold text-amber-300 hover:text-amber-200"
+  >
+    ← Back to {returnLabel}
+  </Link>
+
+  <Link
+    href="/admin"
+    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+  >
+    Admin Dashboard
+  </Link>
+</div>
 
           <div className="mt-6 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
             Admin Operations Intake
