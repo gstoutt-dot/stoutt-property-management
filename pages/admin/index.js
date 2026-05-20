@@ -1,50 +1,8 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
 
-const intelligenceMetrics = [
-  { label: "Associations", value: "1", status: "Active", tone: "stable" },
-  { label: "Open Approvals", value: "14", status: "Needs Review", tone: "attention" },
-  { label: "Financial Sync", value: "QB", status: "Connected", tone: "stable" },
-  { label: "Operations", value: "Live", status: "Stable", tone: "stable" },
-];
-
-const priorityAlerts = [
-  {
-    title: "Urgent Approvals Pending",
-    level: "Critical",
-    count: "4 Items",
-    detail:
-      "Board or management approvals have remained unresolved and require immediate review.",
-    action: "Review pending board decisions and clear approval bottlenecks.",
-    href: "/portal/approval-queue",
-  },
-  {
-    title: "Vendor Escalation Review",
-    level: "Needs Review",
-    count: "2 Follow-Ups",
-    detail:
-      "Open vendor tasks and maintenance items require coordination, confirmation, or status updates.",
-    action: "Open BOS Action Center and verify vendor progress.",
-    href: "/bos/action-center",
-  },
-  {
-    title: "Financial Review Alerts",
-    level: "Needs Review",
-    count: "3 Items",
-    detail:
-      "Delinquency, reserve, or financial visibility items require administrative review.",
-    action: "Review financial exceptions and confirm next administrative steps.",
-    href: "/board/financial-review",
-  },
-  {
-    title: "Governance Deadlines",
-    level: "Upcoming",
-    count: "1 Deadline",
-    detail:
-      "Meeting preparation, voting workflows, or governance records need upcoming attention.",
-    action: "Review meeting agenda and governance calendar items.",
-    href: "/portal/board/meetings",
-  },
-];
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const operationalHealth = [
   {
@@ -151,6 +109,29 @@ const sections = [
   },
 ];
 
+const closedStatuses = ["completed", "archived", "closed"];
+
+function routeForRecord(record) {
+  const target = String(record.routing_target || "").toLowerCase();
+  const type = String(record.request_type || "").toLowerCase();
+
+  if (target.includes("bos")) return "/bos/action-center";
+  if (target.includes("approval")) return "/portal/approval-queue";
+  if (target.includes("financial")) return "/board/financial-review";
+  if (target.includes("legal") || target.includes("risk")) return "/board/legal-review";
+  if (target.includes("vendor")) return "/board/vendors";
+  if (target.includes("owner")) return "/portal/owner";
+  if (type.includes("budget")) return "/board/budget-planning";
+  if (type.includes("election")) return "/board/elections";
+  if (type.includes("insurance")) return "/board/insurance-risk";
+  if (type.includes("capital")) return "/board/capital-projects";
+  if (type.includes("vendor")) return "/board/vendor-performance";
+  if (type.includes("policy")) return "/board/policy-library";
+  if (type.includes("meeting")) return "/portal/board/meetings";
+
+  return "/admin/operations/new";
+}
+
 function toneStyle(tone) {
   if (tone === "attention") {
     return "border-amber-400/30 bg-amber-400/10 text-amber-300";
@@ -163,19 +144,143 @@ function toneStyle(tone) {
   return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
 }
 
-function priorityStyle(level) {
-  if (level === "Critical") {
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") {
     return "border-red-400/30 bg-red-400/10 text-red-200";
   }
 
-  if (level === "Needs Review") {
+  if (value === "high") {
     return "border-amber-400/30 bg-amber-400/10 text-amber-300";
   }
 
-  return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export default function AdminDashboard() {
+  const [records, setRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadOperationalRecords();
+
+    const interval = setInterval(() => {
+      loadOperationalRecords();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadOperationalRecords() {
+    try {
+      setLoadingRecords(true);
+      setSystemMessage("");
+
+      const { data, error } = await supabase
+        .from("admin_operational_records")
+        .select("*")
+        .eq("association_id", DEFAULT_ASSOCIATION_ID)
+        .order("created_at", { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+
+      setRecords(data || []);
+    } catch (error) {
+      console.error("Unable to load admin operational records:", error);
+      setRecords([]);
+      setSystemMessage(
+        error.message || "Unable to load admin operational records."
+      );
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
+  const openRecords = useMemo(
+    () =>
+      records.filter(
+        (record) =>
+          !closedStatuses.includes(String(record.status || "").toLowerCase())
+      ),
+    [records]
+  );
+
+  const criticalRecords = useMemo(
+    () =>
+      openRecords.filter(
+        (record) => String(record.priority || "").toLowerCase() === "critical"
+      ),
+    [openRecords]
+  );
+
+  const highPriorityRecords = useMemo(
+    () =>
+      openRecords.filter(
+        (record) => String(record.priority || "").toLowerCase() === "high"
+      ),
+    [openRecords]
+  );
+
+  const boardReviewRecords = useMemo(
+    () => openRecords.filter((record) => Boolean(record.board_review_required)),
+    [openRecords]
+  );
+
+  const intelligenceMetrics = [
+    { label: "Associations", value: "1", status: "Active", tone: "stable" },
+    {
+      label: "Open Admin Items",
+      value: openRecords.length,
+      status: openRecords.length > 0 ? "Needs Review" : "Clear",
+      tone: openRecords.length > 0 ? "attention" : "stable",
+    },
+    {
+      label: "Critical Items",
+      value: criticalRecords.length,
+      status: criticalRecords.length > 0 ? "Immediate" : "Clear",
+      tone: criticalRecords.length > 0 ? "critical" : "stable",
+    },
+    {
+      label: "Board Review",
+      value: boardReviewRecords.length,
+      status: boardReviewRecords.length > 0 ? "Pending" : "Clear",
+      tone: boardReviewRecords.length > 0 ? "attention" : "stable",
+    },
+  ];
+
+  const priorityRecords = useMemo(() => {
+    const priorityRank = {
+      critical: 1,
+      high: 2,
+      normal: 3,
+      low: 4,
+    };
+
+    return [...openRecords].sort((a, b) => {
+      const aRank = priorityRank[String(a.priority || "").toLowerCase()] || 5;
+      const bRank = priorityRank[String(b.priority || "").toLowerCase()] || 5;
+
+      return aRank - bRank;
+    });
+  }, [openRecords]);
+
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
@@ -224,71 +329,119 @@ export default function AdminDashboard() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
+        {systemMessage && (
+          <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </div>
+        )}
+
         <div className="grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
           <section className="rounded-[2rem] border border-amber-400/20 bg-amber-400/[0.05] p-6 shadow-2xl shadow-black/30">
-            <div className="mb-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-                Priority Attention Queue
-              </p>
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+                  Priority Attention Queue
+                </p>
 
-              <h2 className="mt-3 text-3xl font-bold">
-                Immediate Operational Attention
-              </h2>
+                <h2 className="mt-3 text-3xl font-bold">
+                  Live Administrative Records
+                </h2>
 
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                Operational issues, governance deadlines, financial concerns,
-                and escalation items requiring active administrative oversight.
-              </p>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+                  Real operational records submitted through the admin intake system,
+                  sorted by priority and routed to the correct operational surface.
+                </p>
+              </div>
+
+              <Link
+                href="/admin/operations/new"
+                className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
+              >
+                New Record
+              </Link>
             </div>
 
             <div className="space-y-4">
-              {priorityAlerts.map((alert) => (
-                <Link
-                  key={alert.title}
-                  href={alert.href}
-                  className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        <div
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
-                            alert.level
-                          )}`}
-                        >
-                          {alert.level}
-                        </div>
-
-                        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
-                          {alert.count}
-                        </div>
-                      </div>
-
-                      <h3 className="mt-4 text-2xl font-bold">
-                        {alert.title}
-                      </h3>
-
-                      <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                        {alert.detail}
-                      </p>
-
-                      <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
-                          Recommended Action
-                        </p>
-
-                        <p className="mt-2 text-sm leading-6 text-slate-300">
-                          {alert.action}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
-                      Review
-                    </div>
+              {loadingRecords ? (
+                <div className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 text-sm text-slate-400">
+                  Loading administrative records...
+                </div>
+              ) : priorityRecords.length === 0 ? (
+                <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-5">
+                  <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    Clear
                   </div>
-                </Link>
-              ))}
+
+                  <h3 className="mt-4 text-2xl font-bold">
+                    No open administrative alerts
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-7 text-slate-300">
+                    Submitted operational records will appear here when they require
+                    administrative review.
+                  </p>
+                </div>
+              ) : (
+                priorityRecords.map((record) => (
+                  <Link
+                    key={record.id}
+                    href={routeForRecord(record)}
+                    className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
+                  >
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <div className="flex flex-wrap gap-2">
+                          <div
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                              record.priority
+                            )}`}
+                          >
+                            {record.priority || "Normal"}
+                          </div>
+
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                            {record.request_type || "Operational Record"}
+                          </div>
+
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                            Due: {formatDate(record.due_date)}
+                          </div>
+
+                          {record.board_review_required && (
+                            <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                              Board Review
+                            </div>
+                          )}
+                        </div>
+
+                        <h3 className="mt-4 text-2xl font-bold">
+                          {record.title}
+                        </h3>
+
+                        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                          {record.description ||
+                            "Administrative operational record submitted for review."}
+                        </p>
+
+                        <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+                            Recommended Action
+                          </p>
+
+                          <p className="mt-2 text-sm leading-6 text-slate-300">
+                            {record.recommended_action ||
+                              "Review this item and determine the next operational step."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
+                        Review
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </section>
 
