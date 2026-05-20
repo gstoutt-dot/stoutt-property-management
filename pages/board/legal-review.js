@@ -229,9 +229,11 @@ export default function BoardLegalReview() {
             </div>
 
             <Link
-              href="/admin/operations/new"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
+  href="/admin/operations/new?request_type=Legal%20Review&return_path=/board/legal-review&return_label=Legal%20Review"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Legal Record
+</Link>
               Create Legal Record
             </Link>
           </div>
