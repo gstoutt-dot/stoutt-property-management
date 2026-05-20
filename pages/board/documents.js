@@ -5,13 +5,22 @@ const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function Documents() {
   const [documents, setDocuments] = useState([]);
+  const [operationalRecords, setOperationalRecords] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingDocuments, setLoadingDocuments] = useState(true);
+  const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
     loadDocuments();
+    loadDocumentRecords();
+
+    const interval = setInterval(() => {
+      loadDocumentRecords();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   async function loadDocuments() {
@@ -41,6 +50,45 @@ export default function Documents() {
     }
   }
 
+  async function loadDocumentRecords() {
+    try {
+      setLoadingRecords(true);
+
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load document records.");
+      }
+
+      const records = (payload.openRecords || []).filter((record) => {
+        const combined = `${record.request_type || ""} ${record.title || ""} ${
+          record.description || ""
+        }`.toLowerCase();
+
+        return (
+          combined.includes("document") ||
+          combined.includes("policy") ||
+          combined.includes("record") ||
+          combined.includes("contract") ||
+          combined.includes("insurance") ||
+          combined.includes("governing") ||
+          combined.includes("minutes") ||
+          combined.includes("packet")
+        );
+      });
+
+      setOperationalRecords(records);
+    } catch (error) {
+      console.error("Unable to load document operational records:", error);
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
   async function openDocument(documentId) {
     try {
       const response = await fetch(
@@ -61,10 +109,7 @@ export default function Documents() {
   }
 
   const categories = useMemo(() => {
-    const values = documents
-      .map((doc) => getDocumentCategory(doc))
-      .filter(Boolean);
-
+    const values = documents.map((doc) => getDocumentCategory(doc)).filter(Boolean);
     return ["all", ...Array.from(new Set(values))];
   }, [documents]);
 
@@ -73,18 +118,11 @@ export default function Documents() {
 
     return documents.filter((doc) => {
       const matchesCategory =
-        selectedCategory === "all" ||
-        getDocumentCategory(doc) === selectedCategory;
+        selectedCategory === "all" || getDocumentCategory(doc) === selectedCategory;
 
       const matchesSearch =
         !searchValue ||
-        [
-          doc.title,
-          doc.description,
-          doc.document_type,
-          doc.category,
-          doc.status,
-        ]
+        [doc.title, doc.description, doc.document_type, doc.category, doc.status]
           .join(" ")
           .toLowerCase()
           .includes(searchValue);
@@ -96,62 +134,110 @@ export default function Documents() {
   const governingDocs = documents.filter((doc) =>
     ["governing", "declaration", "covenants", "bylaws", "rules", "regulations"].some(
       (term) =>
-        `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`
-          .toLowerCase()
-          .includes(term)
+        `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`.toLowerCase().includes(term)
     )
   );
 
   const financialDocs = documents.filter((doc) =>
     ["financial", "budget", "reserve", "audit", "insurance"].some((term) =>
-      `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`
-        .toLowerCase()
-        .includes(term)
+      `${getDocumentCategory(doc)} ${getDocumentTitle(doc)}`.toLowerCase().includes(term)
     )
+  );
+
+  const policyRecords = operationalRecords.filter((record) =>
+    `${record.request_type || ""} ${record.title || ""} ${record.description || ""}`
+      .toLowerCase()
+      .includes("policy")
+  );
+
+  const contractRecords = operationalRecords.filter((record) =>
+    `${record.request_type || ""} ${record.title || ""} ${record.description || ""}`
+      .toLowerCase()
+      .includes("contract")
   );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <section className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Association Document Library
+              Stoutt Property Management
             </p>
 
-            <h1 className="mt-2 text-2xl font-semibold">
-              Board Documents
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold">Board Documents</h1>
+
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+              Association document access and operational document review records for board governance.
+            </p>
           </div>
 
-          <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Dashboard</Link>
-          </nav>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+
+            <Link
+              href="/board"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Main Page
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Required Association Records
+            Association Records Library
           </p>
 
-          <h2 className="mt-3 text-4xl font-semibold">
-            Access governing documents, financial records, meeting records, and association files.
+          <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
+            Board document access now combines permanent association files with live operational record tracking.
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
-            Board members can access the association records stored for their
-            community. As new associations are onboarded, their uploaded
-            documents will appear here automatically.
+            Governing documents, financial records, meeting records, contracts, insurance files,
+            and document-related operational work can now be reviewed from one board document center.
           </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href={`/admin/operations/new?request_type=${encodeURIComponent(
+                "Policy Review"
+              )}&return_path=${encodeURIComponent(
+                "/board/documents"
+              )}&return_label=${encodeURIComponent("Board Documents")}`}
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Document Record
+            </Link>
+
+            <Link
+              href="/board/policy-library"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Policy Library
+            </Link>
+
+            <Link
+              href="/board/meeting-packet"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Meeting Packet
+            </Link>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-4">
           <Metric label="Total Documents" value={documents.length} />
           <Metric label="Governing Records" value={governingDocs.length} />
           <Metric label="Financial Records" value={financialDocs.length} />
-          <Metric label="Categories" value={Math.max(categories.length - 1, 0)} />
+          <Metric label="Operational Records" value={operationalRecords.length} />
         </div>
 
         {systemMessage && (
@@ -160,10 +246,20 @@ export default function Documents() {
           </div>
         )}
 
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <OperationalPanel title="Policy Review Records" items={policyRecords} />
+          <OperationalPanel title="Contract / File Records" items={contractRecords} />
+          <OperationalPanel title="All Document Operations" items={operationalRecords} />
+        </div>
+
         <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h3 className="text-xl font-semibold">
+              <p className="text-xs uppercase tracking-[0.25em] text-amber-300">
+                Permanent Association Records
+              </p>
+
+              <h3 className="mt-3 text-2xl font-semibold">
                 Association Document Library
               </h3>
 
@@ -201,11 +297,7 @@ export default function Documents() {
               <Empty message="No association documents are currently available in this category." />
             ) : (
               filteredDocuments.map((doc, index) => (
-                <DocumentCard
-                  key={doc.id || index}
-                  document={doc}
-                  onOpen={openDocument}
-                />
+                <DocumentCard key={doc.id || index} document={doc} onOpen={openDocument} />
               ))
             )}
           </div>
@@ -213,18 +305,52 @@ export default function Documents() {
 
         <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
           <h3 className="text-xl font-semibold text-emerald-100">
-            Association Records Access
+            Document Operations Connected
           </h3>
 
           <p className="mt-3 text-slate-300">
-            This page is reserved for permanent association documents only:
-            governing records, financial records, meeting records, contracts,
-            insurance files, policies, notices, and other board-accessible
-            association materials.
+            This page now preserves the permanent association document library while also rendering
+            document-related operational records from the centralized Admin Operations Intake system.
           </p>
         </div>
       </section>
     </main>
+  );
+}
+
+function OperationalPanel({ title, items }) {
+  return (
+    <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+      <h3 className="text-xl font-semibold text-amber-100">{title}</h3>
+
+      <div className="mt-6 space-y-4">
+        {items.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 text-sm text-slate-400">
+            No operational records found.
+          </div>
+        ) : (
+          items.slice(0, 5).map((item) => (
+            <div key={item.id} className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+              <h4 className="font-semibold text-white">
+                {item.title || "Untitled Record"}
+              </h4>
+
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                {item.description || "No description provided."}
+              </p>
+
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                <span>{item.request_type || "Operational Record"}</span>
+                <span>•</span>
+                <span>{item.status || "Submitted"}</span>
+                <span>•</span>
+                <span>{item.priority || "Normal"}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -245,30 +371,16 @@ function DocumentCard({ document, onOpen }) {
             {titleCase(category)}
           </p>
 
-          <h4 className="mt-2 text-xl font-semibold">
-            {title}
-          </h4>
+          <h4 className="mt-2 text-xl font-semibold">{title}</h4>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
             {description}
           </p>
 
           <div className="mt-4 grid gap-2 text-xs text-slate-500 md:grid-cols-3">
-            <p>
-              Type:{" "}
-              {titleCase(document.document_type || document.type || category)}
-            </p>
-
+            <p>Type: {titleCase(document.document_type || document.type || category)}</p>
             <p>Status: {titleCase(document.status || "available")}</p>
-
-            <p>
-              Posted:{" "}
-              {document.posted_at
-                ? new Date(document.posted_at).toLocaleDateString()
-                : document.created_at
-                ? new Date(document.created_at).toLocaleDateString()
-                : "N/A"}
-            </p>
+            <p>Posted: {formatDocumentDate(document)}</p>
           </div>
         </div>
 
@@ -307,6 +419,18 @@ function Empty({ message }) {
       {message}
     </div>
   );
+}
+
+function formatDocumentDate(document) {
+  const value = document.posted_at || document.created_at || document.updated_at;
+
+  if (!value) return "N/A";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "N/A";
+
+  return date.toLocaleDateString();
 }
 
 function getDocumentTitle(document) {
