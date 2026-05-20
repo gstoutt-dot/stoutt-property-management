@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -179,19 +180,46 @@ function formatDate(value) {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
+
   const [records, setRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+  const [portalUserName, setPortalUserName] = useState("Admin");
+  const [portalRole, setPortalRole] = useState("admin");
 
   useEffect(() => {
-  loadOperationalRecords({ showLoading: true });
+    const loggedIn = localStorage.getItem("spmPortalLoggedIn");
+    const role = localStorage.getItem("spmPortalRole");
+    const name = localStorage.getItem("spmPortalUserName");
 
-  const interval = setInterval(() => {
-    loadOperationalRecords({ showLoading: false });
-  }, 30000);
+    if (loggedIn !== "true" || role !== "admin") {
+      router.push("/admin-login");
+      return;
+    }
 
-  return () => clearInterval(interval);
-}, []);
+    setPortalUserName(name || "Admin");
+    setPortalRole(role || "admin");
+  }, [router]);
+
+  useEffect(() => {
+    loadOperationalRecords({ showLoading: true });
+
+    const interval = setInterval(() => {
+      loadOperationalRecords({ showLoading: false });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+    function handleLogout() {
+    localStorage.removeItem("spmPortalLoggedIn");
+    localStorage.removeItem("spmPortalUser");
+    localStorage.removeItem("spmPortalUserName");
+    localStorage.removeItem("spmPortalRole");
+
+    router.push("/admin-login");
+  }
 
   async function loadOperationalRecords({ showLoading = false } = {}) {
   try {
@@ -297,20 +325,66 @@ export default function AdminDashboard() {
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
         <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="max-w-5xl">
-            <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
-              SPM Administrative Command Center
+                    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-5xl">
+              <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
+                SPM Administrative Command Center
+              </div>
+
+              <h1 className="mt-6 text-4xl font-bold tracking-tight md:text-6xl">
+                ADMIN DASHBOARD
+              </h1>
+
+              <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
+                Central operational control for association oversight, board activity,
+                financial coordination, compliance, annual planning, and platform
+                administration.
+              </p>
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold tracking-tight md:text-6xl">
-              ADMIN DASHBOARD
-            </h1>
+            <div className="w-full rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/30 lg:w-80">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                Secure Admin Access
+              </p>
 
-            <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-              Central operational control for association oversight, board activity,
-              financial coordination, compliance, annual planning, and platform
-              administration.
-            </p>
+              <h2 className="mt-3 text-2xl font-bold text-amber-300">
+                {portalUserName}
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Current Role: {String(portalRole || "admin").toUpperCase()}
+              </p>
+
+              <div className="mt-5 grid gap-3">
+                <Link
+                  href="/"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Homepage
+                </Link>
+
+                <Link
+                  href="/board"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Board Dashboard
+                </Link>
+
+                <Link
+                  href="/portal/owner"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Homeowner Dashboard
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
+                >
+                  Logout / Switch Role
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-4">
