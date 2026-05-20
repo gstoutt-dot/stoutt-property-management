@@ -1,513 +1,365 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const BOARD_MEMBER_NAME = "Board Member";
 
-export default function MemberVoting() {
-  const [votes, setVotes] = useState([]);
-  const [voteRecords, setVoteRecords] = useState([]);
-  const [selectedVote, setSelectedVote] = useState({});
-  const [loadingVotes, setLoadingVotes] = useState(true);
-  const [submittingId, setSubmittingId] = useState(null);
+const closedStatuses = ["completed", "archived", "closed"];
+
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
+  if (value === "high") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  if (value === "normal") return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "No due date";
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function PortalBoardVotingCenter() {
+  const [records, setRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadVotingData();
+    loadVotingRecords({ showLoading: true });
 
-    const interval = setInterval(loadVotingData, 10000);
+    const interval = setInterval(() => {
+      loadVotingRecords({ showLoading: false });
+    }, 30000);
+
     return () => clearInterval(interval);
   }, []);
 
-  async function loadVotingData() {
+  async function loadVotingRecords({ showLoading = false } = {}) {
     try {
-      setLoadingVotes(true);
+      if (showLoading) setLoadingRecords(true);
 
-      const { data: voteRows, error: votesError } = await supabase
-        .from("association_board_votes")
-        .select("*")
-        .eq("association_id", DEFAULT_ASSOCIATION_ID)
-        .order("created_at", { ascending: false });
-
-      if (votesError) throw votesError;
-
-      const { data: recordRows, error: recordsError } = await supabase
-        .from("association_board_vote_records")
-        .select("*")
-        .eq("association_id", DEFAULT_ASSOCIATION_ID)
-        .order("created_at", { ascending: true });
-
-      if (recordsError) throw recordsError;
-
-      setVotes(Array.isArray(voteRows) ? voteRows : []);
-      setVoteRecords(Array.isArray(recordRows) ? recordRows : []);
-    } catch (error) {
-      console.error("Unable to load member voting data:", error);
-      setVotes([]);
-      setVoteRecords([]);
-      setSystemMessage(error?.message || "Unable to load member voting data.");
-    } finally {
-      setLoadingVotes(false);
-    }
-  }
-
-  async function submitVote(item) {
-    if (!item?.id || !selectedVote[item.id]) {
-      setSystemMessage("Please select Approve, Reject, or Abstain before submitting.");
-      return;
-    }
-
-    try {
-      setSubmittingId(item.id);
       setSystemMessage("");
 
-      const voteValue = String(selectedVote[item.id]).toLowerCase();
-
-      const existingRecord = voteRecords.find(
-        (record) =>
-          String(record.vote_id) === String(item.id) &&
-          String(record.member_name || "").toLowerCase() ===
-            BOARD_MEMBER_NAME.toLowerCase()
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
 
-      if (existingRecord?.id) {
-        const { error } = await supabase
-          .from("association_board_vote_records")
-          .update({
-            vote: voteValue,
-            voted_at: new Date().toISOString(),
-          })
-          .eq("id", existingRecord.id);
+      const payload = await response.json();
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("association_board_vote_records")
-          .insert({
-            association_id: DEFAULT_ASSOCIATION_ID,
-            vote_id: item.id,
-            member_name: BOARD_MEMBER_NAME,
-            vote: voteValue,
-            voted_at: new Date().toISOString(),
-          });
-
-        if (error) throw error;
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load voting records.");
       }
 
-      await loadVotingData();
+      const votingRecords = (payload.openRecords || []).filter((record) => {
+        const requestType = String(record.request_type || "").toLowerCase();
+        const title = String(record.title || "").toLowerCase();
+        const description = String(record.description || "").toLowerCase();
+        const status = String(record.status || "").toLowerCase();
 
-      setSelectedVote((current) => ({
-        ...current,
-        [item.id]: "",
-      }));
+        const isVotingRelated =
+          requestType.includes("vote") ||
+          requestType.includes("voting") ||
+          requestType.includes("motion") ||
+          requestType.includes("election") ||
+          requestType.includes("meeting preparation") ||
+          title.includes("vote") ||
+          title.includes("voting") ||
+          title.includes("motion") ||
+          description.includes("vote") ||
+          description.includes("voting") ||
+          description.includes("motion");
 
-      setSystemMessage("Vote submitted and governance record updated.");
+        return isVotingRelated && !closedStatuses.includes(status);
+      });
+
+      setRecords(votingRecords);
     } catch (error) {
-      console.error("Unable to submit vote:", error);
-      setSystemMessage(error?.message || "Unable to submit vote.");
+      console.error("Unable to load portal board voting center:", error);
+      setSystemMessage(error.message || "Unable to load voting records.");
     } finally {
-      setSubmittingId(null);
+      setLoadingRecords(false);
     }
   }
 
-  const summary = useMemo(() => {
-    const openVotes = votes.filter(
-      (vote) => String(vote.status || "open").toLowerCase() !== "closed"
-    );
+  const criticalItems = useMemo(
+    () =>
+      records.filter((record) =>
+        ["critical", "high"].includes(String(record.priority || "").toLowerCase())
+      ),
+    [records]
+  );
 
-    const closedVotes = votes.filter(
-      (vote) => String(vote.status || "").toLowerCase() === "closed"
-    );
+  const motionItems = useMemo(
+    () =>
+      records.filter((record) => {
+        const combined = `${record.request_type || ""} ${record.title || ""} ${
+          record.description || ""
+        }`.toLowerCase();
 
-    const quorumMet = votes.filter((vote) => {
-      const records = getRecordsForVote(vote.id, voteRecords);
-      const approvals = records.filter(
-        (record) => String(record.vote || "").toLowerCase() === "approve"
-      ).length;
+        return combined.includes("motion");
+      }),
+    [records]
+  );
 
-      return approvals >= Number(vote.quorum_required || 3);
-    });
+  const electionItems = useMemo(
+    () =>
+      records.filter((record) => {
+        const combined = `${record.request_type || ""} ${record.title || ""} ${
+          record.description || ""
+        }`.toLowerCase();
 
-    const pendingRecords = voteRecords.filter(
-      (record) => String(record.vote || "").toLowerCase() === "pending"
-    );
+        return combined.includes("election");
+      }),
+    [records]
+  );
 
-    return {
-      openVotes,
-      closedVotes,
-      quorumMet,
-      pendingRecords,
-    };
-  }, [votes, voteRecords]);
+  const boardReviewItems = useMemo(
+    () => records.filter((record) => record.board_review_required),
+    [records]
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="border-b border-white/10 bg-slate-950/95">
-        <div className="mx-auto max-w-7xl px-6 py-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-yellow-300">
-                Governance Voting Surface
-              </p>
+      <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Stoutt Property Management
+            </p>
 
-              <h1 className="mt-3 text-4xl font-bold tracking-tight">
-                Member Voting
-              </h1>
+            <h1 className="mt-2 text-3xl font-semibold">
+              Portal Board Voting Center
+            </h1>
 
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-                Review open motions, cast director votes, monitor quorum, and preserve
-                board decision history across the governance workflow.
-              </p>
-            </div>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+              Live governance voting records flowing from Admin Operations Intake into
+              the board portal voting workflow.
+            </p>
+          </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Link href="/admin" className="navButtonGold">
-                Admin Dashboard
-              </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
 
-              <Link href="/" className="navButton">
-                Main Page
-              </Link>
-
-              <Link href="/board" className="navButton">
-                Board Dashboard
-              </Link>
-            </div>
+            <Link
+              href="/board"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Board Dashboard
+            </Link>
           </div>
         </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pt-10">
-        <div className="rounded-[2rem] border border-yellow-300/20 bg-gradient-to-br from-slate-900 via-slate-950 to-black p-8 shadow-2xl shadow-black/30">
-          <p className="text-xs uppercase tracking-[0.35em] text-yellow-300">
-            Live Voting Intelligence
-          </p>
-
-          <h2 className="mt-5 max-w-5xl text-3xl font-bold leading-tight md:text-5xl">
-            A calm voting surface connected to motions, meeting packets, elections,
-            and signature approvals.
-          </h2>
-
-          <div className="mt-8 grid gap-4 md:grid-cols-5">
-            <QuickLink href="/board/voting-center" label="Voting Center" />
-            <QuickLink href="/board/motion-center" label="Motion Center" />
-            <QuickLink href="/board/meeting-packet" label="Meeting Packet" />
-            <QuickLink href="/board/elections" label="Elections" />
-            <QuickLink href="/board/signature-approval-log" label="Signatures" />
-          </div>
-        </div>
-      </section>
+      </header>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid gap-5 md:grid-cols-4">
-          <Metric label="Open Votes" value={summary.openVotes.length} />
-          <Metric label="Quorum Met" value={summary.quorumMet.length} />
-          <Metric label="Pending Records" value={summary.pendingRecords.length} />
-          <Metric label="Closed Votes" value={summary.closedVotes.length} />
+        <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Distributed Operational Rendering
+          </p>
+
+          <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
+            Board voting now renders live governance records from the centralized
+            operating system.
+          </h2>
+
+          <p className="mt-4 max-w-4xl text-slate-300">
+            Motions, election matters, meeting preparation items, vote-ready issues,
+            and board review records can be created through Admin Operations Intake
+            and surfaced here for governance visibility.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/admin/operations/new?request_type=Meeting%20Preparation&return_path=/portal/board/voting-center&return_label=Portal%20Board%20Voting%20Center"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Voting Record
+            </Link>
+
+            <Link
+              href="/portal/board/member-voting"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Open Member Voting
+            </Link>
+
+            <Link
+              href="/board/motion-center"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Motion Center
+            </Link>
+
+            <Link
+              href="/board/meeting-packet"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Meeting Packet
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+          <Metric label="Voting Records" value={records.length} />
+          <Metric label="Priority Items" value={criticalItems.length} />
+          <Metric label="Motion Items" value={motionItems.length} />
+          <Metric label="Board Review" value={boardReviewItems.length} />
         </div>
 
         {systemMessage && (
-          <div className="mt-6 rounded-2xl border border-yellow-300/20 bg-yellow-300/10 px-5 py-4 text-sm font-semibold text-yellow-100">
+          <section className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
             {systemMessage}
-          </div>
+          </section>
         )}
-      </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="space-y-5">
-          {loadingVotes ? (
-            <Empty message="Loading member voting records..." />
-          ) : votes.length === 0 ? (
-            <Empty message="No voting items are currently available. Items created from the voting center or governance workflow will appear here." />
-          ) : (
-            votes.map((item) => (
-              <VotingCard
-                key={item.id}
-                item={item}
-                records={getRecordsForVote(item.id, voteRecords)}
-                selectedVote={selectedVote[item.id]}
-                submitting={submittingId === item.id}
-                onSelectVote={(value) =>
-                  setSelectedVote((current) => ({
-                    ...current,
-                    [item.id]: value,
-                  }))
-                }
-                onSubmit={() => submitVote(item)}
-              />
-            ))
-          )}
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <CategoryPanel title="Priority Voting Items" tone="red" items={criticalItems} />
+          <CategoryPanel title="Motion-Linked Items" tone="amber" items={motionItems} />
+          <CategoryPanel title="Election Items" tone="violet" items={electionItems} />
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.25em] text-amber-300">
+                Governance Voting Feed
+              </p>
+
+              <h3 className="mt-3 text-2xl font-semibold">
+                Live Voting Center Records
+              </h3>
+            </div>
+
+            <Link
+              href="/admin/operations/new?request_type=Meeting%20Preparation&return_path=/portal/board/voting-center&return_label=Portal%20Board%20Voting%20Center"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Voting Record
+            </Link>
+          </div>
+
+          <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
+            <div className="grid grid-cols-5 bg-white/[0.06] px-4 py-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+              <span>Type</span>
+              <span>Status</span>
+              <span>Assigned</span>
+              <span>Due</span>
+              <span>Priority</span>
+            </div>
+
+            {loadingRecords ? (
+              <div className="p-6 text-sm text-slate-400">
+                Loading voting records...
+              </div>
+            ) : records.length === 0 ? (
+              <div className="p-6 text-sm text-slate-400">
+                No voting records found. Use Create Voting Record to add a governance
+                voting item through Admin Operations Intake.
+              </div>
+            ) : (
+              records.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-5 border-t border-white/10 px-4 py-4 text-sm"
+                >
+                  <span>{item.request_type || "Voting Record"}</span>
+                  <span>{item.status || "Submitted"}</span>
+                  <span>{item.assigned_to || "Unassigned"}</span>
+                  <span>{formatDate(item.due_date)}</span>
+                  <span>{item.priority || "Normal"}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+          <h3 className="text-xl font-semibold text-amber-200">
+            Voting Workflow Connected
+          </h3>
+
+          <p className="mt-3 max-w-4xl text-slate-300">
+            This page now follows the same architecture as Meeting Packet: records are
+            created through Admin Operations Intake, saved into the operational record
+            system, and rendered here as a live board voting center.
+          </p>
         </div>
       </section>
-
-      <style jsx>{`
-        .navButton {
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(255, 255, 255, 0.05);
-          color: rgb(226, 232, 240);
-          border-radius: 999px;
-          padding: 0.75rem 1.1rem;
-          font-size: 0.85rem;
-          font-weight: 700;
-          transition: 0.2s ease;
-        }
-
-        .navButton:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-        }
-
-        .navButtonGold {
-          border: 1px solid rgba(250, 204, 21, 0.35);
-          background: rgba(250, 204, 21, 0.12);
-          color: rgb(254, 240, 138);
-          border-radius: 999px;
-          padding: 0.75rem 1.1rem;
-          font-size: 0.85rem;
-          font-weight: 800;
-          transition: 0.2s ease;
-        }
-
-        .navButtonGold:hover {
-          background: rgba(250, 204, 21, 0.22);
-          color: white;
-        }
-      `}</style>
     </main>
   );
 }
 
-function VotingCard({ item, records, selectedVote, submitting, onSelectVote, onSubmit }) {
-  const approvals = records.filter(
-    (record) => String(record.vote || "").toLowerCase() === "approve"
-  ).length;
-
-  const rejections = records.filter(
-    (record) => String(record.vote || "").toLowerCase() === "reject"
-  ).length;
-
-  const abstentions = records.filter(
-    (record) => String(record.vote || "").toLowerCase() === "abstain"
-  ).length;
-
-  const quorumRequired = Number(item.quorum_required || 3);
-  const quorumMet = approvals >= quorumRequired;
-  const status = String(item.status || "open").toLowerCase();
-  const isClosed = status === "closed";
+function CategoryPanel({ title, items, tone }) {
+  const toneClass =
+    tone === "red"
+      ? "border-red-400/20 bg-red-500/10 text-red-100"
+      : tone === "violet"
+      ? "border-violet-400/20 bg-violet-500/10 text-violet-100"
+      : "border-amber-400/20 bg-amber-400/10 text-amber-100";
 
   return (
-    <article className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-xl shadow-black/25">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex-1">
-          <div className="flex flex-wrap gap-2">
-            <Pill>{item.id || "Vote Item"}</Pill>
-            <Pill gold>{titleCase(item.vote_type || item.category || "board vote")}</Pill>
-            <Pill>{titleCase(item.status || "open")}</Pill>
-            <Pill>{quorumMet ? "Quorum Met" : "Quorum Pending"}</Pill>
+    <div className={`rounded-3xl border p-6 ${toneClass}`}>
+      <h3 className="text-xl font-semibold">{title}</h3>
+
+      <div className="mt-6 space-y-4">
+        {items.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 text-sm text-slate-400">
+            No records found.
           </div>
-
-          <h2 className="mt-5 text-2xl font-semibold text-white">
-            {item.title || item.motion_title || "Board Voting Item"}
-          </h2>
-
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-400">
-            {item.description ||
-              item.notes ||
-              "This voting item is available for board member review and recorded governance action."}
-          </p>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-4">
-            <DetailBox label="Amount" value={formatCurrencyOrNA(item.amount)} />
-            <DetailBox label="Approvals" value={`${approvals} of ${quorumRequired}`} />
-            <DetailBox label="Reject / Abstain" value={`${rejections} / ${abstentions}`} />
-            <DetailBox label="Deadline" value={formatDateTime(item.deadline)} />
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-5">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <h3 className="text-lg font-semibold">Governance Vote Record</h3>
-
-              <span
-                className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                  quorumMet
-                    ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
-                    : "border-yellow-300/30 bg-yellow-300/10 text-yellow-200"
-                }`}
-              >
-                {quorumMet ? "Approval threshold reached" : "Awaiting additional approval"}
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-5">
-              {records.length === 0 ? (
-                <div className="md:col-span-5">
-                  <Empty message="No vote records have been attached to this voting item yet." />
-                </div>
-              ) : (
-                records.map((record) => (
-                  <div
-                    key={record.id}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-                  >
-                    <p className="text-xs text-slate-500">
-                      {record.member_name || "Board Member"}
-                    </p>
-
-                    <p className={`mt-2 text-sm font-semibold ${voteColor(record.vote)}`}>
-                      {titleCase(record.vote || "pending")}
-                    </p>
-
-                    <p className="mt-2 text-[11px] text-slate-500">
-                      {formatDateTime(record.voted_at)}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        <aside className="w-full rounded-3xl border border-white/10 bg-black/25 p-5 xl:w-80">
-          <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-            Cast Director Vote
-          </p>
-
-          <div className="mt-5 space-y-3">
-            {["Approve", "Reject", "Abstain"].map((vote) => (
-              <button
-                key={vote}
-                type="button"
-                onClick={() => onSelectVote(vote)}
-                disabled={isClosed || submitting}
-                className={`w-full rounded-xl py-3 text-sm font-semibold transition ${
-                  selectedVote === vote
-                    ? "bg-yellow-400 text-black"
-                    : "border border-white/10 bg-white/[0.05] text-slate-300 hover:bg-white/[0.1]"
-                } disabled:cursor-not-allowed disabled:opacity-40`}
-              >
-                {vote}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              onClick={onSubmit}
-              disabled={!selectedVote || isClosed || submitting}
-              className="w-full rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"
+        ) : (
+          items.map((item) => (
+            <div
+              key={item.id}
+              className="rounded-2xl border border-white/10 bg-slate-950/60 p-5"
             >
-              {submitting ? "Submitting..." : isClosed ? "Vote Closed" : "Submit Vote"}
-            </button>
-          </div>
-        </aside>
+              <div className="flex flex-wrap gap-2">
+                <span
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                    item.priority
+                  )}`}
+                >
+                  {item.priority || "Normal"}
+                </span>
+              </div>
+
+              <h4 className="mt-3 font-semibold text-white">
+                {item.title || "Untitled Voting Record"}
+              </h4>
+
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                {item.description || "No description provided."}
+              </p>
+
+              <p className="mt-3 text-xs text-slate-500">
+                Due: {formatDate(item.due_date)}
+              </p>
+            </div>
+          ))
+        )}
       </div>
-    </article>
-  );
-}
-
-function QuickLink({ href, label }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-center text-sm font-semibold text-slate-200 transition hover:border-yellow-300/30 hover:bg-yellow-300/10 hover:text-yellow-100"
-    >
-      {label}
-    </Link>
-  );
-}
-
-function DetailBox({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-        {label}
-      </p>
-
-      <p className="mt-2 text-sm font-semibold text-slate-200">
-        {value}
-      </p>
     </div>
   );
 }
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
-      <div className="text-3xl font-bold text-yellow-300">{value}</div>
-      <div className="mt-2 text-sm text-slate-300">{label}</div>
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+      <p className="text-sm text-slate-400">{label}</p>
+      <p className="mt-3 text-4xl font-semibold text-amber-300">{value}</p>
     </div>
   );
-}
-
-function Empty({ message }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
-      {message}
-    </div>
-  );
-}
-
-function Pill({ children, gold = false }) {
-  return (
-    <span
-      className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-        gold
-          ? "border-yellow-300/30 bg-yellow-300/10 text-yellow-200"
-          : "border-white/10 bg-white/[0.04] text-slate-300"
-      }`}
-    >
-      {children}
-    </span>
-  );
-}
-
-function getRecordsForVote(voteId, records) {
-  return (records || []).filter((record) => String(record.vote_id) === String(voteId));
-}
-
-function voteColor(vote) {
-  const value = String(vote || "").toLowerCase();
-
-  if (value === "approve") return "text-emerald-300";
-  if (value === "reject") return "text-red-300";
-  if (value === "abstain") return "text-yellow-300";
-
-  return "text-slate-400";
-}
-
-function formatCurrencyOrNA(value) {
-  if (value === null || value === undefined || value === "") return "N/A";
-
-  const amount = Number(value);
-
-  if (!Number.isFinite(amount)) return "N/A";
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
-
-function formatDateTime(value) {
-  if (!value) return "N/A";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "N/A";
-
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function titleCase(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
