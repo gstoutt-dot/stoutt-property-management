@@ -227,11 +227,11 @@ export default function Elections() {
             </div>
 
             <Link
-              href="/admin/operations/new"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Election Record
-            </Link>
+  href="/admin/operations/new?request_type=Election%20Preparation&return_path=/board/elections&return_label=Elections"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Election Record
+</Link>
           </div>
 
           <div className="space-y-5">
