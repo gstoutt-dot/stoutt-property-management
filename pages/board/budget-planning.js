@@ -223,11 +223,11 @@ export default function BoardBudgetPlanning() {
             </div>
 
             <Link
-              href="/admin/operations/new"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Budget Record
-            </Link>
+  href="/admin/operations/new?request_type=Budget%20Planning&return_path=/board/budget-planning&return_label=Budget%20Planning"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Budget Record
+</Link>
           </div>
 
           <div className="space-y-5">
