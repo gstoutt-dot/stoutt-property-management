@@ -1,215 +1,371 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const searchResults = [
-  {
-    title: "Pool Lighting Replacement Approval",
-    category: "Resolution",
-    source: "Resolution Tracker",
-    date: "April 24, 2026",
-    linked: "RES-2026-014 / MOT-2026-021",
-    summary:
-      "Approved vendor proposal for replacement of pool lighting after inspection review.",
-  },
-  {
-    title: "Updated Collection Policy Draft",
-    category: "Policy",
-    source: "Policy Library",
-    date: "April 24, 2026",
-    linked: "Document Approval / Resolution Tracker",
-    summary:
-      "Draft policy revision with attorney comments and board review history.",
-  },
-  {
-    title: "Annual Budget Adoption Packet",
-    category: "Budget",
-    source: "Budget Planning",
-    date: "May 30, 2026",
-    linked: "Annual Requirements / Approval Queue",
-    summary:
-      "Budget draft, reserve schedule, and adoption approval workflow.",
-  },
-  {
-    title: "Insurance Renewal Comparison",
-    category: "Insurance",
-    source: "Insurance Center",
-    date: "June 12, 2026",
-    linked: "Compliance Calendar / Document Approval",
-    summary:
-      "Carrier comparison and coverage recommendation pending board review.",
-  },
-];
+const DEFAULT_ASSOCIATION_ID =
+  "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const searchableAreas = [
-  "Motions",
-  "Resolutions",
+  "Budget Planning",
+  "Elections",
+  "Legal Review",
+  "Insurance & Risk",
+  "Vendor Performance",
+  "Capital Projects",
+  "Technology Integrations",
+  "Help & Training",
   "Policies",
-  "Documents",
-  "Meeting Minutes",
-  "Approvals",
-  "Tasks",
-  "Vendors",
-  "Legal Items",
-  "Insurance Records",
-  "Budget Records",
-  "Compliance Deadlines",
+  "Compliance",
+  "Board Reviews",
+  "Special Projects",
 ];
 
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value === "high") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function BoardSearchCenter() {
+  const [records, setRecords] = useState([]);
+  const [filteredRecords, setFilteredRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [requestFilter, setRequestFilter] = useState("All");
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadOperationalRecords();
+  }, []);
+
+  useEffect(() => {
+    let filtered = [...records];
+
+    if (requestFilter !== "All") {
+      filtered = filtered.filter(
+        (record) =>
+          String(record.request_type || "").toLowerCase() ===
+          requestFilter.toLowerCase()
+      );
+    }
+
+    if (searchTerm.trim()) {
+      const value = searchTerm.toLowerCase();
+
+      filtered = filtered.filter((record) => {
+        return (
+          String(record.title || "")
+            .toLowerCase()
+            .includes(value) ||
+          String(record.description || "")
+            .toLowerCase()
+            .includes(value) ||
+          String(record.request_type || "")
+            .toLowerCase()
+            .includes(value) ||
+          String(record.assigned_to || "")
+            .toLowerCase()
+            .includes(value) ||
+          String(record.status || "")
+            .toLowerCase()
+            .includes(value) ||
+          String(record.routing_target || "")
+            .toLowerCase()
+            .includes(value)
+        );
+      });
+    }
+
+    setFilteredRecords(filtered);
+  }, [records, searchTerm, requestFilter]);
+
+  async function loadOperationalRecords() {
+    try {
+      setLoadingRecords(true);
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message ||
+            "Unable to load operational records."
+        );
+      }
+
+      setRecords(payload.openRecords || []);
+    } catch (error) {
+      console.error(
+        "Unable to load operational records:",
+        error
+      );
+
+      setSystemMessage(
+        error.message ||
+          "Unable to load operational records."
+      );
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
+  const requestTypes = useMemo(() => {
+    const unique = new Set();
+
+    records.forEach((record) => {
+      if (record.request_type) {
+        unique.add(record.request_type);
+      }
+    });
+
+    return ["All", ...Array.from(unique)];
+  }, [records]);
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide">
-            Stoutt Board Portal
-          </Link>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+              Stoutt Property Management
+            </div>
 
-          <nav className="hidden gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Portal</Link>
-            <Link href="/board/violation-review">Violations</Link>
-            <Link href="/board/architectural-approvals">ARC Approvals</Link>
-            <Link href="/board/maintenance-review">Maintenance</Link>
-            <Link href="/board/financial-review">Financials</Link>
-          </nav>
+            <h1 className="mt-3 text-3xl font-semibold">
+              Board Search Center
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+
+            <Link
+              href="/board"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Main Page
+            </Link>
+          </div>
         </div>
       </header>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-10 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Unified Board Search
+            Unified Operational Search
           </p>
+
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Board Search Center
+            Distributed Operational Record Search
           </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            Search across motions, resolutions, policies, documents, meeting
-            minutes, approvals, tasks, vendors, legal items, insurance records,
-            budget records, and compliance deadlines from one place.
+
+          <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-300">
+            Search across budget planning, legal review,
+            elections, insurance, vendor oversight, policies,
+            training, technology integrations, capital projects,
+            compliance records and operational workflows from
+            one unified board search center.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-amber-400/20 bg-amber-300/10 p-6 shadow-xl">
-            <h2 className="text-xl font-semibold text-amber-200">
-              Why This Matters
-            </h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Board members should not need to remember which module contains a
-              record. Search gives them one clean path to find the motion,
-              policy, document, approval, or decision they need.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <h2 className="text-xl font-semibold">Cross-Portal Discovery</h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Results can surface from governance, financials, legal review,
-              insurance, vendors, minutes, approvals, tasks, and compliance
-              records.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-            <h2 className="text-xl font-semibold">Faster Board Answers</h2>
-            <p className="mt-4 leading-7 text-slate-300">
-              Instead of digging through packets, emails, or old meeting notes,
-              board members can quickly locate records and follow the linked
-              workflow trail.
-            </p>
-          </div>
-        </div>
-
-        <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold">Search Portal Records</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              Enter a keyword, motion number, resolution number, vendor name,
-              policy title, document name, or deadline.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4 md:flex-row">
-            <input
-              type="text"
-              placeholder="Search motions, resolutions, policies, documents, vendors..."
-              className="min-h-[52px] flex-1 rounded-full border border-white/10 bg-slate-900 px-6 text-sm text-white outline-none placeholder:text-slate-500 focus:border-amber-300/60"
-            />
-            <button className="rounded-full bg-amber-300 px-8 py-3 text-sm font-semibold text-slate-950">
-              Search
-            </button>
-          </div>
-        </section>
-
-        <div className="mt-10 grid gap-6 md:grid-cols-4">
+        <section className="grid gap-6 md:grid-cols-4">
           {[
-            ["Indexed Records", "2,418"],
-            ["Linked Modules", "12"],
-            ["Saved Searches", "18"],
-            ["Recent Searches", "42"],
+            ["Indexed Operational Records", records.length],
+            ["Filtered Results", filteredRecords.length],
+            ["Connected Modules", searchableAreas.length],
+            ["Request Types", requestTypes.length - 1],
           ].map(([label, value]) => (
             <div
               key={label}
               className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl"
             >
               <p className="text-sm text-slate-400">{label}</p>
-              <p className="mt-3 text-3xl font-bold text-amber-300">{value}</p>
+
+              <p className="mt-3 text-3xl font-bold text-amber-300">
+                {value}
+              </p>
             </div>
           ))}
-        </div>
+        </section>
+
+        <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold">
+              Search Operational Records
+            </h2>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Search titles, descriptions, routing targets,
+              request types, assignments and operational records.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
+              placeholder="Search operational records..."
+              className="min-h-[56px] rounded-2xl border border-white/10 bg-slate-900 px-6 text-sm text-white outline-none placeholder:text-slate-500 focus:border-amber-300/60"
+            />
+
+            <select
+              value={requestFilter}
+              onChange={(event) =>
+                setRequestFilter(event.target.value)
+              }
+              className="min-h-[56px] rounded-2xl border border-white/10 bg-slate-900 px-5 text-sm text-white outline-none focus:border-amber-300/60"
+            >
+              {requestTypes.map((type) => (
+                <option key={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+        </section>
+
+        {systemMessage && (
+          <section className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </section>
+        )}
 
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold">Sample Search Results</h2>
+              <h2 className="text-2xl font-semibold">
+                Live Operational Search Results
+              </h2>
+
               <p className="mt-2 text-sm text-slate-400">
-                Results show category, source module, date, linked records, and
-                short summary.
+                Search results now render directly from the
+                centralized Admin Operations Intake system.
               </p>
             </div>
 
             <div className="space-y-5">
-              {searchResults.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-slate-900/80 p-5"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
-                        {item.category} · {item.source} · {item.date}
-                      </p>
-                      <h3 className="mt-2 text-xl font-semibold">
-                        {item.title}
-                      </h3>
+              {loadingRecords ? (
+                <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 text-sm text-slate-400">
+                  Loading operational records...
+                </div>
+              ) : filteredRecords.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 bg-slate-900/70 p-8">
+                  <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    No Results
+                  </div>
+
+                  <h3 className="mt-4 text-2xl font-semibold">
+                    No matching operational records found
+                  </h3>
+
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                    Try adjusting the search term or request
+                    type filter.
+                  </p>
+                </div>
+              ) : (
+                filteredRecords.map((record) => (
+                  <div
+                    key={record.id}
+                    className="rounded-2xl border border-white/10 bg-slate-900/80 p-5"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                              record.priority
+                            )}`}
+                          >
+                            {record.priority || "Normal"}
+                          </span>
+
+                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                            {record.request_type ||
+                              "Operational Record"}
+                          </span>
+
+                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                            {record.status || "Submitted"}
+                          </span>
+                        </div>
+
+                        <h3 className="mt-3 text-xl font-semibold">
+                          {record.title}
+                        </h3>
+                      </div>
+
+                      <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
+                        {formatDate(record.due_date)}
+                      </span>
                     </div>
 
-                    <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
-                      View Record
-                    </span>
-                  </div>
+                    <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
+                      <p>
+                        <span className="text-slate-500">
+                          Assigned To:
+                        </span>{" "}
+                        {record.assigned_to || "Unassigned"}
+                      </p>
 
-                  <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
-                    <p>
-                      <span className="text-slate-500">Linked Record:</span>{" "}
-                      {item.linked}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Record Type:</span>{" "}
-                      {item.category}
-                    </p>
-                    <p className="md:col-span-2">
-                      <span className="text-slate-500">Summary:</span>{" "}
-                      {item.summary}
-                    </p>
+                      <p>
+                        <span className="text-slate-500">
+                          Routing:
+                        </span>{" "}
+                        {record.routing_target ||
+                          "Admin Dashboard"}
+                      </p>
+
+                      <p className="md:col-span-2">
+                        <span className="text-slate-500">
+                          Description:
+                        </span>{" "}
+                        {record.description ||
+                          "No description provided."}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
           <aside className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Searchable Areas</h2>
+              <h2 className="text-xl font-semibold">
+                Searchable Areas
+              </h2>
+
               <div className="mt-5 grid gap-3">
                 {searchableAreas.map((item) => (
                   <div
@@ -223,14 +379,17 @@ export default function BoardSearchCenter() {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
-              <h2 className="text-xl font-semibold">Useful Searches</h2>
+              <h2 className="text-xl font-semibold">
+                Useful Searches
+              </h2>
+
               <div className="mt-5 space-y-3 text-sm text-slate-300">
-                <p>• “collection policy”</p>
                 <p>• “insurance renewal”</p>
+                <p>• “reserve study”</p>
+                <p>• “vendor performance”</p>
                 <p>• “budget adoption”</p>
-                <p>• “pool lighting”</p>
-                <p>• “vendor agreement”</p>
-                <p>• “RES-2026”</p>
+                <p>• “capital project”</p>
+                <p>• “policy review”</p>
               </div>
             </div>
           </aside>
@@ -238,13 +397,15 @@ export default function BoardSearchCenter() {
 
         <section className="mt-10 rounded-3xl border border-amber-400/20 bg-gradient-to-r from-amber-300/10 to-slate-900 p-8 shadow-2xl">
           <h2 className="text-2xl font-semibold text-amber-200">
-            One Search Bar for the Board’s Entire Record
+            One Search Layer Across the Entire Operating System
           </h2>
-          <p className="mt-4 max-w-4xl leading-8 text-slate-300">
-            This search center turns the Board Portal into a true knowledge
-            system. Board members can find the exact record they need, follow
-            the linked governance trail, and understand the decision history
-            without chasing old emails, documents, or meeting packets.
+
+          <p className="mt-4 max-w-5xl leading-8 text-slate-300">
+            This search center transforms the Board Portal into a
+            true operational intelligence layer. Board members can
+            find the exact record they need, follow governance
+            history, review operational context and track workflow
+            progression without digging through disconnected systems.
           </p>
         </section>
       </section>
