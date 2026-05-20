@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -178,40 +177,46 @@ export default function AdminDashboard() {
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadOperationalRecords();
+  loadOperationalRecords({ showLoading: true });
 
-    const interval = setInterval(() => {
-      loadOperationalRecords();
-    }, 10000);
+  const interval = setInterval(() => {
+    loadOperationalRecords({ showLoading: false });
+  }, 30000);
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, []);
 
-  async function loadOperationalRecords() {
-    try {
+  async function loadOperationalRecords({ showLoading = false } = {}) {
+  try {
+    if (showLoading) {
       setLoadingRecords(true);
-      setSystemMessage("");
-
-      const { data, error } = await supabase
-        .from("admin_operational_records")
-        .select("*")
-        .eq("association_id", DEFAULT_ASSOCIATION_ID)
-        .order("created_at", { ascending: false })
-        .limit(8);
-
-      if (error) throw error;
-
-      setRecords(data || []);
-    } catch (error) {
-      console.error("Unable to load admin operational records:", error);
-      setRecords([]);
-      setSystemMessage(
-        error.message || "Unable to load admin operational records."
-      );
-    } finally {
-      setLoadingRecords(false);
     }
+
+    setSystemMessage("");
+
+    const response = await fetch(
+      `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(
+        payload.message || "Unable to load admin operational records."
+      );
+    }
+
+    setRecords(payload.openRecords || []);
+  } catch (error) {
+    console.error("Unable to load admin operational records:", error);
+
+    setSystemMessage(
+      error.message || "Unable to load admin operational records."
+    );
+  } finally {
+    setLoadingRecords(false);
   }
+}
 
   const openRecords = useMemo(
     () =>
