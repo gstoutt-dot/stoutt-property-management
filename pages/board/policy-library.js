@@ -202,11 +202,11 @@ export default function BoardPolicyLibrary() {
               </div>
 
               <Link
-                href="/admin/operations/new"
-                className="w-fit rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-              >
-                Create Policy Record
-              </Link>
+  href="/admin/operations/new?request_type=Policy%20Review&return_path=/board/policy-library&return_label=Policy%20Library"
+  className="w-fit rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Policy Record
+</Link>
             </div>
 
             <div className="space-y-4">
