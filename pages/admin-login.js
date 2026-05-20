@@ -31,12 +31,12 @@ export default function HomeownerLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // 🔥 ROLE-BASED ROUTING FUNCTION
+    // ROLE-BASED ROUTING FUNCTION
   const getRouteByRole = (role) => {
-    if (role === "owner") return "/portal";
-    if (role === "manager") return "/portal";
+    if (role === "owner") return "/portal/owner";
+    if (role === "manager") return "/portal/manager";
     if (role === "board") return "/board";
-    if (role === "admin") return "/software-dashboard";
+    if (role === "admin") return "/admin";
     return "/";
   };
 
