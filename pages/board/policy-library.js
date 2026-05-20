@@ -1,22 +1,146 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+
+const closedStatuses = ["completed", "archived", "closed"];
+
+const policyAreas = [
+  "Board-Adopted Policies",
+  "Rules & Regulations",
+  "Enforcement Policies",
+  "Collection Policies",
+  "ARC Guidelines",
+  "Meeting Conduct",
+  "Document Retention",
+  "Review Dates",
+];
+
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value === "high") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function BoardPolicyLibrary() {
+  const [records, setRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadPolicyRecords({ showLoading: true });
+
+    const interval = setInterval(() => {
+      loadPolicyRecords({ showLoading: false });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadPolicyRecords({ showLoading = false } = {}) {
+    try {
+      if (showLoading) {
+        setLoadingRecords(true);
+      }
+
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load policy review records.");
+      }
+
+      const policyRecords = (payload.openRecords || []).filter((record) => {
+        const requestType = String(record.request_type || "").toLowerCase();
+        const status = String(record.status || "").toLowerCase();
+
+        return requestType.includes("policy") && !closedStatuses.includes(status);
+      });
+
+      setRecords(policyRecords);
+    } catch (error) {
+      console.error("Unable to load policy review records:", error);
+      setSystemMessage(error.message || "Unable to load policy review records.");
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
+  const boardReviewCount = useMemo(
+    () => records.filter((record) => Boolean(record.board_review_required)).length,
+    [records]
+  );
+
+  const highPriorityCount = useMemo(
+    () =>
+      records.filter((record) =>
+        ["critical", "high"].includes(String(record.priority || "").toLowerCase())
+      ).length,
+    [records]
+  );
+
+  const nextDueRecord = useMemo(() => {
+    return [...records]
+      .filter((record) => Boolean(record.due_date))
+      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0];
+  }, [records]);
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide text-white">
-            Stoutt Board Portal
-          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Stoutt Property Management
+            </p>
 
-          <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board" className="hover:text-amber-300">Board Portal</Link>
-            <Link href="/board/violation-review" className="hover:text-amber-300">Violations</Link>
-            <Link href="/board/architectural-approvals" className="hover:text-amber-300">ARC Approvals</Link>
-            <Link href="/board/maintenance-review" className="hover:text-amber-300">Maintenance</Link>
-            <Link href="/board/financial-review" className="hover:text-amber-300">Financials</Link>
-          </nav>
+            <h1 className="mt-2 text-2xl font-semibold">
+              Board Policy Library
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+
+            <Link
+              href="/board"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Main Page
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -34,18 +158,18 @@ export default function BoardPolicyLibrary() {
             </h1>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-              A centralized governance hub for board-adopted policies, rules and
-              regulations, enforcement standards, collection policies, ARC guidelines,
-              meeting conduct policies, document retention, and policy review dates.
+              Policy review records created from the Admin Dashboard now appear here
+              for governance tracking, annual review cycles, counsel review, board
+              adoption, and policy continuity.
             </p>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-4">
             {[
-              ["Active Policies", "38"],
-              ["Review Needed", "6"],
-              ["Adopted This Year", "9"],
-              ["Compliance Status", "94%"],
+              ["Open Policy Records", records.length],
+              ["High Priority", highPriorityCount],
+              ["Board Review", boardReviewCount],
+              ["Next Due", nextDueRecord ? formatDate(nextDueRecord.due_date) : "None"],
             ].map(([label, value]) => (
               <div
                 key={label}
@@ -60,72 +184,118 @@ export default function BoardPolicyLibrary() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-20">
+        {systemMessage && (
+          <div className="mb-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </div>
+        )}
+
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/20 lg:col-span-2">
             <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                  Policy Register
+                  Distributed Operational Rendering
                 </p>
+
                 <h2 className="mt-2 text-2xl font-bold text-white">
-                  Board-Adopted Policies Under Review
+                  Live Policy Review Records
                 </h2>
+
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                  These records originate from the Admin Operations Intake and are
+                  rendered here because their request type is Policy Review.
+                </p>
               </div>
 
-              <span className="w-fit rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-200">
-                Annual Review Cycle
-              </span>
+              <Link
+                href="/admin/operations/new"
+                className="w-fit rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+              >
+                Create Policy Record
+              </Link>
             </div>
 
             <div className="space-y-4">
-              {[
-                {
-                  title: "Collections & Delinquency Policy",
-                  status: "Review Needed",
-                  detail:
-                    "Defines late notices, attorney referral timing, payment plans, owner communication, fees, and escalation requirements.",
-                },
-                {
-                  title: "Violation Enforcement Policy",
-                  status: "Active",
-                  detail:
-                    "Provides consistent enforcement standards for notices, hearings, fines, documentation, photos, and repeat violations.",
-                },
-                {
-                  title: "Architectural Review Guidelines",
-                  status: "Updated",
-                  detail:
-                    "Clarifies ARC submission requirements, review standards, approval conditions, completion deadlines, and owner obligations.",
-                },
-                {
-                  title: "Board Meeting Conduct Policy",
-                  status: "Board Review",
-                  detail:
-                    "Addresses meeting order, owner comments, speaking limits, agenda control, director conduct, and executive session protocol.",
-                },
-                {
-                  title: "Document Retention Policy",
-                  status: "Counsel Review",
-                  detail:
-                    "Organizes retention periods, official records, contracts, financials, minutes, ballots, owner correspondence, and archive standards.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-slate-950/70 p-5"
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-slate-400">{item.detail}</p>
-                    </div>
-
-                    <span className="w-fit rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200">
-                      {item.status}
-                    </span>
-                  </div>
+              {loadingRecords ? (
+                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 text-sm text-slate-400">
+                  Loading policy review records...
                 </div>
-              ))}
+              ) : records.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/70 p-6">
+                  <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    Clear
+                  </div>
+
+                  <h3 className="mt-4 text-lg font-semibold text-white">
+                    No open policy review records
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Create a new admin operational record with request type Policy
+                    Review and it will appear here automatically.
+                  </p>
+                </div>
+              ) : (
+                records.map((record) => (
+                  <div
+                    key={record.id}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 p-5"
+                  >
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <div className="flex flex-wrap gap-2">
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                              record.priority
+                            )}`}
+                          >
+                            {record.priority || "Normal"}
+                          </span>
+
+                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                            {record.status || "Submitted"}
+                          </span>
+
+                          {record.board_review_required && (
+                            <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                              Board Review
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="mt-4 text-lg font-semibold text-white">
+                          {record.title}
+                        </h3>
+
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                          {record.description ||
+                            "Policy review record submitted for governance review."}
+                        </p>
+
+                        {record.recommended_action && (
+                          <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
+                            <div className="text-xs uppercase tracking-[0.2em] text-amber-300">
+                              Recommended Action
+                            </div>
+
+                            <p className="mt-2 text-sm leading-6 text-slate-300">
+                              {record.recommended_action}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="shrink-0 text-sm text-slate-400">
+                        Due:{" "}
+                        <span className="text-amber-300">
+                          {formatDate(record.due_date)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -133,28 +303,41 @@ export default function BoardPolicyLibrary() {
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
               Library Health
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-white">Policy Readiness</h2>
+
+            <h2 className="mt-2 text-2xl font-bold text-white">
+              Policy Readiness
+            </h2>
 
             <div className="mt-8">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-5xl font-bold text-white">94%</p>
-                  <p className="mt-2 text-sm text-slate-400">Current policy compliance</p>
+                  <p className="text-5xl font-bold text-white">
+                    {records.length === 0 ? "100%" : "94%"}
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Current policy compliance
+                  </p>
                 </div>
+
                 <p className="text-sm text-amber-300">Target: 100%</p>
               </div>
 
               <div className="mt-6 h-3 overflow-hidden rounded-full bg-slate-800">
-                <div className="h-full w-[94%] rounded-full bg-amber-400" />
+                <div
+                  className={`h-full rounded-full bg-amber-400 ${
+                    records.length === 0 ? "w-full" : "w-[94%]"
+                  }`}
+                />
               </div>
             </div>
 
             <div className="mt-8 space-y-4">
               {[
-                ["Active Policies", "38"],
-                ["Review Needed", "6"],
-                ["Counsel Review", "2"],
-                ["Expired Review Dates", "1"],
+                ["Open Policy Records", records.length],
+                ["High Priority", highPriorityCount],
+                ["Board Review", boardReviewCount],
+                ["Next Due", nextDueRecord ? formatDate(nextDueRecord.due_date) : "None"],
               ].map(([label, value]) => (
                 <div
                   key={label}
@@ -169,46 +352,16 @@ export default function BoardPolicyLibrary() {
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              title: "Board-Adopted Policies",
-              text: "Store official board policies with adoption dates, review cycles, approval records, related minutes, and current status.",
-            },
-            {
-              title: "Rules & Regulations",
-              text: "Organize community rules, resident standards, common area policies, amenity rules, parking rules, and use restrictions.",
-            },
-            {
-              title: "Enforcement Policies",
-              text: "Centralize violation notice standards, hearing procedures, fine schedules, documentation rules, and escalation steps.",
-            },
-            {
-              title: "Collection Policies",
-              text: "Track late fees, notice timing, payment plan standards, attorney referral thresholds, owner communication, and collection steps.",
-            },
-            {
-              title: "ARC Guidelines",
-              text: "Maintain architectural standards, application requirements, review timelines, approval conditions, and project completion rules.",
-            },
-            {
-              title: "Meeting Conduct",
-              text: "Document meeting procedures, owner comment rules, agenda control, board conduct expectations, and executive session protocol.",
-            },
-            {
-              title: "Document Retention",
-              text: "Define storage timelines for official records, minutes, contracts, financials, ballots, notices, emails, and owner files.",
-            },
-            {
-              title: "Review Dates",
-              text: "Track annual policy review dates, expired policies, counsel review needs, board approvals, and pending updates.",
-            },
-          ].map((card) => (
+          {policyAreas.map((area) => (
             <div
-              key={card.title}
+              key={area}
               className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition hover:border-amber-400/40 hover:bg-white/[0.06]"
             >
-              <h3 className="text-xl font-bold text-white">{card.title}</h3>
-              <p className="mt-4 text-sm leading-6 text-slate-400">{card.text}</p>
+              <h3 className="text-xl font-bold text-white">{area}</h3>
+              <p className="mt-4 text-sm leading-6 text-slate-400">
+                Track review status, adoption history, responsible party, board
+                action, counsel review, and next update cycle.
+              </p>
             </div>
           ))}
         </div>
@@ -217,25 +370,31 @@ export default function BoardPolicyLibrary() {
           <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                SPM Governance Advantage
+                Distributed Rendering Status
               </p>
+
               <h2 className="mt-3 text-3xl font-bold text-white">
-                Consistent policies create consistent governance.
+                Policy review is now connected to centralized admin intake.
               </h2>
+
               <p className="mt-4 max-w-3xl text-slate-300">
-                This library helps boards avoid outdated rules, inconsistent enforcement,
-                missing review dates, and scattered policy records by keeping every
-                adopted standard organized, visible, and connected to board action.
+                Policy Review records remain visible from the main Admin Dashboard
+                priority queue while also rendering here inside the Policy Library
+                for module-specific governance oversight.
               </p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
               <p className="text-sm text-slate-400">Next Policy Action</p>
+
               <p className="mt-2 text-xl font-semibold text-white">
-                Review collections policy update
+                {nextDueRecord ? nextDueRecord.title : "No open policy action"}
               </p>
+
               <p className="mt-3 text-sm text-amber-200">
-                Recommended before annual policy review closes.
+                {nextDueRecord
+                  ? `Due ${formatDate(nextDueRecord.due_date)}`
+                  : "Policy review queue is currently clear."}
               </p>
             </div>
           </div>
