@@ -234,8 +234,6 @@ export default function BoardLegalReview() {
 >
   Create Legal Record
 </Link>
-              Create Legal Record
-            </Link>
           </div>
 
           <div className="space-y-5">
