@@ -184,11 +184,17 @@ export default function PortalBoardVotingCenter() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/admin/operations/new?request_type=Meeting%20Preparation&return_path=/portal/board/voting-center&return_label=Portal%20Board%20Voting%20Center"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Voting Record
-            </Link>
+  href={`/admin/operations/new?request_type=${encodeURIComponent(
+    "Meeting Preparation"
+  )}&return_path=${encodeURIComponent(
+    "/portal/board/voting-center"
+  )}&return_label=${encodeURIComponent(
+    "Portal Board Voting Center"
+  )}`}
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Voting Record
+</Link>
 
             <Link
               href="/portal/board/member-voting"
@@ -245,11 +251,17 @@ export default function PortalBoardVotingCenter() {
             </div>
 
             <Link
-              href="/admin/operations/new?request_type=Meeting%20Preparation&return_path=/portal/board/voting-center&return_label=Portal%20Board%20Voting%20Center"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Voting Record
-            </Link>
+  href={`/admin/operations/new?request_type=${encodeURIComponent(
+    "Meeting Preparation"
+  )}&return_path=${encodeURIComponent(
+    "/portal/board/voting-center"
+  )}&return_label=${encodeURIComponent(
+    "Portal Board Voting Center"
+  )}`}
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Voting Record
+</Link>
           </div>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
