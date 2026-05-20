@@ -1,8 +1,140 @@
-// pages/board/technology-integrations.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
-import Link from 'next/link'
+const DEFAULT_ASSOCIATION_ID =
+  "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+
+const closedStatuses = ["completed", "archived", "closed"];
+
+const integrationWorkflow = [
+  "Connect core operational systems",
+  "Validate sync reliability and data mapping",
+  "Monitor integration health and exceptions",
+  "Review governance and security exposure",
+  "Prepare migration-readiness architecture",
+  "Expand operational automation carefully",
+];
+
+function priorityStyle(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value === "high") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
+
+function formatDate(value) {
+  if (!value) return "No due date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export default function TechnologyIntegrationsCenter() {
+  const [records, setRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadTechnologyRecords({ showLoading: true });
+
+    const interval = setInterval(() => {
+      loadTechnologyRecords({ showLoading: false });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadTechnologyRecords({ showLoading = false } = {}) {
+    try {
+      if (showLoading) {
+        setLoadingRecords(true);
+      }
+
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message || "Unable to load technology integration records."
+        );
+      }
+
+      const technologyRecords = (payload.openRecords || []).filter(
+        (record) => {
+          const requestType = String(
+            record.request_type || ""
+          ).toLowerCase();
+
+          const status = String(record.status || "").toLowerCase();
+
+          return (
+            requestType.includes("technology") &&
+            !closedStatuses.includes(status)
+          );
+        }
+      );
+
+      setRecords(technologyRecords);
+    } catch (error) {
+      console.error(
+        "Unable to load technology integration records:",
+        error
+      );
+
+      setSystemMessage(
+        error.message ||
+          "Unable to load technology integration records."
+      );
+    } finally {
+      setLoadingRecords(false);
+    }
+  }
+
+  const boardReviewCount = useMemo(
+    () =>
+      records.filter((record) =>
+        Boolean(record.board_review_required)
+      ).length,
+    [records]
+  );
+
+  const highPriorityCount = useMemo(
+    () =>
+      records.filter((record) =>
+        ["critical", "high"].includes(
+          String(record.priority || "").toLowerCase()
+        )
+      ).length,
+    [records]
+  );
+
+  const nextDueRecord = useMemo(() => {
+    return [...records]
+      .filter((record) => Boolean(record.due_date))
+      .sort(
+        (a, b) => new Date(a.due_date) - new Date(b.due_date)
+      )[0];
+  }, [records]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
@@ -12,12 +144,16 @@ export default function TechnologyIntegrationsCenter() {
               <div className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
                 Stoutt Property Management
               </div>
+
               <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white md:text-6xl">
                 Board Technology Integrations Center
               </h1>
+
               <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-                Board-level visibility into QuickBooks, AI assistant connections, third-party
-                software, data sync health, migration readiness and the future SPM platform roadmap.
+                Technology integration records now flow from the Admin
+                Operations Intake for board-level visibility into
+                QuickBooks, AI systems, sync health, migrations,
+                governance controls and future SPM platform readiness.
               </p>
             </div>
 
@@ -25,190 +161,233 @@ export default function TechnologyIntegrationsCenter() {
               <div className="text-sm uppercase tracking-[0.25em] text-amber-300">
                 Integration Status
               </div>
-              <div className="mt-2 text-3xl font-bold text-white">Online</div>
-              <div className="mt-1 text-sm text-slate-300">Core systems connected</div>
+
+              <div className="mt-2 text-3xl font-bold text-white">
+                Online
+              </div>
+
+              <div className="mt-1 text-sm text-slate-300">
+                Core systems connected
+              </div>
             </div>
           </div>
 
-          <nav className="flex flex-wrap gap-3 text-sm">
-            <Link href="/board" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Board Portal</Link>
-            <Link href="/board/violation-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Violations</Link>
-            <Link href="/board/architectural-approvals" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">ARC Approvals</Link>
-            <Link href="/board/maintenance-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Maintenance</Link>
-            <Link href="/board/financial-review" className="rounded-xl border border-white/10 px-4 py-2 text-slate-300 hover:border-amber-400 hover:text-amber-300">Financials</Link>
-          </nav>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+
+            <Link
+              href="/board"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Main Page
+            </Link>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-        <section className="grid gap-6 md:grid-cols-3">
+        <section className="grid gap-6 md:grid-cols-4">
           {[
-            {
-              title: 'Integration Visibility',
-              text: 'See which operational systems are connected, healthy, delayed or requiring management review.',
-            },
-            {
-              title: 'Data Sync Confidence',
-              text: 'Track data movement across accounting, AI assistant activity, board workflows and future platform layers.',
-            },
-            {
-              title: 'Platform Roadmap',
-              text: 'Support today’s QuickBooks-based operations while preparing for the proprietary SPM platform.',
-            },
-          ].map((item) => (
-            <div key={item.title} className="rounded-3xl border border-amber-400/25 bg-gradient-to-br from-amber-400/10 to-slate-900 p-7 shadow-2xl">
-              <h2 className="text-2xl font-semibold text-amber-300">{item.title}</h2>
-              <p className="mt-4 leading-7 text-slate-300">{item.text}</p>
-            </div>
-          ))}
-        </section>
+            ["Open Technology Records", records.length],
+            ["High Priority", highPriorityCount],
+            ["Board Review", boardReviewCount],
+            [
+              "Next Due",
+              nextDueRecord
+                ? formatDate(nextDueRecord.due_date)
+                : "None",
+            ],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl"
+            >
+              <div className="text-sm text-slate-400">
+                {label}
+              </div>
 
-        <section className="mt-10 grid gap-6 md:grid-cols-4">
-          {[
-            ['Core Integrations', '6', 'Connected'],
-            ['Sync Health', '98%', 'Stable'],
-            ['Data Exceptions', '3', 'Review'],
-            ['Migration Readiness', '72%', 'Building'],
-          ].map(([label, value, status]) => (
-            <div key={label} className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
-              <div className="text-sm text-slate-400">{label}</div>
-              <div className="mt-3 text-4xl font-bold text-amber-300">{value}</div>
-              <div className="mt-4 inline-flex rounded-full border border-amber-400/30 px-3 py-1 text-xs text-amber-200">
-                {status}
+              <div className="mt-3 text-4xl font-bold text-amber-300">
+                {value}
               </div>
             </div>
           ))}
         </section>
 
+        {systemMessage && (
+          <section className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </section>
+        )}
+
         <section className="mt-10 rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-          <h2 className="text-2xl font-semibold text-amber-300">Technology Integration Pathway</h2>
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
+                Distributed Operational Rendering
+              </div>
+
+              <h2 className="mt-3 text-3xl font-semibold">
+                Live Technology Integration Records
+              </h2>
+
+              <p className="mt-3 max-w-4xl leading-7 text-slate-300">
+                These records originate from the Admin Operations
+                Intake and are rendered here because their request
+                type is Technology Integrations.
+              </p>
+            </div>
+
+            <Link
+              href="/admin/operations/new?request_type=Technology%20Integrations&return_path=/board/technology-integrations&return_label=Technology%20Integrations"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Technology Record
+            </Link>
+          </div>
+
+          <div className="space-y-5">
+            {loadingRecords ? (
+              <div className="rounded-3xl border border-white/10 bg-slate-950 p-6 text-sm text-slate-400">
+                Loading technology integration records...
+              </div>
+            ) : records.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-white/10 bg-slate-950/70 p-8">
+                <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                  Clear
+                </div>
+
+                <h4 className="mt-4 text-2xl font-semibold">
+                  No open technology integration records
+                </h4>
+
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+                  Create a new admin operational record with request
+                  type Technology Integrations and it will appear here
+                  automatically.
+                </p>
+              </div>
+            ) : (
+              records.map((record) => (
+                <article
+                  key={record.id}
+                  className="rounded-3xl border border-white/10 bg-slate-950 p-6 transition hover:border-amber-400/40"
+                >
+                  <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr_0.75fr_0.7fr] lg:items-center">
+                    <div>
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                            record.priority
+                          )}`}
+                        >
+                          {record.priority || "Normal"}
+                        </span>
+
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                          {record.status || "Submitted"}
+                        </span>
+
+                        {record.board_review_required && (
+                          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                            Board Review
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="mt-4 text-xl font-semibold">
+                        {record.title}
+                      </h4>
+
+                      <p className="mt-3 leading-relaxed text-slate-300">
+                        {record.description ||
+                          "Technology integration record submitted for review."}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                        Assigned To
+                      </div>
+
+                      <div className="mt-2 text-slate-200">
+                        {record.assigned_to || "Unassigned"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                        Due Date
+                      </div>
+
+                      <div className="mt-2 text-amber-300">
+                        {formatDate(record.due_date)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-300">
+                        {record.routing_target ||
+                          "Admin Dashboard"}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
+          <h2 className="text-2xl font-semibold text-amber-300">
+            Technology Integration Pathway
+          </h2>
+
           <p className="mt-3 max-w-5xl leading-7 text-slate-300">
-            The technology layer connects today’s operating tools with tomorrow’s proprietary
-            platform. Each integration should support continuity, accuracy, security and board
+            The technology layer connects today’s operating tools
+            with tomorrow’s proprietary platform. Each integration
+            should support continuity, accuracy, security and board
             confidence without creating dependency confusion.
           </p>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-5">
-            {[
-              ['1', 'Connect', 'Link core systems and operating data sources.'],
-              ['2', 'Monitor', 'Track sync health, exceptions and outages.'],
-              ['3', 'Validate', 'Confirm accuracy before reporting or automation.'],
-              ['4', 'Migrate', 'Prepare structured data for the future SPM platform.'],
-              ['5', 'Scale', 'Expand automation while preserving governance controls.'],
-            ].map(([number, title, text]) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-slate-800 p-5">
+          <div className="mt-8 grid gap-5 md:grid-cols-6">
+            {integrationWorkflow.map((item, index) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-white/10 bg-slate-800 p-5"
+              >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-sm font-bold text-slate-950">
-                  {number}
+                  {index + 1}
                 </div>
-                <h3 className="mt-5 text-lg font-semibold text-white">{title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-400">{text}</p>
+
+                <p className="mt-5 text-sm leading-6 text-slate-300">
+                  {item}
+                </p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-10 grid gap-8 lg:grid-cols-3">
-          <Panel title="Connected Systems" rows={[
-            ['QuickBooks', 'Connected'],
-            ['AI Assistant', 'Connected'],
-            ['Board Portal', 'Native'],
-            ['Document Repository', 'Connected'],
-          ]} />
+        <section className="mt-10 rounded-3xl border border-amber-400/25 bg-gradient-to-r from-slate-900 to-slate-800 p-8 shadow-2xl">
+          <h2 className="text-2xl font-semibold text-amber-300">
+            Governance Commentary
+          </h2>
 
-          <Panel title="Sync & Data Health" rows={[
-            ['Financial Feed', 'Healthy'],
-            ['Workflow Events', 'Healthy'],
-            ['Transcript Logs', 'Review'],
-            ['Owner Records', 'Mapped'],
-          ]} />
-
-          <Panel title="Platform Roadmap" rows={[
-            ['Current Stack', 'QuickBooks-first'],
-            ['Data Model', 'SPM-ready'],
-            ['Migration Layer', 'Building'],
-            ['Proprietary Platform', 'Planned'],
-          ]} />
-        </section>
-
-        <section className="mt-10 grid gap-8 lg:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold text-amber-300">Active Integration Review Items</h2>
-            <div className="mt-6 space-y-4">
-              {[
-                'QuickBooks access permissions require quarterly confirmation.',
-                'AI assistant transcript sync requires sample audit review.',
-                'Document repository mapping pending final category alignment.',
-                'Future SPM platform migration fields require data-model validation.',
-              ].map((item) => (
-                <div key={item} className="rounded-2xl bg-slate-800 p-4 text-slate-300">
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl">
-            <h2 className="text-2xl font-semibold text-amber-300">Technology Readiness</h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-2">
-              {[
-                ['Accounting Layer', 'Ready'],
-                ['AI Operations', 'Active'],
-                ['Data Mapping', 'In progress'],
-                ['SPM Platform Path', 'Defined'],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl bg-slate-800 p-5">
-                  <div className="text-sm text-slate-400">{label}</div>
-                  <div className="mt-2 text-2xl font-bold text-white">{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-10 grid gap-6 md:grid-cols-3">
-          <Link href="/board/quickbooks-integration" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">QuickBooks Integration</h3>
-            <p className="mt-3 text-slate-400">Review accounting system connection, reporting and approval controls.</p>
-          </Link>
-
-          <Link href="/board/ai-assistant-settings" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">AI Assistant Settings</h3>
-            <p className="mt-3 text-slate-400">Review AI assistant behavior, transcripts, escalation rules and routing.</p>
-          </Link>
-
-          <Link href="/board/compliance-legal-review" className="rounded-3xl border border-white/10 bg-slate-900 p-7 transition hover:border-amber-400">
-            <h3 className="text-xl font-semibold text-amber-300">Cybersecurity Controls</h3>
-            <p className="mt-3 text-slate-400">Connect integration risk to access controls, fraud prevention and cyber readiness.</p>
-          </Link>
-        </section>
-
-        <section className="mt-12 rounded-3xl border border-amber-400/25 bg-gradient-to-r from-slate-900 to-slate-800 p-8 shadow-2xl">
-          <h2 className="text-2xl font-semibold text-amber-300">Governance Commentary</h2>
           <p className="mt-4 max-w-5xl leading-8 text-slate-300">
-            Technology should make association management clearer, faster and more reliable —
-            not more fragmented. This center gives the board a structured view of how systems
-            connect today, how data will migrate tomorrow and how Stoutt Property Management
-            is building toward a proprietary operating platform without losing control of the
-            current environment.
+            Technology should make association management clearer,
+            faster and more reliable — not more fragmented. This
+            center gives the board a structured view of how systems
+            connect today, how data will migrate tomorrow and how
+            Stoutt Property Management is building toward a
+            proprietary operating platform without losing control of
+            the current environment.
           </p>
         </section>
       </main>
     </div>
-  )
-}
-
-function Panel({ title, rows }) {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-slate-900 p-7 shadow-2xl">
-      <h2 className="text-xl font-semibold text-amber-300">{title}</h2>
-      <div className="mt-6 space-y-4">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex items-center justify-between border-b border-white/5 pb-3">
-            <span className="text-slate-300">{label}</span>
-            <span className="font-semibold text-white">{value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  );
 }
