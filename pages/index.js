@@ -121,11 +121,11 @@ export default function HomePage() {
       </a>
 
       <a
-        href="/homeowner-login"
-        className="ml-2 whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-yellow-400/40 hover:bg-white/10 hover:text-yellow-200"
-      >
-        Admin Access
-      </a>
+  href="/admin-login"
+  className="ml-2 whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/85 transition hover:border-yellow-400/40 hover:bg-white/10 hover:text-yellow-200"
+>
+  Admin Access
+</a>
 
       <a
         href="tel:+17546004755"
@@ -196,7 +196,7 @@ export default function HomePage() {
 </a>
 
 <a
-  href="/homeowner-login"
+  href="/admin-login"
   className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-white/85 transition hover:border-yellow-400/40 hover:bg-white/10 hover:text-yellow-200"
   onClick={() => setMobileOpen(false)}
 >
