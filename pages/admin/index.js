@@ -46,6 +46,7 @@ const sections = [
   { title: "BOS Action Center", href: "/bos/action-center" },
   { title: "Approval Queue", href: "/portal/approval-queue" },
   { title: "New Operational Record", href: "/admin/operations/new" },
+  { title: "Association Onboarding Records", href: "/association-onboarding-records" },
   { title: "Messages", href: "/board/messages" },
   { title: "Calendar", href: "/board/calendar" },
   { title: "Meetings", href: "/portal/board/meetings" },
