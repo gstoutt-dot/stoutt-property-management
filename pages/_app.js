@@ -56,8 +56,9 @@ function PortalGate({ children }) {
     const cleanPath = router.asPath.split("?")[0].split("#")[0];
 
             const publicRoutes = [
-      "/admin-login",
-    ];
+  "/portal/owner/login",
+  "/admin-login",
+];
 
     if (publicRoutes.includes(cleanPath)) {
       setDenied(false);
