@@ -5,6 +5,21 @@ const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const closedStatuses = ["completed", "archived", "closed"];
 
+const riskWorkflow = [
+  "Identify insurance, claim, incident, or exposure issue",
+  "Collect supporting documentation and timeline",
+  "Determine whether carrier, attorney, board, or vendor review is required",
+  "Track renewal dates, risk response, and follow-up responsibility",
+  "Document final action and archive risk record",
+];
+
+const futureFeeds = [
+  "Insurance Renewal Tracking",
+  "Claim Event Monitoring",
+  "Incident Log Feed",
+  "Exposure Risk Dashboard",
+];
+
 function priorityStyle(priority) {
   const value = String(priority || "").toLowerCase();
 
@@ -104,6 +119,11 @@ export default function InsuranceRisk() {
     [records]
   );
 
+  const vendorVisibleCount = useMemo(
+    () => records.filter((record) => Boolean(record.vendor_visible)).length,
+    [records]
+  );
+
   const nextDueRecord = useMemo(() => {
     return [...records]
       .filter((record) => Boolean(record.due_date))
@@ -116,7 +136,7 @@ export default function InsuranceRisk() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
-              Board Review Center
+              Stoutt Property Management
             </p>
 
             <h1 className="mt-2 text-2xl font-semibold">
@@ -125,10 +145,10 @@ export default function InsuranceRisk() {
           </div>
 
           <Link
-            href="/board"
+            href="/admin"
             className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
           >
-            Return to Board Dashboard
+            Admin Dashboard
           </Link>
         </div>
       </section>
@@ -136,25 +156,25 @@ export default function InsuranceRisk() {
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Insurance Oversight • Risk Exposure • Board Review
+            Insurance Oversight • Risk Exposure • Claim Coordination
           </p>
 
           <div className="mt-5 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
             <div>
               <h2 className="text-4xl font-semibold leading-tight">
-                Insurance and risk items requiring board visibility appear here.
+                Insurance and risk records now flow from the Admin Operations Intake.
               </h2>
 
               <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
-                This board-facing page allows board members to review insurance,
-                claim, incident, exposure, and risk-related records without
-                entering the Admin Dashboard or admin intake tools.
+                Insurance renewals, claims, incidents, exposure concerns, risk
+                reviews, and follow-up items created from the Admin Dashboard now
+                appear here for controlled administrative oversight.
               </p>
             </div>
 
             <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 p-6">
               <div className="text-sm text-slate-300">
-                Active Board Items
+                Active Risk Items
               </div>
 
               <div className="mt-2 text-6xl font-semibold text-amber-300">
@@ -162,17 +182,18 @@ export default function InsuranceRisk() {
               </div>
 
               <div className="mt-4 text-slate-300">
-                Records available for board review.
+                Live records requiring risk visibility.
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
           {[
             ["Open Risk Records", records.length],
             ["High Priority", highPriorityCount],
             ["Board Review", boardReviewCount],
+            ["Vendor Visible", vendorVisibleCount],
           ].map(([label, value]) => (
             <div
               key={label}
@@ -197,7 +218,7 @@ export default function InsuranceRisk() {
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-amber-400">
-                Board Review Queue
+                Distributed Operational Rendering
               </p>
 
               <h3 className="mt-3 text-3xl font-semibold">
@@ -205,11 +226,17 @@ export default function InsuranceRisk() {
               </h3>
 
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                These items were created by Admin or Management and routed here
-                for board visibility, acknowledgment, approval, decision, or
-                request for more information.
+                These records originate from the Admin Operations Intake and are
+                rendered here because their request type is Insurance & Risk.
               </p>
             </div>
+
+            <Link
+  href="/admin/operations/new?request_type=Insurance%20%26%20Risk&return_path=/board/insurance-risk&return_label=Insurance%20%26%20Risk"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Risk Record
+</Link>
           </div>
 
           <div className="space-y-5">
@@ -228,8 +255,8 @@ export default function InsuranceRisk() {
                 </h4>
 
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                  There are currently no Insurance & Risk items assigned for
-                  board review.
+                  Create a new admin operational record with request type Insurance
+                  & Risk and it will appear here automatically.
                 </p>
               </div>
             ) : (
@@ -238,7 +265,7 @@ export default function InsuranceRisk() {
                   key={record.id}
                   className="rounded-3xl border border-white/10 bg-slate-900 p-6 transition hover:border-amber-400/40"
                 >
-                  <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr_0.75fr_0.7fr] lg:items-start">
+                  <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr_0.75fr_0.7fr] lg:items-center">
                     <div>
                       <div className="flex flex-wrap gap-2">
                         <span
@@ -266,7 +293,7 @@ export default function InsuranceRisk() {
 
                       <p className="mt-3 leading-relaxed text-slate-300">
                         {record.description ||
-                          "Insurance and risk record submitted for board review."}
+                          "Insurance and risk record submitted for review."}
                       </p>
 
                       {record.recommended_action && (
@@ -288,7 +315,7 @@ export default function InsuranceRisk() {
                       </div>
 
                       <div className="mt-2 text-slate-200">
-                        {record.assigned_to || "Board Review"}
+                        {record.assigned_to || "Unassigned"}
                       </div>
                     </div>
 
@@ -303,32 +330,10 @@ export default function InsuranceRisk() {
                     </div>
 
                     <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                        Routing
-                      </div>
-
-                      <div className="mt-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-center text-sm text-amber-300">
-                        Board Review
-                      </div>
+                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-300">
+                        {record.routing_target || "Admin Dashboard"}
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-5">
-                    <button className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20">
-                      Acknowledge
-                    </button>
-
-                    <button className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20">
-                      Approve
-                    </button>
-
-                    <button className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-300 hover:bg-sky-400/20">
-                      Request More Info
-                    </button>
-
-                    <button className="rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-2 text-sm font-semibold text-violet-300 hover:bg-violet-400/20">
-                      Record Decision
-                    </button>
                   </div>
                 </article>
               ))
@@ -339,21 +344,15 @@ export default function InsuranceRisk() {
         <section className="mt-10 grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Board Review Path
+              Risk Workflow
             </p>
 
             <h3 className="mt-3 text-2xl font-semibold">
-              Insurance & Risk Decision Flow
+              Exposure Control Path
             </h3>
 
             <div className="mt-6 space-y-4">
-              {[
-                "Review insurance, claim, incident, or exposure issue",
-                "Confirm whether board action or acknowledgement is required",
-                "Approve, acknowledge, request more information, or record a decision",
-                "Management receives the board response and continues follow-up",
-                "Final action remains documented in the operational record",
-              ].map((item) => (
+              {riskWorkflow.map((item) => (
                 <div
                   key={item}
                   className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-slate-300"
@@ -366,20 +365,15 @@ export default function InsuranceRisk() {
 
           <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
             <p className="text-xs uppercase tracking-[0.25em] text-emerald-300">
-              Board-Safe Access
+              Future Risk Feeds
             </p>
 
             <h3 className="mt-3 text-2xl font-semibold text-emerald-100">
-              No Admin Entry Points
+              Risk Intelligence Expansion
             </h3>
 
             <div className="mt-6 grid gap-4">
-              {[
-                "Board can review assigned records",
-                "Board can respond with board-level actions",
-                "Board cannot create admin records from this page",
-                "Board cannot enter the Admin Dashboard from this page",
-              ].map((feed) => (
+              {futureFeeds.map((feed) => (
                 <div
                   key={feed}
                   className="rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5 text-slate-200"
@@ -393,13 +387,13 @@ export default function InsuranceRisk() {
 
         <div className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
           <h3 className="text-xl font-semibold text-amber-200">
-            Board Review Status
+            Distributed Rendering Status
           </h3>
 
           <p className="mt-3 text-slate-300">
-            Insurance & Risk records are visible here for board-level review
-            while admin creation, intake, and editing remain restricted to
-            Admin and Management workflows.
+            Insurance & Risk now receives live operational records from the
+            centralized Admin Operations Intake system while remaining visible
+            from the main Admin Dashboard priority queue.
           </p>
 
           {nextDueRecord && (
@@ -412,3 +406,4 @@ export default function InsuranceRisk() {
     </main>
   );
 }
+
