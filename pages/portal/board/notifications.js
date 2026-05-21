@@ -1,62 +1,180 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
+import { supabase } from "../../../lib/bosClient";
 import bosTheme from "../../../styles/bos-theme";
 
-const notifications = [
-  {
-    id: "NOT-901",
-    title: "Vote Needed: Elite Electrical payment",
-    category: "Approval",
-    priority: "High",
-    time: "10 minutes ago",
-    detail:
-      "A manager-verified vendor payment is awaiting board action before release.",
-    status: "Unread",
-  },
-  {
-    id: "NOT-902",
-    title: "New agenda item added",
-    category: "Meeting",
-    priority: "Medium",
-    time: "1 hour ago",
-    detail:
-      "Commercial vehicle enforcement has been added to the May Board Meeting agenda.",
-    status: "Unread",
-  },
-  {
-    id: "NOT-903",
-    title: "Financial report ready",
-    category: "Report",
-    priority: "Medium",
-    time: "Yesterday",
-    detail:
-      "The May financial summary is ready for review in the Board Reports section.",
-    status: "Read",
-  },
-  {
-    id: "NOT-904",
-    title: "Decision recorded",
-    category: "Audit Trail",
-    priority: "Low",
-    time: "Yesterday",
-    detail:
-      "The irrigation repair payment approval has been recorded in Decision History.",
-    status: "Read",
-  },
-];
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatTime(value) {
+  if (!value) return "Recently";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+
+  return date.toLocaleString();
+}
+
+function priorityFromText(value) {
+  const text = String(value || "").toLowerCase();
+
+  if (text.includes("critical") || text.includes("urgent") || text.includes("overdue")) {
+    return "High";
+  }
+
+  if (
+    text.includes("approval") ||
+    text.includes("vote") ||
+    text.includes("financial") ||
+    text.includes("legal") ||
+    text.includes("insurance")
+  ) {
+    return "Medium";
+  }
+
+  return "Normal";
+}
 
 export default function BoardNotifications() {
   const [activeFilter, setActiveFilter] = useState("All");
+  const [events, setEvents] = useState([]);
+  const [actions, setActions] = useState([]);
+  const [readIds, setReadIds] = useState([]);
+  const [snoozedIds, setSnoozedIds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
 
-  const filters = ["All", "Unread", "Approval", "Meeting", "Report"];
+  useEffect(() => {
+    loadNotifications();
+
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadNotifications() {
+    try {
+      setLoading(true);
+      setSystemMessage("");
+
+      const [{ data: eventRows, error: eventsError }, { data: actionRows, error: actionsError }] =
+        await Promise.all([
+          supabase
+            .from("bos_events")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(75),
+          supabase
+            .from("bos_actions")
+            .select("*")
+            .order("created_at", { ascending: false }),
+        ]);
+
+      if (eventsError) throw eventsError;
+      if (actionsError) throw actionsError;
+
+      setEvents(eventRows || []);
+      setActions(actionRows || []);
+    } catch (error) {
+      console.error("Unable to load board notifications:", error);
+      setSystemMessage("Unable to load board notifications.");
+      setEvents([]);
+      setActions([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const notifications = useMemo(() => {
+    const actionMap = new Map(actions.map((action) => [action.id, action]));
+
+    const eventNotices = events.map((event) => {
+      const linkedAction = actionMap.get(event.action_id);
+      const message =
+        event.message ||
+        linkedAction?.description ||
+        linkedAction?.recommended_action ||
+        "A board-visible platform update was posted.";
+
+      return {
+        id: event.id,
+        title: linkedAction?.title || titleCase(event.event_type || "Board Notification"),
+        category: titleCase(event.event_type || linkedAction?.category || "System Notice"),
+        priority: titleCase(linkedAction?.priority || priorityFromText(`${event.event_type} ${message}`)),
+        time: formatTime(event.created_at),
+        detail: message,
+        status: readIds.includes(event.id) ? "Read" : "Unread",
+        linked: event.module || linkedAction?.request_type || "Board Workflow",
+        source: "Platform Event",
+      };
+    });
+
+    const actionNotices = actions
+      .filter((action) => String(action.status || "open").toLowerCase() !== "completed")
+      .slice(0, 20)
+      .map((action) => ({
+        id: `action-${action.id}`,
+        title: action.title || "Board Action Item",
+        category: titleCase(action.category || action.request_type || "Action"),
+        priority: titleCase(action.priority || priorityFromText(action.title)),
+        time: formatTime(action.created_at),
+        detail:
+          action.description ||
+          action.recommended_action ||
+          "This item is open and may require board awareness or follow-up.",
+        status: readIds.includes(`action-${action.id}`) ? "Read" : "Unread",
+        linked: "Board Workflow Engine",
+        source: "Open Action",
+      }));
+
+    return [...eventNotices, ...actionNotices]
+      .filter((item) => !snoozedIds.includes(item.id))
+      .slice(0, 40);
+  }, [events, actions, readIds, snoozedIds]);
+
+  const filters = ["All", "Unread", "Approval", "Meeting", "Report", "Action", "System Notice"];
 
   const filteredNotifications =
     activeFilter === "All"
       ? notifications
       : notifications.filter(
           (item) =>
-            item.status === activeFilter || item.category === activeFilter
+            item.status === activeFilter ||
+            item.category === activeFilter ||
+            item.category.includes(activeFilter)
         );
+
+  const unreadCount = notifications.filter((item) => item.status === "Unread").length;
+  const approvalCount = notifications.filter((item) =>
+    `${item.category} ${item.title} ${item.detail}`.toLowerCase().includes("approval")
+  ).length;
+  const highPriorityCount = notifications.filter((item) =>
+    ["high", "critical"].includes(String(item.priority || "").toLowerCase())
+  ).length;
+  const reportCount = notifications.filter((item) =>
+    `${item.category} ${item.title} ${item.detail}`.toLowerCase().includes("report")
+  ).length;
+
+  function markRead(id) {
+    setReadIds((current) => Array.from(new Set([...current, id])));
+  }
+
+  function snoozeAlert(id) {
+    setSnoozedIds((current) => Array.from(new Set([...current, id])));
+  }
+
+  function markAllReviewed() {
+    setReadIds((current) =>
+      Array.from(new Set([...current, ...notifications.map((item) => item.id)]))
+    );
+  }
 
   return (
     <main className={bosTheme.page}>
@@ -72,36 +190,36 @@ export default function BoardNotifications() {
               <p className={bosTheme.eyebrow}>Board Alerts</p>
               <h1 className={bosTheme.title}>Notifications</h1>
               <p className={bosTheme.subtitle}>
-                Track board alerts, vote reminders, financial updates, agenda
-                changes, and recorded decisions from one centralized notification
-                center.
+                Live board notices from Admin, Management, workflow events,
+                approvals, financial updates, agenda changes, and recorded
+                platform decisions.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/portal/board/dashboard"
-                className={bosTheme.secondaryButton}
-              >
+              <Link href="/board" className={bosTheme.secondaryButton}>
                 Board Dashboard
               </Link>
 
-              <Link
-                href="/portal/board/approvals"
-                className={bosTheme.primaryButton}
-              >
+              <Link href="/board/approval-queue" className={bosTheme.primaryButton}>
                 Approval Queue
               </Link>
             </div>
           </div>
         </header>
 
+        {systemMessage && (
+          <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </div>
+        )}
+
         <section className="grid gap-4 md:grid-cols-4">
           {[
-            ["Unread Alerts", "2", "Need attention"],
-            ["Votes Needed", "4", "Pending decisions"],
-            ["Agenda Updates", "3", "Meeting changes"],
-            ["Reports Ready", "5", "Available now"],
+            ["Unread Alerts", unreadCount, "Need attention"],
+            ["Approval Notices", approvalCount, "Pending decisions"],
+            ["High Priority", highPriorityCount, "Board awareness"],
+            ["Reports Ready", reportCount, "Available now"],
           ].map(([label, value, detail]) => (
             <div key={label} className={bosTheme.statCard}>
               <p className="text-sm text-slate-400">{label}</p>
@@ -119,7 +237,7 @@ export default function BoardNotifications() {
             <div>
               <h2 className="text-lg font-semibold">Notification Center</h2>
               <p className="mt-1 text-sm text-slate-400">
-                Filter alerts by status or category.
+                Filter board-safe notices by status or category.
               </p>
             </div>
 
@@ -137,66 +255,111 @@ export default function BoardNotifications() {
                   {filter}
                 </button>
               ))}
+
+              <button
+                onClick={loadNotifications}
+                className={bosTheme.filterInactive}
+              >
+                Refresh
+              </button>
+
+              <button
+                onClick={markAllReviewed}
+                className={bosTheme.filterActive}
+              >
+                Mark All Reviewed
+              </button>
             </div>
           </div>
         </section>
 
         <section className="mt-5 space-y-4">
-          {filteredNotifications.map((notice) => (
-            <article
-              key={notice.id}
-              className={`${bosTheme.card} ${bosTheme.cardHover}`}
-            >
-              <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                <div className="flex-1">
-                  <div className="flex flex-wrap gap-2">
-                    <span className={bosTheme.badgeNeutral}>{notice.id}</span>
-                    <span className={bosTheme.badgeGold}>
-                      {notice.category}
-                    </span>
-                    <span className={bosTheme.badgeAmber}>
-                      {notice.priority} Priority
-                    </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs ${
-                        notice.status === "Unread"
-                          ? "bg-yellow-400/10 text-yellow-300"
-                          : "bg-white/10 text-slate-400"
-                      }`}
-                    >
-                      {notice.status}
-                    </span>
+          {loading ? (
+            <div className={bosTheme.card}>
+              <p className="text-sm text-slate-400">
+                Loading board notifications...
+              </p>
+            </div>
+          ) : filteredNotifications.length === 0 ? (
+            <div className={bosTheme.card}>
+              <p className="text-sm text-emerald-300">
+                No board notifications currently match this filter.
+              </p>
+            </div>
+          ) : (
+            filteredNotifications.map((notice) => (
+              <article
+                key={notice.id}
+                className={`${bosTheme.card} ${bosTheme.cardHover}`}
+              >
+                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap gap-2">
+                      <span className={bosTheme.badgeNeutral}>{notice.id}</span>
+                      <span className={bosTheme.badgeGold}>
+                        {notice.category}
+                      </span>
+                      <span className={bosTheme.badgeAmber}>
+                        {notice.priority} Priority
+                      </span>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs ${
+                          notice.status === "Unread"
+                            ? "bg-yellow-400/10 text-yellow-300"
+                            : "bg-white/10 text-slate-400"
+                        }`}
+                      >
+                        {notice.status}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-4 text-2xl font-semibold">
+                      {notice.title}
+                    </h3>
+
+                    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+                      {notice.detail}
+                    </p>
+
+                    <div className="mt-4 grid gap-2 text-xs text-slate-500 md:grid-cols-3">
+                      <p>{notice.time}</p>
+                      <p>Linked: {notice.linked}</p>
+                      <p>Source: {notice.source}</p>
+                    </div>
                   </div>
 
-                  <h3 className="mt-4 text-2xl font-semibold">
-                    {notice.title}
-                  </h3>
+                  <aside className={bosTheme.actionPanel}>
+                    <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+                      Board Actions
+                    </p>
 
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                    {notice.detail}
-                  </p>
+                    <div className="mt-5 space-y-3">
+                      <Link
+                        href="/board/workflow-engine"
+                        className={bosTheme.goldButton}
+                      >
+                        Open Workflow
+                      </Link>
 
-                  <p className="mt-4 text-xs text-slate-500">{notice.time}</p>
+                      <button
+                        onClick={() => markRead(notice.id)}
+                        className={bosTheme.whiteButton}
+                      >
+                        Mark as Read
+                      </button>
+
+                      <button
+                        onClick={() => snoozeAlert(notice.id)}
+                        className={bosTheme.outlineButton}
+                      >
+                        Snooze Alert
+                      </button>
+                    </div>
+                  </aside>
                 </div>
-
-                <aside className={bosTheme.actionPanel}>
-                  <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
-                    Actions
-                  </p>
-
-                  <div className="mt-5 space-y-3">
-                    <button className={bosTheme.goldButton}>Open Item</button>
-                    <button className={bosTheme.whiteButton}>
-                      Mark as Read
-                    </button>
-                    <button className={bosTheme.outlineButton}>
-                      Snooze Alert
-                    </button>
-                  </div>
-                </aside>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))
+          )}
         </section>
       </div>
     </main>
