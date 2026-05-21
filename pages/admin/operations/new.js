@@ -116,8 +116,7 @@ if (!response.ok || !result.success) {
   );
 }
 
-       if (
-        
+       
       setSystemMessage("Operational record submitted successfully.");
     } catch (error) {
       console.error("Unable to submit admin operation:", error);
