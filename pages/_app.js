@@ -3,18 +3,32 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 const routeAccess = [
+  { path: "/admin", roles: ["admin"] },
+  { path: "/admin/operations/new", roles: ["admin"] },
+
   { path: "/portal/manager-hub", roles: ["manager", "admin"] },
   { path: "/portal/manager", roles: ["manager", "admin"] },
   { path: "/portal/workflow-engine-live", roles: ["manager", "admin"] },
   { path: "/portal/workflow-engine", roles: ["manager", "admin"] },
+
   { path: "/board/command-center", roles: ["board", "manager", "admin"] },
   { path: "/board/action-center", roles: ["board", "manager", "admin"] },
   { path: "/board", roles: ["board", "manager", "admin"] },
+
   { path: "/portal/owner-hub", roles: ["owner", "manager", "board", "admin"] },
   { path: "/portal/owner", roles: ["owner", "manager", "board", "admin"] },
   { path: "/portal", roles: ["owner", "manager", "board", "admin"] },
+
   { path: "/software-dashboard", roles: ["owner", "manager", "board", "admin"] },
 ];
+
+function getDashboardForRole(role) {
+  if (role === "admin") return "/admin";
+  if (role === "manager") return "/portal/manager-hub";
+  if (role === "board") return "/board";
+  if (role === "owner") return "/portal/owner";
+  return "/admin-login";
+}
 
 function AccessDenied({ onReturn }) {
   return (
@@ -55,17 +69,14 @@ function PortalGate({ children }) {
 
     const cleanPath = router.asPath.split("?")[0].split("#")[0];
 
-            const publicRoutes = [
-  "/portal/owner/login",
-  "/admin-login",
-];
+    const publicRoutes = ["/portal/owner/login", "/admin-login"];
 
     if (publicRoutes.includes(cleanPath)) {
       setDenied(false);
       setCheckingAccess(false);
       return;
     }
-    
+
     const matchingRoute = routeAccess
       .filter(
         (route) =>
@@ -118,7 +129,12 @@ function PortalGate({ children }) {
   }
 
   if (denied) {
-    return <AccessDenied onReturn={() => router.push("/admin")} />;
+    const role =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("spmPortalRole")
+        : null;
+
+    return <AccessDenied onReturn={() => router.push(getDashboardForRole(role))} />;
   }
 
   return children;
