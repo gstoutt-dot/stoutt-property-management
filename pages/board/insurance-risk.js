@@ -231,12 +231,21 @@ export default function InsuranceRisk() {
               </p>
             </div>
 
-            <Link
-              href="/board"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Board Dashboard
-            </Link>
+            <div className="flex flex-wrap gap-3">
+  <Link
+    href="/board"
+    className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+  >
+    Board Dashboard
+  </Link>
+
+  <Link
+    href="/admin/operations/new?request_type=Insurance%20%26%20Risk&return_path=/board/insurance-risk&return_label=Insurance%20%26%20Risk"
+    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+  >
+    Create Insurance/Risk Request
+  </Link>
+</div>
           </div>
 
           <div className="space-y-5">
