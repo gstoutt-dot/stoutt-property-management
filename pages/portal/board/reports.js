@@ -217,19 +217,13 @@ export default function BoardReports() {
               Financial Review
             </Link>
 
-            <Link
-              href="/board/compliance-dashboard"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Compliance Dashboard
-            </Link>
+           <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200">
+  Compliance Dashboard available from Board Dashboard
+</div>
 
-            <Link
-              href="/board/meeting-packet"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Meeting Packet
-            </Link>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200">
+  Meeting Packet available from Board Dashboard
+</div>
           </div>
         </div>
 
