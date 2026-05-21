@@ -161,36 +161,6 @@ function formatDate(value) {
   });
 }
 
-function routeForBoardRecord(record) {
-  const target = String(record.routing_target || "").toLowerCase();
-  const type = String(record.request_type || "").toLowerCase();
-
-  if (type.includes("budget")) return "/board/budget-planning";
-  if (type.includes("insurance") || type.includes("risk")) return "/board/insurance-risk";
-  if (type.includes("financial")) return "/board/financial-review";
-  if (type.includes("violation")) return "/board/violation-review";
-  if (type.includes("architectural")) return "/board/architectural-approvals";
-  if (type.includes("maintenance")) return "/board/maintenance-review";
-  if (type.includes("vendor")) return "/board/vendors";
-  if (type.includes("legal")) return "/board/legal-review";
-  if (type.includes("policy")) return "/board/policy-library";
-  if (type.includes("meeting")) return "/portal/board/meetings";
-  if (type.includes("election")) return "/board/elections";
-  if (type.includes("capital")) return "/board/capital-projects";
-
-  if (target.includes("budget")) return "/board/budget-planning";
-  if (target.includes("insurance") || target.includes("risk")) return "/board/insurance-risk";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("violation")) return "/board/violation-review";
-  if (target.includes("architectural")) return "/board/architectural-approvals";
-  if (target.includes("maintenance")) return "/board/maintenance-review";
-  if (target.includes("vendor")) return "/board/vendors";
-  if (target.includes("legal")) return "/board/legal-review";
-  if (target.includes("approval")) return "/portal/approval-queue";
-  if (target.includes("bos")) return "/bos/action-center";
-
-  return "/portal/approval-queue";
-}
 export default function BoardModuleHub() {
   const router = useRouter();
 
@@ -341,7 +311,7 @@ export default function BoardModuleHub() {
             </div>
 
             <Link
-  href="/board"
+              href="/board"
               className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
             >
               Board Dashboard
@@ -369,11 +339,10 @@ export default function BoardModuleHub() {
               </div>
             ) : (
               boardAttentionRecords.map((record) => (
-                <>
                 <div
-  key={record.id}
-  className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
->
+                  key={record.id}
+                  className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
+                >
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="flex flex-wrap gap-2">
@@ -419,7 +388,7 @@ export default function BoardModuleHub() {
                       </div>
                     </div>
 
-                                        <button
+                    <button
                       type="button"
                       onClick={() =>
                         setExpandedRecordId(
@@ -431,7 +400,6 @@ export default function BoardModuleHub() {
                       {expandedRecordId === record.id ? "Close Review" : "Review"}
                     </button>
                   </div>
-                                          </div>
 
                   {expandedRecordId === record.id && (
                     <div className="mt-5 rounded-3xl border border-amber-400/20 bg-slate-950/80 p-5">
@@ -462,12 +430,8 @@ export default function BoardModuleHub() {
                           Record Decision
                         </button>
                       </div>
-                  </div>
-                </>
-              ))
-
-                </div>
-              ))
+                    </div>
+                  )}
                 </div>
               ))
             )}
