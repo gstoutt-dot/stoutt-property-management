@@ -59,9 +59,7 @@ export default async function handler(req, res) {
               priority: payload.priority,
               status: "open",
               source: "Admin Operations Intake",
-              recommended_action:
-                payload.recommended_action ||
-                "Review and process this board approval item.",
+              
             },
           ])
           .select()
