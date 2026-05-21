@@ -27,13 +27,6 @@ const boardPages = [
       "Board workflow tracking for approvals, follow-ups, and operational decisions.",
   },
   {
-    title: "Board Approval Queue",
-    status: "Live / Ready",
-    href: "/board/approval-queue",
-    description:
-      "Review board approval items, pending decisions, and routed association requests.",
-  },
-  {
     title: "Board Notification Center",
     status: "Live / Ready",
     href: "/board/notification-center",
