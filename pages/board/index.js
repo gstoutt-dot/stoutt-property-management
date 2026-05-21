@@ -417,7 +417,7 @@ export default function BoardModuleHub() {
                       </div>
                     </div>
 
-                    <<button
+                    <button
   type="button"
   onClick={() => router.push(routeForBoardRecord(record))}
   className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
