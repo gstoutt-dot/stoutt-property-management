@@ -52,7 +52,7 @@ export default async function handler(req, res) {
           .insert([
             {
               association_id: payload.association_id,
-              title: payload.title,
+              title: payload.title, 
               description: payload.description,
               category: payload.request_type,
               request_type: payload.request_type,
