@@ -100,11 +100,52 @@ export default function NewAdminOperation() {
         recommended_action: form.recommended_action.trim() || null,
       };
 
-      const { error } = await supabase
+            const { data: insertedRecord, error } = await supabase
         .from("admin_operational_records")
-        .insert(payload);
+        .insert(payload)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      if (
+        form.routing_target === "Board Approval Queue" ||
+        form.board_review_required
+      ) {
+        const { data: boardAction, error: actionError } = await supabase
+          .from("bos_actions")
+          .insert([
+            {
+              association_id: DEFAULT_ASSOCIATION_ID,
+              title: form.title.trim(),
+              description: form.description.trim(),
+              category: form.request_type,
+              request_type: form.request_type,
+              priority: form.priority,
+              status: "open",
+              source: "Admin Operations Intake",
+              assigned_to: "Board Approval Queue",
+              recommended_action:
+                form.recommended_action.trim() ||
+                "Review and process this board approval item.",
+            },
+          ])
+          .select()
+          .single();
+
+        if (actionError) throw actionError;
+
+        await supabase.from("bos_events").insert([
+          {
+            action_id: boardAction.id,
+            event_type: "board_approval_requested",
+            message:
+              form.recommended_action.trim() ||
+              `${form.request_type} routed for board approval.`,
+            module: "Board Approval Queue",
+          },
+        ]);
+      }
 
       setSystemMessage("Operational record submitted successfully.");
     } catch (error) {
@@ -264,7 +305,7 @@ export default function NewAdminOperation() {
             >
               <option>Admin Dashboard</option>
               <option>BOS Action Center</option>
-              <option>Board Dashboard</option>
+              <option>Board Approval Queue</option>
               <option>Financial Review</option>
               <option>Legal / Risk Review</option>
               <option>Vendor Operations</option>
