@@ -1,21 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/bosClient"; 
+import { supabase } from "../../lib/bosClient";
 
 export default function WorkflowEngine() {
   const [actions, setActions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
 
   async function fetchActions() {
-    const { data, error } = await supabase
-      .from("bos_actions")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      setLoading(true);
+      setSystemMessage("");
 
-    if (!error) setActions(data || []);
+      const { data, error } = await supabase
+        .from("bos_actions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setActions(data || []);
+    } catch (error) {
+      console.error("Unable to load workflow actions:", error);
+      setSystemMessage("Unable to load workflow actions.");
+      setActions([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     fetchActions();
+
+    const interval = setInterval(() => {
+      fetchActions();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   async function moveAction(id, newStatus, title) {
@@ -45,7 +66,7 @@ export default function WorkflowEngine() {
           action_id: id,
           event_type: eventType,
           message,
-          module: "Workflow Engine",
+          module: "Board Workflow Engine",
         },
       ]);
     }
@@ -53,9 +74,41 @@ export default function WorkflowEngine() {
     await fetchActions();
   }
 
-  const openActions = actions.filter((a) => !a.status || a.status === "open");
-  const inProgressActions = actions.filter((a) => a.status === "in_progress");
-  const completedActions = actions.filter((a) => a.status === "completed");
+  const openActions = useMemo(
+    () => actions.filter((a) => !a.status || a.status === "open"),
+    [actions]
+  );
+
+  const inProgressActions = useMemo(
+    () => actions.filter((a) => a.status === "in_progress"),
+    [actions]
+  );
+
+  const completedActions = useMemo(
+    () => actions.filter((a) => a.status === "completed"),
+    [actions]
+  );
+
+  const boardVisibleActions = useMemo(
+    () =>
+      actions.filter((action) => {
+        const combined = `${action.title || ""} ${action.description || ""} ${
+          action.category || ""
+        } ${action.request_type || ""}`.toLowerCase();
+
+        return (
+          combined.includes("board") ||
+          combined.includes("approval") ||
+          combined.includes("financial") ||
+          combined.includes("vendor") ||
+          combined.includes("violation") ||
+          combined.includes("maintenance") ||
+          combined.includes("architectural") ||
+          combined.includes("workflow")
+        );
+      }),
+    [actions]
+  );
 
   const columns = [
     {
@@ -84,21 +137,35 @@ export default function WorkflowEngine() {
     return "Open";
   }
 
+  function formatDate(value) {
+    if (!value) return "No date";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "No date";
+
+    return date.toLocaleString();
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-white/10 bg-slate-950/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide text-amber-300">
-            Stoutt BOS
-          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operations Center
+            </p>
 
-          <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board" className="hover:text-amber-300">Board</Link>
-            <Link href="/board/command-center" className="hover:text-amber-300">Command Center</Link>
-            <Link href="/board/workflow-engine" className="text-amber-300">Workflow</Link>
-            <Link href="/board/action-items" className="hover:text-amber-300">Action Items</Link>
-            <Link href="/board/violation-review" className="hover:text-amber-300">Violations</Link>
-          </nav>
+            <h1 className="mt-2 text-2xl font-semibold">
+              Workflow Engine
+            </h1>
+          </div>
+
+          <Link
+            href="/board"
+            className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+          >
+            Return to Board Dashboard
+          </Link>
         </div>
       </section>
 
@@ -107,134 +174,162 @@ export default function WorkflowEngine() {
 
         <div className="relative mx-auto max-w-7xl px-6 py-14">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Operating System
+            Live Board Workflow Pipeline
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-white md:text-6xl">
-            Workflow Engine
-          </h1>
+          <h2 className="text-4xl font-bold tracking-tight text-white md:text-6xl">
+            Board Workflow Engine
+          </h2>
 
           <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
             A live operational pipeline that moves BOS actions from open intake
-            through active execution and final completion, with audit events written
-            into Supabase.
+            through active execution and final completion, with audit events
+            written into Supabase.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link
-              href="/board/action-items"
-              className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-amber-500/20 hover:bg-amber-300"
-            >
-              Create Action
-            </Link>
-
-            <Link
-              href="/board/command-center"
-              className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white hover:border-amber-300 hover:text-amber-300"
-            >
-              View Command Center
-            </Link>
-          </div>
-
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
-              <p className="text-sm text-slate-400">Open</p>
-              <p className="mt-3 text-4xl font-bold text-amber-300">{openActions.length}</p>
+          {systemMessage && (
+            <div className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+              {systemMessage}
             </div>
+          )}
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
-              <p className="text-sm text-slate-400">In Progress</p>
-              <p className="mt-3 text-4xl font-bold text-amber-300">{inProgressActions.length}</p>
-            </div>
-
-            <div className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-6 shadow-2xl shadow-black/20">
-              <p className="text-sm text-amber-100/80">Completed</p>
-              <p className="mt-3 text-4xl font-bold text-amber-300">{completedActions.length}</p>
-            </div>
+          <div className="mt-10 grid gap-6 md:grid-cols-4">
+            <Metric label="Open" value={openActions.length} />
+            <Metric label="In Progress" value={inProgressActions.length} />
+            <Metric label="Completed" value={completedActions.length} amber />
+            <Metric label="Board Visible" value={boardVisibleActions.length} />
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="grid gap-6 xl:grid-cols-3">
-          {columns.map((column) => (
-            <div
-              key={column.status}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/20"
-            >
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{column.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
-                    {column.description}
-                  </p>
+        {loading ? (
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-sm text-slate-400">
+            Loading workflow actions...
+          </div>
+        ) : (
+          <div className="grid gap-6 xl:grid-cols-3">
+            {columns.map((column) => (
+              <div
+                key={column.status}
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/20"
+              >
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">
+                      {column.title}
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {column.description}
+                    </p>
+                  </div>
+
+                  <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
+                    {column.items.length}
+                  </span>
                 </div>
 
-                <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                  {column.items.length}
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                {column.items.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5">
-                    <p className="text-sm text-slate-500">No actions in this stage.</p>
-                  </div>
-                ) : (
-                  column.items.map((action) => (
-                    <div
-                      key={action.id}
-                      className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 transition hover:border-amber-300/40"
-                    >
-                      <p className="text-base font-semibold text-white">{action.title}</p>
-
-                      <p className="mt-2 text-sm text-slate-400">
-                        Status:{" "}
-                        <span className="font-semibold text-amber-300">
-                          {statusLabel(action.status)}
-                        </span>
+                <div className="space-y-4">
+                  {column.items.length === 0 ? (
+                    <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5">
+                      <p className="text-sm text-slate-500">
+                        No actions in this stage.
                       </p>
-
-                      <p className="mt-1 text-xs text-slate-500">
-                        {new Date(action.created_at).toLocaleString()}
-                      </p>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {action.status !== "open" && (
-                          <button
-                            onClick={() => moveAction(action.id, "open", action.title)}
-                            className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:border-amber-300 hover:text-amber-300"
-                          >
-                            Move Open
-                          </button>
-                        )}
-
-                        {action.status !== "in_progress" && (
-                          <button
-                            onClick={() => moveAction(action.id, "in_progress", action.title)}
-                            className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:border-amber-300 hover:text-amber-300"
-                          >
-                            Start
-                          </button>
-                        )}
-
-                        {action.status !== "completed" && (
-                          <button
-                            onClick={() => moveAction(action.id, "completed", action.title)}
-                            className="rounded-full bg-amber-400 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-amber-300"
-                          >
-                            Complete
-                          </button>
-                        )}
-                      </div>
                     </div>
-                  ))
-                )}
+                  ) : (
+                    column.items.map((action) => (
+                      <div
+                        key={action.id}
+                        className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 transition hover:border-amber-300/40"
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                            {action.category || action.request_type || "Workflow"}
+                          </span>
+
+                          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                            {statusLabel(action.status)}
+                          </span>
+                        </div>
+
+                        <p className="mt-4 text-base font-semibold text-white">
+                          {action.title || "Untitled Action"}
+                        </p>
+
+                        {action.description && (
+                          <p className="mt-2 text-sm leading-6 text-slate-400">
+                            {action.description}
+                          </p>
+                        )}
+
+                        <p className="mt-3 text-xs text-slate-500">
+                          Created: {formatDate(action.created_at)}
+                        </p>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {action.status !== "open" && (
+                            <button
+                              onClick={() =>
+                                moveAction(action.id, "open", action.title)
+                              }
+                              className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:border-amber-300 hover:text-amber-300"
+                            >
+                              Move Open
+                            </button>
+                          )}
+
+                          {action.status !== "in_progress" && (
+                            <button
+                              onClick={() =>
+                                moveAction(action.id, "in_progress", action.title)
+                              }
+                              className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:border-amber-300 hover:text-amber-300"
+                            >
+                              Start
+                            </button>
+                          )}
+
+                          {action.status !== "completed" && (
+                            <button
+                              onClick={() =>
+                                moveAction(action.id, "completed", action.title)
+                              }
+                              className="rounded-full bg-amber-400 px-3 py-2 text-xs font-semibold text-slate-950 hover:bg-amber-300"
+                            >
+                              Complete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </main>
+  );
+}
+
+function Metric({ label, value, amber = false }) {
+  return (
+    <div
+      className={`rounded-3xl border p-6 shadow-2xl shadow-black/20 ${
+        amber
+          ? "border-amber-300/20 bg-amber-300/10"
+          : "border-white/10 bg-white/[0.04]"
+      }`}
+    >
+      <p className={amber ? "text-sm text-amber-100/80" : "text-sm text-slate-400"}>
+        {label}
+      </p>
+
+      <p className="mt-3 text-4xl font-bold text-amber-300">
+        {value}
+      </p>
+    </div>
   );
 }
