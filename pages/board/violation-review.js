@@ -249,16 +249,9 @@ export default function ViolationReview() {
                 </h3>
               </div>
 
-              <Link
-                href={`/admin/operations/new?request_type=${encodeURIComponent(
-                  "Legal Review"
-                )}&return_path=${encodeURIComponent(
-                  "/board/violation-review"
-                )}&return_label=${encodeURIComponent("Violation Review")}`}
-                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-              >
-                Create Violation Record
-              </Link>
+              <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-200">
+  New violation records are created by Admin or Management.
+</div>
             </div>
 
             <div className="space-y-4">
