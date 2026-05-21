@@ -157,11 +157,11 @@ export default function ViolationReview() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/admin"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Admin Dashboard
-            </Link>
+  href="/board"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Board Dashboard
+</Link>
 
             <Link
               href="/board"
