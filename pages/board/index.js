@@ -368,11 +368,10 @@ export default function BoardModuleHub() {
               </div>
             ) : (
               boardAttentionRecords.map((record) => (
-                <Link
-                  key={record.id}
-                  href="/board/budget-planning"
-                  className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
-                >
+                <div
+  key={record.id}
+  className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
+>
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="flex flex-wrap gap-2">
@@ -418,11 +417,15 @@ export default function BoardModuleHub() {
                       </div>
                     </div>
 
-                    <div className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
-                      Review
-                    </div>
+                    <<button
+  type="button"
+  onClick={() => router.push(routeForBoardRecord(record))}
+  className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Review
+</button>
                   </div>
-                </Link>
+                </div>
               ))
             )}
           </div>
