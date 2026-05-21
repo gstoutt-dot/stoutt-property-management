@@ -430,7 +430,7 @@ export default function BoardModuleHub() {
                       {expandedRecordId === record.id ? "Close Review" : "Review"}
                     </button>
                   </div>
-                                          </div>
+                                          </div>}
 
                   {expandedRecordId === record.id && (
                     <div className="mt-5 rounded-3xl border border-amber-400/20 bg-slate-950/80 p-5">
