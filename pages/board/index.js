@@ -6,6 +6,8 @@ const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const boardPages = [
   {
+    const boardPages = [
+  {
     title: "BOS Action Center",
     status: "Live / Ready",
     href: "/bos/action-center",
@@ -13,11 +15,11 @@ const boardPages = [
       "Track requests, approvals, vendor activity, and operational progress across the association.",
   },
   {
-    title: "Executive Dashboard",
+    title: "Executive Board Dashboard",
     status: "Live / Ready",
     href: "/board/executive-dashboard",
     description:
-      "Board-only dashboard area for association visibility and board operations.",
+      "Executive board visibility for routed operational records, financial awareness, and association activity.",
   },
   {
     title: "Board Workflow Engine",
@@ -25,6 +27,13 @@ const boardPages = [
     href: "/board/workflow-engine",
     description:
       "Board workflow tracking for approvals, follow-ups, and operational decisions.",
+  },
+  {
+    title: "Board Approval Queue",
+    status: "Live / Ready",
+    href: "/board/board-approval-queue",
+    description:
+      "Board-only approval center for items specifically routed for board approval.",
   },
   {
     title: "Board Notification Center",
@@ -39,13 +48,6 @@ const boardPages = [
     href: "/board/financial-review",
     description:
       "Board-level financial visibility, delinquency trends, owner balance review, and QuickBooks-connected financial awareness.",
-  },
-  {
-    title: "Board Notifications",
-    status: "Live / Ready",
-    href: "/portal/board/notifications",
-    description:
-      "Board notification history and communication records.",
   },
 ];
 
