@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"; 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
 
@@ -173,11 +173,11 @@ export default function BoardReports() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-  href="/board"
-  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
->
-  Board Dashboard
-</Link>
+              href="/admin"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
 
             <Link
               href="/board"
@@ -206,9 +206,16 @@ export default function BoardReports() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-200">
-  Board reports are prepared by Admin or Management and routed here for board review.
-</div>
+            <Link
+              href={`/admin/operations/new?request_type=${encodeURIComponent(
+                "Management Report"
+              )}&return_path=${encodeURIComponent(
+                "/portal/board/reports"
+              )}&return_label=${encodeURIComponent("Board Reports")}`}
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Report Record
+            </Link>
 
             <Link
               href="/board/financial-review"
@@ -217,13 +224,19 @@ export default function BoardReports() {
               Financial Review
             </Link>
 
-           <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200">
-  Compliance Dashboard available from Board Dashboard
-</div>
+            <Link
+              href="/board/compliance-dashboard"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Compliance Dashboard
+            </Link>
 
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200">
-  Meeting Packet available from Board Dashboard
-</div>
+            <Link
+              href="/board/meeting-packet"
+              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Meeting Packet
+            </Link>
           </div>
         </div>
 
@@ -258,9 +271,16 @@ export default function BoardReports() {
               </h2>
             </div>
 
-            <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-200">
-  Board reports are prepared by Admin or Management and routed here for board review.
-</div>
+            <Link
+              href={`/admin/operations/new?request_type=${encodeURIComponent(
+                "Management Report"
+              )}&return_path=${encodeURIComponent(
+                "/portal/board/reports"
+              )}&return_label=${encodeURIComponent("Board Reports")}`}
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Create Report Record
+            </Link>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
@@ -428,3 +448,4 @@ function titleCase(value) {
     .replace(/-/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
+
