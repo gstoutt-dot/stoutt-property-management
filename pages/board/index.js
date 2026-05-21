@@ -370,7 +370,7 @@ export default function BoardModuleHub() {
               boardAttentionRecords.map((record) => (
                 <Link
                   key={record.id}
-                  href={routeForBoardRecord(record)}
+                  href="/board/budget-planning"
                   className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
                 >
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
