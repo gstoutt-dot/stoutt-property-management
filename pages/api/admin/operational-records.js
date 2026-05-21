@@ -59,7 +59,6 @@ export default async function handler(req, res) {
               priority: payload.priority,
               status: "open",
               source: "Admin Operations Intake",
-              assigned_to: "Board Approval Queue",
               recommended_action:
                 payload.recommended_action ||
                 "Review and process this board approval item.",
