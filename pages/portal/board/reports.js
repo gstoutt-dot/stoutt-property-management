@@ -11,8 +11,12 @@ export default function BoardReports() {
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+  const [portalRole, setPortalRole] = useState("");
 
   useEffect(() => {
+    const role = window.localStorage.getItem("spmPortalRole") || "";
+    setPortalRole(role);
+
     loadReports();
     loadReportRecords();
 
@@ -23,6 +27,8 @@ export default function BoardReports() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const isBoardView = portalRole === "board";
 
   async function loadReports() {
     try {
@@ -104,11 +110,6 @@ export default function BoardReports() {
     [reports]
   );
 
-  const linkedRecords = useMemo(
-    () => reports.filter((report) => Boolean(report.file_path)),
-    [reports]
-  );
-
   const financialRecords = useMemo(
     () =>
       operationalRecords.filter((record) => {
@@ -161,9 +162,7 @@ export default function BoardReports() {
               Stoutt Property Management
             </p>
 
-            <h1 className="mt-2 text-3xl font-semibold">
-              Reports
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold">Reports</h1>
 
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
               Board reporting, management summaries, financial review records,
@@ -173,14 +172,14 @@ export default function BoardReports() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/admin"
+              href={isBoardView ? "/board" : "/admin"}
               className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
             >
-              Admin Dashboard
+              {isBoardView ? "Board Dashboard" : "Admin Dashboard"}
             </Link>
 
             <Link
-              href="/board"
+              href={isBoardView ? "/board" : "/admin"}
               className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
             >
               Main Page
@@ -206,16 +205,22 @@ export default function BoardReports() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={`/admin/operations/new?request_type=${encodeURIComponent(
-                "Management Report"
-              )}&return_path=${encodeURIComponent(
-                "/portal/board/reports"
-              )}&return_label=${encodeURIComponent("Board Reports")}`}
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Report Record
-            </Link>
+            {isBoardView ? (
+              <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-200">
+                Board reports are prepared by Admin or Management and routed here for board review.
+              </div>
+            ) : (
+              <Link
+                href={`/admin/operations/new?request_type=${encodeURIComponent(
+                  "Management Report"
+                )}&return_path=${encodeURIComponent(
+                  "/portal/board/reports"
+                )}&return_label=${encodeURIComponent("Board Reports")}`}
+                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+              >
+                Create Report Record
+              </Link>
+            )}
 
             <Link
               href="/board/financial-review"
@@ -224,19 +229,33 @@ export default function BoardReports() {
               Financial Review
             </Link>
 
-            <Link
-              href="/board/compliance-dashboard"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Compliance Dashboard
-            </Link>
+            {isBoardView ? (
+              <>
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200">
+                  Compliance Dashboard available from Board Dashboard
+                </div>
 
-            <Link
-              href="/board/meeting-packet"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Meeting Packet
-            </Link>
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200">
+                  Meeting Packet available from Board Dashboard
+                </div>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/board/compliance-dashboard"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Compliance Dashboard
+                </Link>
+
+                <Link
+                  href="/portal/board/meetings"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  Meeting Packet
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -266,21 +285,25 @@ export default function BoardReports() {
                 Live Report Library
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold">
-                Board Reports
-              </h2>
+              <h2 className="mt-2 text-3xl font-bold">Board Reports</h2>
             </div>
 
-            <Link
-              href={`/admin/operations/new?request_type=${encodeURIComponent(
-                "Management Report"
-              )}&return_path=${encodeURIComponent(
-                "/portal/board/reports"
-              )}&return_label=${encodeURIComponent("Board Reports")}`}
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Report Record
-            </Link>
+            {isBoardView ? (
+              <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-200">
+                Board reports are prepared by Admin or Management and routed here for board review.
+              </div>
+            ) : (
+              <Link
+                href={`/admin/operations/new?request_type=${encodeURIComponent(
+                  "Management Report"
+                )}&return_path=${encodeURIComponent(
+                  "/portal/board/reports"
+                )}&return_label=${encodeURIComponent("Board Reports")}`}
+                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+              >
+                Create Report Record
+              </Link>
+            )}
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
@@ -289,9 +312,7 @@ export default function BoardReports() {
             ) : reports.length === 0 ? (
               <Empty message="No formal board reports are currently available." />
             ) : (
-              reports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ))
+              reports.map((report) => <ReportCard key={report.id} report={report} />)
             )}
           </div>
         </section>
@@ -302,8 +323,8 @@ export default function BoardReports() {
           </h3>
 
           <p className="mt-3 text-slate-300">
-            This page now preserves formal report table visibility while adding
-            distributed operational rendering from Admin Operations Intake.
+            This page preserves formal report visibility while adding distributed
+            operational rendering from Admin Operations Intake.
           </p>
         </div>
       </section>
@@ -314,9 +335,7 @@ export default function BoardReports() {
 function OperationalPanel({ title, items }) {
   return (
     <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
-      <h3 className="text-xl font-semibold text-amber-100">
-        {title}
-      </h3>
+      <h3 className="text-xl font-semibold text-amber-100">{title}</h3>
 
       <div className="mt-6 space-y-4">
         {items.length === 0 ? (
@@ -325,10 +344,7 @@ function OperationalPanel({ title, items }) {
           </div>
         ) : (
           items.slice(0, 5).map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-white/10 bg-slate-950/60 p-5"
-            >
+            <div key={item.id} className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
               <h4 className="font-semibold text-white">
                 {item.title || "Untitled Report Record"}
               </h4>
@@ -409,12 +425,8 @@ function ReportCard({ report }) {
 function Metric({ label, value }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
-      <div className="text-3xl font-bold text-amber-300">
-        {value}
-      </div>
-      <div className="mt-2 text-sm text-slate-300">
-        {label}
-      </div>
+      <div className="text-3xl font-bold text-amber-300">{value}</div>
+      <div className="mt-2 text-sm text-slate-300">{label}</div>
     </div>
   );
 }
@@ -448,4 +460,3 @@ function titleCase(value) {
     .replace(/-/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
-
