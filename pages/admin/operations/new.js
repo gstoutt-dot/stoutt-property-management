@@ -100,15 +100,23 @@ export default function NewAdminOperation() {
         recommended_action: form.recommended_action.trim() || null,
       };
 
-            const { data: insertedRecord, error } = await supabase
-        .from("admin_operational_records")
-        .insert(payload)
-        .select()
-        .single();
+            const response = await fetch("/api/admin/operational-records", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(payload),
+});
 
-      if (error) throw error;
+const result = await response.json();
 
-      if (
+if (!response.ok || !result.success) {
+  throw new Error(
+    result.message || "Unable to submit operational record."
+  );
+}
+
+       if (
         form.routing_target === "Board Approval Queue" ||
         form.board_review_required
       ) {
