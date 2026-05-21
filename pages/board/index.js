@@ -369,6 +369,7 @@ export default function BoardModuleHub() {
               </div>
             ) : (
               boardAttentionRecords.map((record) => (
+                <>
                 <div
   key={record.id}
   className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
@@ -430,7 +431,7 @@ export default function BoardModuleHub() {
                       {expandedRecordId === record.id ? "Close Review" : "Review"}
                     </button>
                   </div>
-                                          </div>}
+                                          </div>
 
                   {expandedRecordId === record.id && (
                     <div className="mt-5 rounded-3xl border border-amber-400/20 bg-slate-950/80 p-5">
@@ -461,8 +462,9 @@ export default function BoardModuleHub() {
                           Record Decision
                         </button>
                       </div>
-                    </div>
-                  )}
+                  </div>
+                </>
+              ))
 
                 </div>
               ))
