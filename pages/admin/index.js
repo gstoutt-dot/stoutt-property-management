@@ -45,6 +45,7 @@ const sections = [
       "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
     items: [
   { title: "BOS Action Center", href: "/bos/action-center" },
+  { title: "Approval Queue", href: "/portal/approval-queue" },
   { title: "New Operational Record", href: "/admin/operations/new" },
   { title: "Association Onboarding Records", href: "/association-onboarding-records" },
   { title: "Messages", href: "/board/messages" },
@@ -122,8 +123,7 @@ function routeForRecord(record) {
   const type = String(record.request_type || "").toLowerCase();
 
   if (target.includes("bos")) return "/bos/action-center";
-  if (target.includes("board approval")) return "/board/board-approval-queue";
-  if (target.includes("approval")) return "/board/board-approval-queue";
+  if (target.includes("approval")) return "/portal/approval-queue";
   if (target.includes("financial")) return "/board/financial-review";
   if (target.includes("legal") || target.includes("risk")) return "/board/legal-review";
   if (target.includes("vendor")) return "/board/vendors";
@@ -645,3 +645,4 @@ export default function AdminDashboard() {
     </main>
   );
 }
+
