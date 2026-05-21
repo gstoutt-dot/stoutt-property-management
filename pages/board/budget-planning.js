@@ -135,11 +135,11 @@ export default function BoardBudgetPlanning() {
 
           <div className="flex items-center gap-3">
   <Link
-    href="/admin"
-    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-  >
-    Admin Dashboard
-  </Link>
+  href="/board"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Board Dashboard
+</Link>
 </div>
         </div>
       </header>
@@ -223,10 +223,10 @@ export default function BoardBudgetPlanning() {
             </div>
 
             <Link
-  href="/admin/operations/new?request_type=Budget%20Planning&return_path=/board/budget-planning&return_label=Budget%20Planning"
+  href="/board"
   className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
 >
-  Create Budget Record
+  Board Dashboard
 </Link>
           </div>
 
@@ -322,7 +322,7 @@ export default function BoardBudgetPlanning() {
 
                     <div>
                       <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-300">
-                        {record.routing_target || "Admin Dashboard"}
+                        {record.routing_target || "Board Review"}
                       </span>
                     </div>
                   </div>
