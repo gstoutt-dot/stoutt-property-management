@@ -187,7 +187,7 @@ export default function BoardDashboard() {
             <div>
               <p className={bosTheme.eyebrow}>Board of Directors Portal</p>
 
-              <h1 className={bosTheme.title}>Board Dashboard</h1>
+              <h1 className={bosTheme.title}>Executive Board Dashboard</h1>
 
               <p className={bosTheme.subtitle}>
                 Review manager-verified items, monitor board-level financial
