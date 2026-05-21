@@ -1,51 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-const notifications = [
-  {
-    title: "Pool Lighting Vendor Agreement Ready for Vote",
-    type: "Approval Reminder",
-    priority: "High",
-    date: "April 29, 2026",
-    owner: "Board President",
-    status: "Unread",
-    linked: "Approval Queue / Motion Center",
-    message:
-      "The contract packet is complete and ready for final board approval before the May 8 deadline.",
-  },
-  {
-    title: "Updated Collection Policy Review Due Soon",
-    type: "Policy Reminder",
-    priority: "High",
-    date: "April 29, 2026",
-    owner: "Treasurer",
-    status: "Unread",
-    linked: "Policy Library / Resolution Tracker",
-    message:
-      "Attorney comments have been added. Board review is needed before the policy can move to adoption.",
-  },
-  {
-    title: "Annual Budget Adoption Packet In Progress",
-    type: "Budget Alert",
-    priority: "Medium",
-    date: "April 28, 2026",
-    owner: "Manager / Treasurer",
-    status: "Read",
-    linked: "Budget Planning / Annual Requirements",
-    message:
-      "Draft budget materials are being prepared for review before the annual budget adoption deadline.",
-  },
-  {
-    title: "Insurance Renewal Review Window Open",
-    type: "Insurance Alert",
-    priority: "Medium",
-    date: "April 27, 2026",
-    owner: "Board President",
-    status: "Read",
-    linked: "Insurance Center / Compliance Calendar",
-    message:
-      "Carrier comparison and coverage summary should be reviewed before the June renewal date.",
-  },
-];
+import { supabase } from "../../lib/bosClient";
 
 const alertTypes = [
   "Overdue tasks",
@@ -60,78 +15,253 @@ const alertTypes = [
   "System notices",
 ];
 
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatDate(value) {
+  if (!value) return "No date";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "No date";
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function priorityFromText(value) {
+  const text = String(value || "").toLowerCase();
+
+  if (
+    text.includes("critical") ||
+    text.includes("overdue") ||
+    text.includes("urgent")
+  ) {
+    return "High";
+  }
+
+  if (
+    text.includes("approval") ||
+    text.includes("legal") ||
+    text.includes("insurance") ||
+    text.includes("budget")
+  ) {
+    return "Medium";
+  }
+
+  return "Normal";
+}
+
 export default function BoardNotificationCenter() {
+  const [events, setEvents] = useState([]);
+  const [actions, setActions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    loadNotifications();
+
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function loadNotifications() {
+    try {
+      setLoading(true);
+      setSystemMessage("");
+
+      const [{ data: eventRows, error: eventsError }, { data: actionRows, error: actionsError }] =
+        await Promise.all([
+          supabase
+            .from("bos_events")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(50),
+          supabase
+            .from("bos_actions")
+            .select("*")
+            .order("created_at", { ascending: false }),
+        ]);
+
+      if (eventsError) throw eventsError;
+      if (actionsError) throw actionsError;
+
+      setEvents(eventRows || []);
+      setActions(actionRows || []);
+    } catch (error) {
+      console.error("Unable to load board notifications:", error);
+      setSystemMessage("Unable to load board notifications.");
+      setEvents([]);
+      setActions([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const notifications = useMemo(() => {
+    const actionMap = new Map(actions.map((action) => [action.id, action]));
+
+    const eventNotifications = events.map((event) => {
+      const linkedAction = actionMap.get(event.action_id);
+      const message = event.message || linkedAction?.description || "Board notification update.";
+
+      return {
+        id: event.id,
+        title: linkedAction?.title || titleCase(event.event_type || "Board Update"),
+        type: titleCase(event.event_type || "System Notice"),
+        priority: priorityFromText(`${event.event_type} ${message} ${linkedAction?.priority || ""}`),
+        date: formatDate(event.created_at),
+        owner: linkedAction?.assigned_to || linkedAction?.owner_name || "Board / Management",
+        status: "Unread",
+        linked: event.module || linkedAction?.category || linkedAction?.request_type || "Board Workflow",
+        message,
+      };
+    });
+
+    const openActionNotifications = actions
+      .filter((action) => String(action.status || "open").toLowerCase() !== "completed")
+      .slice(0, 10)
+      .map((action) => ({
+        id: `action-${action.id}`,
+        title: action.title || "Board Action Item",
+        type: titleCase(action.category || action.request_type || "Action Reminder"),
+        priority: titleCase(action.priority || priorityFromText(action.title)),
+        date: formatDate(action.created_at),
+        owner: action.assigned_to || action.owner_name || "Board / Management",
+        status: "Open",
+        linked: "Board Workflow Engine",
+        message:
+          action.description ||
+          action.recommended_action ||
+          "This item is open and may require board awareness or follow-up.",
+      }));
+
+    return [...eventNotifications, ...openActionNotifications].slice(0, 20);
+  }, [events, actions]);
+
+  const highPriorityCount = useMemo(
+    () =>
+      notifications.filter((item) =>
+        ["high", "critical"].includes(String(item.priority || "").toLowerCase())
+      ).length,
+    [notifications]
+  );
+
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => String(item.status || "").toLowerCase() === "unread").length,
+    [notifications]
+  );
+
+  const dueThisWeekCount = useMemo(
+    () =>
+      actions.filter((action) => {
+        if (!action.due_date) return false;
+
+        const dueDate = new Date(action.due_date);
+        const now = new Date();
+        const sevenDays = new Date();
+        sevenDays.setDate(now.getDate() + 7);
+
+        return dueDate >= now && dueDate <= sevenDays;
+      }).length,
+    [actions]
+  );
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/board" className="text-lg font-semibold tracking-wide">
-            Stoutt Board Portal
-          </Link>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+              Board Operations Center
+            </p>
 
-          <nav className="hidden gap-6 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Portal</Link>
-            <Link href="/board/violation-review">Violations</Link>
-            <Link href="/board/architectural-approvals">ARC Approvals</Link>
-            <Link href="/board/maintenance-review">Maintenance</Link>
-            <Link href="/board/financial-review">Financials</Link>
-          </nav>
+            <h1 className="mt-2 text-2xl font-semibold">
+              Notification Center
+            </h1>
+          </div>
+
+          <Link
+            href="/board"
+            className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+          >
+            Return to Board Dashboard
+          </Link>
         </div>
       </header>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-10 rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Board Alert System
+            Live Board Alert System
           </p>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+
+          <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
             Board Notification Center
-          </h1>
+          </h2>
+
           <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-            A centralized notification hub for new board alerts, overdue tasks,
-            upcoming deadlines, approval reminders, document review notices,
-            compliance reminders, vendor updates, legal alerts, budget alerts,
-            insurance renewals, and system notices.
+            A centralized notification hub for board alerts, workflow updates,
+            approval reminders, operational status changes, compliance reminders,
+            vendor updates, budget items, insurance matters, and system notices.
           </p>
         </div>
+
+        {systemMessage && (
+          <div className="mb-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+            {systemMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-3xl border border-amber-400/20 bg-amber-300/10 p-6 shadow-xl">
             <h2 className="text-xl font-semibold text-amber-200">
               Why This Matters
             </h2>
+
             <p className="mt-4 leading-7 text-slate-300">
               Board members should not have to hunt through emails or remember
-              every deadline. This center surfaces the alerts that need attention
-              before they become missed actions.
+              every deadline. This center surfaces live board updates as they are
+              created across the platform.
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
             <h2 className="text-xl font-semibold">Priority Awareness</h2>
+
             <p className="mt-4 leading-7 text-slate-300">
-              High-priority approvals, overdue items, compliance dates, legal
-              alerts, budget notices, and insurance reminders are organized by
-              urgency, owner, and linked workflow.
+              High-priority approvals, overdue items, compliance dates, budget
+              notices, insurance reminders, and workflow changes are organized
+              into one board-safe view.
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
             <h2 className="text-xl font-semibold">Connected Alerts</h2>
+
             <p className="mt-4 leading-7 text-slate-300">
-              Every notification can connect back to the task, approval,
-              resolution, document, vendor item, legal matter, budget item, or
-              compliance deadline that created it.
+              Notifications are connected to BOS events and board-visible actions
+              so the board can see what changed and why it matters.
             </p>
           </div>
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-4">
           {[
-            ["New Alerts", "9"],
-            ["High Priority", "4"],
-            ["Overdue", "3"],
-            ["Due This Week", "11"],
+            ["New Alerts", notifications.length],
+            ["High Priority", highPriorityCount],
+            ["Unread", unreadCount],
+            ["Due This Week", dueThisWeekCount],
           ].map(([label, value]) => (
             <div
               key={label}
@@ -144,64 +274,83 @@ export default function BoardNotificationCenter() {
         </div>
 
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl lg:col-span-2">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-semibold">Notification Feed</h2>
+
                 <p className="mt-2 text-sm text-slate-400">
                   Alerts organized by priority, date, owner, status, and linked
                   board workflow.
                 </p>
               </div>
 
-              <button className="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950">
-                Mark All Reviewed
+              <button
+                type="button"
+                onClick={loadNotifications}
+                className="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-200"
+              >
+                Refresh
               </button>
             </div>
 
             <div className="space-y-5">
-              {notifications.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-slate-900/80 p-5"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
-                        {item.type} · {item.priority} Priority · {item.date}
-                      </p>
-                      <h3 className="mt-2 text-xl font-semibold">
-                        {item.title}
-                      </h3>
+              {loading ? (
+                <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-5 text-sm text-slate-400">
+                  Loading board notifications...
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5 text-sm text-emerald-200">
+                  No board notifications are currently active.
+                </div>
+              ) : (
+                notifications.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border border-white/10 bg-slate-900/80 p-5"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+                          {item.type} · {item.priority} Priority · {item.date}
+                        </p>
+
+                        <h3 className="mt-2 text-xl font-semibold">
+                          {item.title}
+                        </h3>
+                      </div>
+
+                      <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
+                        {item.status}
+                      </span>
                     </div>
 
-                    <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
-                      {item.status}
-                    </span>
-                  </div>
+                    <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
+                      <p>
+                        <span className="text-slate-500">Owner:</span>{" "}
+                        {item.owner}
+                      </p>
 
-                  <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
-                    <p>
-                      <span className="text-slate-500">Owner:</span>{" "}
-                      {item.owner}
-                    </p>
-                    <p>
-                      <span className="text-slate-500">Linked Workflow:</span>{" "}
-                      {item.linked}
-                    </p>
-                    <p className="md:col-span-2">
-                      <span className="text-slate-500">Message:</span>{" "}
-                      {item.message}
-                    </p>
+                      <p>
+                        <span className="text-slate-500">Linked Workflow:</span>{" "}
+                        {item.linked}
+                      </p>
+
+                      <p className="md:col-span-2">
+                        <span className="text-slate-500">Message:</span>{" "}
+                        {item.message}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
           <aside className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
               <h2 className="text-xl font-semibold">Alert Types</h2>
+
               <div className="mt-5 grid gap-3">
                 {alertTypes.map((item) => (
                   <div
@@ -216,12 +365,13 @@ export default function BoardNotificationCenter() {
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
               <h2 className="text-xl font-semibold">Notification Rules</h2>
+
               <div className="mt-5 space-y-3 text-sm text-slate-300">
-                <p>• High priority items stay pinned</p>
-                <p>• Overdue tasks escalate automatically</p>
-                <p>• Approval reminders link to queue items</p>
-                <p>• Compliance dates trigger advance notices</p>
-                <p>• Legal and insurance items receive special flags</p>
+                <p>• High priority items stay visible</p>
+                <p>• Workflow updates appear from BOS events</p>
+                <p>• Open actions can appear as reminders</p>
+                <p>• Compliance and financial items receive special flags</p>
+                <p>• Board view stays separate from Admin intake</p>
               </div>
             </div>
           </aside>
@@ -231,11 +381,11 @@ export default function BoardNotificationCenter() {
           <h2 className="text-2xl font-semibold text-amber-200">
             Fewer Missed Items, Better Board Awareness
           </h2>
+
           <p className="mt-4 max-w-4xl leading-8 text-slate-300">
             This notification center gives the board one trusted place to see
             what needs attention. Instead of depending on scattered emails,
-            memory, or last-minute reminders, every important alert connects
-            directly to the board workflow that needs action.
+            every important alert connects back to live board workflow activity.
           </p>
         </section>
       </section>
