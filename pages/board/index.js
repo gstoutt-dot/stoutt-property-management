@@ -13,9 +13,9 @@ const boardPages = [
       "Track requests, approvals, vendor activity, and operational progress across the association.",
   },
   {
-    title: "Board Dashboard",
+    title: "Executive Dashboard",
     status: "Live / Ready",
-    href: "/board/dashboard",
+    href: "/board/executive-dashboard",
     description:
       "Board-only dashboard area for association visibility and board operations.",
   },
