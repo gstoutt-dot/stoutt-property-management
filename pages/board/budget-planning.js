@@ -1,18 +1,147 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
+const boardPages = [
+  {
+    title: "Approval Queue",
+    status: "Live / Ready",
+    href: "/portal/approval-queue",
+    description:
+      "Review requests requiring board approval, vendor authorization, or community decisions.",
+  },
+  {
+    title: "BOS Action Center",
+    status: "Live / Ready",
+    href: "/bos/action-center",
+    description:
+      "Track requests, approvals, vendor activity, and operational progress across the association.",
+  },
+  {
+    title: "Violation Review",
+    status: "Live / Ready",
+    href: "/board/violation-review",
+    description:
+      "Board review area for covenant enforcement and violation decisions.",
+  },
+  {
+    title: "Architectural Approvals",
+    status: "Live / Ready",
+    href: "/board/architectural-approvals",
+    description:
+      "Architectural request review module for ARC and board decisions.",
+  },
+  {
+    title: "Maintenance Review",
+    status: "Live / Ready",
+    href: "/board/maintenance-review",
+    description:
+      "Board visibility into major repairs, work orders, and maintenance escalations.",
+  },
+  {
+    title: "Financial Review",
+    status: "Live / Ready",
+    href: "/board/financial-review",
+    description:
+      "Budget exceptions, delinquency trends, reserve items, and financial approvals.",
+  },
+  {
+    title: "Budget Planning",
+    status: "Live / Ready",
+    href: "/board/budget-planning",
+    description:
+      "Board budget planning area for assessments, reserve assumptions, insurance increases, and annual budget preparation.",
+  },
+  {
+    title: "Insurance & Risk",
+    status: "Live / Ready",
+    href: "/board/insurance-risk",
+    description:
+      "Board insurance, policy renewal, risk exposure, claims, and compliance review area.",
+  },
+  {
+    title: "Documents",
+    status: "Live / Ready",
+    href: "/board/documents",
+    description:
+      "Association documents, records, packets, and board reference materials.",
+  },
+  {
+    title: "Vendors",
+    status: "Live / Ready",
+    href: "/board/vendors",
+    description:
+      "Vendor visibility and board-level vendor review areas.",
+  },
+  {
+    title: "Calendar",
+    status: "Live / Ready",
+    href: "/board/calendar",
+    description:
+      "Board calendar for meetings, deadlines, association events, and operational scheduling.",
+  },
+  {
+    title: "Messages",
+    status: "Live / Ready",
+    href: "/board/messages",
+    description:
+      "Board communication center for association messages, updates, and internal coordination.",
+  },
+  {
+    title: "Task Command",
+    status: "Live / Ready",
+    href: "/board/task-command",
+    description:
+      "Board task visibility for assignments, follow-ups, operational action items, and completion tracking.",
+  },
+  {
+    title: "Committee Center",
+    status: "Live / Ready",
+    href: "/board/committee-center",
+    description:
+      "Committee coordination area for board oversight, member participation, and association initiatives.",
+  },
+  {
+    title: "Signature Approval Log",
+    status: "Live / Ready",
+    href: "/board/signature-approval-log",
+    description:
+      "Approval and signature tracking for board actions, authorizations, and governance records.",
+  },
+  {
+    title: "Meetings",
+    status: "Live / Ready",
+    href: "/portal/board/meetings",
+    description:
+      "Board meeting center for agendas, meeting records, discussion items, and association governance.",
+  },
+  {
+    title: "Member Voting",
+    status: "Live / Ready",
+    href: "/portal/board/member-voting",
+    description:
+      "Voting center for board decisions, member voting workflows, and recorded association outcomes.",
+  },
+  {
+    title: "Reports",
+    status: "Live / Ready",
+    href: "/portal/board/reports",
+    description:
+      "Board reporting center for financial summaries, compliance activity, operational records, and board-ready reports.",
+  },
+];
+
 const closedStatuses = ["completed", "archived", "closed"];
 
-const workflow = [
-  "Import prior-year actuals from QuickBooks",
-  "Review contract and insurance increases",
-  "Model reserve funding assumptions",
-  "Project assessment impact scenarios",
-  "Prepare draft budget for board review",
-  "Finalize approved budget and archive record",
-];
+function statusStyle(status) {
+  if (status === "Live / Ready") {
+    return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
+  }
+
+  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
+}
 
 function priorityStyle(priority) {
   const value = String(priority || "").toLowerCase();
@@ -42,22 +171,119 @@ function formatDate(value) {
   });
 }
 
-export default function BoardBudgetPlanning() {
+function routeForBoardRecord(record) {
+  const target = String(record.routing_target || "").toLowerCase();
+  const type = String(record.request_type || "").toLowerCase();
+
+  if (type.includes("insurance") || type.includes("risk")) {
+    return "/board/insurance-risk";
+  }
+
+  if (type.includes("budget")) {
+    return "/board/budget-planning";
+  }
+
+  if (type.includes("financial")) {
+    return "/board/financial-review";
+  }
+
+  if (type.includes("violation")) {
+    return "/board/violation-review";
+  }
+
+  if (type.includes("architectural")) {
+    return "/board/architectural-approvals";
+  }
+
+  if (type.includes("maintenance")) {
+    return "/board/maintenance-review";
+  }
+
+  if (type.includes("vendor")) {
+    return "/board/vendors";
+  }
+
+  if (type.includes("legal")) {
+    return "/board/legal-review";
+  }
+
+  if (type.includes("policy")) {
+    return "/board/policy-library";
+  }
+
+  if (type.includes("meeting")) {
+    return "/portal/board/meetings";
+  }
+
+  if (type.includes("election")) {
+    return "/board/elections";
+  }
+
+  if (type.includes("capital")) {
+    return "/board/capital-projects";
+  }
+
+  if (target.includes("insurance") || target.includes("risk")) {
+    return "/board/insurance-risk";
+  }
+
+  if (target.includes("budget")) {
+    return "/board/budget-planning";
+  }
+
+  if (target.includes("financial")) {
+    return "/board/financial-review";
+  }
+
+  if (target.includes("violation")) {
+    return "/board/violation-review";
+  }
+
+  if (target.includes("architectural")) {
+    return "/board/architectural-approvals";
+  }
+
+  if (target.includes("maintenance")) {
+    return "/board/maintenance-review";
+  }
+
+  if (target.includes("vendor")) {
+    return "/board/vendors";
+  }
+
+  if (target.includes("legal")) {
+    return "/board/legal-review";
+  }
+
+  if (target.includes("approval")) {
+    return "/portal/approval-queue";
+  }
+
+  if (target.includes("bos")) {
+    return "/bos/action-center";
+  }
+
+  return "/portal/approval-queue";
+}
+
+export default function BoardModuleHub() {
+  const router = useRouter();
+
   const [records, setRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadBudgetRecords({ showLoading: true });
+    loadBoardRecords({ showLoading: true });
 
     const interval = setInterval(() => {
-      loadBudgetRecords({ showLoading: false });
+      loadBoardRecords({ showLoading: false });
     }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  async function loadBudgetRecords({ showLoading = false } = {}) {
+  async function loadBoardRecords({ showLoading = false } = {}) {
     try {
       if (showLoading) {
         setLoadingRecords(true);
@@ -73,258 +299,199 @@ export default function BoardBudgetPlanning() {
 
       if (!response.ok || !payload.success) {
         throw new Error(
-          payload.message || "Unable to load budget planning records."
+          payload.message || "Unable to load board operational records."
         );
       }
 
-      const budgetRecords = (payload.openRecords || []).filter((record) => {
-        const requestType = String(record.request_type || "").toLowerCase();
-        const status = String(record.status || "").toLowerCase();
-
-        return (
-          requestType.includes("budget") &&
-          !closedStatuses.includes(status)
-        );
-      });
-
-      setRecords(budgetRecords);
+      setRecords(payload.openRecords || []);
     } catch (error) {
-      console.error("Unable to load budget planning records:", error);
+      console.error("Unable to load board operational records:", error);
+
       setSystemMessage(
-        error.message || "Unable to load budget planning records."
+        error.message || "Unable to load board operational records."
       );
     } finally {
       setLoadingRecords(false);
     }
   }
 
-  const boardReviewCount = useMemo(
-    () => records.filter((record) => Boolean(record.board_review_required)).length,
-    [records]
-  );
+  const boardAttentionRecords = useMemo(() => {
+    const priorityRank = {
+      critical: 1,
+      high: 2,
+      normal: 3,
+      low: 4,
+    };
 
-  const highPriorityCount = useMemo(
-    () =>
-      records.filter((record) =>
-        ["critical", "high"].includes(
-          String(record.priority || "").toLowerCase()
-        )
-      ).length,
-    [records]
-  );
+    return records
+      .filter((record) => {
+        const status = String(record.status || "").toLowerCase();
+        const assignedTo = String(record.assigned_to || "").toLowerCase();
+        const target = String(record.routing_target || "").toLowerCase();
 
-  const nextDueRecord = useMemo(() => {
-    return [...records]
-      .filter((record) => Boolean(record.due_date))
-      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0];
+        return (
+          !closedStatuses.includes(status) &&
+          (Boolean(record.board_review_required) ||
+            assignedTo.includes("board") ||
+            target.includes("board"))
+        );
+      })
+      .sort((a, b) => {
+        const aRank = priorityRank[String(a.priority || "").toLowerCase()] || 5;
+        const bRank = priorityRank[String(b.priority || "").toLowerCase()] || 5;
+
+        return aRank - bRank;
+      });
   }, [records]);
 
+  function handleLogout() {
+    localStorage.removeItem("spmPortalLoggedIn");
+    localStorage.removeItem("spmPortalUser");
+    localStorage.removeItem("spmPortalUserName");
+    localStorage.removeItem("spmPortalRole");
+
+    router.push("/admin-login");
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Stoutt Property Management
-            </div>
-
-            <h1 className="mt-1 text-2xl font-semibold">
-              Budget Planning
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-  <Link
-  href="/board"
-  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
->
-  Board Dashboard
-</Link>
-</div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-6 py-14">
-        <section className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 p-10 shadow-2xl">
-          <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-            Budget Forecasting • Assessments • Reserve Assumptions
-          </div>
-
-          <div className="mt-5 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
+    <main className="min-h-screen bg-[#020617] text-white">
+      <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h2 className="text-4xl font-semibold leading-tight">
-                Live budget planning records now flow from the Admin Operations Intake.
-              </h2>
+              <div className="mb-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300">
+                Board Operations Center
+              </div>
 
-              <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
-                Budget items created from the Admin Dashboard now appear here for
-                planning review, board preparation, due date tracking, and financial
-                coordination.
+              <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-6xl">
+                BOARD DASHBOARD
+              </h1>
+
+              <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
+                Simple operational visibility for board approvals, financial awareness,
+                association activity, and community operations.
               </p>
             </div>
 
-            <div className="rounded-3xl border border-amber-400/30 bg-amber-400/10 p-6">
-              <div className="text-sm text-slate-300">
-                Active Budget Items
-              </div>
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Board Access
+              </p>
 
-              <div className="mt-2 text-6xl font-semibold text-amber-300">
-                {records.length}
-              </div>
-
-              <div className="mt-4 text-slate-300">
-                Live records requiring planning visibility.
+              <div className="mt-4 flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-xl border border-red-300/20 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-400/15"
+                >
+                  Logout / Switch Role
+                </button>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="mt-10 grid gap-6 md:grid-cols-4">
-          {[
-            ["Open Budget Records", records.length],
-            ["High Priority", highPriorityCount],
-            ["Board Review", boardReviewCount],
-            ["Next Due", nextDueRecord ? formatDate(nextDueRecord.due_date) : "None"],
-          ].map(([label, value]) => (
-            <div
-              key={label}
-              className="rounded-3xl border border-white/10 bg-white/5 p-7"
-            >
-              <div className="text-sm text-slate-400">{label}</div>
-
-              <div className="mt-3 text-3xl font-semibold text-amber-300">
-                {value}
-              </div>
-            </div>
-          ))}
-        </section>
-
+      <section className="mx-auto max-w-7xl px-6 py-10">
         {systemMessage && (
-          <section className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
+          <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
             {systemMessage}
-          </section>
+          </div>
         )}
 
-        <section className="mt-14">
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-                Distributed Operational Rendering
-              </div>
+        <section className="mb-10 rounded-[2rem] border border-amber-400/20 bg-amber-400/[0.05] p-6 shadow-2xl shadow-black/30">
+          <div className="mb-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+              Board Attention Queue
+            </p>
 
-              <h3 className="mt-3 text-3xl font-semibold">
-                Live Budget Planning Records
-              </h3>
+            <h2 className="mt-3 text-3xl font-bold">
+              Items Requiring Board Visibility
+            </h2>
 
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                These records originate from the Admin Operations Intake and are
-                rendered here because their request type is Budget Planning.
-              </p>
-            </div>
-
-            <Link
-  href="/board"
-  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
->
-  Board Dashboard
-</Link>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+              Records assigned to the board appear here first so board members can
+              immediately see items requiring review, awareness, or action.
+            </p>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {loadingRecords ? (
-              <div className="rounded-3xl border border-white/10 bg-slate-900 p-6 text-sm text-slate-400">
-                Loading budget planning records...
+              <div className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 text-sm text-slate-400">
+                Loading board records...
               </div>
-            ) : records.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-white/10 bg-slate-900/70 p-8">
+            ) : boardAttentionRecords.length === 0 ? (
+              <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-5">
                 <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
                   Clear
                 </div>
 
-                <h4 className="mt-4 text-2xl font-semibold">
-                  No open budget planning records
-                </h4>
+                <h3 className="mt-4 text-2xl font-bold">
+                  No open board attention items
+                </h3>
 
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                  Create a new admin operational record with request type Budget
-                  Planning and it will appear here automatically.
+                <p className="mt-3 text-sm leading-7 text-slate-300">
+                  Records assigned to the board will appear here automatically.
                 </p>
               </div>
             ) : (
-              records.map((record) => (
+              boardAttentionRecords.map((record) => (
                 <article
                   key={record.id}
-                  className="rounded-3xl border border-white/10 bg-slate-900 p-6 transition hover:border-amber-400/40"
+                  className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
                 >
-                  <div className="grid gap-6 lg:grid-cols-[1.35fr_0.75fr_0.75fr_0.7fr] lg:items-center">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="flex flex-wrap gap-2">
-                        <span
-                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                        <div
+                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
                             record.priority
                           )}`}
                         >
                           {record.priority || "Normal"}
-                        </span>
+                        </div>
 
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
-                          {record.status || "Submitted"}
-                        </span>
+                        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                          {record.request_type || "Board Record"}
+                        </div>
 
-                        {record.board_review_required && (
-                          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
-                            Board Review
-                          </span>
-                        )}
+                        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+                          Due: {formatDate(record.due_date)}
+                        </div>
+
+                        <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                          Board Review
+                        </div>
                       </div>
 
-                      <h4 className="mt-4 text-xl font-semibold">
+                      <h3 className="mt-4 text-2xl font-bold">
                         {record.title}
-                      </h4>
+                      </h3>
 
-                      <p className="mt-3 leading-relaxed text-slate-300">
+                      <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
                         {record.description ||
-                          "Budget planning record submitted for review."}
+                          "Board operational record submitted for review."}
                       </p>
 
-                      {record.recommended_action && (
-                        <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
-                          <div className="text-xs uppercase tracking-[0.2em] text-amber-300">
-                            Recommended Action
-                          </div>
+                      <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+                          Recommended Action
+                        </p>
 
-                          <p className="mt-2 text-sm leading-6 text-slate-300">
-                            {record.recommended_action}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                        Assigned To
-                      </div>
-
-                      <div className="mt-2 text-slate-200">
-                        {record.assigned_to || "Unassigned"}
+                        <p className="mt-2 text-sm leading-6 text-slate-300">
+                          {record.recommended_action ||
+                            "Review this item and determine the next board action."}
+                        </p>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                        Due Date
-                      </div>
-
-                      <div className="mt-2 text-amber-300">
-                        {formatDate(record.due_date)}
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-300">
-                        {record.routing_target || "Board Review"}
-                      </span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => router.push(routeForBoardRecord(record))}
+                      className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+                    >
+                      Review
+                    </button>
                   </div>
                 </article>
               ))
@@ -332,58 +499,59 @@ export default function BoardBudgetPlanning() {
           </div>
         </section>
 
-        <section className="mt-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              Budget Workflow
-            </div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {boardPages.map((page) => (
+            <div
+              key={page.href}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 transition hover:border-amber-400/20"
+            >
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <div
+                    className={`mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusStyle(
+                      page.status
+                    )}`}
+                  >
+                    {page.status}
+                  </div>
 
-            <h3 className="mt-3 text-3xl font-semibold">
-              Planning Control Path
-            </h3>
-
-            <div className="mt-8 space-y-4 text-slate-300">
-              {workflow.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-slate-900 p-5"
-                >
-                  {item}
+                  <h2 className="text-2xl font-bold">
+                    {page.title}
+                  </h2>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 p-8">
-            <div className="text-xs uppercase tracking-[0.25em] text-amber-400">
-              QuickBooks Financial Intelligence
-            </div>
+                <Link
+                  href={page.href}
+                  className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-400/20"
+                >
+                  Open
+                </Link>
+              </div>
 
-            <h3 className="mt-3 text-3xl font-semibold">
-              From Accounting Data to Board Strategy
-            </h3>
-
-            <div className="mt-8 space-y-5 text-slate-300 leading-relaxed">
-              <p>
-                QuickBooks data can support budget planning by comparing actual
-                spending against approved budgets, highlighting expense categories
-                that are trending above forecast, and identifying recurring cost
-                pressure before the next budget cycle.
-              </p>
-
-              <p>
-                This gives the board a clearer view of assessment needs, reserve
-                obligations, and operational tradeoffs before final budget approval.
+              <p className="text-sm leading-6 text-slate-400">
+                {page.description}
               </p>
             </div>
+          ))}
+        </div>
 
-            <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-amber-200">
-              This module is now connected to the broader SPM operational record
-              system and can receive live planning records from Admin Intake.
-            </div>
+        <section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-8">
+          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
+            Board Operations
           </div>
+
+          <h2 className="text-3xl font-bold">
+            Simple Access to Association Information
+          </h2>
+
+          <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
+            This dashboard gives board members a clear place to review approvals,
+            association activity, financial information, documents, vendors, meetings,
+            messages, reports, voting, signatures, committee activity, budget planning,
+            insurance risk, and other board responsibilities.
+          </p>
         </section>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
