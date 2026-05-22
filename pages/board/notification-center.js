@@ -62,6 +62,7 @@ function priorityFromText(value) {
 export default function BoardNotificationCenter() {
   const [events, setEvents] = useState([]);
   const [actions, setActions] = useState([]);
+  const [readNotifications, setReadNotifications] = useState({});
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
@@ -80,18 +81,20 @@ export default function BoardNotificationCenter() {
       setLoading(true);
       setSystemMessage("");
 
-      const [{ data: eventRows, error: eventsError }, { data: actionRows, error: actionsError }] =
-        await Promise.all([
-          supabase
-            .from("bos_events")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(50),
-          supabase
-            .from("bos_actions")
-            .select("*")
-            .order("created_at", { ascending: false }),
-        ]);
+      const [
+        { data: eventRows, error: eventsError },
+        { data: actionRows, error: actionsError },
+      ] = await Promise.all([
+        supabase
+          .from("bos_events")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(50),
+        supabase
+          .from("bos_actions")
+          .select("*")
+          .order("created_at", { ascending: false }),
+      ]);
 
       if (eventsError) throw eventsError;
       if (actionsError) throw actionsError;
@@ -108,28 +111,47 @@ export default function BoardNotificationCenter() {
     }
   }
 
+  function markAsRead(notificationId) {
+    setReadNotifications((current) => ({
+      ...current,
+      [notificationId]: true,
+    }));
+  }
+
   const notifications = useMemo(() => {
     const actionMap = new Map(actions.map((action) => [action.id, action]));
 
     const eventNotifications = events.map((event) => {
       const linkedAction = actionMap.get(event.action_id);
-      const message = event.message || linkedAction?.description || "Board notification update.";
+      const message =
+        event.message ||
+        linkedAction?.description ||
+        "Board notification update.";
 
       return {
         id: event.id,
         title: linkedAction?.title || titleCase(event.event_type || "Board Update"),
         type: titleCase(event.event_type || "System Notice"),
-        priority: priorityFromText(`${event.event_type} ${message} ${linkedAction?.priority || ""}`),
+        priority: priorityFromText(
+          `${event.event_type} ${message} ${linkedAction?.priority || ""}`
+        ),
         date: formatDate(event.created_at),
         owner: linkedAction?.assigned_to || linkedAction?.owner_name || "Board / Management",
-        status: "Unread",
-        linked: event.module || linkedAction?.category || linkedAction?.request_type || "Board Workflow",
+        status: readNotifications[event.id] ? "Read" : "Unread",
+        linked:
+          event.module ||
+          linkedAction?.category ||
+          linkedAction?.request_type ||
+          "Board Workflow",
         message,
       };
     });
 
     const openActionNotifications = actions
-      .filter((action) => String(action.status || "open").toLowerCase() !== "completed")
+      .filter(
+        (action) =>
+          String(action.status || "open").toLowerCase() !== "completed"
+      )
       .slice(0, 10)
       .map((action) => ({
         id: `action-${action.id}`,
@@ -138,7 +160,7 @@ export default function BoardNotificationCenter() {
         priority: titleCase(action.priority || priorityFromText(action.title)),
         date: formatDate(action.created_at),
         owner: action.assigned_to || action.owner_name || "Board / Management",
-        status: "Open",
+        status: readNotifications[`action-${action.id}`] ? "Read" : "Open",
         linked: "Board Workflow Engine",
         message:
           action.description ||
@@ -147,7 +169,7 @@ export default function BoardNotificationCenter() {
       }));
 
     return [...eventNotifications, ...openActionNotifications].slice(0, 20);
-  }, [events, actions]);
+  }, [events, actions, readNotifications]);
 
   const highPriorityCount = useMemo(
     () =>
@@ -158,7 +180,10 @@ export default function BoardNotificationCenter() {
   );
 
   const unreadCount = useMemo(
-    () => notifications.filter((item) => String(item.status || "").toLowerCase() === "unread").length,
+    () =>
+      notifications.filter(
+        (item) => String(item.status || "").toLowerCase() === "unread"
+      ).length,
     [notifications]
   );
 
@@ -320,9 +345,27 @@ export default function BoardNotificationCenter() {
                         </h3>
                       </div>
 
-                      <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
-                        {item.status}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span
+                          className={`rounded-full border px-4 py-1 text-sm ${
+                            String(item.status || "").toLowerCase() === "read"
+                              ? "border-emerald-300/30 text-emerald-200"
+                              : "border-amber-300/30 text-amber-200"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+
+                        {String(item.status || "").toLowerCase() !== "read" && (
+                          <button
+                            type="button"
+                            onClick={() => markAsRead(item.id)}
+                            className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
+                          >
+                            Read
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
