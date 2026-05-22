@@ -17,14 +17,15 @@ export default function BoardApprovalQueue() {
     return () => clearInterval(interval);
   }, []);
 
-  async function loadApprovals() {
+  async function loadApprovals({ showLoading = false } = {}) {
   try {
-    setLoading(true);
+    if (showLoading) {
+      setLoading(true);
+    }
+
     setSystemMessage("");
 
-    const response = await fetch(
-      "/api/admin/operational-records"
-    );
+    const response = await fetch("/api/admin/operational-records");
 
     const result = await response.json();
 
@@ -45,9 +46,14 @@ export default function BoardApprovalQueue() {
   } catch (error) {
     console.error("Unable to load board approval queue:", error);
     setSystemMessage("Unable to load board approval queue.");
-    setActions([]);
+
+    if (showLoading) {
+      setActions([]);
+    }
   } finally {
-    setLoading(false);
+    if (showLoading) {
+      setLoading(false);
+    }
   }
 }
 
