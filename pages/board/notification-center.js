@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/bosClient";
 
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const NOTIFICATION_SOURCE = "board_notification_center";
+
 const alertTypes = [
   "Overdue tasks",
   "Upcoming deadlines",
@@ -62,39 +65,32 @@ function priorityFromText(value) {
 export default function BoardNotificationCenter() {
   const [events, setEvents] = useState([]);
   const [actions, setActions] = useState([]);
-  const [readNotifications, setReadNotifications] = useState(() => {
-  if (typeof window === "undefined") return {};
-
-  try {
-    const saved = localStorage.getItem("spmBoardReadNotifications");
-    return saved ? JSON.parse(saved) : {};
-  } catch {
-    return {};
-  }
-});
+  const [readNotifications, setReadNotifications] = useState({});
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-  loadNotifications({ showLoading: true });
+    loadNotifications({ showLoading: true });
 
-  const interval = setInterval(() => {
-    loadNotifications({ showLoading: false });
-  }, 30000);
+    const interval = setInterval(() => {
+      loadNotifications({ showLoading: false });
+    }, 30000);
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, []);
 
   async function loadNotifications({ showLoading = false } = {}) {
     try {
       if (showLoading) {
-  setLoading(true);
-}
+        setLoading(true);
+      }
+
       setSystemMessage("");
 
       const [
         { data: eventRows, error: eventsError },
         { data: actionRows, error: actionsError },
+        { data: readRows, error: readsError },
       ] = await Promise.all([
         supabase
           .from("bos_events")
@@ -105,13 +101,26 @@ export default function BoardNotificationCenter() {
           .from("bos_actions")
           .select("*")
           .order("created_at", { ascending: false }),
+        supabase
+          .from("bos_notification_reads")
+          .select("notification_id")
+          .eq("association_id", DEFAULT_ASSOCIATION_ID)
+          .eq("notification_source", NOTIFICATION_SOURCE)
+          .eq("read_by_role", "board"),
       ]);
 
       if (eventsError) throw eventsError;
       if (actionsError) throw actionsError;
+      if (readsError) throw readsError;
+
+      const readMap = {};
+      (readRows || []).forEach((row) => {
+        readMap[row.notification_id] = true;
+      });
 
       setEvents(eventRows || []);
       setActions(actionRows || []);
+      setReadNotifications(readMap);
     } catch (error) {
       console.error("Unable to load board notifications:", error);
       setSystemMessage("Unable to load board notifications.");
@@ -122,23 +131,39 @@ export default function BoardNotificationCenter() {
     }
   }
 
-  function markAsRead(notificationId) {
-  setReadNotifications((current) => {
-    const updated = {
-      ...current,
-      [notificationId]: true,
-    };
+  async function markAsRead(notificationId) {
+    try {
+      setReadNotifications((current) => ({
+        ...current,
+        [notificationId]: true,
+      }));
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "spmBoardReadNotifications",
-        JSON.stringify(updated)
+      const { error } = await supabase.from("bos_notification_reads").upsert(
+        {
+          notification_id: String(notificationId),
+          notification_source: NOTIFICATION_SOURCE,
+          association_id: DEFAULT_ASSOCIATION_ID,
+          read_by_role: "board",
+          read_at: new Date().toISOString(),
+        },
+        {
+          onConflict:
+            "notification_id,notification_source,association_id,read_by_role",
+        }
       );
-    }
 
-    return updated;
-  });
-}
+      if (error) {
+        throw error;
+      }
+
+      await loadNotifications({ showLoading: false });
+    } catch (error) {
+      console.error("Unable to mark notification as read:", error);
+      setSystemMessage("Unable to mark notification as read.");
+
+      await loadNotifications({ showLoading: false });
+    }
+  }
 
   const notifications = useMemo(() => {
     const actionMap = new Map(actions.map((action) => [action.id, action]));
@@ -151,15 +176,19 @@ export default function BoardNotificationCenter() {
         "Board notification update.";
 
       return {
-        id: event.id,
-        title: linkedAction?.title || titleCase(event.event_type || "Board Update"),
+        id: String(event.id),
+        title:
+          linkedAction?.title || titleCase(event.event_type || "Board Update"),
         type: titleCase(event.event_type || "System Notice"),
         priority: priorityFromText(
           `${event.event_type} ${message} ${linkedAction?.priority || ""}`
         ),
         date: formatDate(event.created_at),
-        owner: linkedAction?.assigned_to || linkedAction?.owner_name || "Board / Management",
-        status: readNotifications[event.id] ? "Read" : "Unread",
+        owner:
+          linkedAction?.assigned_to ||
+          linkedAction?.owner_name ||
+          "Board / Management",
+        status: readNotifications[String(event.id)] ? "Read" : "Unread",
         linked:
           event.module ||
           linkedAction?.category ||
@@ -175,20 +204,26 @@ export default function BoardNotificationCenter() {
           String(action.status || "open").toLowerCase() !== "completed"
       )
       .slice(0, 10)
-      .map((action) => ({
-        id: `action-${action.id}`,
-        title: action.title || "Board Action Item",
-        type: titleCase(action.category || action.request_type || "Action Reminder"),
-        priority: titleCase(action.priority || priorityFromText(action.title)),
-        date: formatDate(action.created_at),
-        owner: action.assigned_to || action.owner_name || "Board / Management",
-        status: readNotifications[`action-${action.id}`] ? "Read" : "Open",
-        linked: "Board Workflow Engine",
-        message:
-          action.description ||
-          action.recommended_action ||
-          "This item is open and may require board awareness or follow-up.",
-      }));
+      .map((action) => {
+        const notificationId = `action-${action.id}`;
+
+        return {
+          id: notificationId,
+          title: action.title || "Board Action Item",
+          type: titleCase(
+            action.category || action.request_type || "Action Reminder"
+          ),
+          priority: titleCase(action.priority || priorityFromText(action.title)),
+          date: formatDate(action.created_at),
+          owner: action.assigned_to || action.owner_name || "Board / Management",
+          status: readNotifications[notificationId] ? "Read" : "Open",
+          linked: "Board Workflow Engine",
+          message:
+            action.description ||
+            action.recommended_action ||
+            "This item is open and may require board awareness or follow-up.",
+        };
+      });
 
     return [...eventNotifications, ...openActionNotifications].slice(0, 20);
   }, [events, actions, readNotifications]);
@@ -334,7 +369,7 @@ export default function BoardNotificationCenter() {
 
               <button
                 type="button"
-                onClick={loadNotifications}
+                onClick={() => loadNotifications({ showLoading: true })}
                 className="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-200"
               >
                 Refresh
