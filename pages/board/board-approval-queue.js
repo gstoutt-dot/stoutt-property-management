@@ -73,23 +73,11 @@ export default function BoardApprovalQueue() {
     await loadApprovals();
   }
 
-  const approvalItems = useMemo(() => {
+    const approvalItems = useMemo(() => {
     return actions.filter((action) => {
-      const status = String(action.status || "open").toLowerCase();
+      const status = String(action.status || "submitted").toLowerCase();
 
-      const combined = `${action.title || ""} ${action.description || ""} ${
-        action.category || ""
-      } ${action.request_type || ""} ${action.recommended_action || ""}`.toLowerCase();
-
-      const sentForBoardApproval =
-        combined.includes("board approval") ||
-        combined.includes("approval needed") ||
-        combined.includes("pending vote") ||
-        combined.includes("vote needed") ||
-        combined.includes("board review") ||
-        combined.includes("approve");
-
-      return status !== "completed" && sentForBoardApproval;
+      return !["completed", "archived", "closed"].includes(status);
     });
   }, [actions]);
 
