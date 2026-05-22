@@ -121,19 +121,28 @@ function routeForRecord(record) {
   const target = String(record.routing_target || "").toLowerCase();
   const type = String(record.request_type || "").toLowerCase();
 
-  if (target.includes("bos")) return "/bos/action-center";
-  if (target.includes("approval")) return "/portal/approval-queue";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("legal") || target.includes("risk")) return "/board/legal-review";
-  if (target.includes("vendor")) return "/board/vendors";
-  if (target.includes("owner")) return "/portal/owner";
-  if (type.includes("budget")) return "/board/budget-planning";
-  if (type.includes("election")) return "/board/elections";
+  // Request Type controls the Admin operational folder destination.
   if (type.includes("insurance")) return "/board/insurance-risk";
+  if (type.includes("legal")) return "/board/legal-review";
+  if (type.includes("budget")) return "/board/budget-planning";
+  if (type.includes("financial")) return "/board/financial-review";
+  if (type.includes("election")) return "/board/elections";
   if (type.includes("capital")) return "/board/capital-projects";
   if (type.includes("vendor")) return "/board/vendor-performance";
   if (type.includes("policy")) return "/board/policy-library";
   if (type.includes("meeting")) return "/portal/board/meetings";
+  if (type.includes("violation")) return "/board/violation-review";
+  if (type.includes("maintenance")) return "/board/maintenance-review";
+  if (type.includes("compliance")) return "/board/compliance-dashboard";
+  if (type.includes("architectural")) return "/board/architectural-approvals";
+
+  // Routing Target is only a fallback when Request Type does not identify a folder.
+  if (target.includes("bos")) return "/bos/action-center";
+  if (target.includes("approval")) return "/board/board-approval-queue";
+  if (target.includes("financial")) return "/board/financial-review";
+  if (target.includes("legal") || target.includes("risk")) return "/board/legal-review";
+  if (target.includes("vendor")) return "/board/vendors";
+  if (target.includes("owner")) return "/portal/owner";
 
   return "/admin/operations/new";
 }
