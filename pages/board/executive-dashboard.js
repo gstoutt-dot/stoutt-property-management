@@ -197,15 +197,17 @@ export default function BoardDashboard() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/board" className={bosTheme.secondaryButton}>
-                Main Board Page
-              <Link
-  href="/board/board-approval-queue"
-  className={bosTheme.primaryButton}
->
-  Approval Queue
-</Link>
-            </div>
+  <Link href="/board" className={bosTheme.secondaryButton}>
+    Main Board Page
+  </Link>
+
+  <Link
+    href="/board/board-approval-queue"
+    className={bosTheme.primaryButton}
+  >
+    Approval Queue
+  </Link>
+</div>
           </div>
         </header>
 
