@@ -67,18 +67,20 @@ export default function BoardNotificationCenter() {
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadNotifications();
+  loadNotifications({ showLoading: true });
 
-    const interval = setInterval(() => {
-      loadNotifications();
-    }, 30000);
+  const interval = setInterval(() => {
+    loadNotifications({ showLoading: false });
+  }, 30000);
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, []);
 
-  async function loadNotifications() {
+  async function loadNotifications({ showLoading = false } = {}) {
     try {
-      setLoading(true);
+      if (showLoading) {
+  setLoading(true);
+}
       setSystemMessage("");
 
       const [
