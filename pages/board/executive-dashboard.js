@@ -199,11 +199,12 @@ export default function BoardDashboard() {
             <div className="flex flex-wrap gap-3">
               <Link href="/board" className={bosTheme.secondaryButton}>
                 Main Board Page
-              </Link>
-
-              <Link href="/board/approval-queue" className={bosTheme.primaryButton}>
-                Approval Queue
-              </Link>
+              <Link
+  href="/board/board-approval-queue"
+  className={bosTheme.primaryButton}
+>
+  Approval Queue
+</Link>
             </div>
           </div>
         </header>
@@ -246,7 +247,7 @@ export default function BoardDashboard() {
               </div>
 
               <Link
-                href="/board/approval-queue"
+                href="/board/board-approval-queue"
                 className="rounded-2xl bg-yellow-400 px-4 py-2 text-sm font-semibold text-black hover:bg-yellow-300"
               >
                 View All
@@ -309,7 +310,7 @@ export default function BoardDashboard() {
                       </div>
 
                       <Link
-                        href="/board/approval-queue"
+                        href="/board/board-approval-queue"
                         className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-center text-sm font-medium text-slate-200 hover:bg-white/[0.1]"
                       >
                         Review
@@ -359,11 +360,12 @@ export default function BoardDashboard() {
             <div className="mt-6 space-y-3">
               <Link href="/board/financial-review" className={bosTheme.goldButton}>
                 View Financials
-              </Link>
-
-              <Link href="/board/approval-queue" className={bosTheme.whiteButton}>
-                Approval Queue
-              </Link>
+              <Link
+  href="/board/board-approval-queue"
+  className={bosTheme.whiteButton}
+>
+  Approval Queue
+</Link>
 
               <Link href="/board/notification-center" className={bosTheme.outlineButton}>
                 Notifications
