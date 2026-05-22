@@ -43,41 +43,9 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      if (
-        payload.routing_target === "Board Approval Queue" ||
-        payload.board_review_required
-      ) {
-        const { data: boardAction, error: actionError } = await supabaseAdmin
-          .from("bos_actions")
-          .insert([
-            {
-              association_id: payload.association_id,
-              title: payload.title, 
-              description: payload.description,
-              category: payload.request_type,
-              request_type: payload.request_type,
-              priority: payload.priority,
-              status: "open",
-              source: "Admin Operations Intake",
-              
-            },
-          ])
-          .select()
-          .single();
-
-        if (actionError) throw actionError;
-
-        await supabaseAdmin.from("bos_events").insert([
-          {
-            action_id: boardAction.id,
-            event_type: "board_approval_requested",
-            message:
-              payload.recommended_action ||
-              `${payload.request_type} routed for board approval.`,
-            module: "Board Approval Queue",
-          },
-        ]);
-      }
+      // Board Approval Queue items are stored in admin_operational_records.
+      // The board approval page will read records where routing_target is
+      // "Board Approval Queue" or board_review_required is true.
 
       return res.status(200).json({
         success: true,
