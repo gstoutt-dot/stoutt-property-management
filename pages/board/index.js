@@ -91,15 +91,35 @@ function routeForBoardRecord(record) {
   const target = String(record.routing_target || "").toLowerCase();
   const type = String(record.request_type || "").toLowerCase();
 
-  if (type.includes("financial")) return "/board/financial-review";
-  if (type.includes("approval")) return "/board/approval-queue";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("approval")) return "/board/approval-queue";
-  if (target.includes("notification")) return "/board/notification-center";
-  if (target.includes("workflow")) return "/board/workflow-engine";
-  if (target.includes("bos")) return "/bos/action-center";
+  if (type.includes("financial")) {
+    return "/board/financial-review";
+  }
 
-  return "/board/dashboard";
+  if (type.includes("approval")) {
+    return "/board/board-approval-queue";
+  }
+
+  if (target.includes("financial")) {
+    return "/board/financial-review";
+  }
+
+  if (target.includes("approval")) {
+    return "/board/board-approval-queue";
+  }
+
+  if (target.includes("notification")) {
+    return "/board/notification-center";
+  }
+
+  if (target.includes("workflow")) {
+    return "/board/workflow-engine";
+  }
+
+  if (target.includes("bos")) {
+    return "/bos/action-center";
+  }
+
+  return "/board/board-approval-queue";
 }
 
 export default function BoardModuleHub() {
