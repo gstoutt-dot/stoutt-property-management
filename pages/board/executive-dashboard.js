@@ -197,17 +197,17 @@ export default function BoardDashboard() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-  <Link href="/board" className={bosTheme.secondaryButton}>
-    Main Board Page
-  </Link>
+              <Link href="/board" className={bosTheme.secondaryButton}>
+                Main Board Page
+              </Link>
 
-  <Link
-    href="/board/board-approval-queue"
-    className={bosTheme.primaryButton}
-  >
-    Approval Queue
-  </Link>
-</div>
+              <Link
+                href="/board/board-approval-queue"
+                className={bosTheme.primaryButton}
+              >
+                Approval Queue
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -338,7 +338,9 @@ export default function BoardDashboard() {
               </div>
 
               <div className={bosTheme.detailBox}>
-                <p className={bosTheme.detailLabel}>Accounts Needing Attention</p>
+                <p className={bosTheme.detailLabel}>
+                  Accounts Needing Attention
+                </p>
                 <p className={bosTheme.detailValue}>
                   {Array.isArray(ownerAccounts) ? ownerAccounts.length : 0}
                 </p>
@@ -362,14 +364,19 @@ export default function BoardDashboard() {
             <div className="mt-6 space-y-3">
               <Link href="/board/financial-review" className={bosTheme.goldButton}>
                 View Financials
-              <Link
-  href="/board/board-approval-queue"
-  className={bosTheme.whiteButton}
->
-  Approval Queue
-</Link>
+              </Link>
 
-              <Link href="/board/notification-center" className={bosTheme.outlineButton}>
+              <Link
+                href="/board/board-approval-queue"
+                className={bosTheme.whiteButton}
+              >
+                Approval Queue
+              </Link>
+
+              <Link
+                href="/board/notification-center"
+                className={bosTheme.outlineButton}
+              >
                 Notifications
               </Link>
             </div>
