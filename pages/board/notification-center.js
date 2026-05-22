@@ -62,7 +62,16 @@ function priorityFromText(value) {
 export default function BoardNotificationCenter() {
   const [events, setEvents] = useState([]);
   const [actions, setActions] = useState([]);
-  const [readNotifications, setReadNotifications] = useState({});
+  const [readNotifications, setReadNotifications] = useState(() => {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const saved = localStorage.getItem("spmBoardReadNotifications");
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+});
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
@@ -114,11 +123,22 @@ export default function BoardNotificationCenter() {
   }
 
   function markAsRead(notificationId) {
-    setReadNotifications((current) => ({
+  setReadNotifications((current) => {
+    const updated = {
       ...current,
       [notificationId]: true,
-    }));
-  }
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "spmBoardReadNotifications",
+        JSON.stringify(updated)
+      );
+    }
+
+    return updated;
+  });
+}
 
   const notifications = useMemo(() => {
     const actionMap = new Map(actions.map((action) => [action.id, action]));
