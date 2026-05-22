@@ -18,26 +18,38 @@ export default function BoardApprovalQueue() {
   }, []);
 
   async function loadApprovals() {
-    try {
-      setLoading(true);
-      setSystemMessage("");
+  try {
+    setLoading(true);
+    setSystemMessage("");
 
-      const { data, error } = await supabase
-        .from("bos_actions")
-        .select("*")
-        .order("created_at", { ascending: false });
+    const response = await fetch(
+      "/api/admin/operational-records"
+    );
 
-      if (error) throw error;
+    const result = await response.json();
 
-      setActions(data || []);
-    } catch (error) {
-      console.error("Unable to load board approval queue:", error);
-      setSystemMessage("Unable to load board approval queue.");
-      setActions([]);
-    } finally {
-      setLoading(false);
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Unable to load board approval queue."
+      );
     }
+
+    const filteredItems = (result.records || []).filter((record) => {
+      return (
+        record.routing_target === "Board Approval Queue" ||
+        record.board_review_required === true
+      );
+    });
+
+    setActions(filteredItems);
+  } catch (error) {
+    console.error("Unable to load board approval queue:", error);
+    setSystemMessage("Unable to load board approval queue.");
+    setActions([]);
+  } finally {
+    setLoading(false);
   }
+}
 
   async function updateApproval(action, newStatus, eventType, message) {
     const { data, error } = await supabase
