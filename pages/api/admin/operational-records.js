@@ -43,10 +43,6 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      // Board Approval Queue items are stored in admin_operational_records.
-      // The board approval page will read records where routing_target is
-      // "Board Approval Queue" or board_review_required is true.
-
       return res.status(200).json({
         success: true,
         record: insertedRecord,
@@ -58,6 +54,79 @@ export default async function handler(req, res) {
       return res.status(500).json({
         success: false,
         message: error.message || "Unable to submit admin operational record.",
+      });
+    }
+  }
+
+  if (req.method === "PATCH") {
+    try {
+      const body = req.body || {};
+      const recordId = body.id;
+
+      if (!recordId) {
+        return res.status(400).json({
+          success: false,
+          message: "Record ID is required.",
+        });
+      }
+
+      const status = body.status || "archived";
+
+      const { data, error } = await supabaseAdmin
+        .from("admin_operational_records")
+        .update({
+          status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", recordId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return res.status(200).json({
+        success: true,
+        record: data,
+        message: "Operational record updated successfully.",
+      });
+    } catch (error) {
+      console.error("Admin operational records PATCH error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Unable to update operational record.",
+      });
+    }
+  }
+
+  if (req.method === "DELETE") {
+    try {
+      const recordId = req.query.id;
+
+      if (!recordId) {
+        return res.status(400).json({
+          success: false,
+          message: "Record ID is required.",
+        });
+      }
+
+      const { error } = await supabaseAdmin
+        .from("admin_operational_records")
+        .delete()
+        .eq("id", recordId);
+
+      if (error) throw error;
+
+      return res.status(200).json({
+        success: true,
+        message: "Operational record deleted successfully.",
+      });
+    } catch (error) {
+      console.error("Admin operational records DELETE error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Unable to delete operational record.",
       });
     }
   }
