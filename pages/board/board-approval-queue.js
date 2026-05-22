@@ -8,78 +8,79 @@ export default function BoardApprovalQueue() {
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadApprovals();
+    loadApprovals({ showLoading: true });
 
     const interval = setInterval(() => {
-      loadApprovals();
+      loadApprovals({ showLoading: false });
     }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
   async function loadApprovals({ showLoading = false } = {}) {
-  try {
-    if (showLoading) {
-      setLoading(true);
-    }
+    try {
+      if (showLoading) {
+        setLoading(true);
+      }
 
-    setSystemMessage("");
+      setSystemMessage("");
 
-    const response = await fetch("/api/admin/operational-records");
+      const response = await fetch("/api/admin/operational-records");
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok || !result.success) {
-      throw new Error(
-        result.message || "Unable to load board approval queue."
-      );
-    }
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Unable to load board approval queue."
+        );
+      }
 
-    const filteredItems = (result.records || []).filter((record) => {
-      return (
-        record.routing_target === "Board Approval Queue" ||
-        record.board_review_required === true
-      );
-    });
+      const filteredItems = (result.records || []).filter((record) => {
+        return (
+          record.routing_target === "Board Approval Queue" ||
+          record.board_review_required === true
+        );
+      });
 
-    setActions(filteredItems);
-  } catch (error) {
-    console.error("Unable to load board approval queue:", error);
-    setSystemMessage("Unable to load board approval queue.");
-
-    if (showLoading) {
-      setActions([]);
-    }
-  } finally {
-    if (showLoading) {
+      setActions(filteredItems);
+    } catch (error) {
+      console.error("Unable to load board approval queue:", error);
+      setSystemMessage("Unable to load board approval queue.");
+    } finally {
       setLoading(false);
     }
   }
-}
 
   async function updateApproval(action, newStatus, eventType, message) {
-    const { data, error } = await supabase
-      .from("bos_actions")
-      .update({ status: newStatus })
-      .eq("id", action.id)
-      .select()
-      .single();
+    try {
+      setSystemMessage("");
 
-    if (!error && data) {
-      await supabase.from("bos_events").insert([
-        {
-          action_id: action.id,
-          event_type: eventType,
-          message,
-          module: "Board Approval Queue",
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("bos_actions")
+        .update({ status: newStatus })
+        .eq("id", action.id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        await supabase.from("bos_events").insert([
+          {
+            action_id: action.id,
+            event_type: eventType,
+            message,
+            module: "Board Approval Queue",
+          },
+        ]);
+      }
+
+      await loadApprovals({ showLoading: false });
+    } catch (error) {
+      console.error("Unable to update approval:", error);
+      setSystemMessage("Unable to update approval item.");
     }
-
-    await loadApprovals();
   }
 
-    const approvalItems = useMemo(() => {
+  const approvalItems = useMemo(() => {
     return actions.filter((action) => {
       const status = String(action.status || "submitted").toLowerCase();
 
@@ -95,6 +96,7 @@ export default function BoardApprovalQueue() {
             <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
               Board Decision Center
             </p>
+
             <h1 className="mt-2 text-3xl font-semibold">
               Board Approval Queue
             </h1>
@@ -121,8 +123,8 @@ export default function BoardApprovalQueue() {
 
           <p className="mt-4 max-w-4xl text-slate-300">
             Admin and Management create and route approval items. The board can
-            acknowledge, approve, request more information, or record a decision
-            without entering the Admin Dashboard.
+            acknowledge, approve, or request more information without entering
+            the Admin Dashboard.
           </p>
         </div>
 
@@ -134,20 +136,35 @@ export default function BoardApprovalQueue() {
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           <Metric label="Approval Items" value={approvalItems.length} />
+
           <Metric
             label="Pending Review"
             value={
-              approvalItems.filter(
-                (item) => String(item.status || "open").toLowerCase() === "open"
-              ).length
+              approvalItems.filter((item) => {
+                const status = String(item.status || "submitted").toLowerCase();
+
+                return (
+                  status === "submitted" ||
+                  status === "open" ||
+                  status === "pending" ||
+                  status === "pending_review"
+                );
+              }).length
             }
           />
+
           <Metric
             label="In Progress"
             value={
-              approvalItems.filter(
-                (item) => String(item.status || "").toLowerCase() === "in_progress"
-              ).length
+              approvalItems.filter((item) => {
+                const status = String(item.status || "").toLowerCase();
+
+                return (
+                  status === "in_progress" ||
+                  status === "board_acknowledged" ||
+                  status === "more_info_requested"
+                );
+              }).length
             }
           />
         </div>
@@ -167,8 +184,12 @@ export default function BoardApprovalQueue() {
                   <div>
                     <div className="flex flex-wrap gap-2">
                       <Badge>{action.id}</Badge>
-                      <Badge>{action.category || action.request_type || "Approval"}</Badge>
-                      <Badge>{action.status || "Open"}</Badge>
+
+                      <Badge>
+                        {action.category || action.request_type || "Approval"}
+                      </Badge>
+
+                      <Badge>{action.status || "Submitted"}</Badge>
                     </div>
 
                     <h3 className="mt-4 text-2xl font-semibold">
@@ -223,20 +244,6 @@ export default function BoardApprovalQueue() {
                       className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-300 hover:bg-sky-400/20"
                     >
                       Request More Info
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        updateApproval(
-                          action,
-                          "decision_recorded",
-                          "decision_recorded",
-                          `Board decision recorded: ${action.title}`
-                        )
-                      }
-                      className="rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-3 text-sm font-semibold text-violet-300 hover:bg-violet-400/20"
-                    >
-                      Record Decision
                     </button>
                   </div>
                 </div>
