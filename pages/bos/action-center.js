@@ -470,11 +470,18 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
 <VendorBadge status={item.vendor_status} item={item} />
 
           <button
-            onClick={onOpen}
-            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
-          >
-            View Details
-          </button>
+  onClick={onOpen}
+  className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
+>
+  View Details
+</button>
+
+<button
+  onClick={() => onDelete(item.id)}
+  className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20 transition"
+>
+  Delete
+</button>
         </div>
       </div>
 
