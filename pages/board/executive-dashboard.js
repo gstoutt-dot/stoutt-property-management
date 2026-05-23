@@ -363,7 +363,7 @@ export default function BoardDashboard() {
 
             <div className="mt-6 flex flex-col gap-3">
   <Link
-    href="/accounting/quickbooks-live"
+    href="/portal/board/financials"
     className={`${bosTheme.goldButton} w-full text-center`}
   >
     View Financials
