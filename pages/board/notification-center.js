@@ -132,6 +132,39 @@ export default function BoardNotificationCenter() {
   }
 
   async function markAsRead(notificationId) {
+  async function deleteNotification(notificationId) {
+  try {
+    setSystemMessage("");
+
+    if (String(notificationId).startsWith("action-")) {
+      const actionId = String(notificationId).replace("action-", "");
+
+      const { error } = await supabase
+        .from("bos_actions")
+        .delete()
+        .eq("id", actionId);
+
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from("bos_events")
+        .delete()
+        .eq("id", notificationId);
+
+      if (error) throw error;
+    }
+
+    await loadNotifications({ showLoading: false });
+
+    setSystemMessage("Notification deleted successfully.");
+  } catch (error) {
+    console.error("Unable to delete notification:", error);
+
+    setSystemMessage(
+      error.message || "Unable to delete notification."
+    );
+  }
+}
     try {
       setReadNotifications((current) => ({
         ...current,
@@ -413,15 +446,25 @@ export default function BoardNotificationCenter() {
                           {item.status}
                         </span>
 
-                        {String(item.status || "").toLowerCase() !== "read" && (
-                          <button
-                            type="button"
-                            onClick={() => markAsRead(item.id)}
-                            className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
-                          >
-                            Read
-                          </button>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+  {String(item.status || "").toLowerCase() !== "read" && (
+    <button
+      type="button"
+      onClick={() => markAsRead(item.id)}
+      className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
+    >
+      Read
+    </button>
+  )}
+
+  <button
+    type="button"
+    onClick={() => deleteNotification(item.id)}
+    className="rounded-full border border-red-400/30 bg-red-400/10 px-4 py-1 text-sm font-semibold text-red-300 hover:bg-red-400/20"
+  >
+    Delete
+  </button>
+</div>
                       </div>
                     </div>
 
