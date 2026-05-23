@@ -44,16 +44,16 @@ const sections = [
     description:
       "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
     items: [
-  { title: "BOS Action Center", href: "/bos/action-center" },
-  { title: "New Operational Record", href: "/admin/operations/new" },
-  { title: "Association Onboarding Records", href: "/association-onboarding-records" },
-  { title: "Messages", href: "/board/messages" },
-  { title: "Calendar", href: "/board/calendar" },
-  { title: "Meetings", href: "/portal/board/meetings" },
-  { title: "Reports", href: "/portal/board/reports" },
-  { title: "Task Command", href: "/board/task-command" },
-  { title: "Search Center", href: "/board/search-center" },
-],
+      { title: "BOS Action Center", href: "/bos/action-center" },
+      { title: "New Operational Record", href: "/admin/operations/new" },
+      { title: "Association Onboarding Records", href: "/association-onboarding-records" },
+      { title: "Messages", href: "/board/messages" },
+      { title: "Calendar", href: "/board/calendar" },
+      { title: "Meetings", href: "/portal/board/meetings" },
+      { title: "Reports", href: "/portal/board/reports" },
+      { title: "Task Command", href: "/board/task-command" },
+      { title: "Search Center", href: "/board/search-center" },
+    ],
   },
   {
     title: "Governance & Board Operations",
@@ -61,18 +61,18 @@ const sections = [
     description:
       "Governance tools for voting, motions, committees, signatures, elections, documents, and board decision records.",
     items: [
-  { title: "Financials", href: "/portal/board/financials" },
-  { title: "Documents", href: "/board/documents" },
-  { title: "Meetings", href: "/portal/board/meetings" },
-  { title: "Meeting Packet", href: "/board/meeting-packet" },
-  { title: "Action Items", href: "/board/action-items" },
-  { title: "Committee Center", href: "/board/committee-center" },
-  { title: "Signature Approval Log", href: "/board/signature-approval-log" },
-  { title: "Member Voting", href: "/portal/board/member-voting" },
-  { title: "Voting Center", href: "/board/voting-center" },
-  { title: "Motion Center", href: "/board/motion-center" },
-  { title: "Elections", href: "/board/elections" },
-],
+      { title: "Financials", href: "/portal/board/financials" },
+      { title: "Documents", href: "/board/documents" },
+      { title: "Meetings", href: "/portal/board/meetings" },
+      { title: "Meeting Packet", href: "/board/meeting-packet" },
+      { title: "Action Items", href: "/board/action-items" },
+      { title: "Committee Center", href: "/board/committee-center" },
+      { title: "Signature Approval Log", href: "/board/signature-approval-log" },
+      { title: "Member Voting", href: "/portal/board/member-voting" },
+      { title: "Voting Center", href: "/board/voting-center" },
+      { title: "Motion Center", href: "/board/motion-center" },
+      { title: "Elections", href: "/board/elections" },
+    ],
   },
   {
     title: "Financial Planning & Oversight",
@@ -93,14 +93,14 @@ const sections = [
     description:
       "Controlled areas for violations, legal review, insurance, risk tracking, and policy reference.",
     items: [
-  { title: "Compliance Dashboard", href: "/board/compliance-dashboard" },
-  { title: "Compliance Calendar", href: "/board/compliance-calendar" },
-  { title: "Violation Review", href: "/board/violation-review" },
-  { title: "Legal Review", href: "/board/legal-review" },
-  { title: "Insurance & Risk", href: "/board/insurance-risk" },
-  { title: "Policy Library", href: "/board/policy-library" },
-  { title: "Maintenance Review", href: "/board/maintenance-review" },
-],
+      { title: "Compliance Dashboard", href: "/board/compliance-dashboard" },
+      { title: "Compliance Calendar", href: "/board/compliance-calendar" },
+      { title: "Violation Review", href: "/board/violation-review" },
+      { title: "Legal Review", href: "/board/legal-review" },
+      { title: "Insurance & Risk", href: "/board/insurance-risk" },
+      { title: "Policy Library", href: "/board/policy-library" },
+      { title: "Maintenance Review", href: "/board/maintenance-review" },
+    ],
   },
   {
     title: "Infrastructure & Expansion",
@@ -121,7 +121,6 @@ function routeForRecord(record) {
   const target = String(record.routing_target || "").toLowerCase();
   const type = String(record.request_type || "").toLowerCase();
 
-  // Request Type controls the Admin operational folder destination.
   if (type.includes("insurance")) return "/board/insurance-risk";
   if (type.includes("legal")) return "/board/legal-review";
   if (type.includes("budget")) return "/board/budget-planning";
@@ -136,7 +135,6 @@ function routeForRecord(record) {
   if (type.includes("compliance")) return "/board/compliance-dashboard";
   if (type.includes("architectural")) return "/board/architectural-approvals";
 
-  // Routing Target is only a fallback when Request Type does not identify a folder.
   if (target.includes("bos")) return "/bos/action-center";
   if (target.includes("approval")) return "/board/board-approval-queue";
   if (target.includes("financial")) return "/board/financial-review";
@@ -148,32 +146,16 @@ function routeForRecord(record) {
 }
 
 function toneStyle(tone) {
-  if (tone === "attention") {
-    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
-  }
-
-  if (tone === "critical") {
-    return "border-red-400/30 bg-red-400/10 text-red-200";
-  }
-
+  if (tone === "attention") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  if (tone === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
   return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
 }
 
 function priorityStyle(priority) {
   const value = String(priority || "").toLowerCase();
-
-  if (value === "critical") {
-    return "border-red-400/30 bg-red-400/10 text-red-200";
-  }
-
-  if (value === "high") {
-    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
-  }
-
-  if (value === "normal") {
-    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
-  }
-
+  if (value === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
+  if (value === "high") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  if (value === "normal") return "border-sky-400/30 bg-sky-400/10 text-sky-300";
   return "border-slate-400/30 bg-slate-400/10 text-slate-300";
 }
 
@@ -195,6 +177,7 @@ export default function AdminDashboard() {
   const [systemMessage, setSystemMessage] = useState("");
   const [portalUserName, setPortalUserName] = useState("Admin");
   const [portalRole, setPortalRole] = useState("admin");
+  const [showAllRecords, setShowAllRecords] = useState(false);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
@@ -220,7 +203,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-    function handleLogout() {
+  function handleLogout() {
     localStorage.removeItem("spmPortalLoggedIn");
     localStorage.removeItem("spmPortalUser");
     localStorage.removeItem("spmPortalUserName");
@@ -230,36 +213,90 @@ export default function AdminDashboard() {
   }
 
   async function loadOperationalRecords({ showLoading = false } = {}) {
-  try {
-    if (showLoading) {
-      setLoadingRecords(true);
-    }
+    try {
+      if (showLoading) {
+        setLoadingRecords(true);
+      }
 
-    setSystemMessage("");
+      setSystemMessage("");
 
-    const response = await fetch(
-      `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
-    );
-
-    const payload = await response.json();
-
-    if (!response.ok || !payload.success) {
-      throw new Error(
-        payload.message || "Unable to load admin operational records."
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message || "Unable to load admin operational records."
+        );
+      }
+
+      setRecords(payload.openRecords || []);
+    } catch (error) {
+      console.error("Unable to load admin operational records:", error);
+
+      setSystemMessage(
+        error.message || "Unable to load admin operational records."
+      );
+    } finally {
+      setLoadingRecords(false);
     }
-
-    setRecords(payload.openRecords || []);
-  } catch (error) {
-    console.error("Unable to load admin operational records:", error);
-
-    setSystemMessage(
-      error.message || "Unable to load admin operational records."
-    );
-  } finally {
-    setLoadingRecords(false);
   }
-}
+
+  async function archiveRecord(recordId, event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+      const response = await fetch("/api/admin/operational-records", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: recordId,
+          status: "archived",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to archive record.");
+      }
+
+      await loadOperationalRecords({ showLoading: false });
+    } catch (error) {
+      console.error("Archive error:", error);
+      setSystemMessage(error.message || "Unable to archive operational record.");
+    }
+  }
+
+  async function deleteRecord(recordId, event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const confirmed = window.confirm("Delete this operational record permanently?");
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/admin/operational-records?id=${recordId}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete record.");
+      }
+
+      await loadOperationalRecords({ showLoading: false });
+    } catch (error) {
+      console.error("Delete error:", error);
+      setSystemMessage(error.message || "Unable to delete operational record.");
+    }
+  }
 
   const openRecords = useMemo(
     () =>
@@ -274,14 +311,6 @@ export default function AdminDashboard() {
     () =>
       openRecords.filter(
         (record) => String(record.priority || "").toLowerCase() === "critical"
-      ),
-    [openRecords]
-  );
-
-  const highPriorityRecords = useMemo(
-    () =>
-      openRecords.filter(
-        (record) => String(record.priority || "").toLowerCase() === "high"
       ),
     [openRecords]
   );
@@ -329,11 +358,15 @@ export default function AdminDashboard() {
     });
   }, [openRecords]);
 
+  const displayedRecords = showAllRecords
+    ? priorityRecords
+    : priorityRecords.slice(0, 5);
+
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
         <div className="mx-auto max-w-7xl px-6 py-12">
-                    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-5xl">
               <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
                 SPM Administrative Command Center
@@ -364,24 +397,15 @@ export default function AdminDashboard() {
               </p>
 
               <div className="mt-5 grid gap-3">
-                <Link
-                  href="/"
-                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
-                >
+                <Link href="/" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
                   Homepage
                 </Link>
 
-                <Link
-                  href="/board"
-                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
-                >
+                <Link href="/board" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
                   Board Dashboard
                 </Link>
 
-                <Link
-                  href="/portal/owner"
-                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
-                >
+                <Link href="/portal/owner" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
                   Homeowner Dashboard
                 </Link>
 
@@ -442,8 +466,8 @@ export default function AdminDashboard() {
                 </h2>
 
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                  Real operational records submitted through the admin intake system,
-                  sorted by priority and routed to the correct operational surface.
+                  Showing the highest-priority operational records first. Use See More
+                  when deeper review is needed.
                 </p>
               </div>
 
@@ -476,7 +500,7 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               ) : (
-                priorityRecords.map((record) => (
+                displayedRecords.map((record) => (
                   <Link
                     key={record.id}
                     href={routeForRecord(record)}
@@ -485,11 +509,7 @@ export default function AdminDashboard() {
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div>
                         <div className="flex flex-wrap gap-2">
-                          <div
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
-                              record.priority
-                            )}`}
-                          >
+                          <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(record.priority)}`}>
                             {record.priority || "Normal"}
                           </div>
 
@@ -529,14 +549,41 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      <div className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
-                        Review
+                      <div className="flex shrink-0 flex-col gap-2">
+                        <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-center text-sm font-semibold text-amber-300">
+                          Review
+                        </div>
+
+                        <button
+                          onClick={(event) => archiveRecord(record.id, event)}
+                          className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-300 hover:bg-sky-400/20"
+                        >
+                          Archive
+                        </button>
+
+                        <button
+                          onClick={(event) => deleteRecord(record.id, event)}
+                          className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 hover:bg-red-500/20"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
                   </Link>
                 ))
               )}
             </div>
+
+            {priorityRecords.length > 5 && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowAllRecords(!showAllRecords)}
+                  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+                >
+                  {showAllRecords ? "Show Less" : "See More"}
+                </button>
+              </div>
+            )}
           </section>
 
           <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
@@ -572,11 +619,7 @@ export default function AdminDashboard() {
                       </p>
                     </div>
 
-                    <div
-                      className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(
-                        item.tone
-                      )}`}
-                    >
+                    <div className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(item.tone)}`}>
                       {item.status}
                     </div>
                   </div>
@@ -653,5 +696,3 @@ export default function AdminDashboard() {
     </main>
   );
 }
-
-
