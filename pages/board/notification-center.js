@@ -132,66 +132,6 @@ export default function BoardNotificationCenter() {
   }
 
   async function markAsRead(notificationId) {
-  try {
-    setReadNotifications((current) => ({
-      ...current,
-      [notificationId]: true,
-    }));
-
-    const { error } = await supabase.from("bos_notification_reads").upsert(
-      {
-        notification_id: String(notificationId),
-        notification_source: NOTIFICATION_SOURCE,
-        association_id: DEFAULT_ASSOCIATION_ID,
-        read_by_role: "board",
-        read_at: new Date().toISOString(),
-      },
-      {
-        onConflict:
-          "notification_id,notification_source,association_id,read_by_role",
-      }
-    );
-
-    if (error) {
-      throw error;
-    }
-
-    await loadNotifications({ showLoading: false });
-  } catch (error) {
-    console.error("Unable to mark notification as read:", error);
-    setSystemMessage("Unable to mark notification as read.");
-
-    await loadNotifications({ showLoading: false });
-  }
-}
-
-async function deleteNotification(notificationId) {
-  try {
-    setSystemMessage("");
-
-    const response = await fetch(
-      `/api/board/delete-notification?id=${notificationId}`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-      throw new Error(result.message || "Unable to delete notification.");
-    }
-
-    await loadNotifications({ showLoading: false });
-
-    setSystemMessage("Notification deleted successfully.");
-  } catch (error) {
-    console.error("Unable to delete notification:", error);
-
-    setSystemMessage(error.message || "Unable to delete notification.");
-  }
-}
-}
     try {
       setReadNotifications((current) => ({
         ...current,
@@ -212,17 +152,41 @@ async function deleteNotification(notificationId) {
         }
       );
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       await loadNotifications({ showLoading: false });
     } catch (error) {
       console.error("Unable to mark notification as read:", error);
       setSystemMessage("Unable to mark notification as read.");
+      await loadNotifications({ showLoading: false });
+    }
+  }
+
+  async function deleteNotification(notificationId) {
+    try {
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/board/delete-notification?id=${notificationId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete notification.");
+      }
 
       await loadNotifications({ showLoading: false });
-   
+      setSystemMessage("Notification deleted successfully.");
+    } catch (error) {
+      console.error("Unable to delete notification:", error);
+      setSystemMessage(error.message || "Unable to delete notification.");
+    }
+  }
+
   const notifications = useMemo(() => {
     const actionMap = new Map(actions.map((action) => [action.id, action]));
 
@@ -472,24 +436,25 @@ async function deleteNotification(notificationId) {
                         </span>
 
                         <div className="flex flex-wrap items-center gap-2">
-  {String(item.status || "").toLowerCase() !== "read" && (
-    <button
-      type="button"
-      onClick={() => markAsRead(item.id)}
-      className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
-    >
-      Read
-    </button>
-  )}
+                          {String(item.status || "").toLowerCase() !==
+                            "read" && (
+                            <button
+                              type="button"
+                              onClick={() => markAsRead(item.id)}
+                              className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
+                            >
+                              Read
+                            </button>
+                          )}
 
-  <button
-    type="button"
-    onClick={() => deleteNotification(item.id)}
-    className="rounded-full border border-red-400/30 bg-red-400/10 px-4 py-1 text-sm font-semibold text-red-300 hover:bg-red-400/20"
-  >
-    Delete
-  </button>
-</div>
+                          <button
+                            type="button"
+                            onClick={() => deleteNotification(item.id)}
+                            className="rounded-full border border-red-400/30 bg-red-400/10 px-4 py-1 text-sm font-semibold text-red-300 hover:bg-red-400/20"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
 
