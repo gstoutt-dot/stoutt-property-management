@@ -6,7 +6,7 @@ const boardPages = [
   {
     title: "BOS Action Center",
     status: "Live / Ready",
-    href: "/bos/action-center",
+    href: "/bos/action-center?returnTo=/board",
     description:
       "Track requests, approvals, vendor activity, and operational progress across the association.",
   },
