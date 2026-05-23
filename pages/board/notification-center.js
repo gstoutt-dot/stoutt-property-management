@@ -222,9 +222,7 @@ async function deleteNotification(notificationId) {
       setSystemMessage("Unable to mark notification as read.");
 
       await loadNotifications({ showLoading: false });
-    }
-  }
-
+   
   const notifications = useMemo(() => {
     const actionMap = new Map(actions.map((action) => [action.id, action]));
 
