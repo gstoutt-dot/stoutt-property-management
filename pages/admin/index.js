@@ -44,7 +44,7 @@ const sections = [
     description:
       "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
     items: [
-      { title: "BOS Action Center", href: "/bos/action-center" },
+      { title: "BOS Action Center", href: "/bos/action-center?returnTo=/admin" },
       { title: "New Operational Record", href: "/admin/operations/new" },
       { title: "Association Onboarding Records", href: "/association-onboarding-records" },
       { title: "Messages", href: "/board/messages" },
