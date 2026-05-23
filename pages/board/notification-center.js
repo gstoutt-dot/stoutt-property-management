@@ -136,22 +136,17 @@ export default function BoardNotificationCenter() {
   try {
     setSystemMessage("");
 
-    if (String(notificationId).startsWith("action-")) {
-      const actionId = String(notificationId).replace("action-", "");
+    const response = await fetch(
+      `/api/board/delete-notification?id=${notificationId}`,
+      {
+        method: "DELETE",
+      }
+    );
 
-      const { error } = await supabase
-        .from("bos_actions")
-        .delete()
-        .eq("id", actionId);
+    const result = await response.json();
 
-      if (error) throw error;
-    } else {
-      const { error } = await supabase
-        .from("bos_events")
-        .delete()
-        .eq("id", notificationId);
-
-      if (error) throw error;
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to delete notification.");
     }
 
     await loadNotifications({ showLoading: false });
