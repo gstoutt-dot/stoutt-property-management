@@ -282,13 +282,18 @@ export default function BOSActionCenter() {
           </div>
 
           <div className="hidden gap-3 md:flex">
-            <a
-              href="/board"
-              className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
-            >
-              Dashboard
-            </a>
-          </div>
+  <a
+    href={
+      typeof window !== "undefined" &&
+      localStorage.getItem("spmPortalRole") === "board"
+        ? "/board"
+        : "/admin"
+    }
+    className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
+  >
+    Dashboard
+  </a>
+</div>
         </div>
       </section>
 
