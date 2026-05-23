@@ -15,7 +15,7 @@ export default function BOSActionCenter() {
 
     const interval = setInterval(() => {
       loadActions();
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -35,6 +35,33 @@ export default function BOSActionCenter() {
     setActions(data || []);
   }
 
+  async function deleteAction(actionId) {
+    const confirmed = window.confirm("Delete this BOS action permanently?");
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/bos/delete-action?id=${actionId}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete BOS action.");
+      }
+
+      if (selectedAction?.id === actionId) {
+        setSelectedAction(null);
+      }
+
+      await loadActions();
+    } catch (error) {
+      console.error("Delete BOS action error:", error);
+      setSystemMessage(error.message || "Unable to delete BOS action.");
+    }
+  }
+
   async function updateAction(item, workflowAction) {
     if (!item?.id) return;
 
@@ -51,12 +78,12 @@ export default function BOSActionCenter() {
         internal_note: "Manager verified intake and moved request into review.",
       },
       accounting_review: {
-  status: "manager_review",
-  manager_updated_at: now,
-  accounting_review_started_at: now,
-  internal_note:
-    "Accounting review initiated. Owner financial coordination and balance review are now active.",
-},
+        status: "manager_review",
+        manager_updated_at: now,
+        accounting_review_started_at: now,
+        internal_note:
+          "Accounting review initiated. Owner financial coordination and balance review are now active.",
+      },
       send_to_board: {
         status: "board_review",
         board_sent_at: now,
@@ -76,22 +103,22 @@ export default function BOSActionCenter() {
         internal_note: "Vendor dispatch initiated.",
       },
       vendor_accepted: {
-  vendor_status: "accepted",
-  vendor_updated_at: now,
-  internal_note: "Vendor accepted assignment.",
-},
+        vendor_status: "accepted",
+        vendor_updated_at: now,
+        internal_note: "Vendor accepted assignment.",
+      },
       vendor_in_progress: {
-  vendor_status: "in_progress",
-  vendor_updated_at: now,
-  internal_note: "Vendor work is in progress.",
-},
+        vendor_status: "in_progress",
+        vendor_updated_at: now,
+        internal_note: "Vendor work is in progress.",
+      },
       mark_complete: {
         status: "completed",
         completed_at: now,
         vendor_status: "completed",
         internal_note: "Request marked complete.",
       },
-                        notify_owner: {
+      notify_owner: {
         status: "owner_notified",
         internal_note: "Owner notification marked as sent.",
       },
@@ -127,13 +154,14 @@ export default function BOSActionCenter() {
       }
     }
 
-            const safePayload = workflowAction === "notify_owner"
-      ? {
-          owner_notified: true,
-          owner_notified_at: now,
-          internal_note: "Owner notification marked as sent.",
-        }
-      : fullPayload;
+    const safePayload =
+      workflowAction === "notify_owner"
+        ? {
+            owner_notified: true,
+            owner_notified_at: now,
+            internal_note: "Owner notification marked as sent.",
+          }
+        : fullPayload;
 
     const updatedAction = {
       ...item,
@@ -177,18 +205,14 @@ export default function BOSActionCenter() {
     }
 
     if (filter === "accounting") {
-  filteredActions = filteredActions.filter(
-    (a) =>
-      isFinancialRequest(a) &&
-      !isCompleted(a)
-  );
-}
+      filteredActions = filteredActions.filter(
+        (a) => isFinancialRequest(a) && !isCompleted(a)
+      );
+    }
 
     if (filter === "board") {
       filteredActions = filteredActions.filter(
-        (a) =>
-  a.status === "board_review" ||
-  a.status === "board_approved"
+        (a) => a.status === "board_review" || a.status === "board_approved"
       );
     }
 
@@ -205,20 +229,16 @@ export default function BOSActionCenter() {
     }
 
     if (filter === "completed") {
-  filteredActions = filteredActions.filter((a) =>
-    isCompleted(a)
-  );
-}
+      filteredActions = filteredActions.filter((a) => isCompleted(a));
+    }
 
     if (sortMode === "oldest") {
       filteredActions.sort(
-        (a, b) =>
-          new Date(a.created_at || 0) - new Date(b.created_at || 0)
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
       );
     } else {
       filteredActions.sort(
-        (a, b) =>
-          new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
       );
     }
 
@@ -229,11 +249,8 @@ export default function BOSActionCenter() {
     total: actions.length,
     intake: actions.filter((a) => isIntake(a)).length,
     manager: actions.filter((a) => a.status === "manager_review").length,
-    accounting: actions.filter(
-  (a) =>
-    isFinancialRequest(a) &&
-    !isCompleted(a)
-).length,
+    accounting: actions.filter((a) => isFinancialRequest(a) && !isCompleted(a))
+      .length,
     board: actions.filter((a) => a.status === "board_review").length,
     dispatched: actions.filter((a) => a.dispatched || a.status === "dispatched")
       .length,
@@ -247,27 +264,27 @@ export default function BOSActionCenter() {
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-7 flex items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-7">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
               BOS SYSTEM
             </p>
 
-            <h1 className="mt-2 text-3xl md:text-4xl font-semibold">
+            <h1 className="mt-2 text-3xl font-semibold md:text-4xl">
               Action Center
             </h1>
 
-            <p className="mt-2 text-white/60 max-w-3xl">
+            <p className="mt-2 max-w-3xl text-white/60">
               Real-time operational command center from Ava AI intake through
               manager verification, board routing, vendor dispatch, owner
               notification, and completion.
             </p>
           </div>
 
-                    <div className="hidden md:flex gap-3">
+          <div className="hidden gap-3 md:flex">
             <a
               href="/board"
-              className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/10 transition"
+              className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
             >
               Dashboard
             </a>
@@ -276,7 +293,7 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-8">
           <Stat label="Total" value={stats.total} />
           <Stat label="Intake" value={stats.intake} />
           <Stat label="Manager" value={stats.manager} />
@@ -294,18 +311,18 @@ export default function BOSActionCenter() {
         )}
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex gap-3 flex-wrap">
+      <section className="mx-auto flex max-w-7xl flex-col gap-4 px-6 pb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-3">
           {[
-  "all",
-  "intake",
-  "manager",
-  "accounting",
-  "board",
-  "dispatch",
-  "clarification",
-  "completed",
-].map((f) => (
+            "all",
+            "intake",
+            "manager",
+            "accounting",
+            "board",
+            "dispatch",
+            "clarification",
+            "completed",
+          ].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -331,7 +348,7 @@ export default function BOSActionCenter() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16">
-        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 md:p-8 shadow-2xl shadow-black/30">
+        <div className="rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6 shadow-2xl shadow-black/30 md:p-8">
           <div className="mb-6">
             <p className="text-xs uppercase tracking-[0.3em] text-yellow-400/70">
               OPERATING TIMELINE
@@ -341,21 +358,21 @@ export default function BOSActionCenter() {
               Request Progression
             </h2>
 
-           <p className="mt-2 text-white/55">
-  {filter === "accounting"
-    ? "Accounting requests are routed through financial review, owner coordination, and resolution tracking."
-    : "Every action now has operational controls for manager review, accounting coordination, board routing, vendor dispatch, owner updates, and completion movement."}
-</p>
+            <p className="mt-2 text-white/55">
+              {filter === "accounting"
+                ? "Accounting requests are routed through financial review, owner coordination, and resolution tracking."
+                : "Every action now has operational controls for manager review, accounting coordination, board routing, vendor dispatch, owner updates, and completion movement."}
+            </p>
           </div>
 
           {filtered.length === 0 ? (
             <Empty
-  message={
-    filter === "accounting"
-      ? "No accounting requests are currently in this queue."
-      : "No actions in this stage."
-  }
-/>
+              message={
+                filter === "accounting"
+                  ? "No accounting requests are currently in this queue."
+                  : "No actions in this stage."
+              }
+            />
           ) : (
             <div className="space-y-5">
               {filtered.map((item) => (
@@ -364,6 +381,7 @@ export default function BOSActionCenter() {
                   item={item}
                   onOpen={() => setSelectedAction(item)}
                   onUpdate={updateAction}
+                  onDelete={deleteAction}
                   updatingId={updatingId}
                 />
               ))}
@@ -377,6 +395,7 @@ export default function BOSActionCenter() {
           item={selectedAction}
           onClose={() => setSelectedAction(null)}
           onUpdate={updateAction}
+          onDelete={deleteAction}
           updatingId={updatingId}
         />
       )}
@@ -384,16 +403,16 @@ export default function BOSActionCenter() {
   );
 }
 
-function ActionRow({ item, onOpen, onUpdate, updatingId }) {
+function ActionRow({ item, onOpen, onUpdate, onDelete, updatingId }) {
   return (
-    <article className="rounded-3xl border border-white/10 bg-[#020617]/80 p-6 hover:border-yellow-400/25 transition duration-300">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+    <article className="rounded-3xl border border-white/10 bg-[#020617]/80 p-6 transition duration-300 hover:border-yellow-400/25">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
-  {isFinancialRequest(item)
-    ? "OWNER ACCOUNTING REQUEST"
-    : "AVA AI PHONE INTAKE"}
-</p>
+            {isFinancialRequest(item)
+              ? "OWNER ACCOUNTING REQUEST"
+              : "AVA AI PHONE INTAKE"}
+          </p>
 
           <h3 className="mt-2 text-2xl font-semibold leading-tight">
             {item.title || "BOS Action"}
@@ -404,112 +423,68 @@ function ActionRow({ item, onOpen, onUpdate, updatingId }) {
               Operational Summary
             </p>
 
-           <div className="mt-4 text-white/80 leading-relaxed space-y-4">
-  <p>
-    {item.description || "No operational summary available."}
-  </p>
+            <div className="mt-4 space-y-4 text-white/80 leading-relaxed">
+              <p>{item.description || "No operational summary available."}</p>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Caller
-      </p>
-
-      <p className="mt-1 text-white/90">
-        {item.owner_name || "Ava Caller"}
-      </p>
-    </div>
-
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Phone
-      </p>
-
-      <p className="mt-1 text-white/90">
-        {item.caller_phone || "Not Provided"}
-      </p>
-    </div>
-
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Unit / Address
-      </p>
-
-      <p className="mt-1 text-white/90">
-        {item.property_address || "Pending"}
-      </p>
-    </div>
-
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-        Source
-      </p>
-
-      <p className="mt-1 text-white/90">
-  {isFinancialRequest(item)
-    ? "Owner Portal Accounting Request"
-    : "Ava AI Phone Assistant"}
-</p>
-    </div>
-  </div>
-</div>
+              <div className="grid grid-cols-1 gap-3 pt-2 md:grid-cols-2">
+                <Meta label="Caller" value={item.owner_name || "Ava Caller"} />
+                <Meta label="Phone" value={item.caller_phone || "Not Provided"} />
+                <Meta label="Unit / Address" value={item.property_address || "Pending"} />
+                <Meta
+                  label="Source"
+                  value={
+                    isFinancialRequest(item)
+                      ? "Owner Portal Accounting Request"
+                      : "Ava AI Phone Assistant"
+                  }
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-start lg:items-end gap-3 min-w-[190px]">
+        <div className="flex min-w-[190px] flex-col items-start gap-3 lg:items-end">
           <Badge item={item} />
+          <RequestTypeBadge item={item} />
+          <PriorityBadge priority={item.priority} />
 
-<RequestTypeBadge item={item} />
+          {isFinancialRequest(item) && (
+            <Pill text="Accounting Request" tone="gold" />
+          )}
 
-<PriorityBadge priority={item.priority} />
-
-{isFinancialRequest(item) && (
-  <Pill text="Accounting Request" tone="gold" />
-)}
-
-<VendorBadge status={item.vendor_status} item={item} />
+          <VendorBadge status={item.vendor_status} item={item} />
 
           <button
-  onClick={onOpen}
-  className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 transition"
->
-  View Details
-</button>
+            onClick={onOpen}
+            className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/20"
+          >
+            View Details
+          </button>
 
-<button
-  onClick={() => onDelete(item.id)}
-  className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20 transition"
->
-  Delete
-</button>
+          <button
+            onClick={() => onDelete(item.id)}
+            className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-200 transition hover:bg-red-500/20"
+          >
+            Delete
+          </button>
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Meta
-          label="Association"
-          value={item.association_name || "Demo Association"}
-        />
-
+      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
+        <Meta label="Association" value={item.association_name || "Demo Association"} />
         <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
-
-        <Meta
-          label="Property / Unit"
-          value={item.property_address || "Pending"}
-        />
-
-        <Meta
-          label="Category"
-          value={formatCategory(item.category || item.request_type)}
-        />
+        <Meta label="Property / Unit" value={item.property_address || "Pending"} />
+        <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
       </div>
 
       <Timeline item={item} />
-{isFinancialRequest(item) && (
-  <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
-    This accounting request is routed for management review and owner financial coordination. Vendor dispatch is not required.
-  </div>
-)}
+
+      {isFinancialRequest(item) && (
+        <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
+          This accounting request is routed for management review and owner financial coordination. Vendor dispatch is not required.
+        </div>
+      )}
+
       <WorkflowControls
         item={item}
         onUpdate={onUpdate}
@@ -525,7 +500,7 @@ function WorkflowControls({ item, onUpdate, updatingId }) {
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-yellow-400/70">
             Live Workflow Actions
@@ -601,7 +576,7 @@ function Timeline({ item }) {
     {
       key: "manager",
       label: "Manager Verified",
-        complete:
+      complete:
         item.status === "manager_review" ||
         item.status === "board_review" ||
         item.status === "owner_notified" ||
@@ -611,7 +586,7 @@ function Timeline({ item }) {
     {
       key: "board",
       label: "Board Review",
-        complete:
+      complete:
         item.status === "board_review" ||
         item.status === "owner_notified" ||
         item.status === "completed",
@@ -620,9 +595,7 @@ function Timeline({ item }) {
     {
       key: "owner",
       label: "Notify Owner",
-      complete:              
-        item.status === "owner_notified" ||
-        item.status === "completed",
+      complete: item.status === "owner_notified" || item.status === "completed",
       date: item.updated_at || item.owner_notified_at,
     },
     {
@@ -635,12 +608,12 @@ function Timeline({ item }) {
 
   return (
     <div className="mt-6 rounded-2xl border border-yellow-500/10 bg-yellow-400/[0.035] p-5">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         {steps.map((step, index) => (
           <div key={step.key} className="relative">
             <div className="flex items-center gap-3">
               <div
-                className={`h-11 w-11 rounded-full border flex items-center justify-center text-sm font-semibold ${
+                className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-semibold ${
                   step.complete
                     ? "border-yellow-400/40 bg-yellow-400/15 text-yellow-300"
                     : "border-white/10 bg-white/[0.03] text-white/35"
@@ -650,13 +623,7 @@ function Timeline({ item }) {
               </div>
 
               <div>
-                <p
-                  className={
-                    step.complete
-                      ? "text-white font-medium"
-                      : "text-white/40"
-                  }
-                >
+                <p className={step.complete ? "font-medium text-white" : "text-white/40"}>
                   {step.label}
                 </p>
 
@@ -671,7 +638,7 @@ function Timeline({ item }) {
             </div>
 
             {index < steps.length - 1 && (
-              <div className="hidden md:block absolute left-12 top-5 h-px w-[calc(100%-3rem)] bg-white/10" />
+              <div className="absolute left-12 top-5 hidden h-px w-[calc(100%-3rem)] bg-white/10 md:block" />
             )}
           </div>
         ))}
@@ -680,7 +647,7 @@ function Timeline({ item }) {
   );
 }
 
-function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
+function DetailDrawer({ item, onClose, onUpdate, onDelete, updatingId }) {
   return (
     <div className="fixed inset-0 z-50">
       <button
@@ -693,10 +660,8 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-yellow-400/80">
-  {isFinancialRequest(item)
-    ? "Accounting Detail"
-    : "Action Detail"}
-</p>
+              {isFinancialRequest(item) ? "Accounting Detail" : "Action Detail"}
+            </p>
 
             <h2 className="mt-2 text-3xl font-semibold leading-tight">
               {item.title || "BOS Action"}
@@ -705,7 +670,7 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 hover:border-yellow-400/30 hover:text-yellow-300 transition"
+            className="rounded-xl border border-white/10 px-3 py-2 text-white/60 transition hover:border-yellow-400/30 hover:text-yellow-300"
           >
             ✕
           </button>
@@ -714,7 +679,6 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Badge item={item} />
           <PriorityBadge priority={item.priority} />
-          {/* Vendor workflow temporarily removed from BOS action controls */}
         </div>
 
         <div className="mt-6 rounded-3xl border border-yellow-500/10 bg-white/[0.02] p-6">
@@ -727,59 +691,51 @@ function DetailDrawer({ item, onClose, onUpdate, updatingId }) {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Meta
-            label="Association"
-            value={item.association_name || "Demo Association"}
-          />
-
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Meta label="Association" value={item.association_name || "Demo Association"} />
           <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
-
           <Meta label="Unit" value={item.property_address || "Pending"} />
+          <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
 
           <Meta
-            label="Category"
-            value={formatCategory(item.category || item.request_type)}
+            label="Status"
+            value={
+              isFinancialRequest(item) &&
+              (item.accounting_review_started_at || item.status === "manager_review")
+                ? "Accounting Review"
+                : formatStatus(item.status)
+            }
           />
 
-          <Meta
-  label="Status"
-  value={
-    isFinancialRequest(item) &&
-(
-  item.accounting_review_started_at ||
-  item.status === "manager_review"
-)
-  ? "Accounting Review"
-      : formatStatus(item.status)
-  }
-/>
+          <Meta label="Priority" value={titleCase(item.priority || "medium")} />
 
-          <Meta
-            label="Priority"
-            value={titleCase(item.priority || "medium")}
-          />
-            {isFinancialRequest(item) && (
-  <Meta
-    label="Accounting Workflow"
-    value="Financial Review Required"
-  />
-)}
+          {isFinancialRequest(item) && (
+            <Meta label="Accounting Workflow" value="Financial Review Required" />
+          )}
         </div>
 
         <div className="mt-6">
           <Timeline item={item} />
         </div>
-{isFinancialRequest(item) && (
-  <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
-    Financial requests move through accounting review, owner coordination, and account resolution workflows rather than vendor dispatch operations.
-  </div>
-)}
+
+        {isFinancialRequest(item) && (
+          <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
+            Financial requests move through accounting review, owner coordination, and account resolution workflows rather than vendor dispatch operations.
+          </div>
+        )}
+
         <WorkflowControls
           item={item}
           onUpdate={onUpdate}
           updatingId={updatingId}
         />
+
+        <button
+          onClick={() => onDelete(item.id)}
+          className="mt-5 w-full rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-200 transition hover:bg-red-500/20"
+        >
+          Delete BOS Action
+        </button>
       </aside>
     </div>
   );
@@ -789,25 +745,18 @@ function Badge({ item }) {
   const status = item.status || "open";
 
   const labels = {
-    open: isFinancialRequest(item)
-  ? "Financial Intake"
-  : "New Intake",
+    open: isFinancialRequest(item) ? "Financial Intake" : "New Intake",
     manager_review:
-  isFinancialRequest(item) &&
-  item.accounting_review_started_at
-    ? "Accounting Review"
-    : "Manager Review",
-    board_review: isFinancialRequest(item)
-  ? "Financial Oversight"
-  : "Board Review",
+      isFinancialRequest(item) && item.accounting_review_started_at
+        ? "Accounting Review"
+        : "Manager Review",
+    board_review: isFinancialRequest(item) ? "Financial Oversight" : "Board Review",
     board_approved: "Board Approved",
     needs_clarification: isFinancialRequest(item)
-  ? "Financial Clarification"
-  : "Needs Clarification",
+      ? "Financial Clarification"
+      : "Needs Clarification",
     dispatched: "Dispatched",
-    completed: isFinancialRequest(item)
-  ? "Financial Resolution"
-  : "Completed",
+    completed: isFinancialRequest(item) ? "Financial Resolution" : "Completed",
   };
 
   const tones = {
@@ -827,93 +776,51 @@ function Badge({ item }) {
     />
   );
 }
+
 function RequestTypeBadge({ item }) {
   const type = String(item?.request_type || "").toLowerCase();
 
   if (type.includes("financial_payment_arrangement")) {
-    return (
-      <Pill
-        text="Payment Arrangement"
-        tone="green"
-      />
-    );
+    return <Pill text="Payment Arrangement" tone="green" />;
   }
 
   if (type.includes("financial_balance_question")) {
-    return (
-      <Pill
-        text="Balance Inquiry"
-        tone="blue"
-      />
-    );
+    return <Pill text="Balance Inquiry" tone="blue" />;
   }
 
   if (type.includes("financial_statement_request")) {
-    return (
-      <Pill
-        text="Statement Request"
-        tone="gold"
-      />
-    );
+    return <Pill text="Statement Request" tone="gold" />;
   }
 
   if (type.includes("financial_payment_review")) {
-    return (
-      <Pill
-        text="Payment Review"
-        tone="blue"
-      />
-    );
+    return <Pill text="Payment Review" tone="blue" />;
   }
 
   if (type.includes("architectural")) {
-    return (
-      <Pill
-        text="Architectural Review"
-        tone="neutral"
-      />
-    );
+    return <Pill text="Architectural Review" tone="neutral" />;
   }
 
   if (type.includes("amenity")) {
-    return (
-      <Pill
-        text="Amenity Reservation"
-        tone="blue"
-      />
-    );
+    return <Pill text="Amenity Reservation" tone="blue" />;
   }
 
   if (type.includes("violation")) {
+    return <Pill text="Violation Question" tone="red" />;
+  }
+
+  return <Pill text="Operational Request" tone="gold" />;
+}
+
+function PriorityBadge({ priority }) {
+  const normalized = String(priority || "").toLowerCase();
+
+  if (isFinancialUrgent(normalized)) {
     return (
       <Pill
-        text="Violation Question"
+        text={normalized === "financial_urgent" ? "Financial Urgent" : "High Priority"}
         tone="red"
       />
     );
-  }
-
-  return (
-    <Pill
-      text="Operational Request"
-      tone="gold"
-    />
-  );
-}
-function PriorityBadge({ priority }) {
-  const normalized = String(priority || "").toLowerCase();
-  
-  if (isFinancialUrgent(normalized)) {
-    return (
-  <Pill
-    text={
-      normalized === "financial_urgent"
-        ? "Financial Urgent"
-        : "High Priority"
-    }
-    tone="red"
-  />
-);
   }
 
   if (normalized === "low") {
@@ -924,12 +831,13 @@ function PriorityBadge({ priority }) {
 }
 
 function VendorBadge({ status, item }) {
-    if (isFinancialRequest(item)) {
+  if (isFinancialRequest(item)) {
     return <Pill text="No Vendor Needed" tone="neutral" />;
   }
-   if (item?.status === "completed") {
-  return <Pill text="Completed" tone="green" />;
-}
+
+  if (item?.status === "completed") {
+    return <Pill text="Completed" tone="green" />;
+  }
 
   if (item?.status === "dispatched" || item?.dispatched) {
     return <Pill text="Vendor Dispatched" tone="blue" />;
@@ -981,7 +889,6 @@ function Stat({ label, value }) {
   return (
     <div className="rounded-2xl border border-yellow-500/10 bg-white/[0.025] p-5">
       <p className="text-sm text-white/55">{label}</p>
-
       <p className="mt-2 text-2xl font-semibold text-yellow-300">{value}</p>
     </div>
   );
@@ -994,7 +901,7 @@ function Meta({ label, value }) {
         {label}
       </p>
 
-      <p className="mt-2 text-lg text-white/85 break-words">
+      <p className="mt-2 break-words text-lg text-white/85">
         {value || "N/A"}
       </p>
     </div>
@@ -1047,6 +954,7 @@ function formatCategory(category) {
 
   return titleCase(String(category || "General").replace(/_/g, " "));
 }
+
 function formatStatus(status) {
   return titleCase(status || "Open");
 }
@@ -1061,56 +969,28 @@ function isFinancialRequest(action) {
     .startsWith("financial_");
 }
 
-function getWorkflowType(item) {
-  const type = String(item?.request_type || "").toLowerCase();
-
-  if (type.startsWith("financial_")) {
-    return "accounting";
-  }
-
-  if (type.includes("architectural")) {
-    return "architectural";
-  }
-
-  if (type.includes("amenity")) {
-    return "amenity";
-  }
-
-  if (type.includes("violation")) {
-    return "violation";
-  }
-
-  if (type.includes("documents")) {
-    return "documents";
-  }
-
-  return "maintenance";
-}
-
 function isFinancialUrgent(priority) {
   const normalized = String(priority || "").toLowerCase();
 
-  return (
-    normalized === "high" ||
-    normalized === "financial_urgent"
-  );
+  return normalized === "high" || normalized === "financial_urgent";
 }
+
 function isCompleted(action) {
-  return (
-    action?.status === "completed" ||
-    action?.vendor_status === "completed"
-  );
+  return action?.status === "completed" || action?.vendor_status === "completed";
 }
+
 function buildFallbackPayload(workflowAction) {
   if (workflowAction === "manager_verified") {
     return { status: "manager_review" };
   }
-if (workflowAction === "accounting_review") {
-  return {
-    status: "manager_review",
-    accounting_review_started_at: new Date().toISOString(),
-  };
-}
+
+  if (workflowAction === "accounting_review") {
+    return {
+      status: "manager_review",
+      accounting_review_started_at: new Date().toISOString(),
+    };
+  }
+
   if (workflowAction === "send_to_board") {
     return { status: "board_review" };
   }
@@ -1127,7 +1007,7 @@ if (workflowAction === "accounting_review") {
     return { status: "completed" };
   }
 
-       if (workflowAction === "notify_owner") {
+  if (workflowAction === "notify_owner") {
     return { status: "owner_notified" };
   }
 
@@ -1152,36 +1032,19 @@ function getNotificationEventType(workflowAction) {
 
 function getWorkflowMessage(workflowAction) {
   const messages = {
-    manager_verified:
-  "Verification complete. Request moved into review.",
+    manager_verified: "Verification complete. Request moved into review.",
     accounting_review:
-  "Accounting review initiated and financial coordination is now active.",
+      "Accounting review initiated and financial coordination is now active.",
     send_to_board: "Request sent to board review.",
     request_clarification: "Clarification requested.",
     dispatch_vendor: "Vendor dispatch initiated.",
     vendor_accepted: "Vendor acceptance recorded.",
     vendor_in_progress: "Vendor work marked in progress.",
     mark_complete:
-  "Request marked complete. Financial review and owner coordination finalized.",
+      "Request marked complete. Financial review and owner coordination finalized.",
     notify_owner:
-  "Owner update delivered. Financial coordination workflow updated successfully.",
+      "Owner update delivered. Financial coordination workflow updated successfully.",
   };
 
   return messages[workflowAction] || "Workflow updated.";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
