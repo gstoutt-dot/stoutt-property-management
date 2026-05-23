@@ -61,7 +61,7 @@ const sections = [
     description:
       "Governance tools for voting, motions, committees, signatures, elections, documents, and board decision records.",
     items: [
-      { title: "Financials", href: "/portal/board/financials" },
+      { title: "QuickBooks Live", href: "/accounting/quickbooks-live" },
       { title: "Documents", href: "/board/documents" },
       { title: "Meetings", href: "/portal/board/meetings" },
       { title: "Meeting Packet", href: "/board/meeting-packet" },
