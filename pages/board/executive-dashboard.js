@@ -361,21 +361,24 @@ export default function BoardDashboard() {
               </div>
             </div>
 
-            <div className="mt-6 space-y-3">
-  <Link href="/accounting/quickbooks-live" className={bosTheme.goldButton}>
+            <div className="mt-6 flex flex-col gap-3">
+  <Link
+    href="/accounting/quickbooks-live"
+    className={`${bosTheme.goldButton} w-full text-center`}
+  >
     View Financials
   </Link>
 
   <Link
     href="/board/board-approval-queue"
-    className={bosTheme.whiteButton}
+    className={`${bosTheme.whiteButton} w-full text-center`}
   >
     Approval Queue
   </Link>
 
   <Link
     href="/board/notification-center"
-    className={bosTheme.outlineButton}
+    className={`${bosTheme.outlineButton} w-full text-center`}
   >
     Notifications
   </Link>
