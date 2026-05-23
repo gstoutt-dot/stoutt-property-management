@@ -284,8 +284,8 @@ export default function BOSActionCenter() {
           <div className="hidden gap-3 md:flex">
   <a
     href={
-      typeof window !== "undefined" &&
-      localStorage.getItem("spmPortalRole") === "board"
+      typeof document !== "undefined" &&
+      document.referrer.includes("/board")
         ? "/board"
         : "/admin"
     }
