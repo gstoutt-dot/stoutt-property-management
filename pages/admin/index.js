@@ -169,6 +169,13 @@ function formatDate(value) {
   });
 }
 
+function formatStatus(value) {
+  return String(value || "")
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
 
@@ -521,11 +528,15 @@ export default function AdminDashboard() {
                             Due: {formatDate(record.due_date)}
                           </div>
 
-                          {record.board_review_required && (
-                            <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
-                              Board Review
-                            </div>
-                          )}
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
+  {formatStatus(record.status || "submitted")}
+</div>
+
+{record.board_review_required && (
+  <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+    Board Review
+  </div>
+)}
                         </div>
 
                         <h3 className="mt-4 text-2xl font-bold">
