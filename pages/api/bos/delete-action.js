@@ -1,0 +1,53 @@
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+
+export default async function handler(req, res) {
+  if (req.method !== "DELETE") {
+    return res.status(405).json({
+      success: false,
+      message: "Method not allowed",
+    });
+  }
+
+  try {
+    const actionId = req.query.id;
+
+    if (!actionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Action ID is required.",
+      });
+    }
+
+    // Delete related notification events first
+    const { error: eventError } = await supabaseAdmin
+      .from("notification_events")
+      .delete()
+      .eq("action_id", actionId);
+
+    if (eventError) {
+      console.warn("Notification cleanup warning:", eventError);
+    }
+
+    // Delete BOS action
+    const { error } = await supabaseAdmin
+      .from("bos_actions")
+      .delete()
+      .eq("id", actionId);
+
+    if (error) {
+      throw error;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "BOS action deleted successfully.",
+    });
+  } catch (error) {
+    console.error("BOS delete error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unable to delete BOS action.",
+    });
+  }
+}
