@@ -311,11 +311,7 @@ export default function BoardModuleHub() {
               </p>
             </div>
 
-            <Link
-              href="/board/dashboard"
-              className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
-            >
-              Board Dashboard
+            Board Dashboard
             </Link>
           </div>
 
