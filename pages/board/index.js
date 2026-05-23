@@ -95,6 +95,38 @@ function routeForBoardRecord(record) {
     return "/board/financial-review";
   }
 
+  if (type.includes("insurance")) {
+    return "/board/insurance-risk";
+  }
+
+  if (type.includes("legal")) {
+    return "/board/legal-review";
+  }
+
+  if (type.includes("meeting")) {
+    return "/portal/board/meetings";
+  }
+
+  if (type.includes("budget")) {
+    return "/board/budget-planning";
+  }
+
+  if (type.includes("vendor")) {
+    return "/board/vendor-performance";
+  }
+
+  if (type.includes("compliance")) {
+    return "/board/compliance-dashboard";
+  }
+
+  if (type.includes("maintenance")) {
+    return "/board/maintenance-review";
+  }
+
+  if (type.includes("architectural")) {
+    return "/board/architectural-approvals";
+  }
+
   if (type.includes("approval")) {
     return "/board/board-approval-queue";
   }
@@ -128,6 +160,7 @@ export default function BoardModuleHub() {
   const [records, setRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+  const [showAllRecords, setShowAllRecords] = useState(false);
 
   useEffect(() => {
     loadBoardRecords({ showLoading: true });
@@ -203,6 +236,10 @@ export default function BoardModuleHub() {
       });
   }, [records]);
 
+  const displayedRecords = showAllRecords
+    ? boardAttentionRecords
+    : boardAttentionRecords.slice(0, 5);
+
   const handleLogout = () => {
     localStorage.removeItem("spmPortalLoggedIn");
     localStorage.removeItem("spmPortalUser");
@@ -269,8 +306,8 @@ export default function BoardModuleHub() {
               </h2>
 
               <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                Records assigned to the board appear here first so board members can
-                immediately see items requiring review, awareness, or action.
+                Showing the highest-priority board items first so important navigation
+                links remain immediately accessible.
               </p>
             </div>
 
@@ -302,7 +339,7 @@ export default function BoardModuleHub() {
                 </p>
               </div>
             ) : (
-              boardAttentionRecords.map((record) => (
+              displayedRecords.map((record) => (
                 <div
                   key={record.id}
                   className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
@@ -366,6 +403,17 @@ export default function BoardModuleHub() {
               ))
             )}
           </div>
+
+          {boardAttentionRecords.length > 5 && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => setShowAllRecords(!showAllRecords)}
+                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+              >
+                {showAllRecords ? "Show Less" : "See More"}
+              </button>
+            </div>
+          )}
         </section>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
