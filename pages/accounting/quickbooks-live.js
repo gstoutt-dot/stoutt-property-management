@@ -107,18 +107,22 @@ export default function QuickBooksLiveAccounting() {
           </a>
 
           <div className="flex flex-wrap gap-3">
-            <a href="/portal/owner/login" className="rounded-2xl border border-amber-300/30 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10">
-              Homeowner Access
-            </a>
+  <a href="/admin" className="rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/20">
+    Admin Dashboard
+  </a>
 
-            <a href="/portal/manager" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
-              Admin Access
-            </a>
+  <a href="/portal/owner/login" className="rounded-2xl border border-amber-300/30 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10">
+    Homeowner Access
+  </a>
 
-            <a href="/board" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
-              Board Dashboard
-            </a>
-          </div>
+  <a href="/portal/manager" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
+    Admin Access
+  </a>
+
+  <a href="/board" className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-amber-300/40 hover:text-amber-200">
+    Board Dashboard
+  </a>
+</div>
         </nav>
 
         <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
