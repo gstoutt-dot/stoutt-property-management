@@ -197,17 +197,17 @@ export default function BoardDashboard() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/board" className={bosTheme.secondaryButton}>
-                Main Board Page
-              </Link>
+  <Link href="/board" className={bosTheme.secondaryButton}>
+    Dashboard
+  </Link>
 
-              <Link
-                href="/board/board-approval-queue"
-                className={bosTheme.primaryButton}
-              >
-                Approval Queue
-              </Link>
-            </div>
+  <Link
+    href="/board/board-approval-queue"
+    className={bosTheme.primaryButton}
+  >
+    Approval Queue
+  </Link>
+</div>
           </div>
         </header>
 
@@ -362,24 +362,24 @@ export default function BoardDashboard() {
             </div>
 
             <div className="mt-6 space-y-3">
-              <Link href="/board/financial-review" className={bosTheme.goldButton}>
-                View Financials
-              </Link>
+  <Link href="/accounting/quickbooks-live" className={bosTheme.goldButton}>
+    View Financials
+  </Link>
 
-              <Link
-                href="/board/board-approval-queue"
-                className={bosTheme.whiteButton}
-              >
-                Approval Queue
-              </Link>
+  <Link
+    href="/board/board-approval-queue"
+    className={bosTheme.whiteButton}
+  >
+    Approval Queue
+  </Link>
 
-              <Link
-                href="/board/notification-center"
-                className={bosTheme.outlineButton}
-              >
-                Notifications
-              </Link>
-            </div>
+  <Link
+    href="/board/notification-center"
+    className={bosTheme.outlineButton}
+  >
+    Notifications
+  </Link>
+</div>
           </aside>
         </section>
       </div>
