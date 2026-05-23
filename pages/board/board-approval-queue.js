@@ -52,33 +52,37 @@ export default function BoardApprovalQueue() {
   }
 
   async function updateApproval(action, newStatus, eventType, message) {
-    try {
-      setSystemMessage("");
+  try {
+    setSystemMessage("");
 
-      const { data, error } = await supabase
-        .from("bos_actions")
-        .update({ status: newStatus })
-        .eq("id", action.id)
-        .select()
-        .single();
+    const response = await fetch("/api/admin/update-operational-record", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: action.id,
+        status: newStatus,
+        board_event_type: eventType,
+        board_message: message,
+      }),
+    });
 
-      if (!error && data) {
-        await supabase.from("bos_events").insert([
-          {
-            action_id: action.id,
-            event_type: eventType,
-            message,
-            module: "Board Approval Queue",
-          },
-        ]);
-      }
+    const result = await response.json();
 
-      await loadApprovals({ showLoading: false });
-    } catch (error) {
-      console.error("Unable to update approval:", error);
-      setSystemMessage("Unable to update approval item.");
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Unable to update board approval item."
+      );
     }
+
+    await loadApprovals({ showLoading: false });
+    setSystemMessage(message);
+  } catch (error) {
+    console.error("Unable to update approval:", error);
+    setSystemMessage(error.message || "Unable to update approval item.");
   }
+}
 
   const approvalItems = useMemo(() => {
     return actions.filter((action) => {
