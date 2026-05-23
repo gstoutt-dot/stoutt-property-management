@@ -132,7 +132,40 @@ export default function BoardNotificationCenter() {
   }
 
   async function markAsRead(notificationId) {
-  async function deleteNotification(notificationId) {
+  try {
+    setReadNotifications((current) => ({
+      ...current,
+      [notificationId]: true,
+    }));
+
+    const { error } = await supabase.from("bos_notification_reads").upsert(
+      {
+        notification_id: String(notificationId),
+        notification_source: NOTIFICATION_SOURCE,
+        association_id: DEFAULT_ASSOCIATION_ID,
+        read_by_role: "board",
+        read_at: new Date().toISOString(),
+      },
+      {
+        onConflict:
+          "notification_id,notification_source,association_id,read_by_role",
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    await loadNotifications({ showLoading: false });
+  } catch (error) {
+    console.error("Unable to mark notification as read:", error);
+    setSystemMessage("Unable to mark notification as read.");
+
+    await loadNotifications({ showLoading: false });
+  }
+}
+
+async function deleteNotification(notificationId) {
   try {
     setSystemMessage("");
 
@@ -155,10 +188,9 @@ export default function BoardNotificationCenter() {
   } catch (error) {
     console.error("Unable to delete notification:", error);
 
-    setSystemMessage(
-      error.message || "Unable to delete notification."
-    );
+    setSystemMessage(error.message || "Unable to delete notification.");
   }
+}
 }
     try {
       setReadNotifications((current) => ({
