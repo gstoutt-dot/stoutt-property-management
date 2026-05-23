@@ -35,6 +35,10 @@ export default async function handler(req, res) {
         });
       }
 
+      // =========================================
+      // CREATE ADMIN OPERATIONAL RECORD
+      // =========================================
+
       const { data: insertedRecord, error } = await supabaseAdmin
         .from("admin_operational_records")
         .insert(payload)
@@ -42,6 +46,73 @@ export default async function handler(req, res) {
         .single();
 
       if (error) throw error;
+
+      // =========================================
+      // MIRROR RECORD INTO BOS ACTIONS
+      // =========================================
+
+      const bosPayload = {
+        association_id: payload.association_id,
+
+        title: payload.title,
+
+        description: payload.description,
+
+        request_type: payload.request_type,
+
+        priority: payload.priority,
+
+        status: payload.status,
+
+        created_by: payload.created_by,
+
+        created_by_role: payload.created_by_role,
+
+        assigned_to: payload.assigned_to,
+
+        board_review_required: payload.board_review_required,
+
+        owner_visible: payload.owner_visible,
+
+        vendor_visible: payload.vendor_visible,
+
+        due_date: payload.due_date,
+
+        source_module: payload.source_module,
+
+        routing_target: payload.routing_target,
+
+        recommended_action: payload.recommended_action,
+
+        admin_operational_record_id: insertedRecord.id,
+
+        workflow_stage: "Submitted",
+
+        lifecycle_status: "Open",
+
+        manager_verified: false,
+
+        board_action_required: Boolean(
+          payload.board_review_required
+        ),
+
+        timeline: [
+          {
+            event: "Operational Record Created",
+            status: payload.status,
+            created_at: new Date().toISOString(),
+            created_by: payload.created_by,
+          },
+        ],
+      };
+
+      const { error: bosError } = await supabaseAdmin
+        .from("bos_actions")
+        .insert(bosPayload);
+
+      if (bosError) {
+        console.error("BOS mirror insert failed:", bosError);
+      }
 
       return res.status(200).json({
         success: true,
