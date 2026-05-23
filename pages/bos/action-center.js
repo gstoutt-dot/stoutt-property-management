@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import { supabase } from "../../lib/supabaseClient";
 import { createNotificationEvent } from "../../lib/notificationEngine";
 
 export default function BOSActionCenter() {
+  const router = useRouter();
+
+  const dashboardReturnPath =
+    router.isReady && router.query.returnTo === "/board"
+      ? "/board"
+      : "/admin";
   const [actions, setActions] = useState([]);
   const [filter, setFilter] = useState("all");
   const [selectedAction, setSelectedAction] = useState(null);
@@ -283,12 +290,7 @@ export default function BOSActionCenter() {
 
           <div className="hidden gap-3 md:flex">
   <a
-    href={
-      typeof document !== "undefined" &&
-      document.referrer.includes("/board")
-        ? "/board"
-        : "/admin"
-    }
+    href={dashboardReturnPath}
     className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
   >
     Dashboard
