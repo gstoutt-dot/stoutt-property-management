@@ -10,9 +10,15 @@ export default function ManagerDashboard() {
   const [dispatchFeedback, setDispatchFeedback] = useState({})
 
   useEffect(() => {
+  fetchData()
+  loadWorkflow()
+
+  const interval = setInterval(() => {
     fetchData()
-    loadWorkflow()
-  }, [])
+  }, 15000)
+
+  return () => clearInterval(interval)
+}, [])
 
   function loadWorkflow() {
     const saved = localStorage.getItem('bos_manager_workflow')
