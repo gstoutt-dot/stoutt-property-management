@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { createNotification } from "../../../lib/notificationRouter";
 
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const DEFAULT_ASSOCIATION_NAME = "Sunset Condominium Association";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -169,18 +172,30 @@ function normalizePriority(priority, title, description) {
   return "medium";
 }
 
+function normalizeAdminPriority(priority) {
+  if (priority === "high") return "High";
+  if (priority === "low") return "Low";
+  return "Normal";
+}
+
 function generateTitle(title, description, category) {
   const providedTitle = cleanText(title);
   const cleanDescription = cleanText(description);
   const combined = `${providedTitle} ${cleanDescription} ${category || ""}`.toLowerCase();
 
   if (providedTitle) {
-    return titleCase(providedTitle.length > 90 ? `${providedTitle.slice(0, 87)}...` : providedTitle);
+    return titleCase(
+      providedTitle.length > 90
+        ? `${providedTitle.slice(0, 87)}...`
+        : providedTitle
+    );
   }
 
   if (
     (combined.includes("pool") || combined.includes("clubhouse")) &&
-    (combined.includes("light") || combined.includes("burned") || combined.includes("burnt"))
+    (combined.includes("light") ||
+      combined.includes("burned") ||
+      combined.includes("burnt"))
   ) {
     return "Pool Light Near Clubhouse Burned Out";
   }
@@ -189,19 +204,40 @@ function generateTitle(title, description, category) {
   if (combined.includes("leak")) return "Water Leak Reported";
   if (combined.includes("elevator")) return "Elevator Service Issue Reported";
   if (combined.includes("violation")) return "Violation Concern Reported";
-  if (combined.includes("payment") || combined.includes("balance") || combined.includes("billing")) {
+
+  if (
+    combined.includes("payment") ||
+    combined.includes("balance") ||
+    combined.includes("billing")
+  ) {
     return "Owner Billing Question Reported";
   }
-  if (combined.includes("proposal") || combined.includes("sales")) return "New Management Proposal Inquiry";
 
-  if (cleanDescription) {
-    return titleCase(cleanDescription.length > 90 ? `${cleanDescription.slice(0, 87)}...` : cleanDescription);
+  if (combined.includes("proposal") || combined.includes("sales")) {
+    return "New Management Proposal Inquiry";
   }
 
-  return "New Ava Intake Request";
+  if (cleanDescription) {
+    return titleCase(
+      cleanDescription.length > 90
+        ? `${cleanDescription.slice(0, 87)}...`
+        : cleanDescription
+    );
+  }
+
+  return "New Ava Phone Intake";
 }
 
-function buildDescription({ description, title, callerName, callerPhone, unit, category, priority }) {
+function buildDescription({
+  description,
+  title,
+  callerName,
+  callerPhone,
+  unit,
+  category,
+  priority,
+  associationName,
+}) {
   const cleanDescription = cleanText(description);
   const cleanTitle = cleanText(title);
 
@@ -212,10 +248,11 @@ function buildDescription({ description, title, callerName, callerPhone, unit, c
   } else if (cleanTitle) {
     lines.push(`Caller reported: ${cleanTitle}`);
   } else {
-    lines.push("Ava created a new intake item requiring property manager review.");
+    lines.push("Ava created a new phone intake item requiring management review.");
   }
 
   lines.push("");
+  lines.push(`Association: ${associationName || DEFAULT_ASSOCIATION_NAME}`);
   lines.push(`Caller: ${callerName || "Ava Caller"}`);
   lines.push(`Phone: ${callerPhone || "Not provided"}`);
   lines.push(`Unit/Address: ${unit || "Pending manager confirmation"}`);
@@ -223,6 +260,7 @@ function buildDescription({ description, title, callerName, callerPhone, unit, c
   lines.push(`Priority: ${priority}`);
   lines.push("");
   lines.push("Source: Ava AI phone assistant");
+  lines.push("Routing: Admin Dashboard only");
 
   return lines.join("\n");
 }
@@ -238,7 +276,18 @@ export default async function handler(req, res) {
   try {
     const args = getToolArgs(req.body);
 
+    const associationId =
+      cleanText(args.association_id) ||
+      cleanText(args.associationId) ||
+      DEFAULT_ASSOCIATION_ID;
+
+    const associationName =
+      cleanText(args.association_name) ||
+      cleanText(args.associationName) ||
+      DEFAULT_ASSOCIATION_NAME;
+
     const rawTitle = cleanText(args.title);
+
     const rawDescription =
       cleanText(args.description) ||
       cleanText(args.request) ||
@@ -265,7 +314,6 @@ export default async function handler(req, res) {
 
     const category = normalizeCategory(args.category, rawTitle, rawDescription);
     const priority = normalizePriority(args.priority, rawTitle, rawDescription);
-
     const finalTitle = generateTitle(rawTitle, rawDescription, category);
 
     const finalDescription = buildDescription({
@@ -276,82 +324,69 @@ export default async function handler(req, res) {
       unit,
       category,
       priority,
+      associationName,
     });
 
-    const insertPayload = {
+    const adminPayload = {
+      association_id: associationId,
+      created_by: callerName || "Ava AI Phone Intake",
+      created_by_role: "Ava",
+      request_type: category,
       title: finalTitle,
       description: finalDescription,
-      request_type: category,
-      category,
-      priority,
-      status: "open",
-
-      association_name: cleanText(args.association_name) || "Demo Association",
-      owner_name: callerName,
-      owner_phone: callerPhone,
-      owner_email: "",
-      property_address: unit,
-      best_contact_time: cleanText(args.best_contact_time) || "Normal business hours",
-      source: "Ava AI Phone Intake",
-
-      board_comment: finalDescription,
-      board_response: "new_request_from_ava",
-      board_acknowledged: false,
-      board_reviewed: false,
-      board_last_interaction_at: new Date().toISOString(),
+      priority: normalizeAdminPriority(priority),
+      status: "Submitted",
+      assigned_to: null,
+      board_review_required: false,
+      owner_visible: false,
+      vendor_visible: false,
+      due_date: null,
+      source_module: "Ava AI Phone Intake",
+      routing_target: "Admin Dashboard",
+      recommended_action:
+        "Review the Ava phone intake, verify details, and route internally if additional action is required.",
     };
 
-    const { data, error } = await supabase
-      .from("bos_actions")
-      .insert(insertPayload)
+    const { data: adminRecord, error: adminError } = await supabase
+      .from("admin_operational_records")
+      .insert(adminPayload)
       .select()
       .single();
 
-    if (error) {
-  console.error("Supabase insert error:", error);
+    if (adminError) {
+      console.error("Ava admin dashboard insert error:", adminError);
 
-  return res.status(500).json({
-    success: false,
-    error: error.message,
-  });
-}
+      return res.status(500).json({
+        success: false,
+        error: adminError.message,
+      });
+    }
 
-await createNotification({
-  associationId:
-    cleanText(args.association_id) ||
-    "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
+    await createNotification({
+      associationId,
+      recipientRole: "manager",
+      notificationType: "ava_admin_intake_created",
+      title: "New Ava phone intake received",
+      message: `${finalTitle} was created through Ava AI phone intake and routed to the Admin Dashboard.`,
+      relatedEntityType: "admin_operational_record",
+      relatedEntityId: adminRecord?.id,
+      priority: priority === "high" ? "high" : "normal",
+    });
 
-  recipientRole: "manager",
-
-  notificationType: "ava_intake_created",
-
-  title: "New Ava intake received",
-
-  message: `${finalTitle} was created through Ava AI intake.`,
-
-  relatedEntityType: "bos_action",
-
-  relatedEntityId: data?.id,
-
-  priority:
-    priority === "high"
-      ? "high"
-      : "normal",
-});
-
-return res.status(200).json({
-  success: true,
-  message:
-    "The request has been logged in the Board Operating System for management review.",
-  action_id: data?.id,
-  title: data?.title,
-});
+    return res.status(200).json({
+      success: true,
+      message:
+        "The request has been logged for management review in the Administrative Dashboard.",
+      admin_record_id: adminRecord?.id,
+      title: adminRecord?.title,
+      routing_target: "Admin Dashboard",
+    });
   } catch (error) {
-    console.error("Ava BOS route error:", error);
+    console.error("Ava admin intake route error:", error);
 
     return res.status(500).json({
       success: false,
-      error: "Unable to create BOS action.",
+      error: "Unable to create Ava administrative intake.",
     });
   }
 }
