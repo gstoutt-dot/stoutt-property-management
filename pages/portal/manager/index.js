@@ -72,21 +72,99 @@ export default function ManagerDashboard() {
   }
 
   async function fetchData() {
-    setLoading(true)
+  setLoading(true)
 
-    const { data, error } = await supabase
-      .from('bos_actions')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const { data: bosData, error: bosError } = await supabase
+    .from('bos_actions')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-    if (!error) {
-      const safeData = data || []
-      setItems(safeData)
-      syncBoardDecisions(safeData)
-    }
+  const { data: adminData, error: adminError } = await supabase
+    .from('admin_operational_records')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-    setLoading(false)
+  if (bosError) {
+    console.error('Manager BOS queue load failed:', bosError)
   }
+
+  if (adminError) {
+    console.error('Manager admin queue load failed:', adminError)
+  }
+
+  const normalizedBosItems = (bosData || []).map((item) => ({
+    ...item,
+    manager_source_table: 'bos_actions',
+    manager_source_type: 'bos',
+    association_name: item.association_name || 'Sunset Condominium Association',
+    owner_name: item.owner_name || '—',
+    owner_phone: item.owner_phone || '',
+    property_address: item.property_address || '',
+    best_contact_time: item.best_contact_time || 'Normal business hours',
+    status: item.status || 'open',
+    priority: item.priority || 'medium',
+  }))
+
+  const normalizedAdminItems = (adminData || []).map((item) => ({
+    id: `admin-${item.id}`,
+    original_id: item.id,
+    manager_source_table: 'admin_operational_records',
+    manager_source_type: 'admin',
+
+    title: item.title || 'Administrative Intake',
+    description: item.description || 'Administrative operational record submitted for review.',
+    request_type: item.request_type || 'owner_request',
+    category: item.request_type || 'owner_request',
+
+    status:
+      String(item.status || '').toLowerCase() === 'submitted'
+        ? 'open'
+        : String(item.status || '').toLowerCase(),
+
+    priority:
+      String(item.priority || '').toLowerCase() === 'high'
+        ? 'high'
+        : String(item.priority || '').toLowerCase() === 'low'
+          ? 'low'
+          : 'medium',
+
+    association_name: item.association_name || 'Sunset Condominium Association',
+    owner_name: item.created_by || 'Ava / Admin Intake',
+    owner_phone: '',
+    property_address: item.routing_target || item.source_module || 'Admin Operations',
+    best_contact_time: 'Normal business hours',
+
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+    source: item.source_module || 'Admin Operational Record',
+
+    board_comment: item.description || '',
+    board_response: item.recommended_action || '',
+    board_acknowledged: false,
+    board_reviewed: false,
+
+    vendor_name: '',
+    vendor_phone: '',
+    vendor_email: '',
+    dispatch_note: '',
+    dispatched_at: null,
+  }))
+
+  const combinedItems = [
+    ...normalizedBosItems,
+    ...normalizedAdminItems,
+  ].sort((a, b) => {
+    const left = new Date(a.created_at || 0).getTime()
+    const right = new Date(b.created_at || 0).getTime()
+
+    return right - left
+  })
+
+  setItems(combinedItems)
+  syncBoardDecisions(normalizedBosItems)
+
+  setLoading(false)
+}
 
   async function updateStatus(id, status) {
     await supabase.from('bos_actions').update({ status }).eq('id', id)
