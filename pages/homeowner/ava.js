@@ -117,9 +117,7 @@ export default function HomeownerAva() {
     } catch (err) {
       console.error("Ava homeowner context failed:", err);
 
-      setError(
-        err?.message || "Ava could not load your homeowner context."
-      );
+      setError(err?.message || "Ava could not load your homeowner context.");
     } finally {
       setLoading(false);
     }
@@ -129,47 +127,32 @@ export default function HomeownerAva() {
   const latestRequest = requests?.[0] || null;
 
   const unreadMessages = useMemo(() => {
-    return (messages || []).filter(
-      (message) => !message.read_status
-    ).length;
+    return (messages || []).filter((message) => !message.read_status).length;
   }, [messages]);
 
   const openRequests = useMemo(() => {
     return (requests || []).filter((request) => {
-      const status = String(
-        request.status || ""
-      ).toLowerCase();
+      const status = String(request.status || "").toLowerCase();
 
-      return ![
-        "completed",
-        "closed",
-        "resolved",
-      ].includes(status);
+      return !["completed", "closed", "resolved"].includes(status);
     }).length;
   }, [requests]);
 
   const formattedBalance =
-    balance?.current_balance !== undefined &&
-    balance?.current_balance !== null
-      ? Number(balance.current_balance).toLocaleString(
-          "en-US",
-          {
-            style: "currency",
-            currency: "USD",
-          }
-        )
+    balance?.current_balance !== undefined && balance?.current_balance !== null
+      ? Number(balance.current_balance).toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        })
       : "Not available";
 
   const formattedAssessment =
     balance?.monthly_assessment !== undefined &&
     balance?.monthly_assessment !== null
-      ? Number(balance.monthly_assessment).toLocaleString(
-          "en-US",
-          {
-            style: "currency",
-            currency: "USD",
-          }
-        )
+      ? Number(balance.monthly_assessment).toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        })
       : "Not available";
 
   function pushAvaResponse(message, actions = []) {
@@ -183,18 +166,41 @@ export default function HomeownerAva() {
     ]);
   }
 
-  function handleAskAva() {
-    const rawPrompt = String(
-      selectedPrompt || ""
-    ).trim();
+  async function getAccountingResponse() {
+    if (!ownerProfile?.association_id) {
+      return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
+    }
 
+    const response = await fetch(
+      `/api/accounting/owner-balance?associationId=${encodeURIComponent(
+        ownerProfile.association_id || ""
+      )}&ownerUserId=${encodeURIComponent(
+        ownerProfile.id || ""
+      )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || "Unable to load accounting details.");
+    }
+
+    if (data?.balance) {
+      setBalance(data.balance);
+    }
+
+    return (
+      data?.ava_accounting_response ||
+      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`
+    );
+  }
+
+  async function handleAskAva() {
+    const rawPrompt = String(selectedPrompt || "").trim();
     const prompt = rawPrompt.toLowerCase();
 
     if (!rawPrompt) {
-      pushAvaResponse(
-        "Please enter a question for Ava."
-      );
-
+      pushAvaResponse("Please enter a question for Ava.");
       return;
     }
 
@@ -207,82 +213,66 @@ export default function HomeownerAva() {
     ]);
 
     if (
-  if (
-  prompt.includes("balance") ||
-  prompt.includes("payment") ||
-  prompt.includes("assessment") ||
-  prompt.includes("due") ||
-  prompt.includes("account review") ||
-  prompt.includes("review my account") ||
-  prompt.includes("account issue") ||
-  prompt.includes("balance wrong") ||
-  prompt.includes("wrong balance") ||
-  prompt.includes("payment missing") ||
-  prompt.includes("payment not showing") ||
-  prompt.includes("missing payment") ||
-  prompt.includes("statement") ||
-  prompt.includes("late fee") ||
-  prompt.includes("delinquency") ||
-  prompt.includes("charge") ||
-  prompt.includes("fee") ||
-  prompt.includes("assessment issue") ||
-  prompt.includes("account help")
-) {
-  try {
-    const response = await fetch(
-      `/api/accounting/owner-balance?associationId=${encodeURIComponent(
-        ownerProfile?.association_id || ""
-      )}&ownerUserId=${encodeURIComponent(
-        ownerProfile?.id || ""
-      )}&unitNumber=${encodeURIComponent(
-        ownerProfile?.unitNumber || ""
-      )}`
-    );
-
-    const data = await response.json();
-
-    const accountingResponse =
-      data?.ava_accounting_response ||
-      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
-
-    pushAvaResponse(
-      accountingResponse,
-      [
-        {
-          label: "Open Payment Center",
-          href: "/homeowner/payment",
-        },
-        {
-          label: "Request Account Review",
-          href: "/homeowner/account-review",
-        },
-      ]
-    );
-  } catch (error) {
-    console.error("Ava accounting response failed:", error);
-
-    pushAvaResponse(
-      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`,
-      [
-        {
-          label: "Open Payment Center",
-          href: "/homeowner/payment",
-        },
-        {
-          label: "Request Account Review",
-          href: "/homeowner/account-review",
-        },
-      ]
-    );
-  }
-
-  return;
-}
-
-    if (
-      prompt.includes("message") ||
-      prompt.includes("notice")
+      prompt.includes("balance") ||
+      prompt.includes("payment") ||
+      prompt.includes("assessment") ||
+      prompt.includes("due") ||
+      prompt.includes("account review") ||
+      prompt.includes("review my account") ||
+      prompt.includes("account issue") ||
+      prompt.includes("balance wrong") ||
+      prompt.includes("wrong balance") ||
+      prompt.includes("payment missing") ||
+      prompt.includes("payment not showing") ||
+      prompt.includes("missing payment") ||
+      prompt.includes("statement") ||
+      prompt.includes("late fee") ||
+      prompt.includes("late fees") ||
+      prompt.includes("violation fee") ||
+      prompt.includes("violation fees") ||
+      prompt.includes("delinquency") ||
+      prompt.includes("charge") ||
+      prompt.includes("charges") ||
+      prompt.includes("fee") ||
+      prompt.includes("fees") ||
+      prompt.includes("assessment issue") ||
+      prompt.includes("account help")
     ) {
+      try {
+        const accountingResponse = await getAccountingResponse();
+
+        pushAvaResponse(accountingResponse, [
+          {
+            label: "Open Payment Center",
+            href: "/homeowner/payment",
+          },
+          {
+            label: "Request Account Review",
+            href: "/homeowner/account-review",
+          },
+        ]);
+      } catch (accountingError) {
+        console.error("Ava accounting response failed:", accountingError);
+
+        pushAvaResponse(
+          `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. If something looks incorrect, management can review your account through the account review workflow.`,
+          [
+            {
+              label: "Open Payment Center",
+              href: "/homeowner/payment",
+            },
+            {
+              label: "Request Account Review",
+              href: "/homeowner/account-review",
+            },
+          ]
+        );
+      }
+
+      return;
+    }
+
+    if (prompt.includes("message") || prompt.includes("notice")) {
       pushAvaResponse(
         latestMessage
           ? `You currently have ${unreadMessages} unread notice(s).`
@@ -305,7 +295,9 @@ export default function HomeownerAva() {
     ) {
       pushAvaResponse(
         latestRequest
-          ? `Your latest homeowner request is currently marked as "${latestRequest.status || "Received"}".`
+          ? `Your latest homeowner request is currently marked as "${
+              latestRequest.status || "Received"
+            }".`
           : "You currently do not have any active homeowner requests.",
         [
           {
@@ -336,10 +328,7 @@ export default function HomeownerAva() {
       return;
     }
 
-    if (
-      prompt.includes("management") ||
-      prompt.includes("help")
-    ) {
+    if (prompt.includes("management") || prompt.includes("help")) {
       pushAvaResponse(
         "I can help route you to the correct homeowner workflow or management resource.",
         [
@@ -357,10 +346,7 @@ export default function HomeownerAva() {
       return;
     }
 
-    if (
-      prompt.includes("emergency") ||
-      prompt.includes("urgent")
-    ) {
+    if (prompt.includes("emergency") || prompt.includes("urgent")) {
       pushAvaResponse(
         "For emergencies or urgent property issues, please contact management or emergency services directly instead of relying only on the portal."
       );
@@ -372,33 +358,6 @@ export default function HomeownerAva() {
       "Ava is still learning. Please try asking about balances, payments, notices, documents, or homeowner requests."
     );
   }
-
-  const quickActions = [
-    {
-      label: "Explain my balance",
-      prompt: "What is my current balance?",
-    },
-
-    {
-      label: "Help me make a payment",
-      prompt: "How do I make a payment?",
-    },
-
-    {
-      label: "Explain my latest notice",
-      prompt: "Do I have unread notices?",
-    },
-
-    {
-      label: "Find documents",
-      prompt: "Where are my documents?",
-    },
-
-    {
-      label: "Check my requests",
-      prompt: "Check my request status",
-    },
-  ];
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -417,10 +376,8 @@ export default function HomeownerAva() {
               </h1>
 
               <p className="mt-4 max-w-3xl text-slate-300">
-                Ava helps explain your balance,
-                notices, documents, payments,
-                and homeowner requests using
-                your live homeowner dashboard
+                Ava helps explain your balance, notices, documents, payments,
+                and homeowner requests using your live homeowner dashboard
                 context.
               </p>
             </div>
@@ -444,9 +401,7 @@ export default function HomeownerAva() {
 
             <div>
               <p className="text-sm text-yellow-400">
-                {loading
-                  ? "Loading homeowner context"
-                  : "Ava is online"}
+                {loading ? "Loading homeowner context" : "Ava is online"}
               </p>
 
               <h2 className="text-2xl font-semibold">
@@ -493,8 +448,7 @@ export default function HomeownerAva() {
 
             {loading ? (
               <div className="max-w-[88%] rounded-3xl rounded-tl-sm bg-slate-900 p-5 text-sm leading-6 text-slate-300">
-                I’m loading your homeowner
-                information now.
+                I’m loading your homeowner information now.
               </div>
             ) : null}
           </div>
@@ -503,20 +457,15 @@ export default function HomeownerAva() {
             <textarea
               rows="4"
               value={selectedPrompt}
-              onChange={(event) =>
-                setSelectedPrompt(
-                  event.target.value
-                )
-              }
+              onChange={(event) => setSelectedPrompt(event.target.value)}
               className="w-full resize-none bg-transparent text-white outline-none placeholder:text-slate-500"
               placeholder="Ask Ava about your balance, notices, documents, payments, or requests..."
             />
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-slate-500">
-                Ava only explains live
-                homeowner information currently
-                available inside SPM.
+                Ava only explains live homeowner information currently available
+                inside SPM.
               </p>
 
               <button
@@ -543,9 +492,7 @@ export default function HomeownerAva() {
                 </p>
 
                 <p className="mt-2 text-2xl font-semibold text-white">
-                  {loading
-                    ? "Loading..."
-                    : formattedBalance}
+                  {loading ? "Loading..." : formattedBalance}
                 </p>
               </div>
 
@@ -555,9 +502,7 @@ export default function HomeownerAva() {
                 </p>
 
                 <p className="mt-2 text-lg font-semibold text-slate-100">
-                  {loading
-                    ? "Loading..."
-                    : formattedAssessment}
+                  {loading ? "Loading..." : formattedAssessment}
                 </p>
               </div>
 
@@ -567,10 +512,7 @@ export default function HomeownerAva() {
                 </p>
 
                 <p className="mt-2 text-lg font-semibold text-slate-100">
-                  {loading
-                    ? "Loading..."
-                    : balance?.account_health ||
-                      "Not available"}
+                  {loading ? "Loading..." : balance?.account_health || "Not available"}
                 </p>
               </div>
 
@@ -580,8 +522,7 @@ export default function HomeownerAva() {
                 </p>
 
                 <p className="mt-2 text-sm text-slate-300">
-                  {unreadMessages} unread
-                  message(s) · {openRequests} open
+                  {unreadMessages} unread message(s) · {openRequests} open
                   request(s)
                 </p>
               </div>
