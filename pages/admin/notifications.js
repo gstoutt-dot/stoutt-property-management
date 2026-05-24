@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 const SUNSET_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -30,6 +31,7 @@ export default function AdminHomeownerNotifications() {
   const [recentNotifications, setRecentNotifications] = useState([]);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+
   async function loadNotificationTargets() {
     try {
       const response = await fetch(
@@ -48,6 +50,7 @@ export default function AdminHomeownerNotifications() {
       console.error("Notification targets load failed:", error);
     }
   }
+
   async function loadRecentNotifications() {
     try {
       const response = await fetch(
@@ -66,7 +69,7 @@ export default function AdminHomeownerNotifications() {
     }
   }
 
-    useEffect(() => {
+  useEffect(() => {
     if (associationId) {
       loadRecentNotifications();
       loadNotificationTargets();
@@ -135,16 +138,29 @@ export default function AdminHomeownerNotifications() {
     <main className="min-h-screen bg-[#070b12] text-white">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
-          <p className="text-sm uppercase tracking-[0.35em] text-amber-300/80">
-            SPM Admin Operations
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            Send Homeowner Notification
-          </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-            Send association-wide, unit-specific, or owner-specific notices into
-            the live homeowner message center.
-          </p>
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.35em] text-amber-300/80">
+                SPM Admin Operations
+              </p>
+
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+                Send Homeowner Notification
+              </h1>
+
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+                Send association-wide, unit-specific, or owner-specific notices into
+                the live homeowner message center.
+              </p>
+            </div>
+
+            <Link
+              href="/admin"
+              className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-center text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
+            >
+              Admin Dashboard
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -211,7 +227,7 @@ export default function AdminHomeownerNotifications() {
                 </label>
               </div>
 
-                            {sendTo === "Specific Unit" && (
+              {sendTo === "Specific Unit" && (
                 <label className="grid gap-2">
                   <span className="text-sm font-medium text-slate-300">
                     Target Unit
@@ -341,11 +357,13 @@ export default function AdminHomeownerNotifications() {
                         <p className="font-medium text-white">
                           {notice.title || "Untitled notice"}
                         </p>
+
                         <p className="mt-1 text-xs text-slate-400">
                           {notice.category || "General"} ·{" "}
                           {notice.priority || "Normal"}
                         </p>
                       </div>
+
                       <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">
                         {notice.unit_number
                           ? `Unit ${notice.unit_number}`
