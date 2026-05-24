@@ -6,6 +6,10 @@ function cleanText(value) {
   return String(value || "").trim();
 }
 
+function normalizeComparable(value) {
+  return cleanText(value).toLowerCase();
+}
+
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
 }
@@ -19,6 +23,15 @@ function formatMoney(value) {
     style: "currency",
     currency: "USD",
   });
+}
+
+function namesMatch(a, b) {
+  const left = normalizeComparable(a);
+  const right = normalizeComparable(b);
+
+  if (!left || !right) return false;
+
+  return left === right || left.includes(right) || right.includes(left);
 }
 
 function classifyLedgerEntry(entry) {
@@ -97,8 +110,6 @@ function buildLedgerSummary(entries = []) {
     total_payments: 0,
     total_credits: 0,
     net_balance_from_ledger: 0,
-    open_items: [],
-    recent_items: [],
   };
 
   for (const entry of entries) {
@@ -123,38 +134,10 @@ function buildLedgerSummary(entries = []) {
     if (credit > 0) {
       summary.credits_or_adjustments += credit;
     }
-
-    const isOpen =
-      ["open", "overdue", "partially_applied"].includes(
-        String(entry.status || "").toLowerCase()
-      ) || money(entry.open_balance) > 0;
-
-    const compactItem = {
-      transaction_type: entry.transaction_type,
-      transaction_date: entry.transaction_date,
-      due_date: entry.due_date,
-      description: entry.description,
-      memo: entry.memo,
-      charge_amount: charge,
-      payment_amount: payment,
-      credit_amount: credit,
-      open_balance: money(entry.open_balance),
-      status: entry.status,
-      source: entry.source,
-    };
-
-    if (isOpen) {
-      summary.open_items.push(compactItem);
-    }
-
-    summary.recent_items.push(compactItem);
   }
 
   summary.net_balance_from_ledger =
     summary.total_charges - summary.total_payments - summary.total_credits;
-
-  summary.recent_items = summary.recent_items.slice(0, 12);
-  summary.open_items = summary.open_items.slice(0, 12);
 
   return summary;
 }
@@ -239,13 +222,13 @@ function buildAvaAccountingMessage(balance, ledgerSummary, verification) {
 function buildUnverifiedMessage() {
   return (
     "For security purposes, I need to verify the homeowner before providing private account information. " +
-    "Please provide your unit number and either the email address or phone number associated with the account."
+    "Please provide your unit number and your name, email address, or phone number associated with the account."
   );
 }
 
-async function findOwnerProfile({ associationId, unitNumber, callerEmail, callerPhone }) {
+async function getAccessRecords({ associationId, unitNumber }) {
   let query = supabaseAdmin
-    .from("owner_profiles")
+    .from("owner_access_provisioning_records")
     .select("*")
     .eq("association_id", associationId);
 
@@ -255,47 +238,141 @@ async function findOwnerProfile({ associationId, unitNumber, callerEmail, caller
 
   const { data, error } = await query;
 
-  if (error) {
+  return {
+    records: !error && Array.isArray(data) ? data : [],
+    error,
+  };
+}
+
+async function getBalanceRecords({ associationId, unitNumber }) {
+  let query = supabaseAdmin
+    .from("owner_account_balances")
+    .select("*")
+    .eq("association_id", associationId);
+
+  if (unitNumber) {
+    query = query.eq("unit_number", unitNumber);
+  }
+
+  const { data, error } = await query;
+
+  return {
+    records: !error && Array.isArray(data) ? data : [],
+    error,
+  };
+}
+
+async function getIdentityLinks({ associationId, unitNumber }) {
+  let query = supabaseAdmin
+    .from("accounting_identity_links")
+    .select("*")
+    .eq("association_id", associationId);
+
+  if (unitNumber) {
+    query = query.eq("unit_number", unitNumber);
+  }
+
+  const { data, error } = await query;
+
+  return {
+    records: !error && Array.isArray(data) ? data : [],
+    error,
+  };
+}
+
+function findVerifiedRecord({
+  accessRecords,
+  balanceRecords,
+  identityLinks,
+  callerName,
+  callerEmail,
+  callerPhone,
+}) {
+  const cleanEmail = normalizeComparable(callerEmail);
+  const cleanPhone = normalizePhone(callerPhone);
+  const cleanName = cleanText(callerName);
+
+  const allCandidates = [
+    ...accessRecords.map((record) => ({
+      source: "owner_access_provisioning_records",
+      owner_user_id: record.owner_user_id,
+      unit_number: record.unit_number,
+      owner_name: record.owner_name,
+      owner_email: record.owner_email,
+      owner_phone: record.owner_phone,
+      record,
+    })),
+
+    ...balanceRecords.map((record) => ({
+      source: "owner_account_balances",
+      owner_user_id: record.owner_user_id,
+      unit_number: record.unit_number,
+      owner_name: record.owner_name,
+      owner_email: record.owner_email,
+      owner_phone: record.owner_phone,
+      record,
+    })),
+
+    ...identityLinks.map((record) => ({
+      source: "accounting_identity_links",
+      owner_user_id: record.owner_user_id,
+      unit_number: record.unit_number,
+      owner_name: record.quickbooks_customer_display_name,
+      owner_email: record.owner_email,
+      owner_phone: record.owner_phone,
+      record,
+    })),
+  ];
+
+  const emailMatch = allCandidates.find((candidate) => {
+    const candidateEmail = normalizeComparable(candidate.owner_email);
+    return cleanEmail && candidateEmail && candidateEmail === cleanEmail;
+  });
+
+  if (emailMatch) {
     return {
-      ownerProfile: null,
-      error,
+      verified: true,
+      verifiedBy: "email address",
+      candidate: emailMatch,
     };
   }
 
-  const profiles = Array.isArray(data) ? data : [];
+  const phoneMatch = allCandidates.find((candidate) => {
+    const candidatePhone = normalizePhone(candidate.owner_phone);
 
-  const cleanEmail = cleanText(callerEmail).toLowerCase();
-  const cleanPhone = normalizePhone(callerPhone);
+    if (!cleanPhone || !candidatePhone) return false;
 
-  const verifiedProfile =
-    profiles.find((profile) => {
-      const profileEmail =
-        cleanText(profile.owner_email || profile.email || profile.user_email)
-          .toLowerCase();
+    return (
+      candidatePhone === cleanPhone ||
+      candidatePhone.endsWith(cleanPhone) ||
+      cleanPhone.endsWith(candidatePhone)
+    );
+  });
 
-      return cleanEmail && profileEmail && profileEmail === cleanEmail;
-    }) ||
-    profiles.find((profile) => {
-      const profilePhone = normalizePhone(
-        profile.owner_phone ||
-          profile.phone ||
-          profile.mobile_phone ||
-          profile.primary_phone
-      );
+  if (phoneMatch) {
+    return {
+      verified: true,
+      verifiedBy: "phone number",
+      candidate: phoneMatch,
+    };
+  }
 
-      if (!cleanPhone || !profilePhone) return false;
+  const nameMatch = allCandidates.find((candidate) =>
+    namesMatch(candidate.owner_name, cleanName)
+  );
 
-      return (
-        profilePhone === cleanPhone ||
-        profilePhone.endsWith(cleanPhone) ||
-        cleanPhone.endsWith(profilePhone)
-      );
-    }) ||
-    null;
+  if (nameMatch) {
+    return {
+      verified: true,
+      verifiedBy: "name and unit number",
+      candidate: nameMatch,
+    };
+  }
 
   return {
-    ownerProfile: verifiedProfile,
-    error: null,
+    verified: false,
+    verifiedBy: null,
+    candidate: null,
   };
 }
 
@@ -405,28 +482,56 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!callerEmail && !callerPhone) {
+    if (!callerName && !callerEmail && !callerPhone) {
       return res.status(200).json({
         success: false,
         verified: false,
         needs_verification: true,
         ava_accounting_response:
-          "Thank you. For security purposes, may I also have the email address or phone number associated with the account?",
+          "Thank you. For security purposes, may I also have your name, email address, or phone number associated with the account?",
       });
     }
 
-    const { ownerProfile, error: ownerProfileError } = await findOwnerProfile({
-      associationId,
-      unitNumber,
+    const { records: accessRecords, error: accessError } =
+      await getAccessRecords({
+        associationId,
+        unitNumber,
+      });
+
+    const { records: balanceRecords, error: balanceRecordError } =
+      await getBalanceRecords({
+        associationId,
+        unitNumber,
+      });
+
+    const { records: identityLinks, error: identityError } =
+      await getIdentityLinks({
+        associationId,
+        unitNumber,
+      });
+
+    if (accessError) {
+      console.warn("Ava access records lookup warning:", accessError);
+    }
+
+    if (balanceRecordError) {
+      console.warn("Ava balance records lookup warning:", balanceRecordError);
+    }
+
+    if (identityError) {
+      console.warn("Ava identity links lookup warning:", identityError);
+    }
+
+    const verification = findVerifiedRecord({
+      accessRecords,
+      balanceRecords,
+      identityLinks,
+      callerName,
       callerEmail,
       callerPhone,
     });
 
-    if (ownerProfileError) {
-      console.error("Ava owner profile lookup failed:", ownerProfileError);
-    }
-
-    if (!ownerProfile) {
+    if (!verification.verified) {
       return res.status(200).json({
         success: false,
         verified: false,
@@ -435,11 +540,13 @@ export default async function handler(req, res) {
       });
     }
 
-    const ownerUserId = ownerProfile.id || ownerProfile.owner_user_id || null;
+    const ownerUserId = verification.candidate?.owner_user_id || null;
 
     const { balance, balanceError } = await findOwnerBalance({
       associationId,
-      unitNumber,
+      unitNumber:
+        verification.candidate?.unit_number ||
+        unitNumber,
       ownerUserId,
     });
 
@@ -471,20 +578,23 @@ export default async function handler(req, res) {
       current_balance: resolvedCurrentBalance,
     };
 
-    const verifiedBy = callerEmail ? "email address" : "phone number";
-
     return res.status(200).json({
       success: true,
       verified: true,
       association_id: associationId,
       unit_number: balance.unit_number,
-      owner_name: balance.owner_name || callerName,
+      owner_name:
+        balance.owner_name ||
+        verification.candidate?.owner_name ||
+        callerName,
       balance: responseBalance,
       ledger_summary: ledgerSummary,
       ava_accounting_response: buildAvaAccountingMessage(
         responseBalance,
         ledgerSummary,
-        { verifiedBy }
+        {
+          verifiedBy: verification.verifiedBy,
+        }
       ),
       ledger_error: ledgerError ? ledgerError.message : null,
     });
