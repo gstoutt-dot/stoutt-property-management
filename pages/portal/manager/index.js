@@ -10,15 +10,15 @@ export default function ManagerDashboard() {
   const [dispatchFeedback, setDispatchFeedback] = useState({})
 
   useEffect(() => {
-  fetchData({ showLoading: true })
-  loadWorkflow()
+    fetchData({ showLoading: true })
+    loadWorkflow()
 
-  const interval = setInterval(() => {
-    fetchData({ showLoading: false })
-  }, 15000)
+    const interval = setInterval(() => {
+      fetchData({ showLoading: false })
+    }, 15000)
 
-  return () => clearInterval(interval)
-}, [])
+    return () => clearInterval(interval)
+  }, [])
 
   function loadWorkflow() {
     const saved = localStorage.getItem('bos_manager_workflow')
@@ -38,6 +38,16 @@ export default function ManagerDashboard() {
     if (status === 'completed') return 'Completed'
     if (status === 'rejected') return 'Rejected'
     return 'Request received'
+  }
+
+  function normalizeAdminStatus(status) {
+    if (status === 'open') return 'Submitted'
+    if (status === 'in_progress') return 'In Progress'
+    if (status === 'board_review') return 'Board Review'
+    if (status === 'approved') return 'Approved'
+    if (status === 'completed') return 'Completed'
+    if (status === 'rejected') return 'Rejected'
+    return 'Submitted'
   }
 
   function syncBoardDecisions(data) {
@@ -78,191 +88,179 @@ export default function ManagerDashboard() {
   }
 
   async function fetchData({ showLoading = false } = {}) {
-  if (showLoading) {
-    setLoading(true)
+    if (showLoading) {
+      setLoading(true)
+    }
+
+    const { data: bosData, error: bosError } = await supabase
+      .from('bos_actions')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    const { data: adminData, error: adminError } = await supabase
+      .from('admin_operational_records')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (bosError) {
+      console.error('Manager BOS queue load failed:', bosError)
+    }
+
+    if (adminError) {
+      console.error('Manager admin queue load failed:', adminError)
+    }
+
+    const normalizedBosItems = (bosData || []).map((item) => ({
+      ...item,
+      manager_source_table: 'bos_actions',
+      manager_source_type: 'bos',
+      association_name: item.association_name || 'Sunset Condominium Association',
+      owner_name: item.owner_name || '—',
+      owner_phone: item.owner_phone || '',
+      property_address: item.property_address || '',
+      best_contact_time: item.best_contact_time || 'Normal business hours',
+      status: item.status || 'open',
+      priority: item.priority || 'medium',
+    }))
+
+    const normalizedAdminItems = (adminData || []).map((item) => ({
+      id: `admin-${item.id}`,
+      original_id: item.id,
+      manager_source_table: 'admin_operational_records',
+      manager_source_type: 'admin',
+
+      title: item.title || 'Administrative Intake',
+      description:
+        item.description ||
+        'Administrative operational record submitted for review.',
+      request_type: item.request_type || 'owner_request',
+      category: item.request_type || 'owner_request',
+
+      status:
+        String(item.status || '').toLowerCase() === 'submitted'
+          ? 'open'
+          : String(item.status || '').toLowerCase().replaceAll(' ', '_'),
+
+      priority:
+        String(item.priority || '').toLowerCase() === 'high'
+          ? 'high'
+          : String(item.priority || '').toLowerCase() === 'low'
+            ? 'low'
+            : 'medium',
+
+      association_name: item.association_name || 'Sunset Condominium Association',
+      owner_name: item.created_by || 'Ava / Admin Intake',
+      owner_phone: '',
+      property_address: item.routing_target || item.source_module || 'Admin Operations',
+      best_contact_time: 'Normal business hours',
+
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      source: item.source_module || 'Admin Operational Record',
+
+      board_comment: item.description || '',
+      board_response: item.recommended_action || '',
+      board_acknowledged: false,
+      board_reviewed: false,
+
+      vendor_name: '',
+      vendor_phone: '',
+      vendor_email: '',
+      dispatch_note: '',
+      dispatched_at: null,
+    }))
+
+    const combinedItems = [
+      ...normalizedBosItems,
+      ...normalizedAdminItems,
+    ].sort((a, b) => {
+      const left = new Date(a.created_at || 0).getTime()
+      const right = new Date(b.created_at || 0).getTime()
+      return right - left
+    })
+
+    setItems(combinedItems)
+    syncBoardDecisions(normalizedBosItems)
+    setLoading(false)
   }
 
-  const { data: bosData, error: bosError } = await supabase
-    .from('bos_actions')
-    .select('*')
-    .order('created_at', { ascending: false })
+  async function updateStatus(id, status) {
+    const item = items.find((record) => record.id === id)
 
-  const { data: adminData, error: adminError } = await supabase
-    .from('admin_operational_records')
-    .select('*')
-    .order('created_at', { ascending: false })
+    if (!item) {
+      console.error('Unable to update status. Item not found:', id)
+      return
+    }
 
-  if (bosError) {
-    console.error('Manager BOS queue load failed:', bosError)
-  }
-
-  if (adminError) {
-    console.error('Manager admin queue load failed:', adminError)
-  }
-
-  const normalizedBosItems = (bosData || []).map((item) => ({
-    ...item,
-    manager_source_table: 'bos_actions',
-    manager_source_type: 'bos',
-    association_name: item.association_name || 'Sunset Condominium Association',
-    owner_name: item.owner_name || '—',
-    owner_phone: item.owner_phone || '',
-    property_address: item.property_address || '',
-    best_contact_time: item.best_contact_time || 'Normal business hours',
-    status: item.status || 'open',
-    priority: item.priority || 'medium',
-  }))
-
-  const normalizedAdminItems = (adminData || []).map((item) => ({
-    id: `admin-${item.id}`,
-    original_id: item.id,
-    manager_source_table: 'admin_operational_records',
-    manager_source_type: 'admin',
-
-    title: item.title || 'Administrative Intake',
-    description: item.description || 'Administrative operational record submitted for review.',
-    request_type: item.request_type || 'owner_request',
-    category: item.request_type || 'owner_request',
-
-    status:
-      String(item.status || '').toLowerCase() === 'submitted'
-        ? 'open'
-        : String(item.status || '').toLowerCase(),
-
-    priority:
-      String(item.priority || '').toLowerCase() === 'high'
-        ? 'high'
-        : String(item.priority || '').toLowerCase() === 'low'
-          ? 'low'
-          : 'medium',
-
-    association_name: item.association_name || 'Sunset Condominium Association',
-    owner_name: item.created_by || 'Ava / Admin Intake',
-    owner_phone: '',
-    property_address: item.routing_target || item.source_module || 'Admin Operations',
-    best_contact_time: 'Normal business hours',
-
-    created_at: item.created_at,
-    updated_at: item.updated_at,
-    source: item.source_module || 'Admin Operational Record',
-
-    board_comment: item.description || '',
-    board_response: item.recommended_action || '',
-    board_acknowledged: false,
-    board_reviewed: false,
-
-    vendor_name: '',
-    vendor_phone: '',
-    vendor_email: '',
-    dispatch_note: '',
-    dispatched_at: null,
-  }))
-
-  const combinedItems = [
-    ...normalizedBosItems,
-    ...normalizedAdminItems,
-  ].sort((a, b) => {
-    const left = new Date(a.created_at || 0).getTime()
-    const right = new Date(b.created_at || 0).getTime()
-
-    return right - left
-  })
-
-  setItems(combinedItems)
-  syncBoardDecisions(normalizedBosItems)
-
-  setLoading(false)
-}
-
-  function normalizeAdminStatus(status) {
-  if (status === 'open') return 'Submitted'
-  if (status === 'in_progress') return 'In Progress'
-  if (status === 'board_review') return 'Board Review'
-  if (status === 'approved') return 'Approved'
-  if (status === 'completed') return 'Completed'
-  if (status === 'rejected') return 'Rejected'
-
-  return 'Submitted'
-}
-
-async function updateStatus(id, status) {
-  const item = items.find((record) => record.id === id)
-
-  async function deleteItem(item) {
-  const confirmed = window.confirm(
-    `Delete "${item.title || 'this item'}"?`
-  )
-
-  if (!confirmed) return
-
-  try {
     if (item.manager_source_table === 'admin_operational_records') {
       const { error } = await supabase
         .from('admin_operational_records')
-        .delete()
+        .update({
+          status: normalizeAdminStatus(status),
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', item.original_id)
 
-      if (error) throw error
-    } else {
-      const { error } = await supabase
-        .from('bos_actions')
-        .delete()
-        .eq('id', item.id)
+      if (error) {
+        console.error('Admin operational status update failed:', error)
+        alert('Unable to update this administrative record.')
+        return
+      }
 
-      if (error) throw error
+      addTimeline(id, getStatusLabel(status))
+      fetchData({ showLoading: false })
+      return
     }
 
-    const updatedWorkflow = { ...workflow }
-    delete updatedWorkflow[item.id]
-
-    saveWorkflow(updatedWorkflow)
-
-    fetchData({ showLoading: false })
-  } catch (error) {
-    console.error('Delete failed:', error)
-    alert('Unable to delete this item.')
-  }
-}
-
-  if (!item) {
-    console.error('Unable to update status. Item not found:', id)
-    return
-  }
-
-  if (item.manager_source_table === 'admin_operational_records') {
     const { error } = await supabase
-      .from('admin_operational_records')
-      .update({
-        status: normalizeAdminStatus(status),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', item.original_id)
+      .from('bos_actions')
+      .update({ status })
+      .eq('id', id)
 
     if (error) {
-      console.error('Admin operational status update failed:', error)
-      alert('Unable to update this administrative record.')
+      console.error('BOS status update failed:', error)
+      alert('Unable to update this BOS record.')
       return
     }
 
     addTimeline(id, getStatusLabel(status))
-    fetchData()
-    return
+    fetchData({ showLoading: false })
   }
 
-  const { error } = await supabase
-    .from('bos_actions')
-    .update({ status })
-    .eq('id', id)
+  async function deleteItem(item) {
+    const confirmed = window.confirm(
+      `Delete "${item.title || 'this item'}"?`
+    )
 
-  if (error) {
-    console.error('BOS status update failed:', error)
-    alert('Unable to update this BOS record.')
-    return
+    if (!confirmed) return
+
+    try {
+      if (item.manager_source_table === 'admin_operational_records') {
+        const { error } = await supabase
+          .from('admin_operational_records')
+          .delete()
+          .eq('id', item.original_id)
+
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('bos_actions')
+          .delete()
+          .eq('id', item.id)
+
+        if (error) throw error
+      }
+
+      const updatedWorkflow = { ...workflow }
+      delete updatedWorkflow[item.id]
+      saveWorkflow(updatedWorkflow)
+
+      fetchData({ showLoading: false })
+    } catch (error) {
+      console.error('Delete failed:', error)
+      alert('Unable to delete this item.')
+    }
   }
-
-  addTimeline(id, getStatusLabel(status))
-  fetchData()
-}
 
   function updateWorkflowField(id, field, value) {
     const current = workflow[id] || {}
@@ -315,6 +313,12 @@ async function updateStatus(id, status) {
   }
 
   async function saveVendor(item) {
+    if (item.manager_source_table === 'admin_operational_records') {
+      addTimeline(item.id, 'Vendor details staged locally')
+      alert('Vendor details are staged on this page. Persistent vendor dispatch for admin records will be connected next.')
+      return
+    }
+
     const wf = workflow[item.id] || {}
 
     await supabase
@@ -328,10 +332,15 @@ async function updateStatus(id, status) {
       .eq('id', item.id)
 
     addTimeline(item.id, 'Vendor details saved')
-    fetchData()
+    fetchData({ showLoading: false })
   }
 
   async function dispatchVendor(item) {
+    if (item.manager_source_table === 'admin_operational_records') {
+      alert('Vendor dispatch for administrative records will be connected next.')
+      return
+    }
+
     const wf = workflow[item.id] || {}
 
     const vendorName = wf.vendor_name ?? item.vendor_name ?? ''
@@ -407,7 +416,7 @@ async function updateStatus(id, status) {
         },
       })
 
-      fetchData()
+      fetchData({ showLoading: false })
     } catch (error) {
       console.error('Vendor dispatch error:', error)
 
@@ -441,7 +450,6 @@ async function updateStatus(id, status) {
   ).length
 
   const dispatchedCount = items.filter((i) => i.dispatched_at).length
-
   const highPriorityCount = items.filter((i) => i.priority === 'high').length
 
   const statusStyles = {
@@ -486,16 +494,21 @@ async function updateStatus(id, status) {
 
             <div className="flex flex-wrap gap-3">
               <Link
-  href="/portal/manager#live-queue"
-                className="rounded-xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
+                href="/admin"
+                className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
               >
-                Open Action Center
+                Admin Dashboard
               </Link>
 
-             <div />
+              <Link
+                href="/portal/manager#live-queue"
+                className="rounded-xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
+              >
+                Live Queue
+              </Link>
 
               <button
-                onClick={fetchData}
+                onClick={() => fetchData({ showLoading: false })}
                 className="hidden rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 md:block"
               >
                 Refresh Live Data
@@ -645,6 +658,12 @@ async function updateStatus(id, status) {
                               {item.association_name}
                             </span>
                           )}
+
+                          {item.manager_source_type === 'admin' && (
+                            <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-xs text-sky-300">
+                              Admin / Ava Intake
+                            </span>
+                          )}
                         </div>
 
                         <h3 className="text-xl font-semibold">
@@ -652,16 +671,13 @@ async function updateStatus(id, status) {
                         </h3>
 
                         {item.description && (
-                          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+                          <p className="mt-2 max-w-3xl whitespace-pre-line text-sm leading-6 text-slate-400">
                             {item.description}
                           </p>
                         )}
 
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
-                          <InfoBox
-                            label="Association"
-                            value={item.association_name || '—'}
-                          />
+                          <InfoBox label="Association" value={item.association_name || '—'} />
                           <InfoBox label="Owner" value={item.owner_name || '—'} />
                           <InfoBox
                             label="Owner Phone"
@@ -678,14 +694,8 @@ async function updateStatus(id, status) {
                               )
                             }
                           />
-                          <InfoBox
-                            label="Address / Unit"
-                            value={item.property_address || '—'}
-                          />
-                          <InfoBox
-                            label="Best Contact Time"
-                            value={item.best_contact_time || '—'}
-                          />
+                          <InfoBox label="Address / Unit" value={item.property_address || '—'} />
+                          <InfoBox label="Best Contact Time" value={item.best_contact_time || '—'} />
                           <InfoBox
                             label="Submitted"
                             value={
@@ -694,23 +704,6 @@ async function updateStatus(id, status) {
                                 : 'No date'
                             }
                           />
-
-                          {item.request_type === 'amenity' && (
-                            <>
-                              <InfoBox
-                                label="Amenity Chosen"
-                                value={item.amenity_selected || '—'}
-                              />
-                              <InfoBox
-                                label="Amenity Date"
-                                value={
-                                  item.amenity_date
-                                    ? new Date(item.amenity_date).toLocaleDateString()
-                                    : '—'
-                                }
-                              />
-                            </>
-                          )}
                         </div>
 
                         <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.05] p-5">
@@ -826,12 +819,6 @@ async function updateStatus(id, status) {
                               {dispatchFeedback[item.id].message}
                             </div>
                           )}
-
-                          {item.dispatched_at && (
-                            <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3 text-xs text-emerald-300">
-                              Dispatched: {new Date(item.dispatched_at).toLocaleString()}
-                            </div>
-                          )}
                         </div>
 
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -898,13 +885,14 @@ async function updateStatus(id, status) {
                         <h4 className="font-semibold">Workflow Controls</h4>
 
                         <div className="mt-4">
-  <button
-    onClick={() => deleteItem(item)}
-    className="w-full rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left text-sm font-medium text-red-300 hover:bg-red-500/20"
-  >
-    Delete Record
-  </button>
-</div>
+                          <button
+                            type="button"
+                            onClick={() => deleteItem(item)}
+                            className="w-full rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left text-sm font-medium text-red-300 hover:bg-red-500/20"
+                          >
+                            Delete Record
+                          </button>
+                        </div>
 
                         <div className="mt-4 grid gap-2">
                           <button
@@ -988,7 +976,7 @@ async function updateStatus(id, status) {
 
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#020617]/95 p-3 backdrop-blur md:hidden">
         <button
-          onClick={fetchData}
+          onClick={() => fetchData({ showLoading: false })}
           className="w-full rounded-xl border border-yellow-400/30 bg-yellow-400 px-5 py-4 text-sm font-semibold text-slate-950"
         >
           Refresh Live Data
@@ -1045,5 +1033,3 @@ function InfoBox({ label, value }) {
     </div>
   )
 }
-
-
