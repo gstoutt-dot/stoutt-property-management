@@ -578,6 +578,71 @@ export default async function handler(req, res) {
       current_balance: resolvedCurrentBalance,
     };
 
+    // ============================================
+// AVA FINANCIAL CALL LOGGING
+// ============================================
+
+try {
+  await supabaseAdmin
+    .from("admin_operational_records")
+    .insert({
+      association_id: associationId,
+      created_by: callerName || "Ava Financial Inquiry",
+      created_by_role: "Ava",
+      request_type: "financial",
+      title: `Account Balance Inquiry - Unit ${balance.unit_number}`,
+      description: `
+A homeowner contacted Ava regarding account balance information.
+
+Owner: ${
+        balance.owner_name ||
+        verification.candidate?.owner_name ||
+        callerName
+      }
+
+Unit: ${balance.unit_number}
+
+Verified By: ${verification.verifiedBy}
+
+Current Balance: ${formatMoney(resolvedCurrentBalance)}
+
+Monthly Assessment: ${formatMoney(balance.monthly_assessment)}
+
+Late Fees: ${formatMoney(ledgerSummary.late_fees)}
+
+Violation Fees: ${formatMoney(
+        ledgerSummary.violation_fees
+      )}
+
+Source: Ava AI Phone Accounting Inquiry
+
+Routing Target: Manager Command Center
+
+Manager Follow Up Recommended If:
+- homeowner disputes balance
+- duplicate charges reported
+- payment missing
+- collections concerns
+- violation fee dispute
+      `,
+      priority: "Normal",
+      status: "Submitted",
+      assigned_to: null,
+      board_review_required: false,
+      owner_visible: false,
+      vendor_visible: false,
+      source_module: "Ava AI Phone Accounting Inquiry",
+      routing_target: "Manager Command Center",
+      recommended_action:
+        "Review homeowner financial inquiry and coordinate accounting follow up if necessary.",
+    });
+} catch (loggingError) {
+  console.error(
+    "Unable to create Ava financial intake log:",
+    loggingError
+  );
+}
+
     return res.status(200).json({
       success: true,
       verified: true,
