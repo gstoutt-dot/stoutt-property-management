@@ -207,6 +207,7 @@ export default function HomeownerAva() {
     ]);
 
     if (
+  if (
   prompt.includes("balance") ||
   prompt.includes("payment") ||
   prompt.includes("assessment") ||
@@ -227,19 +228,53 @@ export default function HomeownerAva() {
   prompt.includes("assessment issue") ||
   prompt.includes("account help")
 ) {
-  pushAvaResponse(
-    `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. If something looks incorrect, management can review your account through the account review workflow.`,
-    [
-      {
-        label: "Open Payment Center",
-        href: "/homeowner/payment",
-      },
-      {
-        label: "Request Account Review",
-        href: "/homeowner/account-review",
-      },
-    ]
-  );
+  try {
+    const response = await fetch(
+      `/api/accounting/owner-balance?associationId=${encodeURIComponent(
+        ownerProfile?.association_id || ""
+      )}&ownerUserId=${encodeURIComponent(
+        ownerProfile?.id || ""
+      )}&unitNumber=${encodeURIComponent(
+        ownerProfile?.unitNumber || ""
+      )}`
+    );
+
+    const data = await response.json();
+
+    const accountingResponse =
+      data?.ava_accounting_response ||
+      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
+
+    pushAvaResponse(
+      accountingResponse,
+      [
+        {
+          label: "Open Payment Center",
+          href: "/homeowner/payment",
+        },
+        {
+          label: "Request Account Review",
+          href: "/homeowner/account-review",
+        },
+      ]
+    );
+  } catch (error) {
+    console.error("Ava accounting response failed:", error);
+
+    pushAvaResponse(
+      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`,
+      [
+        {
+          label: "Open Payment Center",
+          href: "/homeowner/payment",
+        },
+        {
+          label: "Request Account Review",
+          href: "/homeowner/account-review",
+        },
+      ]
+    );
+  }
 
   return;
 }
