@@ -10,11 +10,11 @@ export default function ManagerDashboard() {
   const [dispatchFeedback, setDispatchFeedback] = useState({})
 
   useEffect(() => {
-  fetchData()
+  fetchData({ showLoading: true })
   loadWorkflow()
 
   const interval = setInterval(() => {
-    fetchData()
+    fetchData({ showLoading: false })
   }, 15000)
 
   return () => clearInterval(interval)
@@ -77,8 +77,10 @@ export default function ManagerDashboard() {
     setWorkflow(saved)
   }
 
-  async function fetchData() {
-  setLoading(true)
+  async function fetchData({ showLoading = false } = {}) {
+  if (showLoading) {
+    setLoading(true)
+  }
 
   const { data: bosData, error: bosError } = await supabase
     .from('bos_actions')
