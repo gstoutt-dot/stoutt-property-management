@@ -188,6 +188,42 @@ export default function ManagerDashboard() {
 async function updateStatus(id, status) {
   const item = items.find((record) => record.id === id)
 
+  async function deleteItem(item) {
+  const confirmed = window.confirm(
+    `Delete "${item.title || 'this item'}"?`
+  )
+
+  if (!confirmed) return
+
+  try {
+    if (item.manager_source_table === 'admin_operational_records') {
+      const { error } = await supabase
+        .from('admin_operational_records')
+        .delete()
+        .eq('id', item.original_id)
+
+      if (error) throw error
+    } else {
+      const { error } = await supabase
+        .from('bos_actions')
+        .delete()
+        .eq('id', item.id)
+
+      if (error) throw error
+    }
+
+    const updatedWorkflow = { ...workflow }
+    delete updatedWorkflow[item.id]
+
+    saveWorkflow(updatedWorkflow)
+
+    fetchData({ showLoading: false })
+  } catch (error) {
+    console.error('Delete failed:', error)
+    alert('Unable to delete this item.')
+  }
+}
+
   if (!item) {
     console.error('Unable to update status. Item not found:', id)
     return
@@ -860,6 +896,15 @@ async function updateStatus(id, status) {
 
                       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                         <h4 className="font-semibold">Workflow Controls</h4>
+
+                        <div className="mt-4">
+  <button
+    onClick={() => deleteItem(item)}
+    className="w-full rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left text-sm font-medium text-red-300 hover:bg-red-500/20"
+  >
+    Delete Record
+  </button>
+</div>
 
                         <div className="mt-4 grid gap-2">
                           <button
