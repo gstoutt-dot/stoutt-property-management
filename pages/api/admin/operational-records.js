@@ -1,7 +1,6 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 const DEFAULT_ASSOCIATION_NAME = "Sunset Condominium Association";
 
 const closedStatuses = ["completed", "archived", "closed"];
@@ -14,25 +13,10 @@ function normalizeBosStatus(status) {
   const value = String(status || "").toLowerCase();
 
   if (value === "completed") return "completed";
-
-  if (value === "board_review" || value === "board review") {
-    return "board_review";
-  }
-
-  if (value === "manager_review" || value === "manager review") {
-    return "manager_review";
-  }
-
-  if (
-    value === "needs_clarification" ||
-    value === "needs clarification"
-  ) {
-    return "needs_clarification";
-  }
-
-  if (value === "dispatched") {
-    return "dispatched";
-  }
+  if (value === "board_review" || value === "board review") return "board_review";
+  if (value === "manager_review" || value === "manager review") return "manager_review";
+  if (value === "needs_clarification" || value === "needs clarification") return "needs_clarification";
+  if (value === "dispatched") return "dispatched";
 
   return "open";
 }
@@ -46,104 +30,60 @@ function normalizeBosCategory(requestType) {
 function normalizeBosPriority(priority) {
   const value = String(priority || "").toLowerCase();
 
-  if (value === "critical" || value === "high") {
-    return "high";
-  }
-
-  if (value === "low") {
-    return "low";
-  }
+  if (value === "critical" || value === "high") return "high";
+  if (value === "low") return "low";
 
   return "medium";
 }
 
-function buildBosDescription(payload, insertedRecord) {
-  const lines = [];
-
-  lines.push(
-    payload.description ||
-      "Admin created an operational record requiring review."
-  );
-
-  lines.push("");
-
-  lines.push(`Created By: ${payload.created_by || "SPM Admin"}`);
-
-  lines.push(
-    `Request Type: ${
-      payload.request_type || "Operational Request"
-    }`
-  );
-
-  lines.push(`Priority: ${payload.priority || "Normal"}`);
-
-  lines.push(
-    `Routing Target: ${
-      payload.routing_target || "Admin Dashboard"
-    }`
-  );
-
-  if (payload.recommended_action) {
-    lines.push("");
-    lines.push(
-      `Recommended Action: ${payload.recommended_action}`
-    );
-  }
-
-  lines.push("");
-  lines.push(
-    `Admin Operational Record ID: ${insertedRecord.id}`
-  );
-
-  return lines.join("\n");
-}
-
-function buildDeepLink(requestType) {
-  const type = String(requestType || "")
-    .toLowerCase()
-    .trim();
+function buildDestinationPath(requestType) {
+  const type = String(requestType || "").toLowerCase().trim();
 
   const routeMap = {
     "insurance & risk": "/board/insurance-risk",
     insurance_risk: "/board/insurance-risk",
-
     "legal review": "/board/legal-review",
     legal_review: "/board/legal-review",
-
     meetings: "/portal/board/meetings",
-
     "financial review": "/board/financial-review",
     financial_review: "/board/financial-review",
-
     compliance: "/board/compliance-dashboard",
   };
 
   return routeMap[type] || "/admin";
 }
 
+function buildBosDescription(payload, insertedRecord) {
+  const destinationPath = buildDestinationPath(payload.request_type);
+
+  const lines = [];
+
+  lines.push(payload.description || "Admin created an operational record requiring review.");
+  lines.push("");
+  lines.push(`Created By: ${payload.created_by || "SPM Admin"}`);
+  lines.push(`Request Type: ${payload.request_type || "Operational Request"}`);
+  lines.push(`Priority: ${payload.priority || "Normal"}`);
+  lines.push(`Routing Target: ${payload.routing_target || "Admin Dashboard"}`);
+  lines.push(`Destination Path: ${destinationPath}`);
+
+  if (payload.recommended_action) {
+    lines.push("");
+    lines.push(`Recommended Action: ${payload.recommended_action}`);
+  }
+
+  lines.push("");
+  lines.push(`Admin Operational Record ID: ${insertedRecord.id}`);
+
+  return lines.join("\n");
+}
+
 async function mirrorIntoBos(payload, insertedRecord) {
-  const bosCategory = normalizeBosCategory(
-    payload.request_type
-  );
-
-  const bosPriority = normalizeBosPriority(
-    payload.priority
-  );
-
-  const bosStatus = normalizeBosStatus(payload.status);
-
-  const bosDescription = buildBosDescription(
-    payload,
-    insertedRecord
-  );
+  const bosDescription = buildBosDescription(payload, insertedRecord);
 
   const existingBos = await supabaseAdmin
     .from("bos_actions")
     .select("id")
-    .eq(
-      "admin_operational_record_id",
-      insertedRecord.id
-    )
+    .ilike("board_comment", `%Admin Operational Record ID: ${insertedRecord.id}%`)
     .maybeSingle();
 
   if (existingBos?.data?.id) {
@@ -154,69 +94,31 @@ async function mirrorIntoBos(payload, insertedRecord) {
     };
   }
 
+  const bosCategory = normalizeBosCategory(payload.request_type);
+
   const bosPayload = {
-    admin_operational_record_id: insertedRecord.id,
-
-    association_id: payload.association_id,
-
     title: payload.title,
-
     description: bosDescription,
-
     request_type: bosCategory,
-
     category: bosCategory,
+    priority: normalizeBosPriority(payload.priority),
+    status: normalizeBosStatus(payload.status),
 
-    priority: bosPriority,
-
-    status: bosStatus,
-
-    association_name:
-      payload.association_name ||
-      DEFAULT_ASSOCIATION_NAME,
-
-    owner_name:
-      payload.created_by || "SPM Admin",
-
+    association_name: DEFAULT_ASSOCIATION_NAME,
+    owner_name: payload.created_by || "SPM Admin",
     owner_phone: "",
-
     owner_email: "",
-
-    property_address:
-      payload.routing_target ||
-      "Admin Operations",
-
-    best_contact_time:
-      "Normal business hours",
-
-    source:
-      payload.source_module ||
-      "Admin Operations Intake",
+    property_address: payload.routing_target || "Admin Operations",
+    best_contact_time: "Normal business hours",
+    source: payload.source_module || "Admin Operations Intake",
 
     board_comment: bosDescription,
-
-    board_response:
-      payload.board_review_required
-        ? "admin_record_requires_board_review"
-        : "admin_operational_record_created",
-
+    board_response: payload.board_review_required
+      ? "admin_record_requires_board_review"
+      : "admin_operational_record_created",
     board_acknowledged: false,
-
     board_reviewed: false,
-
-    board_last_interaction_at:
-      new Date().toISOString(),
-
-    source_module:
-      payload.source_module ||
-      "Admin Operations Intake",
-
-    routing_target:
-      payload.routing_target ||
-      "Admin Dashboard",
-
-    destination_module:
-      buildDeepLink(payload.request_type),
+    board_last_interaction_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabaseAdmin
@@ -238,65 +140,52 @@ async function mirrorIntoBos(payload, insertedRecord) {
   };
 }
 
+async function syncBosStatusFromAdmin(recordId, status) {
+  const { error } = await supabaseAdmin
+    .from("bos_actions")
+    .update({
+      status: normalizeBosStatus(status),
+    })
+    .ilike("board_comment", `%Admin Operational Record ID: ${recordId}%`);
+
+  if (error) {
+    console.warn("BOS status sync warning:", error);
+  }
+}
+
+async function deleteBosMirror(recordId) {
+  const { error } = await supabaseAdmin
+    .from("bos_actions")
+    .delete()
+    .ilike("board_comment", `%Admin Operational Record ID: ${recordId}%`);
+
+  if (error) {
+    console.warn("BOS mirror delete warning:", error);
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const body = req.body || {};
 
       const payload = {
-        association_id:
-          body.association_id ||
-          DEFAULT_ASSOCIATION_ID,
-
-        association_name:
-          body.association_name ||
-          DEFAULT_ASSOCIATION_NAME,
-
-        created_by:
-          body.created_by || "SPM Admin",
-
-        created_by_role:
-          body.created_by_role || "Admin",
-
-        request_type:
-          body.request_type ||
-          "Special Project",
-
+        association_id: body.association_id || DEFAULT_ASSOCIATION_ID,
+        created_by: body.created_by || "SPM Admin",
+        created_by_role: body.created_by_role || "Admin",
+        request_type: body.request_type || "Special Project",
         title: cleanText(body.title),
-
         description: cleanText(body.description),
-
-        priority:
-          body.priority || "Normal",
-
-        status:
-          body.status || "Submitted",
-
-        assigned_to:
-          body.assigned_to || null,
-
-        board_review_required:
-          Boolean(body.board_review_required),
-
-        owner_visible:
-          Boolean(body.owner_visible),
-
-        vendor_visible:
-          Boolean(body.vendor_visible),
-
-        due_date:
-          body.due_date || null,
-
-        source_module:
-          body.source_module ||
-          "Admin Operations Intake",
-
-        routing_target:
-          body.routing_target ||
-          "Admin Dashboard",
-
-        recommended_action:
-          body.recommended_action || null,
+        priority: body.priority || "Normal",
+        status: body.status || "Submitted",
+        assigned_to: body.assigned_to || null,
+        board_review_required: Boolean(body.board_review_required),
+        owner_visible: Boolean(body.owner_visible),
+        vendor_visible: Boolean(body.vendor_visible),
+        due_date: body.due_date || null,
+        source_module: body.source_module || "Admin Operations Intake",
+        routing_target: body.routing_target || "Admin Dashboard",
+        recommended_action: body.recommended_action || null,
       };
 
       if (!payload.title) {
@@ -306,10 +195,7 @@ export default async function handler(req, res) {
         });
       }
 
-      const {
-        data: insertedRecord,
-        error,
-      } = await supabaseAdmin
+      const { data: insertedRecord, error } = await supabaseAdmin
         .from("admin_operational_records")
         .insert(payload)
         .select()
@@ -317,47 +203,31 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      const bosResult =
-        await mirrorIntoBos(
-          payload,
-          insertedRecord
-        );
+      const bosResult = await mirrorIntoBos(payload, insertedRecord);
 
       if (!bosResult.success) {
-        console.error(
-          "BOS mirror insert failed:",
-          bosResult.error
-        );
+        console.error("BOS mirror insert failed:", bosResult.error);
 
         return res.status(500).json({
           success: false,
           record: insertedRecord,
-          message:
-            "Admin record created but BOS mirror failed.",
-          bosError:
-            bosResult.error?.message,
+          message: "Admin record created but BOS mirror failed.",
+          bosError: bosResult.error?.message,
         });
       }
 
       return res.status(200).json({
         success: true,
         record: insertedRecord,
-        bosAction:
-          bosResult.bosAction || null,
-        message:
-          "Operational record submitted successfully and mirrored to BOS.",
+        bosAction: bosResult.bosAction || null,
+        message: "Operational record submitted successfully and mirrored to BOS.",
       });
     } catch (error) {
-      console.error(
-        "Admin operational records POST error:",
-        error
-      );
+      console.error("Admin operational records POST error:", error);
 
       return res.status(500).json({
         success: false,
-        message:
-          error.message ||
-          "Unable to submit admin operational record.",
+        message: error.message || "Unable to submit admin operational record.",
       });
     }
   }
@@ -365,7 +235,6 @@ export default async function handler(req, res) {
   if (req.method === "PATCH") {
     try {
       const body = req.body || {};
-
       const recordId = body.id;
 
       if (!recordId) {
@@ -375,58 +244,33 @@ export default async function handler(req, res) {
         });
       }
 
-      const status =
-        body.status || "archived";
+      const status = body.status || "archived";
 
-      const updatePayload = {
-        status,
-        updated_at:
-          new Date().toISOString(),
-      };
-
-      const {
-        data,
-        error,
-      } = await supabaseAdmin
+      const { data, error } = await supabaseAdmin
         .from("admin_operational_records")
-        .update(updatePayload)
+        .update({
+          status,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", recordId)
         .select()
         .single();
 
       if (error) throw error;
 
-      await supabaseAdmin
-        .from("bos_actions")
-        .update({
-          status:
-            normalizeBosStatus(status),
-
-          updated_at:
-            new Date().toISOString(),
-        })
-        .eq(
-          "admin_operational_record_id",
-          recordId
-        );
+      await syncBosStatusFromAdmin(recordId, status);
 
       return res.status(200).json({
         success: true,
         record: data,
-        message:
-          "Operational record updated successfully.",
+        message: "Operational record updated successfully.",
       });
     } catch (error) {
-      console.error(
-        "Admin operational records PATCH error:",
-        error
-      );
+      console.error("Admin operational records PATCH error:", error);
 
       return res.status(500).json({
         success: false,
-        message:
-          error.message ||
-          "Unable to update operational record.",
+        message: error.message || "Unable to update operational record.",
       });
     }
   }
@@ -442,40 +286,25 @@ export default async function handler(req, res) {
         });
       }
 
-      await supabaseAdmin
-        .from("bos_actions")
-        .delete()
-        .eq(
-          "admin_operational_record_id",
-          recordId
-        );
+      await deleteBosMirror(recordId);
 
-      const { error } =
-        await supabaseAdmin
-          .from(
-            "admin_operational_records"
-          )
-          .delete()
-          .eq("id", recordId);
+      const { error } = await supabaseAdmin
+        .from("admin_operational_records")
+        .delete()
+        .eq("id", recordId);
 
       if (error) throw error;
 
       return res.status(200).json({
         success: true,
-        message:
-          "Operational record deleted successfully.",
+        message: "Operational record deleted successfully.",
       });
     } catch (error) {
-      console.error(
-        "Admin operational records DELETE error:",
-        error
-      );
+      console.error("Admin operational records DELETE error:", error);
 
       return res.status(500).json({
         success: false,
-        message:
-          error.message ||
-          "Unable to delete operational record.",
+        message: error.message || "Unable to delete operational record.",
       });
     }
   }
@@ -488,40 +317,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const associationId =
-      req.query.association_id ||
-      DEFAULT_ASSOCIATION_ID;
+    const associationId = req.query.association_id || DEFAULT_ASSOCIATION_ID;
 
-    const {
-      data,
-      error,
-    } = await supabaseAdmin
-      .from(
-        "admin_operational_records"
-      )
+    const { data, error } = await supabaseAdmin
+      .from("admin_operational_records")
       .select("*")
-      .eq(
-        "association_id",
-        associationId
-      )
-      .order("created_at", {
-        ascending: false,
-      })
+      .eq("association_id", associationId)
+      .order("created_at", { ascending: false })
       .limit(25);
 
     if (error) throw error;
 
     const records = data || [];
 
-    const openRecords =
-      records.filter(
-        (record) =>
-          !closedStatuses.includes(
-            String(
-              record.status || ""
-            ).toLowerCase()
-          )
-      );
+    const openRecords = records.filter(
+      (record) =>
+        !closedStatuses.includes(String(record.status || "").toLowerCase())
+    );
 
     return res.status(200).json({
       success: true,
@@ -529,46 +341,24 @@ export default async function handler(req, res) {
       openRecords,
       counts: {
         total: records.length,
-
         open: openRecords.length,
-
-        critical:
-          openRecords.filter(
-            (record) =>
-              String(
-                record.priority || ""
-              ).toLowerCase() ===
-              "critical"
-          ).length,
-
-        high: openRecords.filter(
-          (record) =>
-            String(
-              record.priority || ""
-            ).toLowerCase() ===
-            "high"
+        critical: openRecords.filter(
+          (record) => String(record.priority || "").toLowerCase() === "critical"
         ).length,
-
-        boardReview:
-          openRecords.filter(
-            (record) =>
-              Boolean(
-                record.board_review_required
-              )
-          ).length,
+        high: openRecords.filter(
+          (record) => String(record.priority || "").toLowerCase() === "high"
+        ).length,
+        boardReview: openRecords.filter((record) =>
+          Boolean(record.board_review_required)
+        ).length,
       },
     });
   } catch (error) {
-    console.error(
-      "Admin operational records API error:",
-      error
-    );
+    console.error("Admin operational records API error:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Unable to load admin operational records.",
+      message: error.message || "Unable to load admin operational records.",
     });
   }
 }
