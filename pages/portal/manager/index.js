@@ -166,11 +166,59 @@ export default function ManagerDashboard() {
   setLoading(false)
 }
 
-  async function updateStatus(id, status) {
-    await supabase.from('bos_actions').update({ status }).eq('id', id)
+  function normalizeAdminStatus(status) {
+  if (status === 'open') return 'Submitted'
+  if (status === 'in_progress') return 'In Progress'
+  if (status === 'board_review') return 'Board Review'
+  if (status === 'approved') return 'Approved'
+  if (status === 'completed') return 'Completed'
+  if (status === 'rejected') return 'Rejected'
+
+  return 'Submitted'
+}
+
+async function updateStatus(id, status) {
+  const item = items.find((record) => record.id === id)
+
+  if (!item) {
+    console.error('Unable to update status. Item not found:', id)
+    return
+  }
+
+  if (item.manager_source_table === 'admin_operational_records') {
+    const { error } = await supabase
+      .from('admin_operational_records')
+      .update({
+        status: normalizeAdminStatus(status),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', item.original_id)
+
+    if (error) {
+      console.error('Admin operational status update failed:', error)
+      alert('Unable to update this administrative record.')
+      return
+    }
+
     addTimeline(id, getStatusLabel(status))
     fetchData()
+    return
   }
+
+  const { error } = await supabase
+    .from('bos_actions')
+    .update({ status })
+    .eq('id', id)
+
+  if (error) {
+    console.error('BOS status update failed:', error)
+    alert('Unable to update this BOS record.')
+    return
+  }
+
+  addTimeline(id, getStatusLabel(status))
+  fetchData()
+}
 
   function updateWorkflowField(id, field, value) {
     const current = workflow[id] || {}
