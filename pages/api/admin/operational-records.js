@@ -4,6 +4,59 @@ const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const closedStatuses = ["completed", "archived", "closed"];
 
+function cleanText(value) {
+  return String(value || "").trim();
+}
+
+function normalizeBosStatus(status) {
+  const value = String(status || "").toLowerCase();
+
+  if (value === "completed") return "completed";
+  if (value === "board_review" || value === "board review") return "board_review";
+  if (value === "manager_review" || value === "manager review") return "manager_review";
+  if (value === "needs_clarification" || value === "needs clarification") {
+    return "needs_clarification";
+  }
+
+  return "open";
+}
+
+function normalizeBosCategory(requestType) {
+  return cleanText(requestType || "owner_request")
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+}
+
+function normalizeBosPriority(priority) {
+  const value = String(priority || "").toLowerCase();
+
+  if (value === "critical" || value === "high") return "high";
+  if (value === "low") return "low";
+
+  return "medium";
+}
+
+function buildBosDescription(payload, insertedRecord) {
+  const lines = [];
+
+  lines.push(payload.description || "Admin created an operational record requiring review.");
+  lines.push("");
+  lines.push(`Created By: ${payload.created_by || "SPM Admin"}`);
+  lines.push(`Request Type: ${payload.request_type || "Operational Request"}`);
+  lines.push(`Priority: ${payload.priority || "Normal"}`);
+  lines.push(`Routing Target: ${payload.routing_target || "Admin Dashboard"}`);
+
+  if (payload.recommended_action) {
+    lines.push("");
+    lines.push(`Recommended Action: ${payload.recommended_action}`);
+  }
+
+  lines.push("");
+  lines.push(`Admin Operational Record ID: ${insertedRecord.id}`);
+
+  return lines.join("\n");
+}
+
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
@@ -14,8 +67,8 @@ export default async function handler(req, res) {
         created_by: body.created_by || "SPM Admin",
         created_by_role: body.created_by_role || "Admin",
         request_type: body.request_type || "Special Project",
-        title: String(body.title || "").trim(),
-        description: String(body.description || "").trim(),
+        title: cleanText(body.title),
+        description: cleanText(body.description),
         priority: body.priority || "Normal",
         status: body.status || "Submitted",
         assigned_to: body.assigned_to || null,
@@ -43,10 +96,59 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
+      const bosCategory = normalizeBosCategory(payload.request_type);
+      const bosPriority = normalizeBosPriority(payload.priority);
+      const bosStatus = normalizeBosStatus(payload.status);
+      const bosDescription = buildBosDescription(payload, insertedRecord);
+
+      const bosPayload = {
+        title: payload.title,
+        description: bosDescription,
+        request_type: bosCategory,
+        category: bosCategory,
+        priority: bosPriority,
+        status: bosStatus,
+
+        association_name: "Sunset Condominium Association",
+        owner_name: payload.created_by || "SPM Admin",
+        owner_phone: "",
+        owner_email: "",
+        property_address: payload.routing_target || "Admin Operations",
+        best_contact_time: "Normal business hours",
+        source: payload.source_module || "Admin Operations Intake",
+
+        board_comment: bosDescription,
+        board_response: payload.board_review_required
+          ? "admin_record_requires_board_review"
+          : "admin_operational_record_created",
+        board_acknowledged: false,
+        board_reviewed: false,
+        board_last_interaction_at: new Date().toISOString(),
+      };
+
+      const { data: bosAction, error: bosError } = await supabaseAdmin
+        .from("bos_actions")
+        .insert(bosPayload)
+        .select()
+        .single();
+
+      if (bosError) {
+        console.error("BOS mirror insert failed:", bosError);
+
+        return res.status(500).json({
+          success: false,
+          record: insertedRecord,
+          message:
+            "Admin record was created, but the BOS Action Center mirror failed.",
+          bosError: bosError.message,
+        });
+      }
+
       return res.status(200).json({
         success: true,
         record: insertedRecord,
-        message: "Operational record submitted successfully.",
+        bosAction,
+        message: "Operational record submitted successfully and mirrored to BOS.",
       });
     } catch (error) {
       console.error("Admin operational records POST error:", error);
@@ -185,4 +287,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
