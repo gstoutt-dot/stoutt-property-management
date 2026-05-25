@@ -314,7 +314,13 @@ export default async function handler(req, res) {
     const { data: ledgerEntries, error: ledgerError } = await ledgerQuery;
 
     const safeLedgerEntries =
-      !ledgerError && Array.isArray(ledgerEntries) ? ledgerEntries : [];
+  !ledgerError && Array.isArray(ledgerEntries)
+    ? ledgerEntries.filter(
+        (entry) =>
+          String(entry.transaction_type || "").toLowerCase() !==
+          "invoice_line"
+      )
+    : [];
 
     const ledgerSummary = buildLedgerSummary(safeLedgerEntries);
 
