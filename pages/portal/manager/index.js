@@ -228,41 +228,54 @@ export default function ManagerDashboard() {
   }
 
   async function deleteItem(item) {
-    const confirmed = window.confirm(
-      `Delete "${item.title || 'this item'}"?`
+  const confirmed = window.confirm(
+    `Delete "${item.title || 'this item'}"?`
+  )
+
+  if (!confirmed) return
+
+  console.log('Deleting manager item:', item)
+
+  try {
+    const sourceTable =
+      item.manager_source_table ||
+      'bos_actions'
+
+    const sourceId =
+      item.manager_source_table === 'admin_operational_records'
+        ? item.original_id
+        : item.id
+
+    console.log('DELETE REQUEST:', sourceTable, sourceId)
+
+    const response = await fetch(
+      `/api/manager/delete-queue-item?sourceTable=${encodeURIComponent(
+        sourceTable
+      )}&id=${encodeURIComponent(sourceId)}`,
+      {
+        method: 'DELETE',
+      }
     )
 
-    if (!confirmed) return
+    const result = await response.json()
 
-    console.log("Deleting manager item:", item)
+    console.log('DELETE RESPONSE:', result)
 
-    try {
-      if (item.manager_source_table === 'admin_operational_records') {
-        const { error } = await supabase
-          .from('admin_operational_records')
-          .delete()
-          .eq('id', item.original_id)
-
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('bos_actions')
-          .delete()
-          .eq('id', item.id)
-
-        if (error) throw error
-      }
-
-      const updatedWorkflow = { ...workflow }
-      delete updatedWorkflow[item.id]
-      saveWorkflow(updatedWorkflow)
-
-      fetchData({ showLoading: false })
-    } catch (error) {
-      console.error('Delete failed:', error)
-      alert('Unable to delete this item.')
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Unable to delete this item.')
     }
+
+    const updatedWorkflow = { ...workflow }
+    delete updatedWorkflow[item.id]
+
+    saveWorkflow(updatedWorkflow)
+
+    fetchData({ showLoading: false })
+  } catch (error) {
+    console.error('Delete failed:', error)
+    alert(error.message || 'Unable to delete this item.')
   }
+}
 
   function updateWorkflowField(id, field, value) {
     const current = workflow[id] || {}
