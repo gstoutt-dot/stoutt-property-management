@@ -39,12 +39,12 @@ const boardPages = [
       "Board-facing notification center for routed updates, alerts, and association activity.",
   },
   {
-    title: "Financial Review",
-    status: "Live / Ready",
-    href: "/board/financial-review",
-    description:
-      "Board-level financial visibility, delinquency trends, owner balance review, and QuickBooks-connected financial awareness.",
-  },
+  title: "Management Accounting Reports",
+  status: "Live / Ready",
+  href: "/board/management-accounting-reports",
+  description:
+    "Executive accounting reports, QuickBooks management reports, monthly financial packets, reserve reporting, and board-ready accounting visibility.",
+},
 ];
 
 function statusStyle(status) {
