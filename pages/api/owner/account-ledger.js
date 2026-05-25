@@ -39,38 +39,43 @@ export default async function handler(req, res) {
 
     const { data, error } = await query;
 
-    if (error) {
-      throw error;
-    }
+if (error) {
+  throw error;
+}
 
-    const totalCharges = (data || []).reduce(
-      (sum, entry) => sum + Number(entry.charge_amount || 0),
-      0
-    );
+const filteredEntries = (data || []).filter(
+  (entry) =>
+    String(entry.transaction_type || "").toLowerCase() !== "invoice_line"
+);
 
-    const totalPayments = (data || []).reduce(
-      (sum, entry) => sum + Number(entry.payment_amount || 0),
-      0
-    );
+const totalCharges = filteredEntries.reduce(
+  (sum, entry) => sum + Number(entry.charge_amount || 0),
+  0
+);
 
-    const totalCredits = (data || []).reduce(
-      (sum, entry) => sum + Number(entry.credit_amount || 0),
-      0
-    );
+const totalPayments = filteredEntries.reduce(
+  (sum, entry) => sum + Number(entry.payment_amount || 0),
+  0
+);
+
+const totalCredits = filteredEntries.reduce(
+  (sum, entry) => sum + Number(entry.credit_amount || 0),
+  0
+);
 
     return res.status(200).json({
       success: true,
       associationId,
       ownerUserId,
       unitNumber,
-      entryCount: data?.length || 0,
-      summary: {
-        totalCharges,
-        totalPayments,
-        totalCredits,
-        netActivity: totalCharges - totalPayments - totalCredits,
-      },
-      entries: data || [],
+      entryCount: filteredEntries.length,
+summary: {
+  totalCharges,
+  totalPayments,
+  totalCredits,
+  netActivity: totalCharges - totalPayments - totalCredits,
+},
+entries: filteredEntries,
     });
   } catch (error) {
     console.error("Owner account ledger lookup failed:", error);
