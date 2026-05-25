@@ -2,38 +2,93 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const DEFAULT_ASSOCIATION_ID =
+  "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+
+const REPORT_TABS = [
+  {
+    key: "balance-sheet",
+    label: "Balance Sheet",
+    endpoint:
+      "/api/accounting/quickbooks/balance-sheet",
+  },
+  {
+    key: "profit-loss",
+    label: "Profit & Loss",
+    endpoint:
+      "/api/accounting/quickbooks/profit-and-loss",
+  },
+  {
+    key: "budget-vs-actual",
+    label: "Budget vs Actual",
+    endpoint:
+      "/api/accounting/quickbooks/budget-vs-actual",
+  },
+  {
+    key: "ar-aging",
+    label: "A/R Aging",
+    endpoint:
+      "/api/accounting/quickbooks/ar-aging",
+  },
+  {
+    key: "ap-aging",
+    label: "A/P Aging",
+    endpoint:
+      "/api/accounting/quickbooks/ap-aging",
+  },
+];
 
 export default function ManagementAccountingReports() {
   const [reports, setReports] = useState([]);
-  const [balanceSheetRows, setBalanceSheetRows] = useState([]);
-  const [balanceSheetMeta, setBalanceSheetMeta] = useState(null);
+
+  const [activeTab, setActiveTab] = useState("balance-sheet");
+
+  const [reportRows, setReportRows] = useState([]);
+  const [reportMeta, setReportMeta] = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [balanceSheetLoading, setBalanceSheetLoading] = useState(true);
+  const [reportLoading, setReportLoading] = useState(true);
+
   const [systemMessage, setSystemMessage] = useState("");
+
+  const activeReport = useMemo(
+    () =>
+      REPORT_TABS.find((tab) => tab.key === activeTab),
+    [activeTab]
+  );
 
   useEffect(() => {
     loadReports();
-    loadBalanceSheet();
   }, []);
+
+  useEffect(() => {
+    if (activeReport) {
+      loadReport(activeReport.endpoint);
+    }
+  }, [activeReport]);
 
   async function loadReports() {
     setLoading(true);
-    setSystemMessage("");
 
     const { data, error } = await supabase
       .from("financial_reports")
       .select("*")
-      .eq("association_id", DEFAULT_ASSOCIATION_ID)
-      .order("created_at", { ascending: false });
+      .eq(
+        "association_id",
+        DEFAULT_ASSOCIATION_ID
+      )
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (error) {
-      console.error("Unable to load management accounting reports:", error);
-      setReports([]);
+      console.error(error);
+
       setSystemMessage(
         "Management accounting reports table is not available yet."
       );
+
+      setReports([]);
     } else {
       setReports(data || []);
     }
@@ -41,76 +96,55 @@ export default function ManagementAccountingReports() {
     setLoading(false);
   }
 
-  async function loadBalanceSheet() {
-    setBalanceSheetLoading(true);
+  async function loadReport(endpoint) {
+    setReportLoading(true);
 
     try {
       const response = await fetch(
-        `/api/accounting/quickbooks/balance-sheet?association_id=${DEFAULT_ASSOCIATION_ID}&end_date=2026-04-30`
+        `${endpoint}?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
 
       const json = await response.json();
 
       if (!json.success) {
-        console.error("Balance sheet load failed:", json);
-        setBalanceSheetRows([]);
-        setBalanceSheetLoading(false);
+        console.error(json);
+
+        setReportRows([]);
+
+        setReportMeta(null);
+
+        setReportLoading(false);
+
         return;
       }
 
-      setBalanceSheetRows(Array.isArray(json.rows) ? json.rows : []);
+      setReportRows(
+        Array.isArray(json.rows)
+          ? json.rows
+          : []
+      );
 
-      setBalanceSheetMeta({
-        reportName: json.report_name || "Balance Sheet",
-        basis: json.report_basis || "Accrual",
-        startPeriod: json.start_period || null,
-        endPeriod: json.end_period || null,
-        currency: json.currency || "USD",
-        generatedAt: json.generated_at || null,
+      setReportMeta({
+        reportName:
+          json.report_name || "Report",
+        basis:
+          json.report_basis || "Accrual",
+        startPeriod:
+          json.start_period || null,
+        endPeriod:
+          json.end_period || null,
+        currency:
+          json.currency || "USD",
       });
     } catch (error) {
-      console.error("Unable to load balance sheet:", error);
-      setBalanceSheetRows([]);
+      console.error(error);
+
+      setReportRows([]);
+      setReportMeta(null);
     }
 
-    setBalanceSheetLoading(false);
+    setReportLoading(false);
   }
-
-  async function markReviewed(reportId) {
-    const { error } = await supabase
-      .from("financial_reports")
-      .update({
-        report_status: "reviewed",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", reportId);
-
-    if (error) {
-      console.error("Unable to mark report reviewed:", error);
-      setSystemMessage("Unable to mark report reviewed.");
-      return;
-    }
-
-    await loadReports();
-  }
-
-  const readyReports = useMemo(
-    () =>
-      reports.filter(
-        (report) =>
-          String(report.report_status || "").toLowerCase() !== "reviewed"
-      ),
-    [reports]
-  );
-
-  const reviewedReports = useMemo(
-    () =>
-      reports.filter(
-        (report) =>
-          String(report.report_status || "").toLowerCase() === "reviewed"
-      ),
-    [reports]
-  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -127,8 +161,13 @@ export default function ManagementAccountingReports() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Dashboard</Link>
-            <Link href="/board/financial-review">Financial Review</Link>
+            <Link href="/board">
+              Board Dashboard
+            </Link>
+
+            <Link href="/board/financial-review">
+              Financial Review
+            </Link>
           </nav>
         </div>
       </section>
@@ -136,24 +175,18 @@ export default function ManagementAccountingReports() {
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            QuickBooks Management Reports
+            QuickBooks Financial Reporting
           </p>
 
           <h2 className="mt-3 text-4xl font-semibold">
-            Monthly accounting reports prepared for board review.
+            Executive Board Accounting Visibility
           </h2>
 
           <p className="mt-4 max-w-3xl text-slate-300">
-            Board-safe financial reporting rendered inside SPM from
-            QuickBooks-connected accounting data without exposing board members
-            to the QuickBooks account.
+            Live HOA financial reporting rendered
+            directly from QuickBooks while keeping
+            board members inside the SPM platform.
           </p>
-        </div>
-
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          <Metric label="Reports Available" value={reports.length} />
-          <Metric label="Ready for Review" value={readyReports.length} />
-          <Metric label="Reviewed" value={reviewedReports.length} />
         </div>
 
         {systemMessage && (
@@ -163,136 +196,69 @@ export default function ManagementAccountingReports() {
         )}
 
         <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-2xl font-semibold text-emerald-100">
-                Live QuickBooks Balance Sheet
-              </h3>
+          <div className="flex flex-wrap gap-3">
+            {REPORT_TABS.map((tab) => {
+              const active =
+                tab.key === activeTab;
 
-              <p className="mt-2 text-sm text-emerald-100/70">
-                Board-level balance sheet rendered directly from QuickBooks.
-              </p>
-            </div>
-
-            <button
-              onClick={loadBalanceSheet}
-              className="rounded-2xl border border-emerald-300/30 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-100 hover:bg-emerald-400/20"
-            >
-              Refresh Balance Sheet
-            </button>
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() =>
+                    setActiveTab(tab.key)
+                  }
+                  className={`rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+                    active
+                      ? "bg-emerald-300 text-slate-950"
+                      : "border border-white/10 bg-slate-900/70 text-slate-200 hover:bg-slate-800"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
-          {balanceSheetMeta && (
-            <div className="mt-5 grid gap-4 rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5 text-sm text-emerald-100/80 md:grid-cols-4">
-              <Info label="Report" value={balanceSheetMeta.reportName} />
-              <Info label="Basis" value={balanceSheetMeta.basis} />
-              <Info label="Period End" value={balanceSheetMeta.endPeriod} />
-              <Info label="Currency" value={balanceSheetMeta.currency} />
+          {reportMeta && (
+            <div className="mt-6 grid gap-4 rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5 text-sm text-emerald-100/80 md:grid-cols-4">
+              <Info
+                label="Report"
+                value={reportMeta.reportName}
+              />
+
+              <Info
+                label="Basis"
+                value={reportMeta.basis}
+              />
+
+              <Info
+                label="Period End"
+                value={reportMeta.endPeriod}
+              />
+
+              <Info
+                label="Currency"
+                value={reportMeta.currency}
+              />
             </div>
           )}
 
           <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-slate-950/60 p-5">
-            {balanceSheetLoading ? (
-              <Empty message="Loading QuickBooks Balance Sheet..." />
-            ) : balanceSheetRows.length === 0 ? (
-              <Empty message="No balance sheet data is currently available." />
+            {reportLoading ? (
+              <Empty message="Loading QuickBooks report..." />
+            ) : reportRows.length === 0 ? (
+              <Empty message="No report data available." />
             ) : (
               <div className="space-y-2">
-                {balanceSheetRows.map((row, index) => (
-                  <BalanceSheetRow
-                    key={`${row.type}-${row.name}-${index}`}
-                    row={row}
-                  />
-                ))}
+                {reportRows.map(
+                  (row, index) => (
+                    <ReportRow
+                      key={`${row.type}-${row.name}-${index}`}
+                      row={row}
+                    />
+                  )
+                )}
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <h3 className="text-xl font-semibold">
-                Management Accounting Reports Queue
-              </h3>
-
-              <p className="mt-2 text-sm text-slate-400">
-                Stored board-ready accounting packets and monthly financial
-                report references.
-              </p>
-            </div>
-
-            <button
-              onClick={loadReports}
-              className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-200 hover:bg-amber-400/20"
-            >
-              Refresh Reports
-            </button>
-          </div>
-
-          <div className="mt-6 space-y-4">
-            {loading ? (
-              <Empty message="Loading management accounting reports..." />
-            ) : reports.length === 0 ? (
-              <Empty message="No stored management accounting reports are currently available." />
-            ) : (
-              reports.map((report) => (
-                <div
-                  key={report.id}
-                  className="rounded-2xl border border-white/10 bg-slate-900 p-5"
-                >
-                  <p className="text-xs uppercase tracking-[0.2em] text-amber-300">
-                    {formatStatus(report.report_status)} ·{" "}
-                    {report.report_period || "Current Period"}
-                  </p>
-
-                  <h4 className="mt-2 text-lg font-semibold">
-                    {report.report_name || "Management Accounting Report"}
-                  </h4>
-
-                  <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-3">
-                    <Info
-                      label="Report Type"
-                      value={report.report_type || "Management Report"}
-                    />
-                    <Info
-                      label="Generated"
-                      value={formatDate(report.generated_at)}
-                    />
-                    <Info
-                      label="Last Synced"
-                      value={formatDate(report.synced_at)}
-                    />
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    {report.quickbooks_report_url ? (
-                      <a
-                        href={report.quickbooks_report_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-2xl bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950"
-                      >
-                        Preview Report
-                      </a>
-                    ) : (
-                      <span className="rounded-2xl border border-white/10 px-5 py-3 text-sm text-slate-400">
-                        No external report link
-                      </span>
-                    )}
-
-                    {String(report.report_status || "").toLowerCase() !==
-                      "reviewed" && (
-                      <button
-                        onClick={() => markReviewed(report.id)}
-                        className="rounded-2xl border border-emerald-300/30 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/20"
-                      >
-                        Mark Reviewed
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
             )}
           </div>
         </div>
@@ -301,43 +267,54 @@ export default function ManagementAccountingReports() {
   );
 }
 
-function BalanceSheetRow({ row }) {
+function ReportRow({ row }) {
   const depth = Number(row?.depth || 0);
+
   const paddingLeft = `${depth * 18}px`;
-  const rowType = String(row?.type || "row").toLowerCase();
+
+  const rowType = String(
+    row?.type || "row"
+  ).toLowerCase();
 
   const isHeader = rowType === "header";
+
   const isSummary = rowType === "summary";
 
   let rowClass =
     "border border-white/5 bg-slate-900/70 text-slate-200";
 
   if (isHeader) {
-    rowClass = "bg-emerald-400/10 font-bold text-emerald-100";
+    rowClass =
+      "bg-emerald-400/10 font-bold text-emerald-100";
   }
 
   if (isSummary) {
-    rowClass = "bg-amber-400/10 font-semibold text-amber-200";
+    rowClass =
+      "bg-amber-400/10 font-semibold text-amber-200";
   }
 
   return (
     <div
       className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${rowClass}`}
     >
-      <div style={{ paddingLeft }}>{row?.name || ""}</div>
-
-      <div className="font-mono">
-        {formatReportAmount(row?.amount)}
+      <div style={{ paddingLeft }}>
+        {row?.name || ""}
       </div>
-    </div>
-  );
-}
 
-function Metric({ label, value }) {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-      <p className="text-sm text-slate-400">{label}</p>
-      <p className="mt-3 text-4xl font-semibold text-amber-300">{value}</p>
+      <div className="flex gap-8 font-mono text-right">
+        {Array.isArray(row?.columns) &&
+        row.columns.length > 0 ? (
+          row.columns.map(
+            (column, index) => (
+              <div key={index}>
+                {formatValue(column)}
+              </div>
+            )
+          )
+        ) : (
+          <div />
+        )}
+      </div>
     </div>
   );
 }
@@ -345,8 +322,13 @@ function Metric({ label, value }) {
 function Info({ label, value }) {
   return (
     <div>
-      <p className="text-slate-500">{label}</p>
-      <p className="mt-1 font-semibold text-white">{value || "Pending"}</p>
+      <p className="text-slate-500">
+        {label}
+      </p>
+
+      <p className="mt-1 font-semibold text-white">
+        {value || "Pending"}
+      </p>
     </div>
   );
 }
@@ -359,33 +341,28 @@ function Empty({ message }) {
   );
 }
 
-function formatStatus(value) {
-  return String(value || "Ready For Board Review")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function formatDate(value) {
-  if (!value) return "Pending";
-
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return "Pending";
+function formatValue(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "";
   }
-}
 
-function formatReportAmount(value) {
-  if (value === null || value === undefined || value === "") return "";
+  const numeric = Number(
+    String(value).replace(/,/g, "")
+  );
 
-  const amount = Number(value);
-
-  if (!Number.isFinite(amount)) {
+  if (!Number.isFinite(numeric)) {
     return String(value);
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
+  return new Intl.NumberFormat(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+    }
+  ).format(numeric);
 }
