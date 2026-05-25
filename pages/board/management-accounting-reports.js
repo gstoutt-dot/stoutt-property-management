@@ -5,51 +5,20 @@ import { supabase } from "../../lib/supabaseClient";
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function ManagementAccountingReports() {
-const [reports, setReports] = useState([]);
-const [balanceSheet, setBalanceSheet] = useState([]);
-const [balanceSheetMeta, setBalanceSheetMeta] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [balanceSheetRows, setBalanceSheetRows] = useState([]);
+  const [balanceSheetMeta, setBalanceSheetMeta] = useState(null);
 
-const [loading, setLoading] = useState(true);
-const [balanceSheetLoading, setBalanceSheetLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [balanceSheetLoading, setBalanceSheetLoading] = useState(true);
+  const [systemMessage, setSystemMessage] = useState("");
 
-const [systemMessage, setSystemMessage] = useState("");
   useEffect(() => {
     loadReports();
     loadBalanceSheet();
   }, []);
 
   async function loadReports() {
-  async function loadBalanceSheet() {
-  setBalanceSheetLoading(true);
-
-  try {
-    const response = await fetch(
-      `/api/accounting/quickbooks/balance-sheet?association_id=${DEFAULT_ASSOCIATION_ID}&end_date=2026-04-30`
-    );
-
-    const json = await response.json();
-
-    if (!json.success) {
-      console.error("Balance sheet load failed:", json);
-      setBalanceSheet([]);
-      return;
-    }
-
-    setBalanceSheet(json.rows || []);
-
-    setBalanceSheetMeta({
-      report_name: json.report_name,
-      basis: json.report_basis,
-      end_period: json.end_period,
-      currency: json.currency,
-    });
-  } catch (error) {
-    console.error("Unable to load balance sheet:", error);
-    setBalanceSheet([]);
-  }
-
-  setBalanceSheetLoading(false);
-}
     setLoading(true);
     setSystemMessage("");
 
@@ -70,6 +39,41 @@ const [systemMessage, setSystemMessage] = useState("");
     }
 
     setLoading(false);
+  }
+
+  async function loadBalanceSheet() {
+    setBalanceSheetLoading(true);
+
+    try {
+      const response = await fetch(
+        `/api/accounting/quickbooks/balance-sheet?association_id=${DEFAULT_ASSOCIATION_ID}&end_date=2026-04-30`
+      );
+
+      const json = await response.json();
+
+      if (!json.success) {
+        console.error("Balance sheet load failed:", json);
+        setBalanceSheetRows([]);
+        setBalanceSheetLoading(false);
+        return;
+      }
+
+      setBalanceSheetRows(Array.isArray(json.rows) ? json.rows : []);
+
+      setBalanceSheetMeta({
+        reportName: json.report_name || "Balance Sheet",
+        basis: json.report_basis || "Accrual",
+        startPeriod: json.start_period || null,
+        endPeriod: json.end_period || null,
+        currency: json.currency || "USD",
+        generatedAt: json.generated_at || null,
+      });
+    } catch (error) {
+      console.error("Unable to load balance sheet:", error);
+      setBalanceSheetRows([]);
+    }
+
+    setBalanceSheetLoading(false);
   }
 
   async function markReviewed(reportId) {
@@ -140,9 +144,9 @@ const [systemMessage, setSystemMessage] = useState("");
           </h2>
 
           <p className="mt-4 max-w-3xl text-slate-300">
-            This page is reserved for board-level accounting packets, monthly
-            financial reports, QuickBooks management reports, treasurer review,
-            reserve reporting, and future audit-ready financial documents.
+            Board-safe financial reporting rendered inside SPM from
+            QuickBooks-connected accounting data without exposing board members
+            to the QuickBooks account.
           </p>
         </div>
 
@@ -158,6 +162,53 @@ const [systemMessage, setSystemMessage] = useState("");
           </div>
         )}
 
+        <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-2xl font-semibold text-emerald-100">
+                Live QuickBooks Balance Sheet
+              </h3>
+
+              <p className="mt-2 text-sm text-emerald-100/70">
+                Board-level balance sheet rendered directly from QuickBooks.
+              </p>
+            </div>
+
+            <button
+              onClick={loadBalanceSheet}
+              className="rounded-2xl border border-emerald-300/30 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-100 hover:bg-emerald-400/20"
+            >
+              Refresh Balance Sheet
+            </button>
+          </div>
+
+          {balanceSheetMeta && (
+            <div className="mt-5 grid gap-4 rounded-2xl border border-emerald-300/20 bg-slate-950/50 p-5 text-sm text-emerald-100/80 md:grid-cols-4">
+              <Info label="Report" value={balanceSheetMeta.reportName} />
+              <Info label="Basis" value={balanceSheetMeta.basis} />
+              <Info label="Period End" value={balanceSheetMeta.endPeriod} />
+              <Info label="Currency" value={balanceSheetMeta.currency} />
+            </div>
+          )}
+
+          <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-slate-950/60 p-5">
+            {balanceSheetLoading ? (
+              <Empty message="Loading QuickBooks Balance Sheet..." />
+            ) : balanceSheetRows.length === 0 ? (
+              <Empty message="No balance sheet data is currently available." />
+            ) : (
+              <div className="space-y-2">
+                {balanceSheetRows.map((row, index) => (
+                  <BalanceSheetRow
+                    key={`${row.type}-${row.name}-${index}`}
+                    row={row}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
@@ -166,8 +217,8 @@ const [systemMessage, setSystemMessage] = useState("");
               </h3>
 
               <p className="mt-2 text-sm text-slate-400">
-                Board-ready accounting reports connected to the Sunset
-                Condominium Association financial review process.
+                Stored board-ready accounting packets and monthly financial
+                report references.
               </p>
             </div>
 
@@ -183,7 +234,7 @@ const [systemMessage, setSystemMessage] = useState("");
             {loading ? (
               <Empty message="Loading management accounting reports..." />
             ) : reports.length === 0 ? (
-              <Empty message="No management accounting reports are currently available." />
+              <Empty message="No stored management accounting reports are currently available." />
             ) : (
               reports.map((report) => (
                 <div
@@ -200,9 +251,18 @@ const [systemMessage, setSystemMessage] = useState("");
                   </h4>
 
                   <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-3">
-                    <Info label="Report Type" value={report.report_type || "Management Report"} />
-                    <Info label="Generated" value={formatDate(report.generated_at)} />
-                    <Info label="Last Synced" value={formatDate(report.synced_at)} />
+                    <Info
+                      label="Report Type"
+                      value={report.report_type || "Management Report"}
+                    />
+                    <Info
+                      label="Generated"
+                      value={formatDate(report.generated_at)}
+                    />
+                    <Info
+                      label="Last Synced"
+                      value={formatDate(report.synced_at)}
+                    />
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-3">
@@ -216,14 +276,9 @@ const [systemMessage, setSystemMessage] = useState("");
                         Preview Report
                       </a>
                     ) : (
-                      <a
-                        href="https://qbo.intuit.com/app/managementreports"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-2xl bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950"
-                      >
-                        Open QuickBooks Reports
-                      </a>
+                      <span className="rounded-2xl border border-white/10 px-5 py-3 text-sm text-slate-400">
+                        No external report link
+                      </span>
                     )}
 
                     {String(report.report_status || "").toLowerCase() !==
@@ -241,75 +296,40 @@ const [systemMessage, setSystemMessage] = useState("");
             )}
           </div>
         </div>
-      <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
-  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <div>
-      <h3 className="text-2xl font-semibold text-emerald-100">
-        Live QuickBooks Balance Sheet
-      </h3>
-
-      <p className="mt-2 text-sm text-emerald-100/70">
-        Board-level accounting visibility rendered directly from QuickBooks.
-      </p>
-    </div>
-
-    {balanceSheetMeta && (
-      <div className="text-sm text-emerald-100/70">
-        <p>
-          Basis: {balanceSheetMeta.basis}
-        </p>
-
-        <p>
-          Through: {balanceSheetMeta.end_period}
-        </p>
-      </div>
-    )}
-  </div>
-
-  <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-slate-950/60 p-5">
-    {balanceSheetLoading ? (
-      <p className="text-sm text-slate-400">
-        Loading QuickBooks Balance Sheet...
-      </p>
-    ) : balanceSheet.length === 0 ? (
-      <p className="text-sm text-slate-400">
-        No balance sheet data available.
-      </p>
-    ) : (
-      <div className="space-y-2">
-        {balanceSheet.map((row, index) => {
-          const paddingLeft = `${row.depth * 20}px`;
-
-          const isHeader = row.type === "header";
-          const isSummary = row.type === "summary";
-
-          return (
-            <div
-              key={`${row.name}-${index}`}
-              className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${
-                isHeader
-                  ? "bg-emerald-400/10 font-bold text-emerald-100"
-                  : isSummary
-                  ? "bg-amber-400/10 font-semibold text-amber-200"
-                  : "border border-white/5 bg-slate-900/70 text-slate-200"
-              }`}
-            >
-              <div style={{ paddingLeft }}>
-                {row.name}
-              </div>
-
-              <div className="font-mono">
-                {row.amount || ""}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-</div>
       </section>
     </main>
+  );
+}
+
+function BalanceSheetRow({ row }) {
+  const depth = Number(row?.depth || 0);
+  const paddingLeft = `${depth * 18}px`;
+  const rowType = String(row?.type || "row").toLowerCase();
+
+  const isHeader = rowType === "header";
+  const isSummary = rowType === "summary";
+
+  let rowClass =
+    "border border-white/5 bg-slate-900/70 text-slate-200";
+
+  if (isHeader) {
+    rowClass = "bg-emerald-400/10 font-bold text-emerald-100";
+  }
+
+  if (isSummary) {
+    rowClass = "bg-amber-400/10 font-semibold text-amber-200";
+  }
+
+  return (
+    <div
+      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${rowClass}`}
+    >
+      <div style={{ paddingLeft }}>{row?.name || ""}</div>
+
+      <div className="font-mono">
+        {formatReportAmount(row?.amount)}
+      </div>
+    </div>
   );
 }
 
@@ -326,7 +346,7 @@ function Info({ label, value }) {
   return (
     <div>
       <p className="text-slate-500">{label}</p>
-      <p className="mt-1 font-semibold text-white">{value}</p>
+      <p className="mt-1 font-semibold text-white">{value || "Pending"}</p>
     </div>
   );
 }
@@ -353,4 +373,19 @@ function formatDate(value) {
   } catch {
     return "Pending";
   }
+}
+
+function formatReportAmount(value) {
+  if (value === null || value === undefined || value === "") return "";
+
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return String(value);
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
 }
