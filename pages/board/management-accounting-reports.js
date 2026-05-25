@@ -134,7 +134,9 @@ export default function ManagementAccountingReports() {
         endPeriod:
           json.end_period || null,
         currency:
-          json.currency || "USD",
+  json.currency || "USD",
+columns:
+  Array.isArray(json.columns) ? json.columns : [],
       });
     } catch (error) {
       console.error(error);
@@ -243,78 +245,80 @@ export default function ManagementAccountingReports() {
             </div>
           )}
 
-          <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-slate-950/60 p-5">
-            {reportLoading ? (
-              <Empty message="Loading QuickBooks report..." />
-            ) : reportRows.length === 0 ? (
-              <Empty message="No report data available." />
-            ) : (
-              <div className="space-y-2">
-                {reportRows.map(
-                  (row, index) => (
-                    <ReportRow
-                      key={`${row.type}-${row.name}-${index}`}
-                      row={row}
-                    />
-                  )
-                )}
-              </div>
-            )}
-          </div>
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-emerald-300/20 bg-slate-950/60 p-5">
+  {reportLoading ? (
+    <Empty message="Loading QuickBooks report..." />
+  ) : reportRows.length === 0 ? (
+    <Empty message="No report data available." />
+  ) : (
+    <div className="space-y-2">
+      {Array.isArray(reportMeta?.columns) && reportMeta.columns.length > 0 && (
+        <div
+          className="grid min-w-[980px] items-center gap-4 rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400"
+          style={{
+            gridTemplateColumns: `minmax(360px, 1.8fr) repeat(${reportMeta.columns.length}, minmax(120px, 1fr))`,
+          }}
+        >
+          <div>Account / Category</div>
+
+          {reportMeta.columns.map((column, index) => (
+            <div key={index} className="text-right">
+              {column.title || `Column ${index + 1}`}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {reportRows.map((row, index) => (
+        <ReportRow
+          key={`${row.type}-${row.name}-${index}`}
+          row={row}
+          maxColumns={Math.max(reportMeta?.columns?.length || 1, 1)}
+        />
+      ))}
+    </div>
+  )}
+</div>
         </div>
       </section>
     </main>
   );
 }
 
-function ReportRow({ row }) {
+function ReportRow({ row, maxColumns }) {
   const depth = Number(row?.depth || 0);
-
   const paddingLeft = `${depth * 18}px`;
 
-  const rowType = String(
-    row?.type || "row"
-  ).toLowerCase();
-
+  const rowType = String(row?.type || "row").toLowerCase();
   const isHeader = rowType === "header";
-
   const isSummary = rowType === "summary";
 
-  let rowClass =
-    "border border-white/5 bg-slate-900/70 text-slate-200";
+  let rowClass = "border border-white/5 bg-slate-900/70 text-slate-200";
 
   if (isHeader) {
-    rowClass =
-      "bg-emerald-400/10 font-bold text-emerald-100";
+    rowClass = "bg-emerald-400/10 font-bold text-emerald-100";
   }
 
   if (isSummary) {
-    rowClass =
-      "bg-amber-400/10 font-semibold text-amber-200";
+    rowClass = "bg-amber-400/10 font-semibold text-amber-200";
   }
+
+  const columns = Array.isArray(row?.columns) ? row.columns : [];
 
   return (
     <div
-      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${rowClass}`}
+      className={`grid min-w-[980px] items-center gap-4 rounded-xl px-4 py-3 text-sm ${rowClass}`}
+      style={{
+        gridTemplateColumns: `minmax(360px, 1.8fr) repeat(${maxColumns}, minmax(120px, 1fr))`,
+      }}
     >
-      <div style={{ paddingLeft }}>
-        {row?.name || ""}
-      </div>
+      <div style={{ paddingLeft }}>{row?.name || ""}</div>
 
-      <div className="flex gap-8 font-mono text-right">
-        {Array.isArray(row?.columns) &&
-        row.columns.length > 0 ? (
-          row.columns.map(
-            (column, index) => (
-              <div key={index}>
-                {formatValue(column)}
-              </div>
-            )
-          )
-        ) : (
-          <div />
-        )}
-      </div>
+      {Array.from({ length: maxColumns }).map((_, index) => (
+        <div key={index} className="text-right font-mono">
+          {formatValue(columns[index])}
+        </div>
+      ))}
     </div>
   );
 }
