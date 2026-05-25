@@ -369,6 +369,12 @@ export default function ManagerDashboard() {
         },
       })
 
+      console.log(
+  'DELETE REQUEST:',
+  sourceTable,
+  sourceId
+)
+
       const response = await fetch('/api/send-vendor-dispatch', {
         method: 'POST',
         headers: {
