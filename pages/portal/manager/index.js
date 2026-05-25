@@ -234,6 +234,8 @@ export default function ManagerDashboard() {
 
     if (!confirmed) return
 
+    console.log("Deleting manager item:", item)
+
     try {
       if (item.manager_source_table === 'admin_operational_records') {
         const { error } = await supabase
