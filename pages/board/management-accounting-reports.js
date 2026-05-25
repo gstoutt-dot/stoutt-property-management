@@ -5,15 +5,51 @@ import { supabase } from "../../lib/supabaseClient";
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function ManagementAccountingReports() {
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [systemMessage, setSystemMessage] = useState("");
+const [reports, setReports] = useState([]);
+const [balanceSheet, setBalanceSheet] = useState([]);
+const [balanceSheetMeta, setBalanceSheetMeta] = useState(null);
 
+const [loading, setLoading] = useState(true);
+const [balanceSheetLoading, setBalanceSheetLoading] = useState(true);
+
+const [systemMessage, setSystemMessage] = useState("");
   useEffect(() => {
     loadReports();
+    loadBalanceSheet();
   }, []);
 
   async function loadReports() {
+  async function loadBalanceSheet() {
+  setBalanceSheetLoading(true);
+
+  try {
+    const response = await fetch(
+      `/api/accounting/quickbooks/balance-sheet?association_id=${DEFAULT_ASSOCIATION_ID}&end_date=2026-04-30`
+    );
+
+    const json = await response.json();
+
+    if (!json.success) {
+      console.error("Balance sheet load failed:", json);
+      setBalanceSheet([]);
+      return;
+    }
+
+    setBalanceSheet(json.rows || []);
+
+    setBalanceSheetMeta({
+      report_name: json.report_name,
+      basis: json.report_basis,
+      end_period: json.end_period,
+      currency: json.currency,
+    });
+  } catch (error) {
+    console.error("Unable to load balance sheet:", error);
+    setBalanceSheet([]);
+  }
+
+  setBalanceSheetLoading(false);
+}
     setLoading(true);
     setSystemMessage("");
 
@@ -205,6 +241,73 @@ export default function ManagementAccountingReports() {
             )}
           </div>
         </div>
+      <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
+  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h3 className="text-2xl font-semibold text-emerald-100">
+        Live QuickBooks Balance Sheet
+      </h3>
+
+      <p className="mt-2 text-sm text-emerald-100/70">
+        Board-level accounting visibility rendered directly from QuickBooks.
+      </p>
+    </div>
+
+    {balanceSheetMeta && (
+      <div className="text-sm text-emerald-100/70">
+        <p>
+          Basis: {balanceSheetMeta.basis}
+        </p>
+
+        <p>
+          Through: {balanceSheetMeta.end_period}
+        </p>
+      </div>
+    )}
+  </div>
+
+  <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-slate-950/60 p-5">
+    {balanceSheetLoading ? (
+      <p className="text-sm text-slate-400">
+        Loading QuickBooks Balance Sheet...
+      </p>
+    ) : balanceSheet.length === 0 ? (
+      <p className="text-sm text-slate-400">
+        No balance sheet data available.
+      </p>
+    ) : (
+      <div className="space-y-2">
+        {balanceSheet.map((row, index) => {
+          const paddingLeft = `${row.depth * 20}px`;
+
+          const isHeader = row.type === "header";
+          const isSummary = row.type === "summary";
+
+          return (
+            <div
+              key={`${row.name}-${index}`}
+              className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${
+                isHeader
+                  ? "bg-emerald-400/10 font-bold text-emerald-100"
+                  : isSummary
+                  ? "bg-amber-400/10 font-semibold text-amber-200"
+                  : "border border-white/5 bg-slate-900/70 text-slate-200"
+              }`}
+            >
+              <div style={{ paddingLeft }}>
+                {row.name}
+              </div>
+
+              <div className="font-mono">
+                {row.amount || ""}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</div>
       </section>
     </main>
   );
