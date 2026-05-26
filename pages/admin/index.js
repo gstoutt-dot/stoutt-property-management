@@ -85,12 +85,14 @@ const sections = [
     description:
       "Planning tools for budget preparation, financial review, capital projects, and vendor performance oversight.",
     items: [
-      { title: "Financial Review", href: "/board/financial-review" },
-      { title: "Budget Planning", href: "/board/budget-planning" },
-      { title: "Capital Projects", href: "/board/capital-projects" },
-      { title: "Vendor Performance", href: "/board/vendor-performance" },
-      { title: "Vendors", href: "/board/vendors" },
-    ],
+  { title: "Financial Review", href: "/board/financial-review" },
+  { title: "Management Accounting Reports", href: "/board/management-accounting-reports" },
+  { title: "Monthly Accounting Reports", href: "/admin/monthly-accounting-reports" },
+  { title: "Budget Planning", href: "/board/budget-planning" },
+  { title: "Capital Projects", href: "/board/capital-projects" },
+  { title: "Vendor Performance", href: "/board/vendor-performance" },
+  { title: "Vendors", href: "/board/vendors" },
+],
   },
   {
     title: "Legal, Risk & Compliance",
