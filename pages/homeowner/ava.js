@@ -227,11 +227,35 @@ async function loadAvaFallbackContext(profile) {
   }
 
   async function getAccountingResponse() {
-    if (!ownerProfile?.association_id) {
-      return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
-    }
+  if (!ownerProfile?.association_id) {
+    return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
+  }
 
-    async function getDocumentResponse(promptText) {
+  const response = await fetch(
+    `/api/accounting/owner-balance?associationId=${encodeURIComponent(
+      ownerProfile.association_id || ""
+    )}&ownerUserId=${encodeURIComponent(
+      ownerProfile.id || ""
+    )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.error || "Unable to load accounting details.");
+  }
+
+  if (data?.balance) {
+    setBalance(data.balance);
+  }
+
+  return (
+    data?.ava_accounting_response ||
+    `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`
+  );
+}
+
+async function getDocumentResponse(promptText) {
   if (!ownerProfile?.association_id) {
     return "I could not load the homeowner document system right now.";
   }
@@ -262,6 +286,7 @@ async function loadAvaFallbackContext(profile) {
       ${doc.document_name || ""}
       ${doc.category || ""}
       ${doc.description || ""}
+      ${doc.document_type || ""}
     `.toLowerCase();
 
     return promptText
@@ -273,35 +298,11 @@ async function loadAvaFallbackContext(profile) {
   if (matchingDocument) {
     return `I found a matching document called "${
       matchingDocument.title || matchingDocument.document_name
-    }" in your homeowner records.`;
+    }" in your homeowner records. You can open it from the Documents section.`;
   }
 
   return `I found ${documents.length} homeowner document(s) available in your document center.`;
 }
-
-    const response = await fetch(
-      `/api/accounting/owner-balance?associationId=${encodeURIComponent(
-        ownerProfile.association_id || ""
-      )}&ownerUserId=${encodeURIComponent(
-        ownerProfile.id || ""
-      )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.success) {
-      throw new Error(data?.error || "Unable to load accounting details.");
-    }
-
-    if (data?.balance) {
-      setBalance(data.balance);
-    }
-
-    return (
-      data?.ava_accounting_response ||
-      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`
-    );
-  }
 
   async function handleAskAva() {
     const rawPrompt = String(selectedPrompt || "").trim();
