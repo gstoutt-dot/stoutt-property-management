@@ -528,7 +528,7 @@ const [loadError, setLoadError] = useState("");
       </div>
 
       <Link
-        href="/portal/owner/messages"
+        href="/homeowner/messages"
         className="mt-5 inline-block text-sm font-semibold text-yellow-300"
       >
         View Messages →
@@ -556,7 +556,7 @@ const [loadError, setLoadError] = useState("");
       </div>
 
       <Link
-        href="/portal/owner/documents"
+        href="/homeowner/documents"
         className="mt-5 inline-block rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-yellow-400/60 hover:text-yellow-300"
       >
         Open Documents
