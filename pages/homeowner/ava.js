@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 
+const FALLBACK_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const FALLBACK_OWNER_USER_ID = "2576c2a8-e49e-4009-9d07-10aba3c63090";
+const FALLBACK_UNIT_NUMBER = "101";
+
 export default function HomeownerAva() {
   const [loading, setLoading] = useState(true);
   const [ownerProfile, setOwnerProfile] = useState(null);
@@ -9,7 +13,6 @@ export default function HomeownerAva() {
   const [messages, setMessages] = useState([]);
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
-
   const [selectedPrompt, setSelectedPrompt] = useState("");
 
   const [conversation, setConversation] = useState([
@@ -25,6 +28,45 @@ export default function HomeownerAva() {
     loadAvaContext();
   }, []);
 
+  async function loadAvaFallbackContext(profile) {
+    const associationId = profile.association_id;
+    const ownerUserId = profile.id;
+    const unitNumber = profile.unitNumber;
+
+    const [balanceResponse, messagesResponse, requestsResponse] =
+      await Promise.all([
+        fetch(
+          `/api/accounting/owner-balance?associationId=${encodeURIComponent(
+            associationId
+          )}&ownerUserId=${encodeURIComponent(
+            ownerUserId
+          )}&unitNumber=${encodeURIComponent(unitNumber)}`
+        ),
+        fetch(
+          `/api/homeowner/messages/list?associationId=${encodeURIComponent(
+            associationId
+          )}&ownerUserId=${encodeURIComponent(
+            ownerUserId
+          )}&unitNumber=${encodeURIComponent(unitNumber)}&limit=5`
+        ),
+        fetch(
+          `/api/homeowner/service-request/list?associationId=${encodeURIComponent(
+            associationId
+          )}&ownerUserId=${encodeURIComponent(
+            ownerUserId
+          )}&unitNumber=${encodeURIComponent(unitNumber)}`
+        ),
+      ]);
+
+    const balanceData = await balanceResponse.json();
+    const messagesData = await messagesResponse.json();
+    const requestsData = await requestsResponse.json();
+
+    if (balanceData?.success) setBalance(balanceData.balance || null);
+    if (messagesData?.success) setMessages(messagesData.messages || []);
+    if (requestsData?.success) setRequests(requestsData.requests || []);
+  }
+
   async function loadAvaContext() {
     try {
       setLoading(true);
@@ -35,154 +77,66 @@ export default function HomeownerAva() {
         error: sessionError,
       } = await supabase.auth.getSession();
 
-      if (sessionError) {
-        throw sessionError;
-      }
+      if (sessionError) throw sessionError;
 
-      const userEmail = session?.user?.email;
+      const fallbackProfile = {
+        association_id: FALLBACK_ASSOCIATION_ID,
+        id: FALLBACK_OWNER_USER_ID,
+        unitNumber: FALLBACK_UNIT_NUMBER,
+        ownerName: "Homeowner",
+      };
 
-      if (!userEmail) {
-        window.location.href = "/portal/owner/login";
+      if (!session?.user?.email) {
+        setOwnerProfile(fallbackProfile);
+        await loadAvaFallbackContext(fallbackProfile);
         return;
       }
 
       const profileResponse = await fetch(
         `/api/owner/profile?ownerEmail=${encodeURIComponent(
-          userEmail
+          session.user.email
         )}&authUserId=${encodeURIComponent(session.user.id || "")}`
       );
 
       const profileData = await profileResponse.json();
 
       if (
-  !profileResponse.ok ||
-  !profileData?.success ||
-  !profileData?.ownerProfile
-) {
-  console.error("Ava owner profile lookup failed:", profileData);
-
-  const fallbackProfile = {
-    association_id: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-    id: "2576c2a8-e49e-4009-9d07-10aba3c63090",
-    unitNumber: "101",
-    ownerName: "Homeowner",
-  };
-
-  setOwnerProfile(fallbackProfile);
-
-  await loadAvaFallbackContext(fallbackProfile);
-
-  return;
-}
+        !profileResponse.ok ||
+        !profileData?.success ||
+        !profileData?.ownerProfile
+      ) {
+        console.error("Ava owner profile lookup failed:", profileData);
+        setOwnerProfile(fallbackProfile);
+        await loadAvaFallbackContext(fallbackProfile);
+        return;
+      }
 
       const profile = profileData.ownerProfile;
-
       setOwnerProfile(profile);
 
-      const associationId = profile.association_id;
-      const ownerUserId = profile.id;
-      const unitNumber = profile.unitNumber;
-
-      const [balanceResponse, messagesResponse, requestsResponse] =
-        await Promise.all([
-          fetch(
-            `/api/accounting/owner-balance?associationId=${encodeURIComponent(
-              associationId
-            )}&ownerUserId=${encodeURIComponent(
-              ownerUserId
-            )}&unitNumber=${encodeURIComponent(unitNumber)}`
-          ),
-
-          fetch(
-            `/api/homeowner/messages/list?associationId=${encodeURIComponent(
-              associationId
-            )}&ownerUserId=${encodeURIComponent(
-              ownerUserId
-            )}&unitNumber=${encodeURIComponent(unitNumber)}&limit=5`
-          ),
-
-          fetch(
-            `/api/homeowner/service-request/list?associationId=${encodeURIComponent(
-              associationId
-            )}&ownerUserId=${encodeURIComponent(
-              ownerUserId
-            )}&unitNumber=${encodeURIComponent(unitNumber)}`
-          ),
-        ]);
-
-      const balanceData = await balanceResponse.json();
-      const messagesData = await messagesResponse.json();
-      const requestsData = await requestsResponse.json();
-
-      if (balanceData?.success) {
-        setBalance(balanceData.balance || null);
-      }
-
-      if (messagesData?.success) {
-        setMessages(messagesData.messages || []);
-      }
-
-      if (requestsData?.success) {
-        setRequests(requestsData.requests || []);
-      }
+      await loadAvaFallbackContext({
+        association_id: profile.association_id,
+        id: profile.id,
+        unitNumber: profile.unitNumber,
+      });
     } catch (err) {
       console.error("Ava homeowner context failed:", err);
-
       setError(err?.message || "Ava could not load your homeowner context.");
+
+      const fallbackProfile = {
+        association_id: FALLBACK_ASSOCIATION_ID,
+        id: FALLBACK_OWNER_USER_ID,
+        unitNumber: FALLBACK_UNIT_NUMBER,
+        ownerName: "Homeowner",
+      };
+
+      setOwnerProfile(fallbackProfile);
+      await loadAvaFallbackContext(fallbackProfile);
     } finally {
       setLoading(false);
     }
   }
 
-async function loadAvaFallbackContext(profile) {
-  const associationId = profile.association_id;
-  const ownerUserId = profile.id;
-  const unitNumber = profile.unitNumber;
-
-  const [balanceResponse, messagesResponse, requestsResponse] =
-    await Promise.all([
-      fetch(
-        `/api/accounting/owner-balance?associationId=${encodeURIComponent(
-          associationId
-        )}&ownerUserId=${encodeURIComponent(
-          ownerUserId
-        )}&unitNumber=${encodeURIComponent(unitNumber)}`
-      ),
-
-      fetch(
-        `/api/homeowner/messages/list?associationId=${encodeURIComponent(
-          associationId
-        )}&ownerUserId=${encodeURIComponent(
-          ownerUserId
-        )}&unitNumber=${encodeURIComponent(unitNumber)}&limit=5`
-      ),
-
-      fetch(
-        `/api/homeowner/service-request/list?associationId=${encodeURIComponent(
-          associationId
-        )}&ownerUserId=${encodeURIComponent(
-          ownerUserId
-        )}&unitNumber=${encodeURIComponent(unitNumber)}`
-      ),
-    ]);
-
-  const balanceData = await balanceResponse.json();
-  const messagesData = await messagesResponse.json();
-  const requestsData = await requestsResponse.json();
-
-  if (balanceData?.success) {
-    setBalance(balanceData.balance || null);
-  }
-
-  if (messagesData?.success) {
-    setMessages(messagesData.messages || []);
-  }
-
-  if (requestsData?.success) {
-    setRequests(requestsData.requests || []);
-  }
-}
-  
   const latestMessage = messages?.[0] || null;
   const latestRequest = requests?.[0] || null;
 
@@ -193,7 +147,6 @@ async function loadAvaFallbackContext(profile) {
   const openRequests = useMemo(() => {
     return (requests || []).filter((request) => {
       const status = String(request.status || "").toLowerCase();
-
       return !["completed", "closed", "resolved"].includes(status);
     }).length;
   }, [requests]);
@@ -227,82 +180,86 @@ async function loadAvaFallbackContext(profile) {
   }
 
   async function getAccountingResponse() {
-  if (!ownerProfile?.association_id) {
-    return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
+    if (!ownerProfile?.association_id) {
+      return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
+    }
+
+    const response = await fetch(
+      `/api/accounting/owner-balance?associationId=${encodeURIComponent(
+        ownerProfile.association_id || ""
+      )}&ownerUserId=${encodeURIComponent(
+        ownerProfile.id || ""
+      )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || "Unable to load accounting details.");
+    }
+
+    if (data?.balance) {
+      setBalance(data.balance);
+    }
+
+    return (
+      data?.ava_accounting_response ||
+      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`
+    );
   }
 
-  const response = await fetch(
-    `/api/accounting/owner-balance?associationId=${encodeURIComponent(
-      ownerProfile.association_id || ""
-    )}&ownerUserId=${encodeURIComponent(
-      ownerProfile.id || ""
-    )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
-  );
+  async function getDocumentResponse(promptText) {
+    if (!ownerProfile?.association_id) {
+      return "I could not load the homeowner document system right now.";
+    }
 
-  const data = await response.json();
+    const response = await fetch(
+      `/api/homeowner/documents/list?associationId=${encodeURIComponent(
+        ownerProfile.association_id || ""
+      )}&ownerUserId=${encodeURIComponent(
+        ownerProfile.id || ""
+      )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
+    );
 
-  if (!response.ok || !data?.success) {
-    throw new Error(data?.error || "Unable to load accounting details.");
-  }
+    const data = await response.json();
 
-  if (data?.balance) {
-    setBalance(data.balance);
-  }
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || "Unable to load homeowner documents.");
+    }
 
-  return (
-    data?.ava_accounting_response ||
-    `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`
-  );
-}
+    const documents = Array.isArray(data.documents) ? data.documents : [];
 
-async function getDocumentResponse(promptText) {
-  if (!ownerProfile?.association_id) {
-    return "I could not load the homeowner document system right now.";
-  }
+    if (documents.length === 0) {
+      return "There are currently no homeowner documents available.";
+    }
 
-  const response = await fetch(
-    `/api/homeowner/documents/list?associationId=${encodeURIComponent(
-      ownerProfile.association_id || ""
-    )}&ownerUserId=${encodeURIComponent(
-      ownerProfile.id || ""
-    )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
-  );
-
-  const data = await response.json();
-
-  if (!response.ok || !data?.success) {
-    throw new Error(data?.error || "Unable to load homeowner documents.");
-  }
-
-  const documents = Array.isArray(data.documents) ? data.documents : [];
-
-  if (documents.length === 0) {
-    return "There are currently no homeowner documents available.";
-  }
-
-  const matchingDocument = documents.find((doc) => {
-    const text = `
-      ${doc.title || ""}
-      ${doc.document_name || ""}
-      ${doc.category || ""}
-      ${doc.description || ""}
-      ${doc.document_type || ""}
-    `.toLowerCase();
-
-    return promptText
+    const searchWords = String(promptText || "")
       .toLowerCase()
-      .split(" ")
-      .some((word) => word.length > 3 && text.includes(word));
-  });
+      .split(/\s+/)
+      .filter((word) => word.length > 3);
 
-  if (matchingDocument) {
-    return `I found a matching document called "${
-      matchingDocument.title || matchingDocument.document_name
-    }" in your homeowner records. You can open it from the Documents section.`;
+    const matchingDocument = documents.find((doc) => {
+      const text = `
+        ${doc.title || ""}
+        ${doc.document_name || ""}
+        ${doc.category || ""}
+        ${doc.description || ""}
+        ${doc.document_type || ""}
+      `.toLowerCase();
+
+      return searchWords.some((word) => text.includes(word));
+    });
+
+    if (matchingDocument) {
+      return `I found a matching document called "${
+        matchingDocument.title ||
+        matchingDocument.document_name ||
+        "Association Document"
+      }" in your homeowner records. You can open it from the Documents section.`;
+    }
+
+    return `I found ${documents.length} homeowner document(s) available in your document center.`;
   }
-
-  return `I found ${documents.length} homeowner document(s) available in your document center.`;
-}
 
   async function handleAskAva() {
     const rawPrompt = String(selectedPrompt || "").trim();
@@ -321,7 +278,9 @@ async function getDocumentResponse(promptText) {
       },
     ]);
 
-    if (
+    setSelectedPrompt("");
+
+    const isAccountingQuestion =
       prompt.includes("balance") ||
       prompt.includes("payment") ||
       prompt.includes("assessment") ||
@@ -345,20 +304,15 @@ async function getDocumentResponse(promptText) {
       prompt.includes("fee") ||
       prompt.includes("fees") ||
       prompt.includes("assessment issue") ||
-      prompt.includes("account help")
-    ) {
+      prompt.includes("account help");
+
+    if (isAccountingQuestion) {
       try {
         const accountingResponse = await getAccountingResponse();
 
         pushAvaResponse(accountingResponse, [
-          {
-            label: "Open Payment Center",
-            href: "/homeowner/payment",
-          },
-          {
-            label: "Request Account Review",
-            href: "/homeowner/account-review",
-          },
+          { label: "Open Payment Center", href: "/homeowner/payment" },
+          { label: "Request Account Review", href: "/homeowner/account-review" },
         ]);
       } catch (accountingError) {
         console.error("Ava accounting response failed:", accountingError);
@@ -366,10 +320,7 @@ async function getDocumentResponse(promptText) {
         pushAvaResponse(
           `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. If something looks incorrect, management can review your account through the account review workflow.`,
           [
-            {
-              label: "Open Payment Center",
-              href: "/homeowner/payment",
-            },
+            { label: "Open Payment Center", href: "/homeowner/payment" },
             {
               label: "Request Account Review",
               href: "/homeowner/account-review",
@@ -381,17 +332,49 @@ async function getDocumentResponse(promptText) {
       return;
     }
 
+    const isDocumentQuestion =
+      prompt.includes("document") ||
+      prompt.includes("documents") ||
+      prompt.includes("rules") ||
+      prompt.includes("forms") ||
+      prompt.includes("policy") ||
+      prompt.includes("pet") ||
+      prompt.includes("pets") ||
+      prompt.includes("minutes") ||
+      prompt.includes("meeting minutes") ||
+      prompt.includes("bylaws") ||
+      prompt.includes("declaration") ||
+      prompt.includes("insurance") ||
+      prompt.includes("budget") ||
+      prompt.includes("financial") ||
+      prompt.includes("notice") ||
+      prompt.includes("notices");
+
+    if (isDocumentQuestion) {
+      try {
+        const documentResponse = await getDocumentResponse(rawPrompt);
+
+        pushAvaResponse(documentResponse, [
+          { label: "Open Documents", href: "/homeowner/documents" },
+        ]);
+      } catch (documentError) {
+        console.error("Ava document response failed:", documentError);
+
+        pushAvaResponse(
+          "I can see your homeowner document center, but I could not search the documents right now. Please open the Documents section to review the available files.",
+          [{ label: "Open Documents", href: "/homeowner/documents" }]
+        );
+      }
+
+      return;
+    }
+
     if (prompt.includes("message") || prompt.includes("notice")) {
       pushAvaResponse(
         latestMessage
           ? `You currently have ${unreadMessages} unread notice(s).`
           : "There are currently no recent notices available.",
-        [
-          {
-            label: "View Messages",
-            href: "/homeowner/messages",
-          },
-        ]
+        [{ label: "View Messages", href: "/homeowner/messages" }]
       );
 
       return;
@@ -408,68 +391,7 @@ async function getDocumentResponse(promptText) {
               latestRequest.status || "Received"
             }".`
           : "You currently do not have any active homeowner requests.",
-        [
-          {
-            label: "Create Maintenance Request",
-            href: "/homeowner/work-orders",
-          },
-        ]
-      );
-
-      return;
-    }
-
-    if (
-  prompt.includes("document") ||
-  prompt.includes("documents") ||
-  prompt.includes("rules") ||
-  prompt.includes("forms") ||
-  prompt.includes("policy") ||
-  prompt.includes("pet") ||
-  prompt.includes("pets") ||
-  prompt.includes("minutes") ||
-  prompt.includes("meeting minutes") ||
-  prompt.includes("bylaws") ||
-  prompt.includes("declaration") ||
-  prompt.includes("insurance") ||
-  prompt.includes("budget") ||
-  prompt.includes("financial") ||
-  prompt.includes("notice") ||
-  prompt.includes("notices")
-) {
-  try {
-    const documentResponse = await getDocumentResponse(rawPrompt);
-
-    pushAvaResponse(documentResponse, [
-      {
-        label: "Open Documents",
-        href: "/homeowner/documents",
-      },
-    ]);
-  } catch (documentError) {
-    console.error("Ava document response failed:", documentError);
-
-    pushAvaResponse(
-      "I can see your homeowner document center, but I could not search the documents right now. Please open the Documents section to review the available files.",
-      [
-        {
-          label: "Open Documents",
-          href: "/homeowner/documents",
-        },
-      ]
-    );
-  }
-
-  return;
-}
-      pushAvaResponse(
-        "Association documents, forms, governing documents, and financial files are available in the Documents section.",
-        [
-          {
-            label: "Open Documents",
-            href: "/homeowner/documents",
-          },
-        ]
+        [{ label: "Create Maintenance Request", href: "/homeowner/work-orders" }]
       );
 
       return;
@@ -479,14 +401,8 @@ async function getDocumentResponse(promptText) {
       pushAvaResponse(
         "I can help route you to the correct homeowner workflow or management resource.",
         [
-          {
-            label: "View Messages",
-            href: "/homeowner/messages",
-          },
-          {
-            label: "Open Work Orders",
-            href: "/homeowner/work-orders",
-          },
+          { label: "View Messages", href: "/homeowner/messages" },
+          { label: "Open Work Orders", href: "/homeowner/work-orders" },
         ]
       );
 
@@ -552,8 +468,10 @@ async function getDocumentResponse(promptText) {
               </p>
 
               <h2 className="text-2xl font-semibold">
-                {ownerProfile?.owner_name
-                  ? `Hello, ${ownerProfile.owner_name}`
+                {ownerProfile?.ownerName || ownerProfile?.owner_name
+                  ? `Hello, ${
+                      ownerProfile?.ownerName || ownerProfile?.owner_name
+                    }`
                   : "How can I help today?"}
               </h2>
             </div>
