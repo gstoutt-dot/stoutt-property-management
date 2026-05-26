@@ -62,10 +62,14 @@ export default function ManagementAccountingReports() {
 
       const normalizedRows = rawRows.map((row) => {
         const rowColumns = Array.isArray(row.columns)
-          ? row.columns
-          : row.amount !== null && row.amount !== undefined && row.amount !== ""
-          ? [row.amount]
-          : [];
+  ? row.columns
+  : row.amount !== null &&
+    row.amount !== undefined &&
+    row.amount !== ""
+  ? [row.amount]
+  : Array.isArray(row.displayColumns)
+  ? row.displayColumns
+  : [];
 
         return {
           ...row,
