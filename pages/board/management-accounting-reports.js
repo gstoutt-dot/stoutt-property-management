@@ -53,8 +53,9 @@ export default function ManagementAccountingReports() {
       const rawColumns = Array.isArray(json.columns) ? json.columns : [];
 
       const shouldDropBlankFirstColumn =
-        rawColumns.length > 1 &&
-        String(rawColumns[0]?.title || "").trim() === "";
+  rawColumns.length > 1 &&
+  String(rawColumns[0]?.title || "").trim() === "" &&
+  tab.key !== "profit-loss";
 
       const cleanedColumns = shouldDropBlankFirstColumn
         ? rawColumns.slice(1)
@@ -155,9 +156,8 @@ export default function ManagementAccountingReports() {
           </h2>
 
           <p className="mt-4 max-w-3xl text-slate-300">
-            Saved QuickBooks report snapshots rendered inside SPM so board
-            members can review financial reports without direct QuickBooks
-            access.
+            Board-ready financial statements from QuickBooks are presented here
+            for review, oversight, and monthly association financial visibility.
           </p>
         </div>
 
