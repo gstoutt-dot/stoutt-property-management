@@ -171,6 +171,54 @@ export default function HomeownerAva() {
       return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
     }
 
+    async function getDocumentResponse(promptText) {
+  if (!ownerProfile?.association_id) {
+    return "I could not load the homeowner document system right now.";
+  }
+
+  const response = await fetch(
+    `/api/homeowner/documents/list?associationId=${encodeURIComponent(
+      ownerProfile.association_id || ""
+    )}&ownerUserId=${encodeURIComponent(
+      ownerProfile.id || ""
+    )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.error || "Unable to load homeowner documents.");
+  }
+
+  const documents = Array.isArray(data.documents) ? data.documents : [];
+
+  if (documents.length === 0) {
+    return "There are currently no homeowner documents available.";
+  }
+
+  const matchingDocument = documents.find((doc) => {
+    const text = `
+      ${doc.title || ""}
+      ${doc.document_name || ""}
+      ${doc.category || ""}
+      ${doc.description || ""}
+    `.toLowerCase();
+
+    return promptText
+      .toLowerCase()
+      .split(" ")
+      .some((word) => word.length > 3 && text.includes(word));
+  });
+
+  if (matchingDocument) {
+    return `I found a matching document called "${
+      matchingDocument.title || matchingDocument.document_name
+    }" in your homeowner records.`;
+  }
+
+  return `I found ${documents.length} homeowner document(s) available in your document center.`;
+}
+
     const response = await fetch(
       `/api/accounting/owner-balance?associationId=${encodeURIComponent(
         ownerProfile.association_id || ""
