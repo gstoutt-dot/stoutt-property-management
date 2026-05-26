@@ -5,11 +5,11 @@ import { supabase } from "../../lib/supabaseClient";
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const REPORT_TABS = [
-  { key: "balance-sheet", label: "Balance Sheet", endpoint: "/api/accounting/quickbooks/balance-sheet" },
-  { key: "profit-loss", label: "Profit & Loss", endpoint: "/api/accounting/quickbooks/profit-and-loss" },
-  { key: "budget-vs-actual", label: "Budget vs Actual", endpoint: "/api/accounting/quickbooks/budget-vs-actual" },
-  { key: "ar-aging", label: "A/R Aging", endpoint: "/api/accounting/quickbooks/ar-aging" },
-  { key: "ap-aging", label: "A/P Aging", endpoint: "/api/accounting/quickbooks/ap-aging" },
+  const REPORT_TABS = [
+  { key: "balance-sheet", label: "Balance Sheet" },
+  { key: "profit-loss", label: "Profit & Loss" },
+  { key: "budget-vs-actual", label: "Budget vs Actual" },
+  { key: "ar-aging", label: "A/R Aging" },
 ];
 
 export default function ManagementAccountingReports() {
@@ -40,8 +40,8 @@ export default function ManagementAccountingReports() {
 
     try {
       const response = await fetch(
-        `${tab.endpoint}?association_id=${DEFAULT_ASSOCIATION_ID}`
-      );
+  `/api/accounting/quickbooks/board-report-snapshot?association_id=${DEFAULT_ASSOCIATION_ID}&report_key=${tab.key}`
+);
 
       const json = await response.json();
 
