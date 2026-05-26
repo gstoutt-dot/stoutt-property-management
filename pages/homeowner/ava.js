@@ -419,10 +419,48 @@ async function loadAvaFallbackContext(profile) {
     }
 
     if (
-      prompt.includes("document") ||
-      prompt.includes("rules") ||
-      prompt.includes("forms")
-    ) {
+  prompt.includes("document") ||
+  prompt.includes("documents") ||
+  prompt.includes("rules") ||
+  prompt.includes("forms") ||
+  prompt.includes("policy") ||
+  prompt.includes("pet") ||
+  prompt.includes("pets") ||
+  prompt.includes("minutes") ||
+  prompt.includes("meeting minutes") ||
+  prompt.includes("bylaws") ||
+  prompt.includes("declaration") ||
+  prompt.includes("insurance") ||
+  prompt.includes("budget") ||
+  prompt.includes("financial") ||
+  prompt.includes("notice") ||
+  prompt.includes("notices")
+) {
+  try {
+    const documentResponse = await getDocumentResponse(rawPrompt);
+
+    pushAvaResponse(documentResponse, [
+      {
+        label: "Open Documents",
+        href: "/homeowner/documents",
+      },
+    ]);
+  } catch (documentError) {
+    console.error("Ava document response failed:", documentError);
+
+    pushAvaResponse(
+      "I can see your homeowner document center, but I could not search the documents right now. Please open the Documents section to review the available files.",
+      [
+        {
+          label: "Open Documents",
+          href: "/homeowner/documents",
+        },
+      ]
+    );
+  }
+
+  return;
+}
       pushAvaResponse(
         "Association documents, forms, governing documents, and financial files are available in the Documents section.",
         [
