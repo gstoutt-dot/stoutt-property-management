@@ -1,0 +1,145 @@
+// /pages/api/accounting/quickbooks/sync-board-reports.js
+
+import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+
+const REPORTS = [
+  {
+    key: "balance-sheet",
+    name: "Balance Sheet",
+    endpoint: "/api/accounting/quickbooks/balance-sheet",
+  },
+  {
+    key: "profit-loss",
+    name: "Profit & Loss",
+    endpoint: "/api/accounting/quickbooks/profit-and-loss",
+  },
+  {
+    key: "budget-vs-actual",
+    name: "Budget vs Actual",
+    endpoint: "/api/accounting/quickbooks/budget-vs-actual",
+  },
+  {
+    key: "ar-aging",
+    name: "A/R Aging",
+    endpoint: "/api/accounting/quickbooks/ar-aging",
+  },
+  {
+    key: "ap-aging",
+    name: "A/P Aging",
+    endpoint: "/api/accounting/quickbooks/ap-aging",
+  },
+];
+
+function getBaseUrl(req) {
+  const host = req.headers.host;
+  const protocol = host?.includes("localhost") ? "http" : "https";
+
+  return `${protocol}://${host}`;
+}
+
+export default async function handler(req, res) {
+  if (!["GET", "POST"].includes(req.method)) {
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed",
+    });
+  }
+
+  try {
+    const associationId =
+      req.query.association_id ||
+      req.body?.association_id ||
+      DEFAULT_ASSOCIATION_ID;
+
+    const baseUrl = getBaseUrl(req);
+    const results = [];
+
+    for (const report of REPORTS) {
+      const reportUrl = `${baseUrl}${report.endpoint}?association_id=${associationId}`;
+
+      try {
+        const response = await fetch(reportUrl);
+        const json = await response.json();
+
+        if (!json.success) {
+          results.push({
+            report_key: report.key,
+            report_name: report.name,
+            success: false,
+            error: json.error || "Report sync failed.",
+          });
+
+          continue;
+        }
+
+        const { data, error } = await supabaseAdmin
+          .from("board_accounting_report_snapshots")
+          .upsert(
+            {
+              association_id: associationId,
+              report_key: report.key,
+              report_name: json.report_name || report.name,
+              report_basis: json.report_basis || "Accrual",
+              start_period: json.start_period || null,
+              end_period: json.end_period || null,
+              currency: json.currency || "USD",
+              columns: json.columns || [],
+              rows: json.rows || [],
+              raw_report: json.raw_report || {},
+              sync_status: "synced",
+              synced_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "association_id,report_key",
+            }
+          )
+          .select("*")
+          .single();
+
+        if (error) {
+          results.push({
+            report_key: report.key,
+            report_name: report.name,
+            success: false,
+            error: error.message,
+          });
+
+          continue;
+        }
+
+        results.push({
+          report_key: report.key,
+          report_name: report.name,
+          success: true,
+          synced_at: data.synced_at,
+        });
+      } catch (reportError) {
+        results.push({
+          report_key: report.key,
+          report_name: report.name,
+          success: false,
+          error: reportError.message,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      association_id: associationId,
+      message: "Board accounting reports sync completed.",
+      results,
+      synced_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("sync-board-reports error:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: "Unable to sync board accounting reports.",
+      details: error.message,
+    });
+  }
+}
