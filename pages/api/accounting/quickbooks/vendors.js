@@ -141,6 +141,24 @@ export default async function handler(req, res) {
       };
     });
 
+    if (normalizedVendors.length > 0) {
+  const { error: upsertError } = await supabaseAdmin
+    .from("association_vendors")
+    .upsert(normalizedVendors, {
+      onConflict: "association_id,quickbooks_vendor_id",
+    });
+
+  if (upsertError) {
+    console.error("SPM vendor upsert failed:", upsertError);
+
+    return res.status(500).json({
+      success: false,
+      error: "QuickBooks vendors pulled, but SPM could not save them.",
+      details: upsertError.message,
+    });
+  }
+}
+
     await supabaseAdmin
       .from("quickbooks_connections")
       .update({
