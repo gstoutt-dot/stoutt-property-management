@@ -26,10 +26,15 @@ const REPORTS = [
     endpoint: "/api/accounting/quickbooks/ar-aging",
   },
   {
-    key: "ap-aging",
-    name: "A/P Aging",
-    endpoint: "/api/accounting/quickbooks/ap-aging",
-  },
+  key: "ap-aging",
+  name: "A/P Aging",
+  endpoint: "/api/accounting/quickbooks/ap-aging",
+},
+{
+  key: "transaction-report",
+  name: "Transaction Report",
+  endpoint: "/api/accounting/quickbooks/transaction-report",
+},
 ];
 
 function getBaseUrl(req) {
