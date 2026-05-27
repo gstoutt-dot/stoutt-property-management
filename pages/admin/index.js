@@ -92,16 +92,6 @@ const sections = [
   href: "/board/management-accounting-reports",
 },
 
-{
-  title: "QuickBooks A/P Aging",
-  href: "/accounting/quickbooks-live?report=ap-aging",
-},
-
-{
-  title: "QuickBooks Transaction Report",
-  href: "/accounting/quickbooks-live?report=transactions",
-},
-
   { title: "Budget Planning", href: "/board/budget-planning" },
   { title: "Capital Projects", href: "/board/capital-projects" },
   { title: "Vendor Performance", href: "/board/vendor-performance" },
