@@ -396,13 +396,7 @@ setVendors(vendorData || [])
         },
       })
 
-      console.log(
-  'DELETE REQUEST:',
-  sourceTable,
-  sourceId
-)
-
-      const response = await fetch('/api/send-vendor-dispatch', {
+        const response = await fetch('/api/send-vendor-dispatch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
