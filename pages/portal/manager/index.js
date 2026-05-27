@@ -12,8 +12,7 @@ export default function ManagerDashboard() {
 
   useEffect(() => {
     fetchData({ showLoading: true })
-    loadWorkflow()
-
+    
     const interval = setInterval(() => {
       fetchData({ showLoading: false })
     }, 15000)
@@ -21,15 +20,90 @@ export default function ManagerDashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  function loadWorkflow() {
-    const saved = localStorage.getItem('bos_manager_workflow')
-    if (saved) setWorkflow(JSON.parse(saved))
+  async function loadWorkflowRecords(currentItems = []) {
+  const { data, error } = await supabase
+    .from('manager_workflow_records')
+    .select('*')
+
+  if (error) {
+    console.error('Manager workflow records load failed:', error)
+    return
   }
 
-  function saveWorkflow(nextWorkflow) {
-    setWorkflow(nextWorkflow)
-    localStorage.setItem('bos_manager_workflow', JSON.stringify(nextWorkflow))
+  const workflowMap = {}
+
+  ;(data || []).forEach((record) => {
+    const matchingItem = currentItems.find((item) => {
+      const sourceId =
+        item.manager_source_table === 'admin_operational_records'
+          ? item.original_id
+          : item.id
+
+      return (
+        String(sourceId) === String(record.source_record_id) &&
+        String(item.manager_source_table || 'bos_actions') ===
+          String(record.source_table || 'bos_actions')
+      )
+    })
+
+    const workflowKey = matchingItem?.id || record.source_record_id
+
+    workflowMap[workflowKey] = {
+      vendor_name: record.vendor_name || '',
+      vendor_phone: record.vendor_phone || '',
+      vendor_email: record.vendor_email || '',
+      selected_vendor_id: record.selected_vendor_id || '',
+      dispatch_note: record.dispatch_note || '',
+      vendor: record.internal_assignment || '',
+      dueDate: record.due_date || '',
+      pendingNote: record.pending_note || '',
+      notes: Array.isArray(record.notes) ? record.notes : [],
+      timeline: Array.isArray(record.timeline) ? record.timeline : [],
+    }
+  })
+
+  setWorkflow(workflowMap)
+}
+
+async function saveWorkflow(nextWorkflow) {
+  setWorkflow(nextWorkflow)
+
+  const records = Object.entries(nextWorkflow).map(([itemId, wf]) => {
+    const item = items.find((record) => String(record.id) === String(itemId))
+
+    return {
+      source_record_id:
+        item?.manager_source_table === 'admin_operational_records'
+          ? String(item.original_id)
+          : String(itemId),
+      source_table: item?.manager_source_table || 'bos_actions',
+      association_id: '622aaf96-ae1c-4f98-b0b2-00cc9178c2a2',
+      vendor_name: wf.vendor_name || '',
+      vendor_phone: wf.vendor_phone || '',
+      vendor_email: wf.vendor_email || '',
+      selected_vendor_id: wf.selected_vendor_id || null,
+      dispatch_note: wf.dispatch_note || '',
+      internal_assignment: wf.vendor || '',
+      due_date: wf.dueDate || null,
+      pending_note: wf.pendingNote || '',
+      notes: wf.notes || [],
+      timeline: wf.timeline || [],
+      updated_at: new Date().toISOString(),
+    }
+  })
+
+  if (records.length === 0) return
+
+  const { error } = await supabase
+    .from('manager_workflow_records')
+    .upsert(records, {
+      onConflict: 'source_record_id,source_table',
+    })
+
+  if (error) {
+    console.error('Manager workflow save failed:', error)
   }
+}
 
   function getStatusLabel(status) {
     if (status === 'open') return 'Request received'
@@ -51,42 +125,41 @@ export default function ManagerDashboard() {
     return 'Submitted'
   }
 
-  function syncBoardDecisions(data) {
-    const saved = JSON.parse(localStorage.getItem('bos_manager_workflow') || '{}')
+  async function syncBoardDecisions(data) {
+  const nextWorkflow = { ...workflow }
 
-    data.forEach((item) => {
-      const currentTimeline = saved[item.id]?.timeline || []
+  data.forEach((item) => {
+    const currentTimeline = nextWorkflow[item.id]?.timeline || []
 
-      if (
-        item.status === 'approved' &&
-        !currentTimeline.some((entry) => entry.text === 'Board approved request')
-      ) {
-        saved[item.id] = {
-          ...(saved[item.id] || {}),
-          timeline: [
-            { text: 'Board approved request', date: new Date().toLocaleString() },
-            ...currentTimeline,
-          ],
-        }
+    if (
+      item.status === 'approved' &&
+      !currentTimeline.some((entry) => entry.text === 'Board approved request')
+    ) {
+      nextWorkflow[item.id] = {
+        ...(nextWorkflow[item.id] || {}),
+        timeline: [
+          { text: 'Board approved request', date: new Date().toLocaleString() },
+          ...currentTimeline,
+        ],
       }
+    }
 
-      if (
-        item.status === 'rejected' &&
-        !currentTimeline.some((entry) => entry.text === 'Board rejected request')
-      ) {
-        saved[item.id] = {
-          ...(saved[item.id] || {}),
-          timeline: [
-            { text: 'Board rejected request', date: new Date().toLocaleString() },
-            ...currentTimeline,
-          ],
-        }
+    if (
+      item.status === 'rejected' &&
+      !currentTimeline.some((entry) => entry.text === 'Board rejected request')
+    ) {
+      nextWorkflow[item.id] = {
+        ...(nextWorkflow[item.id] || {}),
+        timeline: [
+          { text: 'Board rejected request', date: new Date().toLocaleString() },
+          ...currentTimeline,
+        ],
       }
-    })
+    }
+  })
 
-    localStorage.setItem('bos_manager_workflow', JSON.stringify(saved))
-    setWorkflow(saved)
-  }
+  await saveWorkflow(nextWorkflow)
+}
 
   async function fetchData({ showLoading = false } = {}) {
     if (showLoading) {
@@ -194,8 +267,9 @@ setVendors(vendorData || [])
     })
 
     setItems(combinedItems)
-    syncBoardDecisions(normalizedBosItems)
-    setLoading(false)
+await loadWorkflowRecords(combinedItems)
+await syncBoardDecisions(normalizedBosItems)
+setLoading(false)
   }
 
   async function updateStatus(id, status) {
