@@ -763,38 +763,35 @@ setVendors(vendorData || [])
   <select
     value={wf.selected_vendor_id || ''}
     onChange={(e) => {
-      const selectedVendor = vendors.find(
-        (vendor) =>
-          String(vendor.id) === String(e.target.value)
-      )
+  const selectedVendorId = e.target.value
 
-      updateWorkflowField(
-        item.id,
-        'selected_vendor_id',
-        e.target.value
-      )
+  const selectedVendor = vendors.find(
+    (vendor) => String(vendor.id) === String(selectedVendorId)
+  )
 
-      updateWorkflowField(
-        item.id,
-        'vendor_name',
+  const current = workflow[item.id] || {}
+
+  saveWorkflow({
+    ...workflow,
+    [item.id]: {
+      ...current,
+      selected_vendor_id: selectedVendorId,
+      vendor_name:
         selectedVendor?.vendor_name ||
-          selectedVendor?.vendor_display_name ||
-          selectedVendor?.company_name ||
-          ''
-      )
-
-      updateWorkflowField(
-        item.id,
-        'vendor_phone',
-        selectedVendor?.phone || ''
-      )
-
-      updateWorkflowField(
-        item.id,
-        'vendor_email',
-        selectedVendor?.email || ''
-      )
-    }}
+        selectedVendor?.vendor_display_name ||
+        selectedVendor?.company_name ||
+        '',
+      vendor_phone:
+        selectedVendor?.phone ||
+        selectedVendor?.primary_phone ||
+        '',
+      vendor_email:
+        selectedVendor?.email ||
+        selectedVendor?.primary_email ||
+        '',
+    },
+  })
+}}
     className={inputClass}
   >
     <option value="">Select QuickBooks Vendor</option>
