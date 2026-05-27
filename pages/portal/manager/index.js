@@ -8,6 +8,7 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true)
   const [workflow, setWorkflow] = useState({})
   const [dispatchFeedback, setDispatchFeedback] = useState({})
+  const [vendors, setVendors] = useState([])
 
   useEffect(() => {
     fetchData({ showLoading: true })
@@ -101,6 +102,19 @@ export default function ManagerDashboard() {
       .from('admin_operational_records')
       .select('*')
       .order('created_at', { ascending: false })
+
+    const { data: vendorData, error: vendorError } = await supabase
+  .from('association_vendors')
+  .select('*')
+  .eq('association_id', '622aaf96-ae1c-4f98-b0b2-00cc9178c2a2')
+  .eq('active', true)
+  .order('vendor_name', { ascending: true })
+
+if (vendorError) {
+  console.error('Vendor mirror load failed:', vendorError)
+}
+
+setVendors(vendorData || [])
 
     if (bosError) {
       console.error('Manager BOS queue load failed:', bosError)
@@ -745,34 +759,74 @@ export default function ManagerDashboard() {
                             )}
                           </div>
 
-                          <div className="grid gap-3 md:grid-cols-3">
-                            <input
-                              value={vendorName}
-                              onChange={(e) =>
-                                updateWorkflowField(item.id, 'vendor_name', e.target.value)
-                              }
-                              placeholder="Vendor name"
-                              className={inputClass}
-                            />
+                          <div className="grid gap-3">
+  <select
+    value={wf.selected_vendor_id || ''}
+    onChange={(e) => {
+      const selectedVendor = vendors.find(
+        (vendor) =>
+          String(vendor.id) === String(e.target.value)
+      )
 
-                            <input
-                              value={vendorPhone}
-                              onChange={(e) =>
-                                updateWorkflowField(item.id, 'vendor_phone', e.target.value)
-                              }
-                              placeholder="Vendor phone"
-                              className={inputClass}
-                            />
+      updateWorkflowField(
+        item.id,
+        'selected_vendor_id',
+        e.target.value
+      )
 
-                            <input
-                              value={vendorEmail}
-                              onChange={(e) =>
-                                updateWorkflowField(item.id, 'vendor_email', e.target.value)
-                              }
-                              placeholder="Vendor email"
-                              className={inputClass}
-                            />
-                          </div>
+      updateWorkflowField(
+        item.id,
+        'vendor_name',
+        selectedVendor?.vendor_name ||
+          selectedVendor?.vendor_display_name ||
+          selectedVendor?.company_name ||
+          ''
+      )
+
+      updateWorkflowField(
+        item.id,
+        'vendor_phone',
+        selectedVendor?.phone || ''
+      )
+
+      updateWorkflowField(
+        item.id,
+        'vendor_email',
+        selectedVendor?.email || ''
+      )
+    }}
+    className={inputClass}
+  >
+    <option value="">Select QuickBooks Vendor</option>
+
+    {vendors.map((vendor) => (
+      <option key={vendor.id} value={vendor.id}>
+        {vendor.vendor_name ||
+          vendor.vendor_display_name ||
+          vendor.company_name}
+      </option>
+    ))}
+  </select>
+
+  {(vendorName || vendorPhone || vendorEmail) && (
+    <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+      <div>
+        <span className="text-slate-500">Vendor:</span>{' '}
+        {vendorName || '—'}
+      </div>
+
+      <div className="mt-1">
+        <span className="text-slate-500">Phone:</span>{' '}
+        {vendorPhone || '—'}
+      </div>
+
+      <div className="mt-1">
+        <span className="text-slate-500">Email:</span>{' '}
+        {vendorEmail || '—'}
+      </div>
+    </div>
+  )}
+</div>
 
                           <textarea
                             value={dispatchNote}
