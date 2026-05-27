@@ -8,6 +8,9 @@ export default function ManagerVendorDispatch() {
   const [workflow, setWorkflow] = useState({});
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState({});
+  const [vendors, setVendors] = useState([]);
+  const [selectedVendorId, setSelectedVendorId] = useState("");
+  const [dispatchNote, setDispatchNote] = useState("");
 
   useEffect(() => {
     loadDispatchQueue();
@@ -30,6 +33,17 @@ export default function ManagerVendorDispatch() {
     }
 
     const safe = data || [];
+    const { data: vendorData } = await supabase
+  .from("association_vendors")
+  .select("*")
+  .eq(
+    "association_id",
+    "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2"
+  )
+  .eq("active", true)
+  .order("vendor_name", { ascending: true });
+
+setVendors(vendorData || []);
     setItems(safe);
 
     setSelectedId((current) => {
@@ -44,6 +58,11 @@ export default function ManagerVendorDispatch() {
     items.find((item) => String(item.id) === String(selectedId)) ||
     items[0] ||
     null;
+
+  const selectedVendor =
+  vendors.find(
+    (vendor) => String(vendor.id) === String(selectedVendorId)
+  ) || null;
 
   const stats = useMemo(() => {
     return {
@@ -354,75 +373,53 @@ export default function ManagerVendorDispatch() {
                 </div>
 
                 <div className="mt-6 grid gap-3">
-                  <input
-                    value={
-                      workflow[selected.id]?.vendor_name ??
-                      selected.vendor_name ??
-                      ""
-                    }
-                    onChange={(e) =>
-                      updateWorkflowField(
-                        selected.id,
-                        "vendor_name",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Vendor name"
-                    className={inputClass}
-                  />
+  <select
+    value={selectedVendorId}
+    onChange={(e) => setSelectedVendorId(e.target.value)}
+    className={inputClass}
+  >
+    <option value="">Select QuickBooks Vendor</option>
 
-                  <input
-                    value={
-                      workflow[selected.id]?.vendor_phone ??
-                      selected.vendor_phone ??
-                      ""
-                    }
-                    onChange={(e) =>
-                      updateWorkflowField(
-                        selected.id,
-                        "vendor_phone",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Vendor phone"
-                    className={inputClass}
-                  />
+    {vendors.map((vendor) => (
+      <option key={vendor.id} value={vendor.id}>
+        {vendor.vendor_name ||
+          vendor.vendor_display_name ||
+          vendor.company_name ||
+          "Unnamed Vendor"}
+      </option>
+    ))}
+  </select>
 
-                  <input
-                    value={
-                      workflow[selected.id]?.vendor_email ??
-                      selected.vendor_email ??
-                      ""
-                    }
-                    onChange={(e) =>
-                      updateWorkflowField(
-                        selected.id,
-                        "vendor_email",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Vendor email"
-                    className={inputClass}
-                  />
+  {selectedVendor && (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+      <div>
+        Email:{" "}
+        {selectedVendor.email ||
+          selectedVendor.primary_email ||
+          "—"}
+      </div>
 
-                  <textarea
-                    value={
-                      workflow[selected.id]?.dispatch_note ??
-                      selected.dispatch_note ??
-                      ""
-                    }
-                    onChange={(e) =>
-                      updateWorkflowField(
-                        selected.id,
-                        "dispatch_note",
-                        e.target.value
-                      )
-                    }
-                    rows={4}
-                    placeholder="Dispatch note for vendor..."
-                    className={inputClass}
-                  />
-                </div>
+      <div>
+        Phone:{" "}
+        {selectedVendor.phone ||
+          selectedVendor.primary_phone ||
+          "—"}
+      </div>
+
+      <div>
+        Address: {selectedVendor.address || "—"}
+      </div>
+    </div>
+  )}
+
+  <textarea
+    value={dispatchNote}
+    onChange={(e) => setDispatchNote(e.target.value)}
+    rows={4}
+    placeholder="Dispatch note for vendor..."
+    className={inputClass}
+  />
+</div>
 
                 <div className="mt-6 grid gap-3">
                   <button
