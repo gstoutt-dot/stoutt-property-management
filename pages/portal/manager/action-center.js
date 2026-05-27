@@ -14,7 +14,7 @@ export default function ManagerActionCenter() {
 
     const interval = setInterval(() => {
       loadLiveItems(false);
-    }, 15000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
@@ -100,9 +100,14 @@ export default function ManagerActionCenter() {
 
     setItems(combined);
 
-    if (!selectedId && combined.length > 0) {
-      setSelectedId(combined[0].id);
-    }
+    setSelectedId((currentSelectedId) => {
+  if (currentSelectedId) {
+    const stillExists = combined.some((item) => item.id === currentSelectedId);
+    return stillExists ? currentSelectedId : combined[0]?.id || "";
+  }
+
+  return combined[0]?.id || "";
+});
 
     if (showLoading) setLoading(false);
   }
