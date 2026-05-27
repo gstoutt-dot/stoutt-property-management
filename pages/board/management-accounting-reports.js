@@ -8,6 +8,8 @@ const REPORT_TABS = [
   { key: "profit-loss", label: "Profit & Loss" },
   { key: "budget-vs-actual", label: "Budget vs Actual" },
   { key: "ar-aging", label: "A/R Aging" },
+  { key: "ap-aging", label: "A/P Aging" },
+  { key: "transaction-report", label: "Transaction Report" },
 ];
 
 export default function ManagementAccountingReports() {
