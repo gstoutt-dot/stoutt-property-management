@@ -119,6 +119,7 @@ export default async function handler(req, res) {
       return {
         association_id,
         quickbooks_vendor_id: vendor.Id,
+        vendor_display_name: displayName,
         vendor_name: displayName,
         company_name: vendor.CompanyName || displayName,
         print_on_check_name: vendor.PrintOnCheckName || "",
