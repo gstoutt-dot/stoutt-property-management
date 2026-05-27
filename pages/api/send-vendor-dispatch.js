@@ -1,18 +1,13 @@
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
+  if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
-      message: 'Method not allowed',
-    })
+      message: "Method not allowed",
+    });
   }
 
   try {
     const {
-      vendorName,
       vendorEmail,
       vendorPhone,
       requestType,
@@ -22,90 +17,79 @@ export default async function handler(req, res) {
       propertyAddress,
       description,
       dispatchNote,
-    } = req.body
+    } = req.body || {};
 
     if (!vendorEmail) {
       return res.status(400).json({
         success: false,
-        message: 'Vendor email is required.',
-      })
+        message: "Vendor email is required.",
+      });
     }
 
-    const emailHtml = `
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "RESEND_API_KEY is missing in Vercel.",
+      });
+    }
+
+    const html = `
       <div style="font-family: Arial, sans-serif; padding: 24px;">
         <h2>New Vendor Dispatch</h2>
-
-        <p>
-          You have received a new dispatch request from
-          <strong>Stoutt Property Management</strong>.
-        </p>
-
-        <hr style="margin: 20px 0;" />
-
-        <h3>Request Details</h3>
-
-        <p><strong>Request Type:</strong> ${requestType || 'Service Request'}</p>
-        <p><strong>Association:</strong> ${propertyName || 'Association'}</p>
-        <p><strong>Owner:</strong> ${ownerName || 'N/A'}</p>
-        <p><strong>Owner Phone:</strong> ${ownerPhone || 'N/A'}</p>
-        <p><strong>Location:</strong> ${propertyAddress || 'N/A'}</p>
-
+        <p>You have received a new dispatch request from <strong>Stoutt Property Management</strong>.</p>
+        <hr />
+        <p><strong>Request Type:</strong> ${requestType || "Service Request"}</p>
+        <p><strong>Association:</strong> ${propertyName || "Association"}</p>
+        <p><strong>Owner:</strong> ${ownerName || "N/A"}</p>
+        <p><strong>Owner Phone:</strong> ${ownerPhone || "N/A"}</p>
+        <p><strong>Location:</strong> ${propertyAddress || "N/A"}</p>
         <p><strong>Description:</strong></p>
-
         <div style="padding: 12px; background: #f4f4f4; border-radius: 8px;">
-          ${description || 'No description provided.'}
+          ${description || "No description provided."}
         </div>
-
-        ${
-          dispatchNote
-            ? `
-          <p><strong>Dispatch Notes:</strong></p>
-
-          <div style="padding: 12px; background: #fff8dc; border-radius: 8px;">
-            ${dispatchNote}
-          </div>
-        `
-            : ''
-        }
-
-        <hr style="margin: 20px 0;" />
-
-        <p>
-          Please contact the resident to coordinate service scheduling.
-        </p>
-
-        <p>
-          Vendor Phone on File:
-          ${vendorPhone || 'N/A'}
-        </p>
-
-        <p style="margin-top: 32px;">
-          — Stoutt Property Management
-        </p>
+        <p><strong>Dispatch Notes:</strong></p>
+        <div style="padding: 12px; background: #fff8dc; border-radius: 8px;">
+          ${dispatchNote || "No additional notes."}
+        </div>
+        <p>Vendor Phone on File: ${vendorPhone || "N/A"}</p>
+        <p style="margin-top: 32px;">— Stoutt Property Management</p>
       </div>
-    `
+    `;
 
-    const emailResponse = await resend.emails.send({
-      from: 'dispatch@stouttmgmt.com',
-      to: vendorEmail,
-      subject: `New Dispatch • ${requestType || 'Service Request'}`,
-      html: emailHtml,
-    })
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Stoutt Property Management <dispatch@stouttmgmt.com>",
+        to: [vendorEmail],
+        subject: `New Dispatch • ${requestType || "Service Request"}`,
+        html,
+      }),
+    });
 
-    console.log('VENDOR DISPATCH EMAIL SENT:', emailResponse)
+    const result = await response.json();
+
+    if (!response.ok) {
+      return res.status(502).json({
+        success: false,
+        message: "Resend email delivery failed.",
+        details: result,
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      message: 'Vendor dispatch email sent successfully.',
-      emailResponse,
-    })
+      message: "Vendor dispatch email sent successfully.",
+      email: result,
+    });
   } catch (error) {
-    console.error('Vendor dispatch email failed:', error)
-
     return res.status(500).json({
       success: false,
-      message: 'Unable to send vendor dispatch email.',
+      message: "Unable to send vendor dispatch email.",
       error: error.message,
-    })
+    });
   }
 }
