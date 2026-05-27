@@ -141,9 +141,9 @@ export default function ManagementAccountingReports() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Dashboard</Link>
-            <Link href="/board/financial-review">Financial Review</Link>
-          </nav>
+  <Link href="/admin">Admin Dashboard</Link>
+  <Link href="/board/financial-review">Financial Review</Link>
+</nav>
         </div>
       </section>
 
