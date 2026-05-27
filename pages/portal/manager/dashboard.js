@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function ManagerDashboard() {
   const router = useRouter();
@@ -52,6 +53,49 @@ export default function ManagerDashboard() {
               </button>
             </div>
           </header>
+
+  <section className="mb-8 rounded-[2rem] border border-[#D4AF37]/20 bg-[#D4AF37]/[0.06] p-6 shadow-2xl">
+  <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <div className="mb-3 inline-flex rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-4 py-2 text-sm font-medium text-[#F3D77A]">
+        Live Operations
+      </div>
+
+      <h2 className="text-3xl font-semibold">
+        Manager Command Center
+      </h2>
+
+      <p className="mt-3 max-w-3xl text-slate-300">
+        Access the live operational intake queue, vendor dispatch system,
+        BOS workflows, board review routing, and real-time management
+        activity center.
+      </p>
+    </div>
+
+    <div className="flex flex-wrap gap-3">
+      <Link
+        href="/portal/manager"
+        className="rounded-2xl bg-[#D4AF37] px-6 py-4 text-sm font-semibold text-[#070B14] transition hover:bg-[#F3D77A]"
+      >
+        Open Command Center
+      </Link>
+
+      <Link
+        href="/portal/manager/vendor-dispatch"
+        className="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 text-sm font-medium text-slate-200 transition hover:bg-white/[0.08]"
+      >
+        Vendor Dispatch
+      </Link>
+
+      <Link
+        href="/portal/manager/action-center"
+        className="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 text-sm font-medium text-slate-200 transition hover:bg-white/[0.08]"
+      >
+        Action Center
+      </Link>
+    </div>
+  </div>
+</section>
 
           {/* STATS */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
