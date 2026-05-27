@@ -523,11 +523,18 @@ setVendors(vendorData || [])
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/admin"
-                className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
-              >
-                Admin Dashboard
-              </Link>
+  href="/portal/manager/action-center"
+  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
+>
+  Action Center
+</Link>
+
+<Link
+  href="/portal/manager/vendor-dispatch"
+  className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
+>
+  Vendor Dispatch
+</Link>
 
               <Link
                 href="/portal/manager#live-queue"
