@@ -86,8 +86,22 @@ const sections = [
       "Planning tools for budget preparation, financial review, capital projects, and vendor performance oversight.",
     items: [
   { title: "Financial Review", href: "/board/financial-review" },
-  { title: "Management Accounting Reports", href: "/board/management-accounting-reports" },
-  { title: "Monthly Accounting Reports", href: "/admin/monthly-accounting-reports" },
+
+{
+  title: "Management Accounting Reports",
+  href: "/board/management-accounting-reports",
+},
+
+{
+  title: "QuickBooks A/P Aging",
+  href: "/accounting/quickbooks-live?report=ap-aging",
+},
+
+{
+  title: "QuickBooks Transaction Report",
+  href: "/accounting/quickbooks-live?report=transactions",
+},
+
   { title: "Budget Planning", href: "/board/budget-planning" },
   { title: "Capital Projects", href: "/board/capital-projects" },
   { title: "Vendor Performance", href: "/board/vendor-performance" },
@@ -416,7 +430,7 @@ export default function AdminDashboard() {
                 </Link>
 
                 <Link href="/board" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
-                  Board Dashboard
+                  Admin Dashboard
                 </Link>
 
                 <Link href="/portal/owner" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
