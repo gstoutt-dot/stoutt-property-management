@@ -15,7 +15,7 @@ export default function ManagerDashboard() {
     
     const interval = setInterval(() => {
       fetchData({ showLoading: false })
-    }, 15000)
+    }, 60000)
 
     return () => clearInterval(interval)
   }, [])
@@ -268,7 +268,6 @@ setVendors(vendorData || [])
 
     setItems(combinedItems)
 await loadWorkflowRecords(combinedItems)
-await syncBoardDecisions(normalizedBosItems)
 setLoading(false)
   }
 
