@@ -3,8 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../../lib/supabaseClient";
 
-const FALLBACK_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 export default function HomeownerMessages() {
   const router = useRouter();
 
@@ -13,46 +11,31 @@ export default function HomeownerMessages() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All Messages");
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const [readStatusMessage, setReadStatusMessage] = useState("");
+  const [loadError, setLoadError] = useState("");
 
-  const ownerAssociationId =
-    ownerProfile?.association_id ||
-    ownerProfile?.associationId ||
-    FALLBACK_ASSOCIATION_ID;
-
+  const ownerAssociationId = ownerProfile?.association_id || "";
   const ownerUserId =
-    ownerProfile?.owner_user_id ||
-    ownerProfile?.ownerUserId ||
-    ownerProfile?.id ||
-    "";
-
+    ownerProfile?.owner_user_id || ownerProfile?.ownerUserId || ownerProfile?.id || "";
   const ownerUnitNumber =
-    ownerProfile?.unitNumber ||
-    ownerProfile?.unit_number ||
-    "";
+    ownerProfile?.unitNumber || ownerProfile?.unit_number || "";
 
   const filteredMessages = useMemo(() => {
-    if (selectedCategory === "All Messages") {
-      return messages;
-    }
+    if (selectedCategory === "All Messages") return messages;
+
+    const categorySearch = selectedCategory
+      .replace("&", "")
+      .replace("Notices", "")
+      .replace("Updates", "")
+      .replace("Messages", "")
+      .trim()
+      .toLowerCase();
 
     return messages.filter((message) =>
-      String(
-        message.category ||
-          message.notification_type ||
-          message.type ||
-          ""
-      )
+      String(message.category || message.notification_type || message.type || "")
         .toLowerCase()
-        .includes(
-          selectedCategory
-            .replace("&", "")
-            .replace("Notices", "")
-            .replace("Updates", "")
-            .replace("Messages", "")
-            .trim()
-            .toLowerCase()
-        )
+        .includes(categorySearch)
     );
   }, [messages, selectedCategory]);
 
@@ -60,6 +43,7 @@ export default function HomeownerMessages() {
     async function loadOwnerProfile() {
       try {
         setLoadingProfile(true);
+        setLoadError("");
 
         const {
           data: { session },
@@ -70,9 +54,7 @@ export default function HomeownerMessages() {
           return;
         }
 
-        const normalizedEmail = String(session.user.email)
-          .toLowerCase()
-          .trim();
+        const normalizedEmail = String(session.user.email).toLowerCase().trim();
 
         const profileResponse = await fetch(
           `/api/owner/profile?ownerEmail=${encodeURIComponent(
@@ -82,31 +64,17 @@ export default function HomeownerMessages() {
 
         const profileResult = await profileResponse.json();
 
-        if (!profileResponse.ok || !profileResult?.success) {
-  console.error(
-    "Owner profile lookup failed:",
-    profileResult
-  );
+        if (!profileResponse.ok || !profileResult?.success || !profileResult?.ownerProfile) {
+          throw new Error(
+            profileResult?.error ||
+              "This login is not linked to a homeowner profile yet."
+          );
+        }
 
-  setOwnerProfile({
-    association_id:
-      "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-    ownerName: "Homeowner",
-  });
-
-  return;
-}
-
-        setOwnerProfile(profileResult.ownerProfile || null);
+        setOwnerProfile(profileResult.ownerProfile);
       } catch (error) {
         console.error("Unable to load homeowner profile:", error);
-        console.error(error);
-
-setOwnerProfile({
-  association_id:
-    "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-  ownerName: "Homeowner",
-});
+        setLoadError(error.message || "Unable to load homeowner profile.");
       } finally {
         setLoadingProfile(false);
       }
@@ -118,7 +86,11 @@ setOwnerProfile({
   useEffect(() => {
     async function loadMessages() {
       if (loadingProfile) return;
-      if (!ownerAssociationId) return;
+
+      if (!ownerAssociationId) {
+        setLoadingMessages(false);
+        return;
+      }
 
       try {
         setLoadingMessages(true);
@@ -137,10 +109,11 @@ setOwnerProfile({
           throw new Error(data.error || "Unable to load messages.");
         }
 
-        setMessages(data.messages || []);
+        setMessages(Array.isArray(data.messages) ? data.messages : []);
       } catch (error) {
         console.error("Unable to load homeowner messages:", error);
         setMessages([]);
+        setReadStatusMessage(error.message || "Unable to load messages.");
       } finally {
         setLoadingMessages(false);
       }
@@ -150,6 +123,8 @@ setOwnerProfile({
   }, [loadingProfile, ownerAssociationId, ownerUserId, ownerUnitNumber]);
 
   async function markMessageRead(notificationId) {
+    if (!notificationId) return false;
+
     try {
       setReadStatusMessage("");
 
@@ -160,6 +135,7 @@ setOwnerProfile({
         },
         body: JSON.stringify({
           notificationId,
+          messageId: notificationId,
           associationId: ownerAssociationId,
           ownerUserId,
           unitNumber: ownerUnitNumber,
@@ -188,47 +164,45 @@ setOwnerProfile({
             : message
         )
       );
+
+      setSelectedMessage((current) =>
+        current?.id === notificationId
+          ? { ...current, read_status: true, read_at: new Date().toISOString() }
+          : current
+      );
+
+      return true;
     } catch (error) {
       console.error("Unable to mark message as read:", error);
-      setReadStatusMessage(
-        error.message || "Unable to mark message as read."
-      );
+      setReadStatusMessage(error.message || "Unable to mark message as read.");
+      return false;
     }
   }
 
-  const unreadCount = messages.filter(
-    (message) => message.read_status !== true
-  ).length;
+  async function openMessage(message) {
+    setSelectedMessage(message);
+
+    if (message?.id && message.read_status !== true) {
+      await markMessageRead(message.id);
+    }
+  }
+
+  const unreadCount = messages.filter((message) => message.read_status !== true).length;
 
   const announcementCount = messages.filter((message) =>
-    String(
-      message.category ||
-        message.notification_type ||
-        message.type ||
-        ""
-    )
+    String(message.category || message.notification_type || message.type || "")
       .toLowerCase()
       .includes("announcement")
   ).length;
 
   const serviceUpdateCount = messages.filter((message) =>
-    String(
-      message.category ||
-        message.notification_type ||
-        message.type ||
-        ""
-    )
+    String(message.category || message.notification_type || message.type || "")
       .toLowerCase()
       .includes("service")
   ).length;
 
   const directMessageCount = messages.filter((message) =>
-    String(
-      message.category ||
-        message.notification_type ||
-        message.type ||
-        ""
-    )
+    String(message.category || message.notification_type || message.type || "")
       .toLowerCase()
       .includes("direct")
   ).length;
@@ -250,8 +224,8 @@ setOwnerProfile({
               </h1>
 
               <p className="mt-4 max-w-3xl text-slate-300">
-                View association announcements, service updates, meeting
-                reminders, direct messages, and important homeowner notices.
+                View association announcements, service updates, meeting reminders,
+                direct messages, and important homeowner notices.
               </p>
             </div>
 
@@ -266,6 +240,12 @@ setOwnerProfile({
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8">
+        {loadError && (
+          <div className="mb-6 rounded-3xl border border-red-400/30 bg-red-400/10 p-5 text-sm text-red-200">
+            {loadError}
+          </div>
+        )}
+
         <div className="grid gap-6 md:grid-cols-4">
           {[
             ["Unread", String(unreadCount)],
@@ -278,9 +258,7 @@ setOwnerProfile({
               className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
             >
               <p className="text-sm text-slate-400">{label}</p>
-              <div className="mt-3 text-4xl font-bold text-yellow-400">
-                {value}
-              </div>
+              <div className="mt-3 text-4xl font-bold text-yellow-400">{value}</div>
             </div>
           ))}
         </div>
@@ -289,9 +267,7 @@ setOwnerProfile({
       <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <div className="mb-5">
-            <p className="text-sm font-medium text-yellow-400">
-              Message Center
-            </p>
+            <p className="text-sm font-medium text-yellow-400">Message Center</p>
             <h2 className="mt-2 text-2xl font-semibold">Recent Notices</h2>
           </div>
 
@@ -326,29 +302,24 @@ setOwnerProfile({
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-sm text-slate-400">
-                        {(message.category ||
+                        {message.category ||
                           message.notification_type ||
                           message.type ||
-                          "Homeowner Notice")}{" "}
+                          "Homeowner Notice"}{" "}
                         • {String(message.id || "").slice(0, 8).toUpperCase()}
                       </p>
 
                       <h3 className="mt-2 text-xl font-semibold">
-                        {message.title ||
-                          message.subject ||
-                          "Homeowner Notification"}
+                        {message.title || message.subject || "Homeowner Notification"}
                       </h3>
 
                       <p className="mt-2 text-sm text-slate-400">
                         {message.created_at
-                          ? new Date(message.created_at).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              }
-                            )
+                          ? new Date(message.created_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
                           : "Recently"}
                       </p>
                     </div>
@@ -375,9 +346,8 @@ setOwnerProfile({
                   <div className="mt-5 flex flex-wrap gap-3">
                     <button
                       type="button"
-                      onClick={() => markMessageRead(message.id)}
-                      disabled={message.read_status === true}
-                      className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => openMessage(message)}
+                      className="rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-yellow-300"
                     >
                       Open Message
                     </button>
@@ -409,6 +379,40 @@ setOwnerProfile({
         </div>
 
         <div className="space-y-6">
+          {selectedMessage && (
+            <div className="rounded-3xl border border-yellow-400/30 bg-yellow-400/[0.07] p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-yellow-300">
+                    Message Detail
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-semibold">
+                    {selectedMessage.title ||
+                      selectedMessage.subject ||
+                      "Homeowner Notification"}
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedMessage(null)}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-slate-200 hover:border-yellow-400/60 hover:text-yellow-300"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5 text-sm leading-7 text-slate-200">
+                {selectedMessage.message ||
+                  selectedMessage.body ||
+                  selectedMessage.preview ||
+                  selectedMessage.description ||
+                  "A homeowner notification is available."}
+              </div>
+            </div>
+          )}
+
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <p className="text-sm font-medium text-yellow-400">
               Message Categories
@@ -451,9 +455,9 @@ setOwnerProfile({
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              Ava can summarize announcements, explain what action may be
-              needed, locate related documents, and help homeowners understand
-              deadlines or next steps.
+              Ava can summarize announcements, explain what action may be needed,
+              locate related documents, and help homeowners understand deadlines
+              or next steps.
             </p>
 
             <Link
@@ -462,32 +466,6 @@ setOwnerProfile({
             >
               Ask Ava
             </Link>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <p className="text-sm font-medium text-yellow-400">
-              Notification Preferences
-            </p>
-
-            <div className="mt-5 space-y-4">
-              {[
-                "Email notifications enabled",
-                "Text alerts for urgent notices",
-                "Maintenance updates enabled",
-                "Meeting reminders enabled",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl bg-slate-900 p-4 text-sm text-slate-300"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-white/10 bg-slate-900/70 px-5 py-4 text-sm text-slate-400">
-  Notification preference management will be available in a future update.
-</div>
           </div>
         </div>
       </section>
