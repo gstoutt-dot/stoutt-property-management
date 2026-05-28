@@ -629,6 +629,19 @@ ${
   );
 }
 
+function extractAgendaOnly(description = "") {
+  const text = String(description || "");
+
+  if (!text.includes("Agenda:")) {
+    return text;
+  }
+
+  const agendaText =
+    text.split("Agenda:")[1]?.split("Packet Notes:")[0] || "";
+
+  return agendaText.trim();
+}
+
 function OperationalPanel({ title, items }) {
   return (
     <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
@@ -649,9 +662,9 @@ function OperationalPanel({ title, items }) {
                 {item.title || "Untitled Meeting Record"}
               </h4>
 
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                {item.description || "No description provided."}
-              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-300">
+  {extractAgendaOnly(item.description) || "No agenda provided."}
+</p>
 
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
                 <span>{item.request_type || "Operational Record"}</span>
