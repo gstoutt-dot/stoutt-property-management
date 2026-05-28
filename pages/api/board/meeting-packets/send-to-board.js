@@ -48,8 +48,7 @@ ${
         .join("\n")
     : "No attachments uploaded."
 }
-
-,
+        `,
         priority: "Normal",
         status: "Submitted",
         assigned_to: "Board",
@@ -64,7 +63,9 @@ ${
         updated_at: now,
       });
 
-    if (recordError) throw recordError;
+    if (recordError) {
+      throw recordError;
+    }
 
     return res.status(200).json({
       success: true,
