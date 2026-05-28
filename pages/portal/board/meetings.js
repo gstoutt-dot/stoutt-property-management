@@ -21,16 +21,10 @@ export default function BoardMeetings() {
   const [creatingPacket, setCreatingPacket] = useState(false);
   useEffect(() => {
     loadMeetingData();
+    
     loadMeetingRecords();
-
-    const interval = setInterval(() => {
-      loadMeetingData();
-      loadMeetingRecords();
-    }, 30000);
-
-    return () => clearInterval(interval);
   }, []);
-
+ 
   async function loadMeetingData() {
     try {
       setLoading(true);
