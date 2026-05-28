@@ -31,9 +31,6 @@ export default async function handler(req, res) {
         description: `
 A meeting packet has been sent to the board for review.
 
-Packet ID:
-${packet.id}
-
 Agenda:
 ${packet.agenda_text || "No agenda provided."}
 
