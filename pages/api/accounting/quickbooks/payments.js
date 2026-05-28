@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/payments.js
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getValidQuickBooksConnection } from "../../../../lib/quickbooksTokenManager";
 
 const QUICKBOOKS_MINOR_VERSION = "75";
 
@@ -30,18 +31,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .select("*")
-      .eq("association_id", association_id)
-      .eq("connection_status", "connected")
-      .single();
+    const connection = await getValidQuickBooksConnection(association_id);
 
-    if (connectionError || !connection) {
+    if (!connection?.realm_id || !connection?.access_token) {
       return res.status(404).json({
         success: false,
-        error: "No active QuickBooks connection found for this association.",
-        details: connectionError?.message || null,
+        error: "No valid QuickBooks connection found for this association.",
       });
     }
 
@@ -128,6 +123,12 @@ export default async function handler(req, res) {
       message: "QuickBooks payments pulled successfully.",
       association_id,
       realm_id: realmId,
+      token_status: "valid",
+      access_token_expires_at: connection.access_token_expires_at || null,
+      last_token_refresh_at:
+        connection.last_token_refresh_at ||
+        connection.last_refresh_at ||
+        null,
       payment_count: payments.length,
       payments: normalizedPayments,
     });
