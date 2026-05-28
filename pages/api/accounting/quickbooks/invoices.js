@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/invoices.js
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getValidQuickBooksConnection } from "../../../../lib/quickbooksTokenManager";
 
 const QUICKBOOKS_MINOR_VERSION = "75";
 
@@ -29,26 +30,19 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .select("*")
-      .eq("association_id", association_id)
-      .eq("connection_status", "connected")
-      .single();
+    const connection = await getValidQuickBooksConnection(association_id);
 
-    if (connectionError || !connection) {
+    if (!connection?.realm_id || !connection?.access_token) {
       return res.status(404).json({
         success: false,
-        error: "No active QuickBooks connection found for this association.",
-        details: connectionError?.message || null,
+        error: "No valid QuickBooks connection found for this association.",
       });
     }
 
     const realmId = connection.realm_id;
     const accessToken = connection.access_token;
 
-    const query =
-      "select * from Invoice startPosition 1 maxResults 1000";
+    const query = "select * from Invoice startPosition 1 maxResults 1000";
 
     const quickBooksUrl = new URL(
       `${getQuickBooksBaseUrl()}/v3/company/${realmId}/query`
@@ -113,11 +107,26 @@ export default async function handler(req, res) {
       };
     });
 
+    await supabaseAdmin
+      .from("quickbooks_connections")
+      .update({
+        last_invoice_sync_at: now,
+        sync_error: null,
+        updated_at: now,
+      })
+      .eq("association_id", association_id);
+
     return res.status(200).json({
       success: true,
       message: "QuickBooks invoices pulled successfully.",
       association_id,
       realm_id: realmId,
+      token_status: "valid",
+      access_token_expires_at: connection.access_token_expires_at || null,
+      last_token_refresh_at:
+        connection.last_token_refresh_at ||
+        connection.last_refresh_at ||
+        null,
       invoice_count: invoices.length,
       invoices: normalizedInvoices,
     });
