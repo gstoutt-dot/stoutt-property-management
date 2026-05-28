@@ -285,12 +285,28 @@ export default function BoardApprovalQueue() {
 }
 
 function extractAttachmentLinks(description = "") {
-  const matches = String(description).match(/https?:\/\/[^\s]+/g) || [];
+  const text = String(description || "");
 
-  return matches.map((url) => ({
-    url,
-    label: decodeURIComponent(url.split("/").pop() || "Open Attachment"),
-  }));
+  const matches = text.match(/https?:\/\/[^\s]+/g) || [];
+
+  return matches
+    .map((rawUrl) => {
+      let cleanUrl = rawUrl;
+
+      const pdfIndex = cleanUrl.toLowerCase().indexOf(".pdf");
+
+      if (pdfIndex !== -1) {
+        cleanUrl = cleanUrl.slice(0, pdfIndex + 4);
+      }
+
+      return {
+        url: cleanUrl,
+        label: decodeURIComponent(
+          cleanUrl.split("/").pop() || "Open Attachment"
+        ),
+      };
+    })
+    .filter((file) => file.url.includes("supabase.co"));
 }
 
 function Metric({ label, value }) {
