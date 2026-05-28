@@ -249,8 +249,7 @@ Available Board Actions:
   vendor_visible: false,
 
   source_module: "Meeting Packets",
-  source_record_id: packet.id,
-
+  
   routing_target: "Board Approval Queue",
 
   recommended_action:
