@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/transaction-report.js
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getValidQuickBooksConnection } from "../../../../lib/quickbooksTokenManager";
 
 const QUICKBOOKS_MINOR_VERSION = "75";
 
@@ -97,20 +98,7 @@ export default async function handler(req, res) {
     const reportStartDate = start_date || startDate;
     const reportEndDate = end_date || endDate;
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .select("*")
-      .eq("association_id", association_id)
-      .eq("connection_status", "connected")
-      .maybeSingle();
-
-    if (connectionError) {
-      return res.status(500).json({
-        success: false,
-        error: "Unable to load QuickBooks connection.",
-        details: connectionError.message,
-      });
-    }
+    const connection = await getValidQuickBooksConnection(association_id);
 
     if (!connection) {
       return res.status(404).json({
@@ -120,11 +108,7 @@ export default async function handler(req, res) {
     }
 
     const realmId = connection.realm_id;
-
-    const accessToken =
-      connection.access_token ||
-      connection.quickbooks_access_token ||
-      connection.qbo_access_token;
+    const accessToken = connection.access_token;
 
     if (!realmId || !accessToken) {
       return res.status(400).json({
@@ -140,7 +124,8 @@ export default async function handler(req, res) {
       end_date: reportEndDate,
     });
 
-    const quickBooksUrl = `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/TransactionList?${params.toString()}`;
+    const quickBooksUrl =
+      `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/TransactionList?${params.toString()}`;
 
     const quickBooksResponse = await fetch(quickBooksUrl, {
       method: "GET",
@@ -153,6 +138,14 @@ export default async function handler(req, res) {
     const reportJson = await quickBooksResponse.json();
 
     if (!quickBooksResponse.ok) {
+      await supabaseAdmin
+        .from("quickbooks_connections")
+        .update({
+          sync_error: JSON.stringify(reportJson),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("association_id", association_id);
+
       return res.status(quickBooksResponse.status).json({
         success: false,
         error: "QuickBooks Transaction Report request failed.",
@@ -168,12 +161,25 @@ export default async function handler(req, res) {
         type: column?.ColType || "",
       })) || [];
 
+    await supabaseAdmin
+      .from("quickbooks_connections")
+      .update({
+        sync_error: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("association_id", association_id);
+
     return res.status(200).json({
       success: true,
       association_id,
+      token_status: "valid",
+      access_token_expires_at: connection.access_token_expires_at || null,
+      last_token_refresh_at:
+        connection.last_token_refresh_at ||
+        connection.last_refresh_at ||
+        null,
       report_name: "Transaction Report",
-      report_period:
-        reportJson?.Header?.ReportName || "Transaction Report",
+      report_period: reportJson?.Header?.ReportName || "Transaction Report",
       report_basis: reportJson?.Header?.ReportBasis || accounting_method,
       start_period: reportJson?.Header?.StartPeriod || reportStartDate,
       end_period: reportJson?.Header?.EndPeriod || reportEndDate,
