@@ -39,11 +39,11 @@ const boardPages = [
       "Board-facing notification center for routed updates, alerts, and association activity.",
   },
   {
-  title: "Management Accounting Reports",
+  title: "Monthly Accounting Reports",
   status: "Live / Ready",
-  href: "/board/management-accounting-reports",
+  href: "/admin/monthly-accounting-reports",
   description:
-    "Executive accounting reports, QuickBooks management reports, monthly financial packets, reserve reporting, and board-ready accounting visibility.",
+    "Monthly financial packets, QuickBooks accounting reports, reserve reporting, executive summaries, and board financial visibility.",
 },
 ];
 
