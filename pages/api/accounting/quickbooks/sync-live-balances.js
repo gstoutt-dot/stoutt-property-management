@@ -122,57 +122,71 @@ export default async function handler(req, res) {
     const saveErrors = [];
 
     for (const record of balanceRecords) {
-      const { data: existingRecord, error: existingError } = await supabaseAdmin
-        .from("owner_account_balances")
-        .select("id")
-        .eq("association_id", record.association_id)
-        .eq("account_number", record.account_number)
-        .maybeSingle();
+  const { data: existingRecord, error: existingError } =
+    await supabaseAdmin
+      .from("owner_account_balances")
+      .select("*")
+      .eq("association_id", record.association_id)
+      .eq("unit_number", record.unit_number)
+      .maybeSingle();
 
-      if (existingError) {
-        saveErrors.push({
-          account_number: record.account_number,
-          owner_name: record.owner_name,
-          error: existingError.message,
-        });
-        continue;
-      }
+  if (existingError) {
+    saveErrors.push({
+      unit_number: record.unit_number,
+      owner_name: record.owner_name,
+      error: existingError.message,
+    });
 
-      if (existingRecord?.id) {
-        const { error: updateError } = await supabaseAdmin
-          .from("owner_account_balances")
-          .update(record)
-          .eq("id", existingRecord.id);
+    continue;
+  }
 
-        if (updateError) {
-          saveErrors.push({
-            account_number: record.account_number,
-            owner_name: record.owner_name,
-            error: updateError.message,
-          });
-          continue;
-        }
+  if (existingRecord?.id) {
+    const safeUpdatedRecord = {
+      current_balance: Number(record.current_balance || 0),
+      monthly_assessment: Number(record.monthly_assessment || 0),
+      payment_status: record.payment_status || existingRecord.payment_status,
+      delinquency_level:
+        record.delinquency_level || existingRecord.delinquency_level,
+      account_health: record.account_health || existingRecord.account_health,
+      last_payment_date:
+        record.last_payment_date || existingRecord.last_payment_date,
+      synced_at: new Date().toISOString(),
+    };
 
-        savedCount += 1;
-      } else {
-        const { error: insertError } = await supabaseAdmin
-          .from("owner_account_balances")
-          .insert(record);
+    const { error: updateError } = await supabaseAdmin
+      .from("owner_account_balances")
+      .update(safeUpdatedRecord)
+      .eq("id", existingRecord.id);
 
-        if (insertError) {
-          saveErrors.push({
-            account_number: record.account_number,
-            owner_name: record.owner_name,
-            error: insertError.message,
-          });
-          continue;
-        }
+    if (updateError) {
+      saveErrors.push({
+        unit_number: record.unit_number,
+        owner_name: record.owner_name,
+        error: updateError.message,
+      });
 
-        savedCount += 1;
-      }
+      continue;
     }
 
-    const now = new Date().toISOString();
+    savedCount += 1;
+  } else {
+    const { error: insertError } = await supabaseAdmin
+      .from("owner_account_balances")
+      .insert(record);
+
+    if (insertError) {
+      saveErrors.push({
+        unit_number: record.unit_number,
+        owner_name: record.owner_name,
+        error: insertError.message,
+      });
+
+      continue;
+    }
+
+    savedCount += 1;
+  }
+}
 
     await supabaseAdmin
       .from("quickbooks_connections")
