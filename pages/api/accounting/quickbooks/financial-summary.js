@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const { data: connection } = await supabaseAdmin
       .from("quickbooks_connections")
       .select(
-        "association_id, realm_id, connection_status, connected_at, last_customer_sync_at, last_invoice_sync_at, last_payment_sync_at, updated_at"
+        "association_id, realm_id, connection_status, connected_at, access_token_expires_at, refresh_token_expires_at, last_token_refresh_at, last_refresh_at, last_refresh_status, last_refresh_error, last_customer_sync_at, last_invoice_sync_at, last_payment_sync_at, updated_at"
       )
       .eq("association_id", association_id)
       .maybeSingle();
@@ -75,6 +75,14 @@ export default async function handler(req, res) {
       message: "SPM accounting financial summary generated successfully.",
       association_id,
       quickbooks_connection: connection || null,
+      token_status: connection?.connection_status || "unknown",
+      access_token_expires_at: connection?.access_token_expires_at || null,
+      refresh_token_expires_at: connection?.refresh_token_expires_at || null,
+      last_token_refresh_at:
+        connection?.last_token_refresh_at ||
+        connection?.last_refresh_at ||
+        null,
+      last_refresh_status: connection?.last_refresh_status || null,
       totals,
       board_summary: boardSummary,
       accounts_needing_attention_count: accountsNeedingAttention.length,
