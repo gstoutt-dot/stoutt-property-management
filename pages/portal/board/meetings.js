@@ -2,20 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
-const closedStatuses = ["completed", "archived", "closed"];
-
 export default function BoardMeetings() {
+  const [meetings, setMeetings] = useState([]);
+  const [agendaItems, setAgendaItems] = useState([]);
+  const [operationalRecords, setOperationalRecords] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
-const [meetingPackets, setMeetingPackets] = useState([]);
-
-const [packetTitle, setPacketTitle] = useState("");
-const [agendaDraft, setAgendaDraft] = useState("");
-const [packetNotes, setPacketNotes] = useState("");
-
-const [creatingPacket, setCreatingPacket] = useState(false);
+  const [meetingPackets, setMeetingPackets] = useState([]);
+  const [packetTitle, setPacketTitle] = useState("");
+  const [agendaDraft, setAgendaDraft] = useState("");
+  const [packetNotes, setPacketNotes] = useState("");
+  const [creatingPacket, setCreatingPacket] = useState(false);
   useEffect(() => {
     loadMeetingData();
     loadMeetingRecords();
