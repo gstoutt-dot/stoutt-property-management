@@ -3,7 +3,7 @@ import { refreshQuickBooksConnectionNow } from "../../../../lib/quickbooksTokenM
 export default async function handler(req, res) {
   try {
     const associationId =
-      req.query.association_id ||
+      req.query.association_id || 
       req.query.associationId ||
       req.body?.association_id ||
       req.body?.associationId;
