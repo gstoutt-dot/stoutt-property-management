@@ -287,26 +287,30 @@ export default function BoardApprovalQueue() {
 function extractAttachmentLinks(description = "") {
   const text = String(description || "");
 
-  const matches = text.match(/https?:\/\/[^\s]+/g) || [];
+  const attachmentSection =
+    text.split("Attachments:")[1]?.split("Available Board Actions:")[0] || "";
 
-  return matches
-    .map((rawUrl) => {
-      let cleanUrl = rawUrl;
+  const matches =
+    attachmentSection.match(
+      /https:\/\/[^\s]+supabase\.co\/storage\/v1\/object\/public\/meeting-packets\/[^\s]+/g
+    ) || [];
 
-      const pdfIndex = cleanUrl.toLowerCase().indexOf(".pdf");
+  return matches.map((rawUrl) => {
+    let cleanUrl = rawUrl.trim();
 
-      if (pdfIndex !== -1) {
-        cleanUrl = cleanUrl.slice(0, pdfIndex + 4);
-      }
+    const pdfIndex = cleanUrl.toLowerCase().indexOf(".pdf");
 
-      return {
-        url: cleanUrl,
-        label: decodeURIComponent(
-          cleanUrl.split("/").pop() || "Open Attachment"
-        ),
-      };
-    })
-    .filter((file) => file.url.includes("supabase.co"));
+    if (pdfIndex !== -1) {
+      cleanUrl = cleanUrl.slice(0, pdfIndex + 4);
+    }
+
+    return {
+      url: cleanUrl,
+      label: decodeURIComponent(
+        cleanUrl.split("/").pop() || "Open Attachment"
+      ),
+    };
+  });
 }
 
 function Metric({ label, value }) {
