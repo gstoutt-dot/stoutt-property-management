@@ -5,6 +5,8 @@ import { supabase } from "../../../lib/supabaseClient";
 const DEFAULT_ASSOCIATION_ID =
   "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
+const closedStatuses = ["completed", "archived", "closed"];
+
 export default function BoardMeetings() {
   const [meetings, setMeetings] = useState([]);
   const [agendaItems, setAgendaItems] = useState([]);
@@ -157,49 +159,41 @@ setMeetingPackets(packetPayload.packets || []);
   );
 
   async function createMeetingPacket() {
- 
   try {
     setCreatingPacket(true);
     setSystemMessage("");
 
-    const cleanTitle = String(packetTitle || "").trim();
-
-    if (!cleanTitle) {
-      alert("Packet title is blank.");
+    if (!packetTitle.trim()) {
       setSystemMessage("Meeting packet title is required.");
-      setCreatingPacket(false);
       return;
     }
 
-    const payload = {
-      association_id: DEFAULT_ASSOCIATION_ID,
-      title: cleanTitle,
-      agenda_text: String(agendaDraft || ""),
-      packet_notes: String(packetNotes || ""),
-      status: "Draft",
-    };
+    const response = await fetch("/api/board/meeting-packets/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        association_id: DEFAULT_ASSOCIATION_ID,
+        title: packetTitle,
+        agenda_text: agendaDraft,
+        packet_notes: packetNotes,
+      }),
+    });
 
-    const { data, error } = await supabase
-      .from("board_meeting_packets")
-      .insert(payload)
-      .select("*")
-      .single();
+    const result = await response.json();
 
-    if (error) {
-      alert(`Supabase error: ${error.message}`);
-      console.error("Supabase insert error:", error);
-      throw error;
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to create meeting packet.");
     }
-
-    alert(`Packet saved successfully: ${data.title}`);
 
     setPacketTitle("");
     setAgendaDraft("");
     setPacketNotes("");
+    setSystemMessage("Meeting packet created successfully.");
 
-    alert("Supabase insert completed");
+    await loadMeetingData();
   } catch (error) {
-    console.error("Create meeting packet failed:", error);
     setSystemMessage(error.message || "Unable to create meeting packet.");
   } finally {
     setCreatingPacket(false);
