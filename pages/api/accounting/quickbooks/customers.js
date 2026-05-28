@@ -20,6 +20,66 @@ function parseUnitNumber(displayName = "") {
   return match ? match[1] : null;
 }
 
+async function saveCustomerSafely(customer) {
+  const now = new Date().toISOString();
+
+  const { data: existingByCustomerId } = await supabaseAdmin
+    .from("accounting_identity_links")
+    .select("id")
+    .eq("association_id", customer.association_id)
+    .eq("quickbooks_customer_id", customer.quickbooks_customer_id)
+    .maybeSingle();
+
+  if (existingByCustomerId?.id) {
+    const { error } = await supabaseAdmin
+      .from("accounting_identity_links")
+      .update({
+        unit_number: customer.unit_number,
+        quickbooks_company_name: customer.quickbooks_company_name,
+        quickbooks_customer_display_name:
+          customer.quickbooks_customer_display_name,
+        current_balance: customer.current_balance,
+        sync_status: customer.sync_status,
+        last_synced_at: now,
+      })
+      .eq("id", existingByCustomerId.id);
+
+    if (error) throw error;
+    return;
+  }
+
+  const { data: existingByUnit } = await supabaseAdmin
+    .from("accounting_identity_links")
+    .select("id")
+    .eq("association_id", customer.association_id)
+    .eq("unit_number", customer.unit_number)
+    .maybeSingle();
+
+  if (existingByUnit?.id) {
+    const { error } = await supabaseAdmin
+      .from("accounting_identity_links")
+      .update({
+        quickbooks_company_name: customer.quickbooks_company_name,
+        quickbooks_customer_id: customer.quickbooks_customer_id,
+        quickbooks_customer_display_name:
+          customer.quickbooks_customer_display_name,
+        current_balance: customer.current_balance,
+        sync_status: customer.sync_status,
+        last_synced_at: now,
+      })
+      .eq("id", existingByUnit.id);
+
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabaseAdmin
+    .from("accounting_identity_links")
+    .insert(customer);
+
+  if (error) throw error;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({
@@ -124,31 +184,17 @@ export default async function handler(req, res) {
       })
       .filter(Boolean);
 
-    const uniqueCustomersByUnit = Array.from(
+    const uniqueCustomers = Array.from(
       new Map(
         normalizedCustomers.map((customer) => [
-          customer.unit_number,
+          `${customer.unit_number}-${customer.quickbooks_customer_id}`,
           customer,
         ])
       ).values()
     );
 
-    if (uniqueCustomersByUnit.length > 0) {
-      const { error: upsertError } = await supabaseAdmin
-        .from("accounting_identity_links")
-        .upsert(uniqueCustomersByUnit, {
-          onConflict: "association_id,unit_number",
-        });
-
-      if (upsertError) {
-        console.error("SPM customer identity upsert failed:", upsertError);
-
-        return res.status(500).json({
-          success: false,
-          error: "QuickBooks customers pulled, but SPM could not save them.",
-          details: upsertError.message,
-        });
-      }
+    for (const customer of uniqueCustomers) {
+      await saveCustomerSafely(customer);
     }
 
     await supabaseAdmin
@@ -172,8 +218,8 @@ export default async function handler(req, res) {
         connection.last_refresh_at ||
         null,
       customer_count: customers.length,
-      saved_customer_count: uniqueCustomersByUnit.length,
-      customers: uniqueCustomersByUnit,
+      saved_customer_count: uniqueCustomers.length,
+      customers: uniqueCustomers,
     });
   } catch (error) {
     console.error("QuickBooks customers sync error:", error);
