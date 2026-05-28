@@ -157,44 +157,50 @@ setMeetingPackets(packetRows || []);
 
   async function createMeetingPacket() {
   alert("Create packet button is working");
+
   try {
     setCreatingPacket(true);
     setSystemMessage("");
 
-    if (!packetTitle.trim()) {
+    const cleanTitle = String(packetTitle || "").trim();
+
+    if (!cleanTitle) {
       alert("Packet title is blank.");
       setSystemMessage("Meeting packet title is required.");
+      setCreatingPacket(false);
       return;
     }
 
-    const { error } = await supabase
+    const payload = {
+      association_id: DEFAULT_ASSOCIATION_ID,
+      title: cleanTitle,
+      agenda_text: String(agendaDraft || ""),
+      packet_notes: String(packetNotes || ""),
+      status: "Draft",
+    };
+
+    const { data, error } = await supabase
       .from("board_meeting_packets")
-      .insert({
-        association_id: DEFAULT_ASSOCIATION_ID,
-        title: packetTitle,
-        agenda_text: agendaDraft,
-        packet_notes: packetNotes,
-        status: "Draft",
-      });
+      .insert(payload)
+      .select("*")
+      .single();
 
     if (error) {
-      alert(error.message);
+      alert(`Supabase error: ${error.message}`);
+      console.error("Supabase insert error:", error);
       throw error;
     }
 
-    alert("Packet saved successfully.");
+    alert(`Packet saved successfully: ${data.title}`);
 
     setPacketTitle("");
     setAgendaDraft("");
     setPacketNotes("");
 
-    window.location.reload();
+    await loadMeetingData();
   } catch (error) {
     console.error("Create meeting packet failed:", error);
-
-    setSystemMessage(
-      error.message || "Unable to create meeting packet."
-    );
+    setSystemMessage(error.message || "Unable to create meeting packet.");
   } finally {
     setCreatingPacket(false);
   }
