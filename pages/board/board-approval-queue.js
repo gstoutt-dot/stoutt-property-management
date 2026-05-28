@@ -206,6 +206,28 @@ export default function BoardApprovalQueue() {
       action.recommended_action ||
       "This item was routed for board approval."}
   </div>
+
+  {extractAttachmentLinks(action.description).length > 0 && (
+    <div className="mt-5 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-4">
+      <p className="text-sm font-semibold text-blue-200">
+        Packet Attachments
+      </p>
+
+      <div className="mt-3 grid gap-3">
+        {extractAttachmentLinks(action.description).map((file, index) => (
+          <a
+            key={`${file.url}-${index}`}
+            href={file.url}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-100 hover:bg-blue-500/20"
+          >
+            Open PDF / Attachment
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
 </div>
                   </div>
 
@@ -260,6 +282,15 @@ export default function BoardApprovalQueue() {
       </section>
     </main>
   );
+}
+
+function extractAttachmentLinks(description = "") {
+  const matches = String(description).match(/https?:\/\/[^\s]+/g) || [];
+
+  return matches.map((url) => ({
+    url,
+    label: decodeURIComponent(url.split("/").pop() || "Open Attachment"),
+  }));
 }
 
 function Metric({ label, value }) {
