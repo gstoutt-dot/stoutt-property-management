@@ -214,44 +214,51 @@ export default function BoardMeetings() {
     if (packetError) throw packetError;
 
     const { error: approvalError } = await supabase
-      .from("board_approval_queue")
+      .from("admin_operational_records")
       .insert({
-        association_id: DEFAULT_ASSOCIATION_ID,
+  association_id: DEFAULT_ASSOCIATION_ID,
+  created_by: "Meeting Packet Workspace",
+  created_by_role: "Admin",
+  request_type: "board_meeting_packet",
 
-        title: packet.title || "Board Meeting Packet",
+  title: packet.title || "Board Meeting Packet",
 
-        description:
-          packet.packet_notes ||
-          "Board meeting packet submitted for review.",
+  description: `
+A meeting packet has been sent to the board for review.
 
-        approval_type: "Meeting Packet Review",
+Agenda:
+${packet.agenda_text || "No agenda provided."}
 
-        workflow_status: "pending_board_review",
+Packet Notes:
+${packet.packet_notes || "No packet notes provided."}
 
-        priority: "Normal",
+Available Board Actions:
+- Review Packet
+- Open Attachments
+- Acknowledge Receipt
+- Request More Information
+  `,
 
-        board_action_required: true,
+  priority: "Normal",
+  status: "Submitted",
+  assigned_to: "Board",
 
-        source_module: "Meeting Packets",
+  board_review_required: true,
 
-        source_record_id: packet.id,
+  owner_visible: false,
+  vendor_visible: false,
 
-        packet_agenda: packet.agenda_text || "",
+  source_module: "Meeting Packets",
+  source_record_id: packet.id,
 
-        packet_notes: packet.packet_notes || "",
+  routing_target: "Board Approval Queue",
 
-        attachments: packet.attachments || [],
+  recommended_action:
+    "Review the meeting packet, open attachments, acknowledge receipt, or request more information.",
 
-        board_actions_available: [
-          "Review Packet",
-          "Open Attachments",
-          "Acknowledge Receipt",
-          "Request More Information",
-        ],
-
-        created_at: now,
-        updated_at: now,
-      });
+  created_at: now,
+  updated_at: now,
+});
 
     if (approvalError) throw approvalError;
 
