@@ -197,7 +197,7 @@ setMeetingPackets(packetRows || []);
     setAgendaDraft("");
     setPacketNotes("");
 
-    await loadMeetingData();
+    alert("Supabase insert completed");
   } catch (error) {
     console.error("Create meeting packet failed:", error);
     setSystemMessage(error.message || "Unable to create meeting packet.");
