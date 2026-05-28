@@ -156,13 +156,12 @@ setMeetingPackets(packetRows || []);
   );
 
   async function createMeetingPacket() {
-    alert("Create packet clicked");
-    
   try {
     setCreatingPacket(true);
     setSystemMessage("");
 
     if (!packetTitle.trim()) {
+      alert("Packet title is blank.");
       setSystemMessage("Meeting packet title is required.");
       return;
     }
@@ -177,17 +176,20 @@ setMeetingPackets(packetRows || []);
         status: "Draft",
       });
 
-    if (error) throw error;
+    if (error) {
+      alert(error.message);
+      throw error;
+    }
+
+    alert("Packet saved successfully.");
 
     setPacketTitle("");
     setAgendaDraft("");
     setPacketNotes("");
 
-    setSystemMessage("Meeting packet created successfully.");
-
-window.location.reload();
+    window.location.reload();
   } catch (error) {
-    console.error(error);
+    console.error("Create meeting packet failed:", error);
 
     setSystemMessage(
       error.message || "Unable to create meeting packet."
