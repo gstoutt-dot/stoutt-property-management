@@ -538,6 +538,20 @@ ${packet.packet_notes || "No packet notes provided."}
   >
     Print / Save as PDF
   </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      navigator.clipboard.writeText(
+        `${window.location.origin}/portal/board/meetings`
+      );
+
+      alert("Meeting page link copied for board distribution.");
+    }}
+    className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 hover:bg-blue-500/20"
+  >
+    Copy Board Link
+  </button>
 </div>
 
           {packet.agenda_text && (
