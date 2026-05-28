@@ -568,10 +568,7 @@ export default async function handler(req, res) {
 
     const ledgerSummary = buildLedgerSummary(ledgerEntries);
 
-    const resolvedCurrentBalance =
-      ledgerEntries.length > 0
-        ? ledgerSummary.net_balance_from_ledger
-        : money(balance.current_balance);
+    const resolvedCurrentBalance = money(balance.current_balance);
 
     const responseBalance = {
       ...balance,
