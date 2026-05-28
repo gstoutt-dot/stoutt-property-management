@@ -183,7 +183,7 @@ setMeetingPackets(packetRows || []);
 
     setSystemMessage("Meeting packet created successfully.");
 
-    await loadMeetingData();
+window.location.reload();
   } catch (error) {
     console.error(error);
 
