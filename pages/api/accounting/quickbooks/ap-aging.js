@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/ap-aging.js
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getValidQuickBooksConnection } from "../../../../lib/quickbooksTokenManager";
 
 const QUICKBOOKS_MINOR_VERSION = "75";
 
@@ -20,7 +21,12 @@ function extractRows(rows = []) {
       const colData = row.ColData || [];
 
       if (header) {
-        extracted.push({ type: "header", depth, name: header, columns: [] });
+        extracted.push({
+          type: "header",
+          depth,
+          name: header,
+          columns: [],
+        });
       }
 
       if (colData.length > 0) {
@@ -54,7 +60,10 @@ function extractRows(rows = []) {
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
-    return res.status(405).json({ success: false, error: "Method not allowed" });
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed",
+    });
   }
 
   try {
@@ -69,20 +78,7 @@ export default async function handler(req, res) {
 
     const reportDate = report_date || new Date().toISOString().slice(0, 10);
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .select("*")
-      .eq("association_id", association_id)
-      .eq("connection_status", "connected")
-      .maybeSingle();
-
-    if (connectionError) {
-      return res.status(500).json({
-        success: false,
-        error: "Unable to load QuickBooks connection.",
-        details: connectionError.message,
-      });
-    }
+    const connection = await getValidQuickBooksConnection(association_id);
 
     if (!connection) {
       return res.status(404).json({
@@ -92,10 +88,7 @@ export default async function handler(req, res) {
     }
 
     const realmId = connection.realm_id;
-    const accessToken =
-      connection.access_token ||
-      connection.quickbooks_access_token ||
-      connection.qbo_access_token;
+    const accessToken = connection.access_token;
 
     if (!realmId || !accessToken) {
       return res.status(400).json({
@@ -109,7 +102,8 @@ export default async function handler(req, res) {
       report_date: reportDate,
     });
 
-    const quickBooksUrl = `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/AgedPayables?${params.toString()}`;
+    const quickBooksUrl =
+      `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/AgedPayables?${params.toString()}`;
 
     const quickBooksResponse = await fetch(quickBooksUrl, {
       method: "GET",
@@ -122,6 +116,14 @@ export default async function handler(req, res) {
     const reportJson = await quickBooksResponse.json();
 
     if (!quickBooksResponse.ok) {
+      await supabaseAdmin
+        .from("quickbooks_connections")
+        .update({
+          sync_error: JSON.stringify(reportJson),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("association_id", association_id);
+
       return res.status(quickBooksResponse.status).json({
         success: false,
         error: "QuickBooks A/P Aging request failed.",
@@ -135,9 +137,23 @@ export default async function handler(req, res) {
         type: column?.ColType || "",
       })) || [];
 
+    await supabaseAdmin
+      .from("quickbooks_connections")
+      .update({
+        sync_error: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("association_id", association_id);
+
     return res.status(200).json({
       success: true,
       association_id,
+      token_status: "valid",
+      access_token_expires_at: connection.access_token_expires_at || null,
+      last_token_refresh_at:
+        connection.last_token_refresh_at ||
+        connection.last_refresh_at ||
+        null,
       report_name: "A/P Aging",
       report_period: reportJson?.Header?.ReportName || "A/P Aging",
       report_basis: reportJson?.Header?.ReportBasis || "Accrual",
