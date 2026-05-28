@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/sync-live-balances.js
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getValidQuickBooksConnection } from "../../../../lib/quickbooksTokenManager";
 
 import {
   buildOwnerBalanceRecordFromQuickBooksCustomer,
@@ -57,18 +58,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .select("*")
-      .eq("association_id", association_id)
-      .eq("connection_status", "connected")
-      .single();
+    const connection = await getValidQuickBooksConnection(association_id);
 
-    if (connectionError || !connection) {
+    if (!connection?.realm_id || !connection?.access_token) {
       return res.status(404).json({
         success: false,
-        error: "No active QuickBooks connection found for this association.",
-        details: connectionError?.message || null,
+        error: "No valid QuickBooks connection found for this association.",
       });
     }
 
@@ -95,6 +90,14 @@ export default async function handler(req, res) {
     const qbData = await qbResponse.json();
 
     if (!qbResponse.ok) {
+      await supabaseAdmin
+        .from("quickbooks_connections")
+        .update({
+          sync_error: JSON.stringify(qbData),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("association_id", association_id);
+
       return res.status(502).json({
         success: false,
         error: "Unable to pull QuickBooks live balances.",
@@ -190,6 +193,12 @@ export default async function handler(req, res) {
           : "Live QuickBooks balances synchronized with some save warnings.",
       association_id,
       realm_id: realmId,
+      token_status: "valid",
+      access_token_expires_at: connection.access_token_expires_at || null,
+      last_token_refresh_at:
+        connection.last_token_refresh_at ||
+        connection.last_refresh_at ||
+        null,
       pulled_accounts: balanceRecords.length,
       saved_accounts: savedCount,
       failed_accounts: saveErrors.length,
