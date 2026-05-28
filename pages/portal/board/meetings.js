@@ -482,8 +482,63 @@ setMeetingPackets(packetRows || []);
           </div>
 
           <h3 className="mt-4 text-2xl font-semibold text-white">
-            {packet.title}
-          </h3>
+  {packet.title}
+</h3>
+
+<div className="mt-4 flex flex-wrap gap-3">
+  <button
+    type="button"
+    onClick={() => {
+      const content = `
+${packet.title || "Meeting Packet"}
+
+STATUS:
+${packet.status || "Draft"}
+
+AGENDA:
+${packet.agenda_text || "No agenda provided."}
+
+PACKET NOTES:
+${packet.packet_notes || "No packet notes provided."}
+`;
+
+      const blob = new Blob([content], {
+        type: "text/plain;charset=utf-8",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = url;
+
+      link.download = `${String(
+        packet.title || "meeting-packet"
+      )
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")}.txt`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    }}
+    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+  >
+    Download Packet
+  </button>
+
+  <button
+    type="button"
+    onClick={() => window.print()}
+    className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+  >
+    Print / Save as PDF
+  </button>
+</div>
 
           {packet.agenda_text && (
             <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
