@@ -46,17 +46,21 @@ export default function BoardMeetings() {
 
       if (agendaError) throw agendaError;
 
-      const { data: packetRows, error: packetError } = await supabase
-  .from("board_meeting_packets")
-  .select("*")
-  .eq("association_id", DEFAULT_ASSOCIATION_ID)
-  .order("created_at", { ascending: false });
+      const packetResponse = await fetch(
+  `/api/board/meeting-packets/list?association_id=${DEFAULT_ASSOCIATION_ID}`
+);
 
-if (packetError) throw packetError;
+const packetPayload = await packetResponse.json();
+
+if (!packetResponse.ok || !packetPayload.success) {
+  throw new Error(
+    packetPayload.message || "Unable to load meeting packets."
+  );
+}
 
 setMeetings(meetingRows || []);
 setAgendaItems(agendaRows || []);
-setMeetingPackets(packetRows || []);
+setMeetingPackets(packetPayload.packets || []);
     } catch (error) {
       console.error("Unable to load board meetings:", error);
       setMeetings([]);
