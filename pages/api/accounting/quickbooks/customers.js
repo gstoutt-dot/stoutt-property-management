@@ -23,37 +23,16 @@ function parseUnitNumber(displayName = "") {
 async function saveCustomerSafely(customer) {
   const now = new Date().toISOString();
 
-  const { data: existingByCustomerId } = await supabaseAdmin
-    .from("accounting_identity_links")
-    .select("id")
-    .eq("association_id", customer.association_id)
-    .eq("quickbooks_customer_id", customer.quickbooks_customer_id)
-    .maybeSingle();
-
-  if (existingByCustomerId?.id) {
-    const { error } = await supabaseAdmin
-      .from("accounting_identity_links")
-      .update({
-        unit_number: customer.unit_number,
-        quickbooks_company_name: customer.quickbooks_company_name,
-        quickbooks_customer_display_name:
-          customer.quickbooks_customer_display_name,
-        current_balance: customer.current_balance,
-        sync_status: customer.sync_status,
-        last_synced_at: now,
-      })
-      .eq("id", existingByCustomerId.id);
-
-    if (error) throw error;
-    return;
-  }
-
-  const { data: existingByUnit } = await supabaseAdmin
+  const { data: existingByUnit, error: unitLookupError } = await supabaseAdmin
     .from("accounting_identity_links")
     .select("id")
     .eq("association_id", customer.association_id)
     .eq("unit_number", customer.unit_number)
     .maybeSingle();
+
+  if (unitLookupError) {
+    throw unitLookupError;
+  }
 
   if (existingByUnit?.id) {
     const { error } = await supabaseAdmin
@@ -70,7 +49,36 @@ async function saveCustomerSafely(customer) {
       .eq("id", existingByUnit.id);
 
     if (error) throw error;
-    return;
+    return "updated_by_unit";
+  }
+
+  const { data: existingByCustomerId, error: customerLookupError } =
+    await supabaseAdmin
+      .from("accounting_identity_links")
+      .select("id")
+      .eq("association_id", customer.association_id)
+      .eq("quickbooks_customer_id", customer.quickbooks_customer_id)
+      .maybeSingle();
+
+  if (customerLookupError) {
+    throw customerLookupError;
+  }
+
+  if (existingByCustomerId?.id) {
+    const { error } = await supabaseAdmin
+      .from("accounting_identity_links")
+      .update({
+        quickbooks_company_name: customer.quickbooks_company_name,
+        quickbooks_customer_display_name:
+          customer.quickbooks_customer_display_name,
+        current_balance: customer.current_balance,
+        sync_status: customer.sync_status,
+        last_synced_at: now,
+      })
+      .eq("id", existingByCustomerId.id);
+
+    if (error) throw error;
+    return "updated_by_customer_id";
   }
 
   const { error } = await supabaseAdmin
@@ -78,6 +86,7 @@ async function saveCustomerSafely(customer) {
     .insert(customer);
 
   if (error) throw error;
+  return "inserted";
 }
 
 export default async function handler(req, res) {
@@ -184,17 +193,24 @@ export default async function handler(req, res) {
       })
       .filter(Boolean);
 
-    const uniqueCustomers = Array.from(
+    const uniqueCustomersByUnit = Array.from(
       new Map(
         normalizedCustomers.map((customer) => [
-          `${customer.unit_number}-${customer.quickbooks_customer_id}`,
+          customer.unit_number,
           customer,
         ])
       ).values()
     );
 
-    for (const customer of uniqueCustomers) {
-      await saveCustomerSafely(customer);
+    const saveResults = [];
+
+    for (const customer of uniqueCustomersByUnit) {
+      const result = await saveCustomerSafely(customer);
+      saveResults.push({
+        unit_number: customer.unit_number,
+        quickbooks_customer_id: customer.quickbooks_customer_id,
+        result,
+      });
     }
 
     await supabaseAdmin
@@ -218,8 +234,11 @@ export default async function handler(req, res) {
         connection.last_refresh_at ||
         null,
       customer_count: customers.length,
-      saved_customer_count: uniqueCustomers.length,
-      customers: uniqueCustomers,
+      saved_customer_count: uniqueCustomersByUnit.length,
+      skipped_duplicate_customer_count:
+        normalizedCustomers.length - uniqueCustomersByUnit.length,
+      save_results: saveResults,
+      customers: uniqueCustomersByUnit,
     });
   } catch (error) {
     console.error("QuickBooks customers sync error:", error);
