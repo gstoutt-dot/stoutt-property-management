@@ -196,28 +196,78 @@ export default function BoardMeetings() {
   }
 
   async function notifyBoard(packet) {
-    try {
-      setSystemMessage("");
+  try {
+    setSystemMessage("");
 
-      const { error } = await supabase
-        .from("board_meeting_packets")
-        .update({
-          status: "Sent to Board",
-          board_notification_status: "Board Notified",
-          sent_to_board_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", packet.id);
+    const now = new Date().toISOString();
 
-      if (error) throw error;
+    const { error: packetError } = await supabase
+      .from("board_meeting_packets")
+      .update({
+        status: "Sent to Board",
+        board_notification_status: "Board Notified",
+        sent_to_board_at: now,
+        updated_at: now,
+      })
+      .eq("id", packet.id);
 
-      setSystemMessage("Meeting packet marked as sent to board.");
-      await loadMeetingData();
-    } catch (error) {
-      console.error("Board notification failed:", error);
-      setSystemMessage(error.message || "Unable to notify board.");
-    }
+    if (packetError) throw packetError;
+
+    const { error: approvalError } = await supabase
+      .from("board_approval_queue")
+      .insert({
+        association_id: DEFAULT_ASSOCIATION_ID,
+
+        title: packet.title || "Board Meeting Packet",
+
+        description:
+          packet.packet_notes ||
+          "Board meeting packet submitted for review.",
+
+        approval_type: "Meeting Packet Review",
+
+        workflow_status: "pending_board_review",
+
+        priority: "Normal",
+
+        board_action_required: true,
+
+        source_module: "Meeting Packets",
+
+        source_record_id: packet.id,
+
+        packet_agenda: packet.agenda_text || "",
+
+        packet_notes: packet.packet_notes || "",
+
+        attachments: packet.attachments || [],
+
+        board_actions_available: [
+          "Review Packet",
+          "Open Attachments",
+          "Acknowledge Receipt",
+          "Request More Information",
+        ],
+
+        created_at: now,
+        updated_at: now,
+      });
+
+    if (approvalError) throw approvalError;
+
+    setSystemMessage(
+      "Meeting packet successfully routed to Board Approval Queue."
+    );
+
+    await loadMeetingData();
+  } catch (error) {
+    console.error("Board notification failed:", error);
+
+    setSystemMessage(
+      error.message || "Unable to send packet to board."
+    );
   }
+}
 
   const meetingPrepRecords = useMemo(
     () =>
@@ -500,7 +550,7 @@ ${
                       onClick={() => notifyBoard(packet)}
                       className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20"
                     >
-                      Mark Sent to Board
+                      Send to Board
                     </button>
 
                     <label className="cursor-pointer rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 hover:bg-blue-500/20">
