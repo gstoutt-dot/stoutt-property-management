@@ -355,12 +355,14 @@ setMeetingPackets(packetRows || []);
 
     <div className="flex flex-wrap gap-4">
       <button
-        onClick={createMeetingPacket}
-        disabled={creatingPacket}
-        className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 py-4 font-semibold text-amber-300 hover:bg-amber-400/20"
-      >
-        {creatingPacket ? "Creating..." : "Create Meeting Packet"}
-      </button>
+  type="button"
+  onClick={() => {
+    createMeetingPacket();
+  }}
+  className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 py-4 font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Meeting Packet
+</button>
     </div>
   </div>
 </section>
