@@ -49,12 +49,7 @@ ${
     : "No attachments uploaded."
 }
 
-Available Board Actions:
-- Review Packet
-- Open Attachments
-- Acknowledge Receipt
-- Request More Information
-        `,
+,
         priority: "Normal",
         status: "Submitted",
         assigned_to: "Board",
