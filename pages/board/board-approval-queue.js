@@ -200,11 +200,13 @@ export default function BoardApprovalQueue() {
                       {action.title || "Board Approval Item"}
                     </h3>
 
-                    <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
-                      {action.description ||
-                        action.recommended_action ||
-                        "This item was routed for board approval."}
-                    </p>
+                    <div className="mt-3 max-w-5xl rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+  <div className="whitespace-pre-wrap text-sm leading-7 text-slate-200">
+    {action.description ||
+      action.recommended_action ||
+      "This item was routed for board approval."}
+  </div>
+</div>
                   </div>
 
                   <div className="grid min-w-[260px] gap-3">
