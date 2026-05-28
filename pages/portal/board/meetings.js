@@ -156,6 +156,7 @@ setMeetingPackets(packetRows || []);
   );
 
   async function createMeetingPacket() {
+  alert("Create packet button is working");
   try {
     setCreatingPacket(true);
     setSystemMessage("");
