@@ -88,38 +88,56 @@ export default async function handler(req, res) {
     }
 
     const customers = qbData?.QueryResponse?.Customer || [];
+    const now = new Date().toISOString();
 
-    const normalizedCustomers = customers.map((customer) => {
-      const displayName =
-        customer.DisplayName ||
-        customer.FullyQualifiedName ||
-        customer.CompanyName ||
-        "Unknown Customer";
+    const normalizedCustomers = customers
+      .map((customer) => {
+        const displayName =
+          customer.DisplayName ||
+          customer.FullyQualifiedName ||
+          customer.CompanyName ||
+          "Unknown Customer";
 
-      return {
-        association_id,
-        unit_number: parseUnitNumber(displayName),
-        owner_user_id: null,
-        quickbooks_company_name:
-          process.env.QUICKBOOKS_ENVIRONMENT === "production"
-            ? "QuickBooks Production"
-            : "QuickBooks Sandbox",
-        quickbooks_customer_id: customer.Id,
-        quickbooks_customer_display_name: displayName,
-        last_invoice_id: null,
-        last_payment_id: null,
-        current_balance: Number(customer.Balance || 0),
-        monthly_assessment: null,
-        sync_status: "customer_synced",
-        last_synced_at: new Date().toISOString(),
-      };
-    });
+        const unitNumber = parseUnitNumber(displayName);
 
-    if (normalizedCustomers.length > 0) {
+        if (!unitNumber) {
+          return null;
+        }
+
+        return {
+          association_id,
+          unit_number: unitNumber,
+          owner_user_id: null,
+          quickbooks_company_name:
+            process.env.QUICKBOOKS_ENVIRONMENT === "production"
+              ? "QuickBooks Production"
+              : "QuickBooks Sandbox",
+          quickbooks_customer_id: customer.Id,
+          quickbooks_customer_display_name: displayName,
+          last_invoice_id: null,
+          last_payment_id: null,
+          current_balance: Number(customer.Balance || 0),
+          monthly_assessment: null,
+          sync_status: "customer_synced",
+          last_synced_at: now,
+        };
+      })
+      .filter(Boolean);
+
+    const uniqueCustomersByUnit = Array.from(
+      new Map(
+        normalizedCustomers.map((customer) => [
+          customer.unit_number,
+          customer,
+        ])
+      ).values()
+    );
+
+    if (uniqueCustomersByUnit.length > 0) {
       const { error: upsertError } = await supabaseAdmin
         .from("accounting_identity_links")
-        .upsert(normalizedCustomers, {
-          onConflict: "association_id,quickbooks_customer_id",
+        .upsert(uniqueCustomersByUnit, {
+          onConflict: "association_id,unit_number",
         });
 
       if (upsertError) {
@@ -136,9 +154,9 @@ export default async function handler(req, res) {
     await supabaseAdmin
       .from("quickbooks_connections")
       .update({
-        last_customer_sync_at: new Date().toISOString(),
+        last_customer_sync_at: now,
         sync_error: null,
-        updated_at: new Date().toISOString(),
+        updated_at: now,
       })
       .eq("association_id", association_id);
 
@@ -154,7 +172,8 @@ export default async function handler(req, res) {
         connection.last_refresh_at ||
         null,
       customer_count: customers.length,
-      customers: normalizedCustomers,
+      saved_customer_count: uniqueCustomersByUnit.length,
+      customers: uniqueCustomersByUnit,
     });
   } catch (error) {
     console.error("QuickBooks customers sync error:", error);
