@@ -211,78 +211,31 @@ export default function BoardMeetings() {
       })
       .eq("id", packet.id);
 
-    if (packetError) throw packetError;
+    if (packetError) {
+      throw packetError;
+    }
 
-    const { error: approvalError } = await supabase
-  .from("admin_operational_records")
-  .insert({
-    association_id: DEFAULT_ASSOCIATION_ID,
+    const response = await fetch(
+      "/api/board/meeting-packets/send-to-board",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          packet,
+        }),
+      }
+    );
 
-    created_by: "Meeting Packet Workspace",
+    const result = await response.json();
 
-    created_by_role: "Admin",
-
-    request_type: "board_meeting_packet",
-
-    title: packet.title || "Board Meeting Packet",
-
-    description: `
-A meeting packet has been sent to the board for review.
-
-Packet ID:
-${packet.id}
-
-Agenda:
-${packet.agenda_text || "No agenda provided."}
-
-Packet Notes:
-${packet.packet_notes || "No packet notes provided."}
-
-Attachments:
-${
-  Array.isArray(packet.attachments) &&
-  packet.attachments.length > 0
-    ? packet.attachments
-        .map(
-          (file) =>
-            `- ${file.file_name || "Attachment"}: ${file.file_url}`
-        )
-        .join("\n")
-    : "No attachments uploaded."
-}
-
-Available Board Actions:
-- Review Packet
-- Open Attachments
-- Acknowledge Receipt
-- Request More Information
-    `,
-
-    priority: "Normal",
-
-    status: "Submitted",
-
-    assigned_to: "Board",
-
-    board_review_required: true,
-
-    owner_visible: false,
-
-    vendor_visible: false,
-
-    source_module: "Meeting Packets",
-
-    routing_target: "Board Approval Queue",
-
-    recommended_action:
-      "Review the meeting packet, open attachments, acknowledge receipt, or request more information.",
-
-    created_at: now,
-
-    updated_at: now,
-  });
-
-    if (approvalError) throw approvalError;
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Unable to route packet to board."
+      );
+    }
 
     setSystemMessage(
       "Meeting packet successfully routed to Board Approval Queue."
