@@ -7,13 +7,15 @@ const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const closedStatuses = ["completed", "archived", "closed"];
 
 export default function BoardMeetings() {
-  const [meetings, setMeetings] = useState([]);
-  const [agendaItems, setAgendaItems] = useState([]);
-  const [operationalRecords, setOperationalRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
+const [meetingPackets, setMeetingPackets] = useState([]);
+
+const [packetTitle, setPacketTitle] = useState("");
+const [agendaDraft, setAgendaDraft] = useState("");
+const [packetNotes, setPacketNotes] = useState("");
+
+const [creatingPacket, setCreatingPacket] = useState(false);
   useEffect(() => {
     loadMeetingData();
     loadMeetingRecords();
@@ -47,8 +49,17 @@ export default function BoardMeetings() {
 
       if (agendaError) throw agendaError;
 
-      setMeetings(meetingRows || []);
-      setAgendaItems(agendaRows || []);
+      const { data: packetRows, error: packetError } = await supabase
+  .from("board_meeting_packets")
+  .select("*")
+  .eq("association_id", DEFAULT_ASSOCIATION_ID)
+  .order("created_at", { ascending: false });
+
+if (packetError) throw packetError;
+
+setMeetings(meetingRows || []);
+setAgendaItems(agendaRows || []);
+setMeetingPackets(packetRows || []);
     } catch (error) {
       console.error("Unable to load board meetings:", error);
       setMeetings([]);
@@ -143,6 +154,46 @@ export default function BoardMeetings() {
       ),
     [operationalRecords]
   );
+
+  async function createMeetingPacket() {
+  try {
+    setCreatingPacket(true);
+    setSystemMessage("");
+
+    if (!packetTitle.trim()) {
+      setSystemMessage("Meeting packet title is required.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("board_meeting_packets")
+      .insert({
+        association_id: DEFAULT_ASSOCIATION_ID,
+        title: packetTitle,
+        agenda_text: agendaDraft,
+        packet_notes: packetNotes,
+        status: "Draft",
+      });
+
+    if (error) throw error;
+
+    setPacketTitle("");
+    setAgendaDraft("");
+    setPacketNotes("");
+
+    setSystemMessage("Meeting packet created successfully.");
+
+    await loadMeetingData();
+  } catch (error) {
+    console.error(error);
+
+    setSystemMessage(
+      error.message || "Unable to create meeting packet."
+    );
+  } finally {
+    setCreatingPacket(false);
+  }
+}
 
   const motionRecords = useMemo(
     () =>
@@ -257,6 +308,59 @@ export default function BoardMeetings() {
           </div>
         )}
 
+<section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+  <div className="flex flex-col gap-6">
+    <div>
+      <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+        Meeting Packet Builder
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold text-white">
+        Create Agenda & Packet
+      </h2>
+
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+        Draft meeting agendas, create packet records, preserve governance
+        documentation, and distribute board meeting preparation materials
+        directly inside SPM.
+      </p>
+    </div>
+
+    <input
+      value={packetTitle}
+      onChange={(event) => setPacketTitle(event.target.value)}
+      placeholder="Meeting packet title..."
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    />
+
+    <textarea
+      value={agendaDraft}
+      onChange={(event) => setAgendaDraft(event.target.value)}
+      placeholder="Draft meeting agenda..."
+      rows={8}
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    />
+
+    <textarea
+      value={packetNotes}
+      onChange={(event) => setPacketNotes(event.target.value)}
+      placeholder="Packet notes, preparation comments, board reminders..."
+      rows={5}
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    />
+
+    <div className="flex flex-wrap gap-4">
+      <button
+        onClick={createMeetingPacket}
+        disabled={creatingPacket}
+        className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 py-4 font-semibold text-amber-300 hover:bg-amber-400/20"
+      >
+        {creatingPacket ? "Creating..." : "Create Meeting Packet"}
+      </button>
+    </div>
+  </div>
+</section>
+
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           <OperationalPanel title="Meeting Preparation" items={meetingPrepRecords} />
           <OperationalPanel title="Packet Records" items={packetRecords} />
@@ -333,6 +437,67 @@ export default function BoardMeetings() {
             </div>
           </aside>
         </section>
+
+                  <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl">
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+        Packet Archive
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold text-white">
+        Meeting Packets
+      </h2>
+    </div>
+  </div>
+
+  <div className="mt-6 space-y-5">
+    {meetingPackets.length === 0 ? (
+      <Empty message="No meeting packets created yet." />
+    ) : (
+      meetingPackets.map((packet) => (
+        <div
+          key={packet.id}
+          className="rounded-2xl border border-white/10 bg-slate-900/80 p-6"
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
+              {packet.status || "Draft"}
+            </span>
+          </div>
+
+          <h3 className="mt-4 text-2xl font-semibold text-white">
+            {packet.title}
+          </h3>
+
+          {packet.agenda_text && (
+            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+              <p className="text-sm font-semibold text-amber-300">
+                Agenda
+              </p>
+
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-300">
+                {packet.agenda_text}
+              </p>
+            </div>
+          )}
+
+          {packet.packet_notes && (
+            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+              <p className="text-sm font-semibold text-emerald-300">
+                Packet Notes
+              </p>
+
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-300">
+                {packet.packet_notes}
+              </p>
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </div>
+</section>
 
         <div className="mt-10 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6">
           <h3 className="text-xl font-semibold text-emerald-100">
