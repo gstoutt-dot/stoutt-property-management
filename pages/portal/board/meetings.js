@@ -575,9 +575,58 @@ ${packet.packet_notes || "No packet notes provided."}
           </h3>
 
           <p className="mt-3 text-slate-300">
-            This page now preserves board meeting and agenda table visibility while
-            adding distributed operational rendering from Admin Operations Intake.
-          </p>
+  This page now preserves board meeting and agenda table visibility while
+  adding distributed operational rendering from Admin Operations Intake.
+</p>
+
+<div className="mt-6 grid gap-4 md:grid-cols-3">
+  <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5">
+    <p className="text-sm font-semibold text-amber-300">
+      Meeting Packets
+    </p>
+
+    <p className="mt-3 text-4xl font-bold text-white">
+      {meetingPackets.length}
+    </p>
+
+    <p className="mt-2 text-sm text-slate-400">
+      Saved governance packet records
+    </p>
+  </div>
+
+  <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5">
+    <p className="text-sm font-semibold text-emerald-300">
+      Draft Agendas
+    </p>
+
+    <p className="mt-3 text-4xl font-bold text-white">
+      {
+        meetingPackets.filter(
+          (packet) =>
+            String(packet.status || "").toLowerCase() === "draft"
+        ).length
+      }
+    </p>
+
+    <p className="mt-2 text-sm text-slate-400">
+      Agendas currently being prepared
+    </p>
+  </div>
+
+  <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5">
+    <p className="text-sm font-semibold text-blue-300">
+      Packet Downloads
+    </p>
+
+    <p className="mt-3 text-4xl font-bold text-white">
+      Ready
+    </p>
+
+    <p className="mt-2 text-sm text-slate-400">
+      Packets can now be downloaded or saved as PDF
+    </p>
+  </div>
+</div>
         </div>
       </section>
     </main>
