@@ -297,13 +297,14 @@ export default function BoardMeetings() {
             </p>
 
             <h1 className="mt-2 text-3xl font-semibold">
-              Meeting Packets
-            </h1>
+  Meeting & Support Documents
+</h1>
 
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              Prepare board meeting packets, draft agendas, upload packet
-              attachments, and distribute meeting materials to the board.
-            </p>
+<p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+  Organize meeting agendas, agenda items, engineering reports,
+  reserve studies, financial reviews, proposals, photos, and
+  supporting documents used for board and committee decisions.
+</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -327,23 +328,24 @@ export default function BoardMeetings() {
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Board Packet Operations
-          </p>
+  Meeting & Support Document Operations
+</p>
 
-          <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
-            Create, attach, download, and distribute meeting packets from one
-            board-ready workspace.
-          </h2>
+<h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
+  Build meeting agendas and organize supporting documentation for
+  board and committee review.
+</h2>
 
-          <p className="mt-4 max-w-4xl text-slate-300">
-            This page is now focused on real meeting packet preparation:
-            agenda drafting, packet notes, attachment uploads, packet archive,
-            PDF/print export, and board notification status.
-          </p>
+<p className="mt-4 max-w-4xl text-slate-300">
+  Store engineering studies, reserve studies, financial reports,
+  contractor proposals, photographs, inspections, legal documents,
+  and other materials that support specific agenda items and board
+  decisions.
+</p>
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-4">
-          <Metric label="Meeting Packets" value={meetingPackets.length} />
+          <Metric label="Meetings" value={meetingPackets.length} />
           <Metric
             label="Draft Packets"
             value={
@@ -376,12 +378,12 @@ export default function BoardMeetings() {
           <div className="flex flex-col gap-6">
             <div>
               <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Meeting Packet Builder
-              </p>
+  Meeting Archive
+</p>
 
-              <h2 className="mt-2 text-3xl font-bold text-white">
-                Create Agenda & Packet
-              </h2>
+<h2 className="mt-2 text-3xl font-bold text-white">
+  Meeting & Support Documents
+</h2>
 
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
                 Draft the agenda, add packet notes, save the packet, then upload
