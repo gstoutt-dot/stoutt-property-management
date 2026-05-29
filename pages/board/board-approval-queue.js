@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/bosClient";
 
 export default function BoardApprovalQueue() {
   const [actions, setActions] = useState([]);
@@ -9,35 +8,26 @@ export default function BoardApprovalQueue() {
 
   useEffect(() => {
     loadApprovals({ showLoading: true });
-
-    const interval = setInterval(() => {
-      loadApprovals({ showLoading: false });
-    }, 30000);
-
-    return () => clearInterval(interval);
   }, []);
 
   async function loadApprovals({ showLoading = false } = {}) {
     try {
-      if (showLoading) {
-        setLoading(true);
-      }
+      if (showLoading) setLoading(true);
 
       setSystemMessage("");
 
       const response = await fetch("/api/admin/operational-records");
-
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(
-          result.message || "Unable to load board approval queue."
-        );
+        throw new Error(result.message || "Unable to load board approval queue.");
       }
 
       const filteredItems = (result.records || []).filter((record) => {
         return (
           record.routing_target === "Board Approval Queue" ||
+          record.routing_target === "board_approval_queue" ||
+          record.assigned_to === "board" ||
           record.board_review_required === true
         );
       });
@@ -52,42 +42,39 @@ export default function BoardApprovalQueue() {
   }
 
   async function updateApproval(action, newStatus, eventType, message) {
-  try {
-    setSystemMessage("");
+    try {
+      setSystemMessage("");
 
-    const response = await fetch("/api/admin/update-operational-record", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: action.id,
-        status: newStatus,
-        board_event_type: eventType,
-        board_message: message,
-      }),
-    });
+      const response = await fetch("/api/admin/update-operational-record", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: action.id,
+          status: newStatus,
+          board_event_type: eventType,
+          board_message: message,
+        }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok || !result.success) {
-      throw new Error(
-        result.message || "Unable to update board approval item."
-      );
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to update board approval item.");
+      }
+
+      await loadApprovals({ showLoading: false });
+      setSystemMessage(message);
+    } catch (error) {
+      console.error("Unable to update approval:", error);
+      setSystemMessage(error.message || "Unable to update approval item.");
     }
-
-    await loadApprovals({ showLoading: false });
-    setSystemMessage(message);
-  } catch (error) {
-    console.error("Unable to update approval:", error);
-    setSystemMessage(error.message || "Unable to update approval item.");
   }
-}
 
   const approvalItems = useMemo(() => {
     return actions.filter((action) => {
       const status = String(action.status || "submitted").toLowerCase();
-
       return !["completed", "archived", "closed"].includes(status);
     });
   }, [actions]);
@@ -126,9 +113,8 @@ export default function BoardApprovalQueue() {
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
-            Admin and Management create and route approval items. The board can
-            acknowledge, approve, or request more information without entering
-            the Admin Dashboard.
+            Admin and Management create and route approval items. Attachments are
+            displayed as clean file buttons instead of raw links or metadata.
           </p>
         </div>
 
@@ -140,35 +126,24 @@ export default function BoardApprovalQueue() {
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           <Metric label="Approval Items" value={approvalItems.length} />
-
           <Metric
             label="Pending Review"
             value={
-              approvalItems.filter((item) => {
-                const status = String(item.status || "submitted").toLowerCase();
-
-                return (
-                  status === "submitted" ||
-                  status === "open" ||
-                  status === "pending" ||
-                  status === "pending_review"
-                );
-              }).length
+              approvalItems.filter((item) =>
+                ["submitted", "open", "pending", "pending_review", "board_review"].includes(
+                  String(item.status || "submitted").toLowerCase()
+                )
+              ).length
             }
           />
-
           <Metric
             label="In Progress"
             value={
-              approvalItems.filter((item) => {
-                const status = String(item.status || "").toLowerCase();
-
-                return (
-                  status === "in_progress" ||
-                  status === "board_acknowledged" ||
-                  status === "more_info_requested"
-                );
-              }).length
+              approvalItems.filter((item) =>
+                ["in_progress", "board_acknowledged", "more_info_requested"].includes(
+                  String(item.status || "").toLowerCase()
+                )
+              ).length
             }
           />
         </div>
@@ -179,104 +154,104 @@ export default function BoardApprovalQueue() {
           ) : approvalItems.length === 0 ? (
             <Empty message="No board approval items are currently active." />
           ) : (
-            approvalItems.map((action) => (
-              <article
-                key={action.id}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-              >
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge>{action.id}</Badge>
+            approvalItems.map((action) => {
+              const attachments = extractBoardAttachments(action.description);
 
-                      <Badge>
-                        {action.category || action.request_type || "Approval"}
-                      </Badge>
+              return (
+                <article
+                  key={action.id}
+                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
+                >
+                  <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="w-full">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge>{action.id}</Badge>
+                        <Badge>{action.category || action.request_type || "Approval"}</Badge>
+                        <Badge>{action.status || "Submitted"}</Badge>
+                      </div>
 
-                      <Badge>{action.status || "Submitted"}</Badge>
+                      <h3 className="mt-4 text-2xl font-semibold">
+                        {action.title || "Board Approval Item"}
+                      </h3>
+
+                      <div className="mt-3 max-w-5xl rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+                        <div className="whitespace-pre-wrap text-sm leading-7 text-slate-200">
+                          {cleanApprovalDescription(action.description) ||
+                            action.recommended_action ||
+                            "This item was routed for board approval."}
+                        </div>
+
+                        {attachments.length > 0 && (
+                          <div className="mt-5 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-4">
+                            <p className="text-sm font-semibold text-blue-200">
+                              Attachments
+                            </p>
+
+                            <div className="mt-3 grid gap-3">
+                              {attachments.map((file, index) => (
+                                <a
+                                  key={`${file.url}-${index}`}
+                                  href={file.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-100 hover:bg-blue-500/20"
+                                >
+                                  {attachmentButtonLabel(file)}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <h3 className="mt-4 text-2xl font-semibold">
-                      {action.title || "Board Approval Item"}
-                    </h3>
+                    <div className="grid min-w-[260px] gap-3">
+                      <button
+                        onClick={() =>
+                          updateApproval(
+                            action,
+                            "board_acknowledged",
+                            "board_acknowledged",
+                            `Board acknowledged: ${action.title}`
+                          )
+                        }
+                        className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
+                      >
+                        Acknowledge
+                      </button>
 
-                    <div className="mt-3 max-w-5xl rounded-2xl border border-white/10 bg-slate-950/60 p-5">
-  <div className="whitespace-pre-wrap text-sm leading-7 text-slate-200">
-    {action.description ||
-      action.recommended_action ||
-      "This item was routed for board approval."}
-  </div>
+                      <button
+                        onClick={() =>
+                          updateApproval(
+                            action,
+                            "board_approved",
+                            "board_approved",
+                            `Board approved: ${action.title}`
+                          )
+                        }
+                        className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+                      >
+                        Approve
+                      </button>
 
-  {extractAttachmentLinks(action.description).length > 0 && (
-    <div className="mt-5 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-4">
-      <p className="text-sm font-semibold text-blue-200">
-        Packet Attachments
-      </p>
-
-      <div className="mt-3 grid gap-3">
-        {extractAttachmentLinks(action.description).map((file, index) => (
-          <a
-            key={`${file.url}-${index}`}
-            href={file.url}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-100 hover:bg-blue-500/20"
-          >
-            Open PDF / Attachment
-          </a>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
+                      <button
+                        onClick={() =>
+                          updateApproval(
+                            action,
+                            "more_info_requested",
+                            "more_info_requested",
+                            `Board requested more information: ${action.title}`
+                          )
+                        }
+                        className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-300 hover:bg-sky-400/20"
+                      >
+                        Request More Info
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="grid min-w-[260px] gap-3">
-                    <button
-                      onClick={() =>
-                        updateApproval(
-                          action,
-                          "board_acknowledged",
-                          "board_acknowledged",
-                          `Board acknowledged: ${action.title}`
-                        )
-                      }
-                      className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
-                    >
-                      Acknowledge
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        updateApproval(
-                          action,
-                          "board_approved",
-                          "board_approved",
-                          `Board approved: ${action.title}`
-                        )
-                      }
-                      className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        updateApproval(
-                          action,
-                          "more_info_requested",
-                          "more_info_requested",
-                          `Board requested more information: ${action.title}`
-                        )
-                      }
-                      className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-300 hover:bg-sky-400/20"
-                    >
-                      Request More Info
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))
+                </article>
+              );
+            })
           )}
         </section>
       </section>
@@ -284,11 +259,44 @@ export default function BoardApprovalQueue() {
   );
 }
 
+function cleanApprovalDescription(description = "") {
+  return String(description || "")
+    .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
+    .trim();
+}
+
+function extractBoardAttachments(description = "") {
+  const text = String(description || "");
+
+  const structuredMatches = [
+    ...text.matchAll(
+      /CALENDAR_ATTACHMENT_METADATA_START\s*([\s\S]*?)\s*CALENDAR_ATTACHMENT_METADATA_END/g
+    ),
+  ];
+
+  const structuredAttachments = structuredMatches
+    .map((match) => {
+      try {
+        return JSON.parse(match[1]);
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .filter((file) => file.url);
+
+  if (structuredAttachments.length > 0) {
+    return structuredAttachments;
+  }
+
+  return extractAttachmentLinks(description);
+}
+
 function extractAttachmentLinks(description = "") {
   const text = String(description || "");
 
   const attachmentSection =
-    text.split("Attachments:")[1]?.split("Available Board Actions:")[0] || "";
+    text.split("Attachments:")[1]?.split("Available Board Actions:")[0] || text;
 
   const matches =
     attachmentSection.match(
@@ -298,19 +306,68 @@ function extractAttachmentLinks(description = "") {
   return matches.map((rawUrl) => {
     let cleanUrl = rawUrl.trim();
 
-    const pdfIndex = cleanUrl.toLowerCase().indexOf(".pdf");
-
-    if (pdfIndex !== -1) {
-      cleanUrl = cleanUrl.slice(0, pdfIndex + 4);
-    }
+    [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".xlsx", ".xls", ".csv", ".doc", ".docx"].forEach(
+      (extension) => {
+        const index = cleanUrl.toLowerCase().indexOf(extension);
+        if (index !== -1) {
+          cleanUrl = cleanUrl.slice(0, index + extension.length);
+        }
+      }
+    );
 
     return {
       url: cleanUrl,
-      label: decodeURIComponent(
-        cleanUrl.split("/").pop() || "Open Attachment"
-      ),
+      label: decodeURIComponent(cleanUrl.split("/").pop() || "Open Attachment"),
+      name: decodeURIComponent(cleanUrl.split("/").pop() || "Open Attachment"),
+      category: inferCategoryFromUrl(cleanUrl),
+      type: "",
     };
   });
+}
+
+function attachmentButtonLabel(file) {
+  const category = String(file.category || "").toLowerCase();
+  const type = String(file.type || "").toLowerCase();
+  const name = file.name || file.label || "Attachment";
+
+  if (category === "pdf" || type.includes("pdf") || name.toLowerCase().endsWith(".pdf")) {
+    return `Open PDF: ${name}`;
+  }
+
+  if (
+    category === "image" ||
+    type.startsWith("image/") ||
+    /\.(png|jpg|jpeg|webp)$/i.test(name)
+  ) {
+    return `View Image: ${name}`;
+  }
+
+  if (
+    category === "spreadsheet" ||
+    /\.(xlsx|xls|csv)$/i.test(name)
+  ) {
+    return `Open Spreadsheet: ${name}`;
+  }
+
+  if (
+    category === "document" ||
+    /\.(doc|docx)$/i.test(name)
+  ) {
+    return `Open Document: ${name}`;
+  }
+
+  return `Open Attachment: ${name}`;
+}
+
+function inferCategoryFromUrl(url = "") {
+  const lower = String(url).toLowerCase();
+
+  if (lower.endsWith(".pdf")) return "pdf";
+  if (/\.(png|jpg|jpeg|webp)$/.test(lower)) return "image";
+  if (/\.(xlsx|xls|csv)$/.test(lower)) return "spreadsheet";
+  if (/\.(doc|docx)$/.test(lower)) return "document";
+
+  return "other";
 }
 
 function Metric({ label, value }) {
