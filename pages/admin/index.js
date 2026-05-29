@@ -187,6 +187,14 @@ function formatStatus(value) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function cleanAdminRecordDescription(description = "") {
+  return String(description || "")
+    .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
+    .replace(/https?:\/\/\S+/gi, "")
+    .replace(/Attachments?:[\s\S]*$/gi, "")
+    .trim();
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
 
@@ -554,10 +562,10 @@ export default function AdminDashboard() {
                           {record.title}
                         </h3>
 
-                        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-                          {record.description ||
-                            "Administrative operational record submitted for review."}
-                        </p>
+                        <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-7 text-slate-400">
+  {cleanAdminRecordDescription(record.description) ||
+    "Administrative operational record submitted for review."}
+</p>
 
                         <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
                           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
