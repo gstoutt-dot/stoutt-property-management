@@ -20,6 +20,7 @@ export default function BoardMeetings() {
   const [packetNotes, setPacketNotes] = useState("");
   const [creatingPacket, setCreatingPacket] = useState(false);
   const [uploadingPacketId, setUploadingPacketId] = useState("");
+  const [documentCategories, setDocumentCategories] = useState({});
 
   useEffect(() => {
     loadMeetingData();
@@ -138,62 +139,63 @@ export default function BoardMeetings() {
     }
   }
 
-  async function uploadPacketAttachment(packet, file) {
-    if (!file || !packet?.id) return;
+  async function uploadPacketAttachment(packet, file, documentCategory = "other") {
+  if (!file || !packet?.id) return;
 
-    try {
-      setUploadingPacketId(packet.id);
-      setSystemMessage("");
+  try {
+    setUploadingPacketId(packet.id);
+    setSystemMessage("");
 
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const filePath = `${DEFAULT_ASSOCIATION_ID}/${packet.id}/${Date.now()}-${safeName}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const filePath = `${DEFAULT_ASSOCIATION_ID}/${packet.id}/${Date.now()}-${safeName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("meeting-packets")
-        .upload(filePath, file, {
-          upsert: false,
-        });
+    const { error: uploadError } = await supabase.storage
+      .from("meeting-packets")
+      .upload(filePath, file, {
+        upsert: false,
+      });
 
-      if (uploadError) throw uploadError;
+    if (uploadError) throw uploadError;
 
-      const { data: publicData } = supabase.storage
-        .from("meeting-packets")
-        .getPublicUrl(filePath);
+    const { data: publicData } = supabase.storage
+      .from("meeting-packets")
+      .getPublicUrl(filePath);
 
-      const existingAttachments = Array.isArray(packet.attachments)
-        ? packet.attachments
-        : [];
+    const existingAttachments = Array.isArray(packet.attachments)
+      ? packet.attachments
+      : [];
 
-      const nextAttachments = [
-        ...existingAttachments,
-        {
-          file_name: file.name,
-          file_path: filePath,
-          file_url: publicData?.publicUrl || "",
-          file_type: file.type || "file",
-          uploaded_at: new Date().toISOString(),
-        },
-      ];
+    const nextAttachments = [
+      ...existingAttachments,
+      {
+        file_name: file.name,
+        file_path: filePath,
+        file_url: publicData?.publicUrl || "",
+        file_type: file.type || "file",
+        document_category: documentCategory,
+        uploaded_at: new Date().toISOString(),
+      },
+    ];
 
-      const { error: updateError } = await supabase
-        .from("board_meeting_packets")
-        .update({
-          attachments: nextAttachments,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", packet.id);
+    const { error: updateError } = await supabase
+      .from("board_meeting_packets")
+      .update({
+        attachments: nextAttachments,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", packet.id);
 
-      if (updateError) throw updateError;
+    if (updateError) throw updateError;
 
-      setSystemMessage("Attachment uploaded to meeting packet.");
-      await loadMeetingData();
-    } catch (error) {
-      console.error("Packet upload failed:", error);
-      setSystemMessage(error.message || "Unable to upload attachment.");
-    } finally {
-      setUploadingPacketId("");
-    }
+    setSystemMessage("Support document uploaded successfully.");
+    await loadMeetingData();
+  } catch (error) {
+    console.error("Document upload failed:", error);
+    setSystemMessage(error.message || "Unable to upload support document.");
+  } finally {
+    setUploadingPacketId("");
   }
+}
 
   async function notifyBoard(packet) {
   try {
@@ -550,22 +552,51 @@ ${
                       Send to Board
                     </button>
 
-                    <label className="cursor-pointer rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 hover:bg-blue-500/20">
-  {uploadingPacketId === packet.id
-    ? "Uploading..."
-    : "Upload Support Document"}
+                    <div className="flex flex-wrap items-center gap-3">
+  <select
+    value={documentCategories[packet.id] || "other"}
+    onChange={(event) =>
+      setDocumentCategories((current) => ({
+        ...current,
+        [packet.id]: event.target.value,
+      }))
+    }
+    className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+  >
+    <option value="engineering_study">Engineering Study</option>
+    <option value="reserve_study">Reserve Study</option>
+    <option value="financial_report">Financial Report</option>
+    <option value="proposal">Proposal</option>
+    <option value="contract">Contract</option>
+    <option value="photo">Photo</option>
+    <option value="legal_document">Legal Document</option>
+    <option value="insurance_document">Insurance Document</option>
+    <option value="other">Other</option>
+  </select>
 
-  <input
-    type="file"
-    className="hidden"
-    accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx"
-    onChange={(event) => {
-      const file = event.target.files?.[0];
-      uploadPacketAttachment(packet, file);
-      event.target.value = "";
-    }}
-  />
-</label>
+  <label className="cursor-pointer rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 hover:bg-blue-500/20">
+    {uploadingPacketId === packet.id
+      ? "Uploading..."
+      : "Upload Support Document"}
+
+    <input
+      type="file"
+      className="hidden"
+      accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx"
+      onChange={(event) => {
+        const file = event.target.files?.[0];
+
+        uploadPacketAttachment(
+          packet,
+          file,
+          documentCategories[packet.id] || "other"
+        );
+
+        event.target.value = "";
+      }}
+    />
+  </label>
+</div>
                   </div>
 
                   {packet.agenda_text && (
@@ -608,7 +639,8 @@ ${
   rel="noreferrer"
   className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
 >
-  📄 {file.file_name || "Open Support Document"}
+  📄 {formatDocumentCategory(file.document_category)} —{" "}
+{file.file_name || "Open Support Document"} 
 </a>
                           ))}
                         </div>
@@ -695,6 +727,12 @@ function OperationalPanel({ title, items }) {
       </div>
     </div>
   );
+}
+
+function formatDocumentCategory(value = "") {
+  return String(value || "other")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function Metric({ label, value }) {
