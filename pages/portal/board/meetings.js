@@ -551,20 +551,21 @@ ${
                     </button>
 
                     <label className="cursor-pointer rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 hover:bg-blue-500/20">
-                      {uploadingPacketId === packet.id
-                        ? "Uploading..."
-                        : "Upload Attachment"}
+  {uploadingPacketId === packet.id
+    ? "Uploading..."
+    : "Upload Support Document"}
 
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          uploadPacketAttachment(packet, file);
-                          event.target.value = "";
-                        }}
-                      />
-                    </label>
+  <input
+    type="file"
+    className="hidden"
+    accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx"
+    onChange={(event) => {
+      const file = event.target.files?.[0];
+      uploadPacketAttachment(packet, file);
+      event.target.value = "";
+    }}
+  />
+</label>
                   </div>
 
                   {packet.agenda_text && (
@@ -595,7 +596,7 @@ ${
                     packet.attachments.length > 0 && (
                       <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
                         <p className="text-sm font-semibold text-blue-300">
-                          Attachments
+                          Support Documents
                         </p>
 
                         <div className="mt-4 grid gap-3">
