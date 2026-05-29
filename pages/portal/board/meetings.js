@@ -386,10 +386,11 @@ export default function BoardMeetings() {
 </h2>
 
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                Draft the agenda, add packet notes, save the packet, then upload
-                supporting documents, spreadsheets, photos, or other board
-                materials after the packet is created.
-              </p>
+  Create the agenda first. Then upload engineering reports,
+  reserve studies, financial reports, proposals, photographs,
+  contracts, legal documents, and other support materials that
+  will help the board evaluate each agenda item.
+</p>
             </div>
 
             <input
@@ -400,12 +401,24 @@ export default function BoardMeetings() {
             />
 
             <textarea
-              value={agendaDraft}
-              onChange={(event) => setAgendaDraft(event.target.value)}
-              placeholder="Draft meeting agenda..."
-              rows={8}
-              className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
-            />
+  value={agendaDraft}
+  onChange={(event) => setAgendaDraft(event.target.value)}
+  placeholder={`Example:
+
+1. Call to Order
+
+2. Roof Engineering Review
+
+3. Reserve Study Discussion
+
+4. Financial Review
+
+5. Committee Reports
+
+6. Adjournment`}
+  rows={10}
+  className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+/>
 
             <textarea
   value={packetNotes}
