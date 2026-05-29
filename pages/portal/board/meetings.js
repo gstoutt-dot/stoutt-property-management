@@ -187,8 +187,20 @@ export default function BoardMeetings() {
 
     if (updateError) throw updateError;
 
-    setSystemMessage("Support document uploaded successfully.");
-    await loadMeetingData();
+    setMeetingPackets((currentPackets) =>
+  currentPackets.map((currentPacket) =>
+    currentPacket.id === packet.id
+      ? {
+          ...currentPacket,
+          attachments: nextAttachments,
+          updated_at: new Date().toISOString(),
+        }
+      : currentPacket
+  )
+);
+
+setSystemMessage("Support document uploaded successfully.");
+await loadMeetingData();
   } catch (error) {
     console.error("Document upload failed:", error);
     setSystemMessage(error.message || "Unable to upload support document.");
