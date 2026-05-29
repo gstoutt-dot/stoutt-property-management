@@ -11,8 +11,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const { event } = req.body || {};
-
+    const { event, attachment } = req.body || {};
     if (!event?.id) {
       return res.status(400).json({
         success: false,
@@ -22,19 +21,34 @@ export default async function handler(req, res) {
 
     const title = event.title || "Calendar Event Review";
 
-    const description = [
-      `Calendar Event: ${title}`,
+    const attachmentBlock = attachment?.url
+  ? [
       "",
-      `Event Type: ${event.event_type || "general"}`,
-      `Status: ${event.status || "scheduled"}`,
-      `Priority: ${event.priority || "normal"}`,
-      `Start: ${event.start_time || "Not specified"}`,
-      `End: ${event.end_time || "Not specified"}`,
-      `Location: ${event.location || "Not specified"}`,
-      "",
-      "Calendar Details:",
-      event.description || "No description provided.",
-    ].join("\n");
+      "CALENDAR_ATTACHMENT_METADATA_START",
+      JSON.stringify({
+        name: attachment.name || "Calendar Attachment",
+        type: attachment.type || "application/octet-stream",
+        category: attachment.category || "other",
+        url: attachment.url,
+      }),
+      "CALENDAR_ATTACHMENT_METADATA_END",
+    ].join("\n")
+  : "";
+
+const description = [
+  `Calendar Event: ${title}`,
+  "",
+  `Event Type: ${event.event_type || "general"}`,
+  `Status: ${event.status || "scheduled"}`,
+  `Priority: ${event.priority || "normal"}`,
+  `Start: ${event.start_time || "Not specified"}`,
+  `End: ${event.end_time || "Not specified"}`,
+  `Location: ${event.location || "Not specified"}`,
+  "",
+  "Calendar Details:",
+  event.description || "No description provided.",
+  attachmentBlock,
+].join("\n");
 
     const now = new Date().toISOString();
 
