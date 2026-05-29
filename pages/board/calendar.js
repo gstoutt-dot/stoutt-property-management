@@ -47,13 +47,10 @@ export default function AssociationCalendar() {
     loadCalendarEvents();
     loadCalendarRecords();
 
-    const interval = setInterval(() => {
-      loadCalendarEvents();
-      loadCalendarRecords();
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, []);
+    useEffect(() => {
+  loadCalendarEvents();
+  loadCalendarRecords();
+}, []);
 
   async function loadCalendarEvents() {
     try {
