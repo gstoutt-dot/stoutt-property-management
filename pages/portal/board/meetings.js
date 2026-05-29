@@ -596,20 +596,20 @@ ${
                     packet.attachments.length > 0 && (
                       <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
                         <p className="text-sm font-semibold text-blue-300">
-                          Support Documents
+                          Support Documents Available for Board Review
                         </p>
 
                         <div className="mt-4 grid gap-3">
                           {packet.attachments.map((file, index) => (
                             <a
-                              key={`${file.file_name}-${index}`}
-                              href={file.file_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-                            >
-                              {file.file_name || "Open Attachment"}
-                            </a>
+  key={`${file.file_name}-${index}`}
+  href={file.file_url}
+  target="_blank"
+  rel="noreferrer"
+  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+>
+  📄 {file.file_name || "Open Support Document"}
+</a>
                           ))}
                         </div>
                       </div>
