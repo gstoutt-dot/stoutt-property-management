@@ -44,10 +44,6 @@ export default function AssociationCalendar() {
   });
 
   useEffect(() => {
-    loadCalendarEvents();
-    loadCalendarRecords();
-
-    useEffect(() => {
   loadCalendarEvents();
   loadCalendarRecords();
 }, []);
