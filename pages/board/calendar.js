@@ -166,6 +166,33 @@ export default function AssociationCalendar() {
     }
   }
 
+  async function sendEventToBoard(event) {
+  if (!event?.id) return;
+
+  try {
+    setSystemMessage("");
+
+    const response = await fetch("/api/calendar/send-to-board", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ event }),
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to send calendar item to board.");
+    }
+
+    setSystemMessage("Calendar item sent to the Board Approval Queue.");
+  } catch (error) {
+    console.error("Unable to send calendar item to board:", error);
+    setSystemMessage(error.message || "Unable to send calendar item to board.");
+  }
+}
+
   async function updateEventStatus(eventId, status) {
     if (!eventId) return;
 
@@ -528,10 +555,11 @@ export default function AssociationCalendar() {
               ) : (
                 filteredEvents.map((event) => (
                   <CalendarCard
-                    key={event.id}
-                    event={event}
-                    onStatusChange={updateEventStatus}
-                  />
+  key={event.id}
+  event={event}
+  onStatusChange={updateEventStatus}
+  onSendToBoard={sendEventToBoard}
+/>
                 ))
               )}
             </div>
@@ -619,7 +647,7 @@ function OperationalPanel({ title, items, recordType }) {
   );
 }
 
-function CalendarCard({ event, onStatusChange }) {
+  function CalendarCard({ event, onStatusChange, onSendToBoard }) {
   const status = String(event.status || "scheduled").toLowerCase();
   const isCompleted = status === "completed";
   const isCancelled = status === "cancelled";
@@ -668,6 +696,12 @@ function CalendarCard({ event, onStatusChange }) {
         <div className="flex flex-wrap gap-3 lg:justify-end">
           {!isCompleted && !isCancelled && (
             <>
+            <button
+  onClick={() => onSendToBoard(event)}
+  className="rounded-full border border-amber-400/30 px-5 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/10"
+>
+  Send to Board
+</button>
               <button
                 onClick={() => onStatusChange(event.id, "confirmed")}
                 className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10"
