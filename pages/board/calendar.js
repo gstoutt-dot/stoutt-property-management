@@ -50,7 +50,7 @@ export default function AssociationCalendar() {
     const interval = setInterval(() => {
       loadCalendarEvents();
       loadCalendarRecords();
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
