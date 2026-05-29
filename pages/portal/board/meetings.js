@@ -408,12 +408,12 @@ export default function BoardMeetings() {
             />
 
             <textarea
-              value={packetNotes}
-              onChange={(event) => setPacketNotes(event.target.value)}
-              placeholder="Packet notes, preparation comments, board reminders..."
-              rows={5}
-              className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
-            />
+  value={packetNotes}
+  onChange={(event) => setPacketNotes(event.target.value)}
+  placeholder="Agenda support summary: describe the background documents, engineering studies, proposals, photos, financial reports, or materials that support the agenda items..."
+  rows={5}
+  className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+/>
 
             <div className="flex flex-wrap gap-4">
               <button
@@ -569,7 +569,7 @@ ${
                   {packet.packet_notes && (
                     <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
                       <p className="text-sm font-semibold text-emerald-300">
-                        Packet Notes
+                          Agenda Support Summary
                       </p>
 
                       <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-300">
