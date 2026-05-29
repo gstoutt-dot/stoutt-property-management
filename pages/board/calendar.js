@@ -6,6 +6,7 @@ const closedStatuses = ["completed", "archived", "closed", "cancelled"];
 
 const calendarEventTypes = [
   "board_meeting",
+  "committee_meeting",
   "annual_meeting",
   "budget_meeting",
   "inspection",
@@ -56,7 +57,9 @@ export default function AssociationCalendar() {
 
   async function loadCalendarEvents() {
     try {
-      setLoadingEvents(true);
+      if (events.length === 0) {
+  setLoadingEvents(true);
+}
       setSystemMessage("");
 
       const response = await fetch(
@@ -83,8 +86,9 @@ export default function AssociationCalendar() {
 
   async function loadCalendarRecords() {
     try {
-      setLoadingRecords(true);
-
+      if (operationalRecords.length === 0) {
+  setLoadingRecords(true);
+}
       const response = await fetch(
         `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
