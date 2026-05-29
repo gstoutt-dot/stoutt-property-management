@@ -146,61 +146,46 @@ export default function BoardMeetings() {
     setUploadingPacketId(packet.id);
     setSystemMessage("");
 
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-    const filePath = `${DEFAULT_ASSOCIATION_ID}/${packet.id}/${Date.now()}-${safeName}`;
+    const fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-    const { error: uploadError } = await supabase.storage
-      .from("meeting-packets")
-      .upload(filePath, file, {
-        upsert: false,
-      });
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
-    if (uploadError) throw uploadError;
-
-    const { data: publicData } = supabase.storage
-      .from("meeting-packets")
-      .getPublicUrl(filePath);
-
-    const existingAttachments = Array.isArray(packet.attachments)
-      ? packet.attachments
-      : [];
-
-    const nextAttachments = [
-      ...existingAttachments,
+    const response = await fetch(
+      "/api/board/meeting-packets/upload-support-document",
       {
-        file_name: file.name,
-        file_path: filePath,
-        file_url: publicData?.publicUrl || "",
-        file_type: file.type || "file",
-        document_category: documentCategory,
-        uploaded_at: new Date().toISOString(),
-      },
-    ];
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          packet_id: packet.id,
+          file_name: file.name,
+          file_type: file.type,
+          file_base64: fileBase64,
+          document_category: documentCategory,
+        }),
+      }
+    );
 
-    const { error: updateError } = await supabase
-      .from("board_meeting_packets")
-      .update({
-        attachments: nextAttachments,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", packet.id);
+    const result = await response.json();
 
-    if (updateError) throw updateError;
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to upload support document.");
+    }
 
     setMeetingPackets((currentPackets) =>
-  currentPackets.map((currentPacket) =>
-    currentPacket.id === packet.id
-      ? {
-          ...currentPacket,
-          attachments: nextAttachments,
-          updated_at: new Date().toISOString(),
-        }
-      : currentPacket
-  )
-);
+      currentPackets.map((currentPacket) =>
+        currentPacket.id === packet.id ? result.packet : currentPacket
+      )
+    );
 
-setSystemMessage("Support document uploaded successfully.");
-await loadMeetingData();
+    setSystemMessage("Support document uploaded and attached to this meeting.");
+    await loadMeetingData();
   } catch (error) {
     console.error("Document upload failed:", error);
     setSystemMessage(error.message || "Unable to upload support document.");
