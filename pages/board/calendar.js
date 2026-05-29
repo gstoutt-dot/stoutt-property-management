@@ -31,6 +31,7 @@ export default function AssociationCalendar() {
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [saving, setSaving] = useState(false);
   const [systemMessage, setSystemMessage] = useState("");
+  const [attachmentDrafts, setAttachmentDrafts] = useState({});
 
   const [form, setForm] = useState({
     title: "",
@@ -44,15 +45,16 @@ export default function AssociationCalendar() {
   });
 
   useEffect(() => {
-  loadCalendarEvents();
-  loadCalendarRecords();
-}, []);
+    loadCalendarEvents();
+    loadCalendarRecords();
+  }, []);
 
   async function loadCalendarEvents() {
     try {
       if (events.length === 0) {
-  setLoadingEvents(true);
-}
+        setLoadingEvents(true);
+      }
+
       setSystemMessage("");
 
       const response = await fetch(
@@ -80,8 +82,9 @@ export default function AssociationCalendar() {
   async function loadCalendarRecords() {
     try {
       if (operationalRecords.length === 0) {
-  setLoadingRecords(true);
-}
+        setLoadingRecords(true);
+      }
+
       const response = await fetch(
         `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
@@ -166,32 +169,84 @@ export default function AssociationCalendar() {
     }
   }
 
-  async function sendEventToBoard(event) {
-  if (!event?.id) return;
+  async function uploadCalendarAttachment(file, attachmentCategory) {
+    if (!file) return null;
 
-  try {
-    setSystemMessage("");
+    const fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-    const response = await fetch("/api/calendar/send-to-board", {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const response = await fetch("/api/calendar/upload-attachment", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ event }),
+      body: JSON.stringify({
+        association_id: DEFAULT_ASSOCIATION_ID,
+        file_name: file.name,
+        file_type: file.type,
+        file_base64: fileBase64,
+        attachment_category: attachmentCategory,
+      }),
     });
 
     const payload = await response.json();
 
     if (!response.ok || !payload.success) {
-      throw new Error(payload.message || "Unable to send calendar item to board.");
+      throw new Error(payload.message || "Unable to upload calendar attachment.");
     }
 
-    setSystemMessage("Calendar item sent to the Board Approval Queue.");
-  } catch (error) {
-    console.error("Unable to send calendar item to board:", error);
-    setSystemMessage(error.message || "Unable to send calendar item to board.");
+    return payload.attachment;
   }
-}
+
+  async function sendEventToBoard(event) {
+    if (!event?.id) return;
+
+    try {
+      setSystemMessage("");
+
+      const draft = attachmentDrafts[event.id] || {};
+      const attachment = await uploadCalendarAttachment(
+        draft.file || null,
+        draft.category || "pdf"
+      );
+
+      const response = await fetch("/api/calendar/send-to-board", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ event, attachment }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to send calendar item to board.");
+      }
+
+      setAttachmentDrafts((current) => ({
+        ...current,
+        [event.id]: {
+          category: "pdf",
+          file: null,
+        },
+      }));
+
+      setSystemMessage(
+        attachment
+          ? "Calendar item and attachment sent cleanly to the Board Approval Queue."
+          : "Calendar item sent to the Board Approval Queue."
+      );
+    } catch (error) {
+      console.error("Unable to send calendar item to board:", error);
+      setSystemMessage(error.message || "Unable to send calendar item to board.");
+    }
+  }
 
   async function updateEventStatus(eventId, status) {
     if (!eventId) return;
@@ -227,20 +282,23 @@ export default function AssociationCalendar() {
     }
   }
 
+  function updateAttachmentDraft(eventId, updates) {
+    setAttachmentDrafts((current) => ({
+      ...current,
+      [eventId]: {
+        category: current[eventId]?.category || "pdf",
+        file: current[eventId]?.file || null,
+        ...updates,
+      },
+    }));
+  }
+
   const upcomingEvents = useMemo(
     () =>
       events.filter(
         (event) =>
           String(event.status || "").toLowerCase() !== "completed" &&
           String(event.status || "").toLowerCase() !== "cancelled"
-      ),
-    [events]
-  );
-
-  const completedEvents = useMemo(
-    () =>
-      events.filter(
-        (event) => String(event.status || "").toLowerCase() === "completed"
       ),
     [events]
   );
@@ -312,9 +370,7 @@ export default function AssociationCalendar() {
               Stoutt Property Management
             </p>
 
-            <h1 className="mt-2 text-3xl font-semibold">
-              Association Calendar
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold">Association Calendar</h1>
 
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
               Association meetings, inspections, deadlines, renewals, hearings,
@@ -347,13 +403,13 @@ export default function AssociationCalendar() {
           </p>
 
           <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
-            Create, manage, and view association scheduling from one live calendar system.
+            Create, manage, and route association scheduling from one live calendar system.
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
-            Calendar items created here are saved directly into the association calendar
-            and appear in the schedule below. Meeting packet records are cleaned before
-            display so the board sees agenda content, not routing scripts or attachment metadata.
+            Calendar items created here are saved directly into the association calendar.
+            Attachments are uploaded separately and sent to the Board Approval Queue as
+            clean file buttons instead of messy description text.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -365,18 +421,21 @@ export default function AssociationCalendar() {
             </Link>
 
             <Link
-              href="/board/compliance-calendar"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              href="/board/board-approval-queue"
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
             >
-              Compliance Calendar
+              Board Approval Queue
             </Link>
 
-            <Link
-              href="/board/action-items"
+            <button
+              onClick={() => {
+                loadCalendarEvents();
+                loadCalendarRecords();
+              }}
               className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
             >
-              Action Items
-            </Link>
+              Refresh Calendar
+            </button>
           </div>
         </div>
 
@@ -529,9 +588,7 @@ export default function AssociationCalendar() {
                   Upcoming Schedule
                 </p>
 
-                <h2 className="mt-2 text-3xl font-bold">
-                  Association Calendar
-                </h2>
+                <h2 className="mt-2 text-3xl font-bold">Association Calendar</h2>
               </div>
 
               <select
@@ -555,11 +612,18 @@ export default function AssociationCalendar() {
               ) : (
                 filteredEvents.map((event) => (
                   <CalendarCard
-  key={event.id}
-  event={event}
-  onStatusChange={updateEventStatus}
-  onSendToBoard={sendEventToBoard}
-/>
+                    key={event.id}
+                    event={event}
+                    attachmentDraft={
+                      attachmentDrafts[event.id] || {
+                        category: "pdf",
+                        file: null,
+                      }
+                    }
+                    onAttachmentChange={updateAttachmentDraft}
+                    onStatusChange={updateEventStatus}
+                    onSendToBoard={sendEventToBoard}
+                  />
                 ))
               )}
             </div>
@@ -578,9 +642,8 @@ export default function AssociationCalendar() {
           </h3>
 
           <p className="mt-3 text-slate-300">
-            This page now uses one calendar system for admin creation and board visibility.
-            Operational records are also cleaned before display to prevent raw routing text,
-            packet URLs, metadata, or board-action scripts from appearing in calendar panels.
+            This page now uses one calendar system for admin creation, board visibility,
+            board routing, and clean attachment handling.
           </p>
         </div>
       </section>
@@ -647,7 +710,13 @@ function OperationalPanel({ title, items, recordType }) {
   );
 }
 
-  function CalendarCard({ event, onStatusChange, onSendToBoard }) {
+function CalendarCard({
+  event,
+  attachmentDraft,
+  onAttachmentChange,
+  onStatusChange,
+  onSendToBoard,
+}) {
   const status = String(event.status || "scheduled").toLowerCase();
   const isCompleted = status === "completed";
   const isCancelled = status === "cancelled";
@@ -655,7 +724,7 @@ function OperationalPanel({ title, items, recordType }) {
   return (
     <article className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
       <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-        <div>
+        <div className="w-full">
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-2xl font-semibold">
               {event.title || "Calendar Item"}
@@ -691,17 +760,69 @@ function OperationalPanel({ title, items, recordType }) {
           <p className="mt-5 max-w-3xl whitespace-pre-wrap leading-7 text-slate-300">
             {event.description || "Association calendar item."}
           </p>
+
+          <div className="mt-5 rounded-2xl border border-blue-400/20 bg-blue-500/10 p-4">
+            <p className="text-sm font-semibold text-blue-100">
+              Optional Board Queue Attachment
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-slate-400">
+              Choose a file only when this calendar item is being sent to the Board Approval Queue.
+            </p>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold text-slate-300">
+                  Attachment Type
+                </span>
+
+                <select
+                  value={attachmentDraft.category || "pdf"}
+                  onChange={(changeEvent) =>
+                    onAttachmentChange(event.id, {
+                      category: changeEvent.target.value,
+                    })
+                  }
+                  className="input"
+                >
+                  <option value="pdf">PDF</option>
+                  <option value="image">Picture / Image</option>
+                  <option value="spreadsheet">Spreadsheet</option>
+                  <option value="document">Document</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold text-slate-300">
+                  Attach File
+                </span>
+
+                <input
+                  type="file"
+                  onChange={(changeEvent) =>
+                    onAttachmentChange(event.id, {
+                      file: changeEvent.target.files?.[0] || null,
+                    })
+                  }
+                  className="input"
+                  accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx"
+                />
+              </label>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 lg:justify-end">
+        <div className="flex min-w-[210px] flex-wrap gap-3 lg:justify-end">
+          <button
+            onClick={() => onSendToBoard(event)}
+            className="rounded-full border border-amber-400/30 px-5 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/10"
+          >
+            Send to Board
+          </button>
+
           {!isCompleted && !isCancelled && (
             <>
-            <button
-  onClick={() => onSendToBoard(event)}
-  className="rounded-full border border-amber-400/30 px-5 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/10"
->
-  Send to Board
-</button>
               <button
                 onClick={() => onStatusChange(event.id, "confirmed")}
                 className="rounded-full border border-emerald-400/30 px-5 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-400/10"
