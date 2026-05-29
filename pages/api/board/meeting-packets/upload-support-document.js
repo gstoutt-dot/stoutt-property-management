@@ -37,8 +37,8 @@ export default async function handler(req, res) {
     }
 
     const associationId = association_id || DEFAULT_ASSOCIATION_ID;
-    const safeName = String(file_name).replace(/[^a-zA-Z0-9._-]/g, "-");
-    const filePath = `${associationId}/${packet_id}/${Date.now()}-${safeName}`;
+    const cleanFileName = String(file_name).replace(/[^a-zA-Z0-9._-]/g, "-");
+    const filePath = `${associationId}/${packet_id}/${Date.now()}-${cleanFileName}`;
 
     const base64Data = file_base64.split(",").pop();
     const buffer = Buffer.from(base64Data, "base64");
@@ -50,9 +50,11 @@ export default async function handler(req, res) {
         upsert: false,
       });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      throw uploadError;
+    }
 
-    const { data: publicData } = supabaseAdmin.storage
+    const { data: publicUrlData } = supabaseAdmin.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(filePath);
 
@@ -60,9 +62,18 @@ export default async function handler(req, res) {
       .from("board_meeting_packets")
       .select("*")
       .eq("id", packet_id)
-      .single();
+      .maybeSingle();
 
-    if (packetError) throw packetError;
+    if (packetError) {
+      throw packetError;
+    }
+
+    if (!packet) {
+      return res.status(404).json({
+        success: false,
+        message: "Meeting record was not found.",
+      });
+    }
 
     const existingAttachments = Array.isArray(packet.attachments)
       ? packet.attachments
@@ -71,7 +82,7 @@ export default async function handler(req, res) {
     const nextAttachment = {
       file_name,
       file_path: filePath,
-      file_url: publicData?.publicUrl || "",
+      file_url: publicUrlData?.publicUrl || "",
       file_type: file_type || "file",
       document_category: document_category || "other",
       uploaded_at: new Date().toISOString(),
@@ -87,13 +98,18 @@ export default async function handler(req, res) {
       })
       .eq("id", packet_id)
       .select("*")
-      .single();
+      .maybeSingle();
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      throw updateError;
+    }
 
     return res.status(200).json({
       success: true,
-      packet: updatedPacket,
+      packet: updatedPacket || {
+        ...packet,
+        attachments: nextAttachments,
+      },
       attachment: nextAttachment,
     });
   } catch (error) {
