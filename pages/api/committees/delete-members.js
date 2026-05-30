@@ -3,25 +3,36 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 export default async function handler(req, res) {
   try {
     if (req.method !== "DELETE") {
-      return res.status(405).json({ success: false, message: "Method not allowed." });
+      return res.status(405).json({
+        success: false,
+        message: "Method not allowed.",
+      });
     }
 
-    const { id } = req.query || {};
+    const memberId = String(req.query.id || "").trim();
 
-    if (!id) {
-      return res.status(400).json({ success: false, message: "Member ID is required." });
+    if (!memberId) {
+      return res.status(400).json({
+        success: false,
+        message: "Member ID is required.",
+      });
     }
 
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("association_committee_members")
       .delete()
-      .eq("id", id);
+      .eq("id", memberId)
+      .select("id");
 
     if (error) throw error;
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({
+      success: true,
+      deleted: data || [],
+    });
   } catch (error) {
     console.error("Delete committee member error:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message || "Unable to delete committee member.",
