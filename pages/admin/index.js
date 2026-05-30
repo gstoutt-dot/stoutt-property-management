@@ -66,14 +66,14 @@ const sections = [
     items: [
       { title: "QuickBooks Live", href: "/accounting/quickbooks-live" },
       { title: "Admin Notifications", href: "/admin/notifications" },
-      { title: "Documents", href: "/board/documents" },
+      { title: "Association Documents", href: "/board/documents" },
       { title: "Board & Member Meetings", href: "/portal/board/meetings" },
       { title: "Committee Center", href: "/board/committee-center" },
       { title: "Signature Approval Log", href: "/board/signature-approval-log" },
       { title: "Member Voting", href: "/portal/board/member-voting" },
       { title: "Voting Center", href: "/board/voting-center" },
       { title: "Motion Center", href: "/board/motion-center" },
-      { title: "Elections", href: "/board/elections" },
+      { title: "Association Elections", href: "/board/elections" },
     ],
   },
   {
@@ -92,7 +92,7 @@ const sections = [
   { title: "Budget Planning", href: "/board/budget-planning" },
   { title: "Capital Projects", href: "/board/capital-projects" },
   { title: "Vendor Performance", href: "/board/vendor-performance" },
-  { title: "Vendors", href: "/board/vendors" },
+  { title: "Preferred Vendors", href: "/board/vendors" },
 ],
   },
   {
