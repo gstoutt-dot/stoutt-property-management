@@ -285,31 +285,39 @@ export default function CommitteeMembersCenter() {
   }
 
   async function deleteCommitteeMember(memberId) {
-    if (!memberId) return;
+  if (!memberId) return;
 
-    const confirmed = window.confirm("Delete this committee member?");
-    if (!confirmed) return;
+  const confirmed = window.confirm("Delete this committee member?");
+  if (!confirmed) return;
 
-    try {
-      setSystemMessage("");
+  try {
+    setSystemMessage("");
 
-      const response = await fetch(`/api/committees/delete-member?id=${memberId}`, {
+    const response = await fetch(
+      `/api/committees/delete-member?id=${encodeURIComponent(memberId)}`,
+      {
         method: "DELETE",
-      });
-
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.message || "Unable to delete committee member.");
       }
+    );
 
-      setMembers((current) => current.filter((member) => member.id !== memberId));
-      setSystemMessage("Committee member deleted.");
-    } catch (error) {
-      console.error("Unable to delete committee member:", error);
-      setSystemMessage(error.message || "Unable to delete committee member.");
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to delete committee member.");
     }
+
+    setMembers((current) =>
+      current.filter((member) => String(member.id) !== String(memberId))
+    );
+
+    await loadCommitteeMembers();
+
+    setSystemMessage("Committee member deleted.");
+  } catch (error) {
+    console.error("Unable to delete committee member:", error);
+    setSystemMessage(error.message || "Unable to delete committee member.");
   }
+}
 
   async function uploadCommitteeDocument(committeeId) {
     const form = documentForms[committeeId] || {};
@@ -633,14 +641,20 @@ export default function CommitteeMembersCenter() {
 
       <style jsx>{`
         .input {
-          width: 100%;
-          border-radius: 0.9rem;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(15, 23, 42, 0.9);
-          padding: 0.85rem 1rem;
-          color: white;
-          outline: none;
-        }
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #020617;
+  color: #ffffff;
+  padding: 0.85rem 1rem;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input::placeholder {
+  color: rgba(148, 163, 184, 0.9);
+}
 
         .input:focus {
           border-color: rgba(251, 191, 36, 0.45);
