@@ -262,6 +262,12 @@ export default function BoardApprovalQueue() {
 function cleanApprovalDescription(description = "") {
   return String(description || "")
     .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
+    .replace(/REPORT_ATTACHMENT_METADATA_START[\s\S]*?REPORT_ATTACHMENT_METADATA_END/g, "")
+    .replace(/Association Report:[^\n]*\n?/gi, "")
+    .replace(/Report Category:[^\n]*\n?/gi, "")
+    .replace(/Uploaded By:[^\n]*\n?/gi, "")
+    .replace(/Uploaded At:[^\n]*\n?/gi, "")
+    .replace(/Report Summary:\s*/gi, "")
     .trim();
 }
 
@@ -271,6 +277,9 @@ function extractBoardAttachments(description = "") {
   const structuredMatches = [
     ...text.matchAll(
       /CALENDAR_ATTACHMENT_METADATA_START\s*([\s\S]*?)\s*CALENDAR_ATTACHMENT_METADATA_END/g
+    ),
+    ...text.matchAll(
+      /REPORT_ATTACHMENT_METADATA_START\s*([\s\S]*?)\s*REPORT_ATTACHMENT_METADATA_END/g
     ),
   ];
 
