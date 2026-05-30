@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -8,46 +7,87 @@ const closedStatuses = ["completed", "archived", "closed"];
 
 export default function BoardCommitteeCenter() {
   const [committees, setCommittees] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [operationalRecords, setOperationalRecords] = useState([]);
   const [loadingCommittees, setLoadingCommittees] = useState(true);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadCommittees();
-    loadCommitteeRecords();
-
-    const interval = setInterval(() => {
-      loadCommittees();
-      loadCommitteeRecords();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
+  loadCommittees();
+  loadCommitteeMembers();
+  loadCommitteeRecommendations();
+  loadCommitteeRecords();
+}, []);
 
   async function loadCommittees() {
-    try {
-      setLoadingCommittees(true);
-      setSystemMessage("");
+  try {
+    setLoadingCommittees(true);
+    setSystemMessage("");
 
-      const { data, error } = await supabase
-        .from("association_committees")
-        .select("*")
-        .eq("association_id", DEFAULT_ASSOCIATION_ID)
-        .order("committee_name", { ascending: true });
+    const response = await fetch(
+      `/api/committees/list?association_id=${encodeURIComponent(
+        DEFAULT_ASSOCIATION_ID
+      )}`
+    );
 
-      if (error) throw error;
+    const payload = await response.json();
 
-      setCommittees(data || []);
-    } catch (error) {
-      console.error("Unable to load committees:", error);
-      setCommittees([]);
-      setSystemMessage(error.message || "Unable to load committees.");
-    } finally {
-      setLoadingCommittees(false);
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to load committees.");
     }
-  }
 
+    setCommittees(payload.committees || []);
+  } catch (error) {
+    console.error("Unable to load committees:", error);
+    setCommittees([]);
+    setSystemMessage(error.message || "Unable to load committees.");
+  } finally {
+    setLoadingCommittees(false);
+  }
+}
+
+async function loadCommitteeMembers() {
+  try {
+    const response = await fetch(
+      `/api/committees/list-members?association_id=${encodeURIComponent(
+        DEFAULT_ASSOCIATION_ID
+      )}`
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to load committee members.");
+    }
+
+    setMembers(payload.members || []);
+  } catch (error) {
+    console.error("Unable to load committee members:", error);
+  }
+}
+
+async function loadCommitteeRecommendations() {
+  try {
+    const response = await fetch(
+      `/api/committees/list-recommendations?association_id=${encodeURIComponent(
+        DEFAULT_ASSOCIATION_ID
+      )}`
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to load committee recommendations.");
+    }
+
+    setRecommendations(payload.recommendations || []);
+  } catch (error) {
+    console.error("Unable to load committee recommendations:", error);
+  }
+}
+  
   async function loadCommitteeRecords() {
     try {
       setLoadingRecords(true);
