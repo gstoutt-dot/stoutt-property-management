@@ -330,14 +330,12 @@ export default function CommitteeMembersCenter() {
 }
 
   async function uploadCommitteeDocument(committeeId) {
-    const form = documentForms[committeeId] || {};
+  const form = documentForms[committeeId] || {};
 
-    if (!form.file) {
-      setSystemMessage("Choose a committee document to upload.");
-      return;
-    }
-
-    async function createRecommendation(committeeId) {
+  if (!form.file) {
+    setSystemMessage("Choose a committee document to upload.");
+    return;
+  }
   const form = recommendationForms[committeeId] || {};
 
   if (!form.recommendation_title) {
@@ -405,12 +403,20 @@ export default function CommitteeMembersCenter() {
       error.message ||
         "Unable to create recommendation."
     );
-  } finally {
+    } finally {
     setCreatingRecommendationId("");
   }
 }
 
-    try {
+async function uploadCommitteeDocument(committeeId) {
+  const form = documentForms[committeeId] || {};
+
+  if (!form.file) {
+    setSystemMessage("Choose a committee document to upload.");
+    return;
+  }
+
+  try {
       setUploadingDocumentId(committeeId);
       setSystemMessage("");
 
