@@ -248,6 +248,36 @@ export default function AssociationCalendar() {
     }
   }
 
+  async function deleteCalendarEvent(eventId) {
+  if (!eventId) return;
+
+  const confirmed = window.confirm("Delete this calendar item permanently?");
+  if (!confirmed) return;
+
+  try {
+    setSystemMessage("");
+
+    const response = await fetch(`/api/calendar/delete-event?id=${eventId}`, {
+      method: "DELETE",
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to delete calendar item.");
+    }
+
+    setEvents((current) =>
+      current.filter((calendarEvent) => calendarEvent.id !== eventId)
+    );
+
+    setSystemMessage("Calendar item deleted.");
+  } catch (error) {
+    console.error("Unable to delete calendar item:", error);
+    setSystemMessage(error.message || "Unable to delete calendar item.");
+  }
+}
+
   async function updateEventStatus(eventId, status) {
     if (!eventId) return;
 
@@ -370,12 +400,13 @@ export default function AssociationCalendar() {
               Stoutt Property Management
             </p>
 
-            <h1 className="mt-2 text-3xl font-semibold">Association Calendar</h1>
+            <h1 className="mt-2 text-3xl font-semibold">Association Operations Calendar</h1>
 
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              Association meetings, inspections, deadlines, renewals, hearings,
-              vendor walkthroughs, and operational scheduling in one calendar center.
-            </p>
+            <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
+  Schedule board meetings, committee meetings, inspections, financial reviews,
+  renewals, reserve study milestones, operational deadlines, and board-related
+  activities from a single association operations calendar.
+</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -612,18 +643,19 @@ export default function AssociationCalendar() {
               ) : (
                 filteredEvents.map((event) => (
                   <CalendarCard
-                    key={event.id}
-                    event={event}
-                    attachmentDraft={
-                      attachmentDrafts[event.id] || {
-                        category: "pdf",
-                        file: null,
-                      }
-                    }
-                    onAttachmentChange={updateAttachmentDraft}
-                    onStatusChange={updateEventStatus}
-                    onSendToBoard={sendEventToBoard}
-                  />
+  key={event.id}
+  event={event}
+  attachmentDraft={
+    attachmentDrafts[event.id] || {
+      category: "pdf",
+      file: null,
+    }
+  }
+  onAttachmentChange={updateAttachmentDraft}
+  onStatusChange={updateEventStatus}
+  onDelete={deleteCalendarEvent}
+  onSendToBoard={sendEventToBoard}
+/>
                 ))
               )}
             </div>
@@ -715,6 +747,7 @@ function CalendarCard({
   attachmentDraft,
   onAttachmentChange,
   onStatusChange,
+  onDelete,
   onSendToBoard,
 }) {
   const status = String(event.status || "scheduled").toLowerCase();
@@ -820,6 +853,13 @@ function CalendarCard({
           >
             Send to Board
           </button>
+
+<button
+  onClick={() => onDelete(event.id)}
+  className="rounded-full border border-red-400/30 px-5 py-3 text-sm font-semibold text-red-300 transition hover:bg-red-400/10"
+>
+  Delete
+</button>
 
           {!isCompleted && !isCancelled && (
             <>
