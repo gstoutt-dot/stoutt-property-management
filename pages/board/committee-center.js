@@ -293,7 +293,7 @@ export default function CommitteeMembersCenter() {
   try {
     setSystemMessage("");
 
-    const response = await fetch("/api/committees/delete-member", {
+    const response = await fetch("/api/committees/delete-members", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
