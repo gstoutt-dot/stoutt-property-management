@@ -54,7 +54,7 @@ const sections = [
       { title: "Board Message Inbox", href: "/board/messages" },
       { title: "Association Calendar", href: "/board/calendar" },
       { title: "Board & Members Meetings", href: "/portal/board/meetings" },
-      { title: "Association Reporting Center", href: "/portal/board/reports" },
+      { title: "Association Reporting Center", href: "/board/reports" }
       { title: "Association Search Center", href: "/board/search-center" },
     ],
   },
