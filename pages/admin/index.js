@@ -53,7 +53,7 @@ const sections = [
       { title: "Association Onboarding Records", href: "/association-onboarding-records" },
       { title: "Board Message Inbox", href: "/board/messages" },
       { title: "Association Calendar", href: "/board/calendar" },
-      { title: "Boar & Members Meetings", href: "/portal/board/meetings" },
+      { title: "Board & Members Meetings", href: "/portal/board/meetings" },
       { title: "Reports", href: "/portal/board/reports" },
       { title: "Search Center", href: "/board/search-center" },
     ],
