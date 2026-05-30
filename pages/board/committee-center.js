@@ -50,6 +50,8 @@ export default function CommitteeMembersCenter() {
 
   const [memberForms, setMemberForms] = useState({});
   const [documentForms, setDocumentForms] = useState({});
+  const [recommendationForms, setRecommendationForms] = useState({});
+  const [creatingRecommendationId, setCreatingRecommendationId] = useState("");
 
   useEffect(() => {
     loadAll();
@@ -334,6 +336,79 @@ export default function CommitteeMembersCenter() {
       setSystemMessage("Choose a committee document to upload.");
       return;
     }
+
+    async function createRecommendation(committeeId) {
+  const form = recommendationForms[committeeId] || {};
+
+  if (!form.recommendation_title) {
+    setSystemMessage("Recommendation title is required.");
+    return;
+  }
+
+  try {
+    setCreatingRecommendationId(committeeId);
+    setSystemMessage("");
+
+    const response = await fetch(
+      "/api/committees/create-recommendation",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          committee_id: committeeId,
+          recommendation_title:
+            form.recommendation_title,
+          recommendation_summary:
+            form.recommendation_summary || "",
+          recommendation_category:
+            form.recommendation_category ||
+            "general",
+          priority:
+            form.priority || "normal",
+          status: "draft",
+          submitted_by: "Committee",
+        }),
+      }
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(
+        payload.message ||
+          "Unable to create recommendation."
+      );
+    }
+
+    setRecommendationForms((current) => ({
+      ...current,
+      [committeeId]: {
+        recommendation_title: "",
+        recommendation_summary: "",
+        recommendation_category: "general",
+        priority: "normal",
+      },
+    }));
+
+    await loadCommitteeRecommendations();
+
+    setSystemMessage(
+      "Recommendation created successfully."
+    );
+  } catch (error) {
+    console.error(error);
+
+    setSystemMessage(
+      error.message ||
+        "Unable to create recommendation."
+    );
+  } finally {
+    setCreatingRecommendationId("");
+  }
+}
 
     try {
       setUploadingDocumentId(committeeId);
@@ -640,6 +715,45 @@ export default function CommitteeMembersCenter() {
                   onDeleteMember={deleteCommitteeMember}
                   onDeleteCommittee={() => deleteCommittee(committee.id)}
                   onUploadDocument={() => uploadCommitteeDocument(committee.id)}
+
+recommendationForm={
+  recommendationForms[committee.id] || {
+    recommendation_title: "",
+    recommendation_summary: "",
+    recommendation_category: "general",
+    priority: "normal",
+  }
+}
+
+creatingRecommendationId={
+  creatingRecommendationId
+}
+
+onRecommendationFormChange={(updates) =>
+  setRecommendationForms((current) => ({
+    ...current,
+    [committee.id]: {
+      recommendation_title:
+        current[committee.id]
+          ?.recommendation_title || "",
+      recommendation_summary:
+        current[committee.id]
+          ?.recommendation_summary || "",
+      recommendation_category:
+        current[committee.id]
+          ?.recommendation_category ||
+        "general",
+      priority:
+        current[committee.id]?.priority ||
+        "normal",
+      ...updates,
+    },
+  }))
+}
+
+onCreateRecommendation={() =>
+  createRecommendation(committee.id)
+}
                 />
               ))}
             </div>
@@ -701,7 +815,12 @@ function CommitteeCard({
   onAddMember,
   onDeleteMember,
   onDeleteCommittee,
-  onUploadDocument,
+onUploadDocument,
+
+recommendationForm,
+creatingRecommendationId,
+onRecommendationFormChange,
+onCreateRecommendation,
 }) {
   return (
     <article className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
