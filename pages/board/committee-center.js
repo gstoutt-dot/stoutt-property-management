@@ -182,6 +182,25 @@ async function loadCommitteeRecommendations() {
     [operationalRecords]
   );
 
+  const activeMembers = useMemo(
+  () =>
+    members.filter(
+      (member) =>
+        String(member.status || "").toLowerCase() === "active"
+    ),
+  [members]
+);
+
+const boardRecommendations = useMemo(
+  () =>
+    recommendations.filter(
+      (recommendation) =>
+        String(recommendation.status || "").toLowerCase() ===
+        "sent_to_board"
+    ),
+  [recommendations]
+);
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
@@ -272,9 +291,9 @@ committee oversight, and board-directed review workflows.
 
         <div className="mt-8 grid gap-5 md:grid-cols-4">
           <Metric label="Active Committees" value={committees.length} />
-          <Metric label="Committee Open Items" value={totalOpenItems} />
-          <Metric label="Board Ready" value={totalBoardReady + boardReadyRecords.length} />
-          <Metric label="Operational Records" value={operationalRecords.length} />
+<Metric label="Committee Members" value={members.length} />
+<Metric label="Recommendations" value={recommendations.length} />
+<Metric label="Board Ready" value={boardReadyRecords.length} />
         </div>
 
         {systemMessage && (
@@ -284,10 +303,24 @@ committee oversight, and board-directed review workflows.
         )}
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          <OperationalPanel title="Priority Committee Items" items={priorityRecords} />
-          <OperationalPanel title="ARC / Architectural Items" items={arcRecords} />
-          <OperationalPanel title="Board-Ready Recommendations" items={boardReadyRecords} />
-        </div>
+  <InfoPanel
+    title="Committee Members"
+    count={activeMembers.length}
+    subtitle="Active committee participants"
+  />
+
+  <InfoPanel
+    title="Committee Recommendations"
+    count={recommendations.length}
+    subtitle="Submitted recommendations"
+  />
+
+  <InfoPanel
+    title="Board Recommendations"
+    count={boardRecommendations.length}
+    subtitle="Sent to Board Approval Queue"
+  />
+</div>
 
         <div className="mt-10">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -385,6 +418,28 @@ committee oversight, and board-directed review workflows.
         </section>
       </section>
     </main>
+  );
+}
+
+function InfoPanel({
+  title,
+  count,
+  subtitle,
+}) {
+  return (
+    <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
+      <h3 className="text-xl font-semibold text-amber-100">
+        {title}
+      </h3>
+
+      <div className="mt-6 text-5xl font-bold text-amber-300">
+        {count}
+      </div>
+
+      <div className="mt-3 text-sm text-slate-300">
+        {subtitle}
+      </div>
+    </div>
   );
 }
 
