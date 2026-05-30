@@ -152,12 +152,12 @@ export default function BoardCommitteeCenter() {
             </p>
 
             <h1 className="mt-2 text-3xl font-semibold">
-              Committee Center
+              Committee Members Center
             </h1>
 
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              Committee oversight, recommendations, assignments, meeting notes,
-              and board-ready governance activity.
+              Committee membership, recommendations, governance participation,
+committee oversight, and board-directed review workflows.
             </p>
           </div>
 
@@ -211,7 +211,7 @@ export default function BoardCommitteeCenter() {
               href="/board/action-items"
               className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
             >
-              Action Items
+              Committee Recommendations
             </Link>
 
             <Link
@@ -225,7 +225,7 @@ export default function BoardCommitteeCenter() {
               href="/board/meeting-packet"
               className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
             >
-              Meeting Packet
+              Committee Members
             </Link>
           </div>
         </div>
