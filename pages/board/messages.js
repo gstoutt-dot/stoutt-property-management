@@ -49,6 +49,40 @@ export default function BoardMessages() {
     }
   }
 
+  async function deleteMessage(messageId) {
+  if (!messageId) return;
+
+  const confirmed = window.confirm("Delete this board message permanently?");
+  if (!confirmed) return;
+
+  try {
+    setSystemMessage("");
+
+    const response = await fetch(`/api/board/messages/delete?id=${messageId}`, {
+      method: "DELETE",
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to delete board message.");
+    }
+
+    setMessages((current) =>
+      current.filter((message) => message.id !== messageId)
+    );
+
+    if (activeMessage?.id === messageId) {
+      setActiveMessage(null);
+    }
+
+    setSystemMessage("Board message deleted.");
+  } catch (error) {
+    console.error("Unable to delete board message:", error);
+    setSystemMessage(error.message || "Unable to delete board message.");
+  }
+}
+
   async function sendMessage(event) {
     event.preventDefault();
 
@@ -194,9 +228,22 @@ export default function BoardMessages() {
                       {message.message_body || "No message body."}
                     </p>
 
-                    <p className="mt-2 text-[10px] text-slate-600">
-                      {formatDateTime(message.created_at)}
-                    </p>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+  <p className="text-[10px] text-slate-600">
+    {formatDateTime(message.created_at)}
+  </p>
+
+  <button
+    type="button"
+    onClick={(event) => {
+      event.stopPropagation();
+      deleteMessage(message.id);
+    }}
+    className="rounded-lg border border-red-400/30 bg-red-500/10 px-2 py-1 text-[10px] font-semibold text-red-200 hover:bg-red-500/20"
+  >
+    Delete
+  </button>
+</div>
                   </button>
                 ))
               )}
