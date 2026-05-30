@@ -1,0 +1,59 @@
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+
+export default async function handler(req, res) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ success: false, message: "Method not allowed." });
+    }
+
+    const {
+      association_id,
+      committee_id,
+      member_name,
+      member_role,
+      email,
+      phone,
+      status,
+    } = req.body || {};
+
+    if (!committee_id || !member_name) {
+      return res.status(400).json({
+        success: false,
+        message: "Committee and member name are required.",
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabaseAdmin
+      .from("association_committee_members")
+      .insert({
+        association_id: association_id || DEFAULT_ASSOCIATION_ID,
+        committee_id,
+        member_name: String(member_name).trim(),
+        member_role: member_role || "member",
+        email: email || "",
+        phone: phone || "",
+        status: status || "active",
+        created_at: now,
+        updated_at: now,
+      })
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      success: true,
+      member: data,
+    });
+  } catch (error) {
+    console.error("Committee member add error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unable to add committee member.",
+    });
+  }
+}
