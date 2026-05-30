@@ -38,13 +38,20 @@ const boardPages = [
     description:
       "Board-facing notification center for routed updates, alerts, and association activity.",
   },
+    {
+    title: "Board Message Inbox",
+    status: "Live / Ready",
+    href: "/board/message-inbox",
+    description:
+      "Read internal messages from management and administration, including meeting follow-ups, operational updates, financial notes, and board coordination items.",
+  },
   {
-  title: "Monthly Accounting Reports",
-  status: "Live / Ready",
-  href: "/admin/monthly-accounting-reports",
-  description:
-    "Monthly financial packets, QuickBooks accounting reports, reserve reporting, executive summaries, and board financial visibility.",
-},
+    title: "Monthly Accounting Reports",
+    status: "Live / Ready",
+    href: "/admin/monthly-accounting-reports",
+    description:
+      "Monthly financial packets, QuickBooks accounting reports, reserve reporting, executive summaries, and board financial visibility.",
+  },
 ];
 
 function statusStyle(status) {
