@@ -2,14 +2,16 @@ import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "DELETE") {
+    if (req.method !== "DELETE" && req.method !== "POST") {
       return res.status(405).json({
         success: false,
         message: "Method not allowed.",
       });
     }
 
-    const memberId = String(req.query.id || "").trim();
+    const memberId = String(
+      req.query.id || req.query.member_id || req.body?.id || req.body?.member_id || ""
+    ).trim();
 
     if (!memberId) {
       return res.status(400).json({
