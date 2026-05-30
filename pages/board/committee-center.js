@@ -878,9 +878,86 @@ onCreateRecommendation,
 
         <div className="space-y-5">
           <section className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-            <h4 className="text-lg font-semibold text-amber-200">
-              Committee Members
-            </h4>
+  <h4 className="text-lg font-semibold text-emerald-200">
+    Committee Recommendations
+  </h4>
+
+  <p className="mt-2 text-sm leading-6 text-slate-400">
+    Recommendations are submitted by committees and later routed to the Board
+    Approval Queue for review and action.
+  </p>
+
+  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+    <input
+      value={recommendationForm.recommendation_title}
+      onChange={(event) =>
+        onRecommendationFormChange({
+          recommendation_title: event.target.value,
+        })
+      }
+      placeholder="Recommendation title..."
+      className="input"
+    />
+
+    <select
+      value={recommendationForm.recommendation_category}
+      onChange={(event) =>
+        onRecommendationFormChange({
+          recommendation_category: event.target.value,
+        })
+      }
+      className="input"
+    >
+      <option value="general">General</option>
+      <option value="financial">Financial</option>
+      <option value="landscape">Landscape</option>
+      <option value="rules">Rules</option>
+      <option value="insurance">Insurance</option>
+      <option value="reserve">Reserve Study</option>
+      <option value="architectural">Architectural</option>
+      <option value="technology">Technology</option>
+    </select>
+
+    <select
+      value={recommendationForm.priority}
+      onChange={(event) =>
+        onRecommendationFormChange({
+          priority: event.target.value,
+        })
+      }
+      className="input"
+    >
+      <option value="low">Low</option>
+      <option value="normal">Normal</option>
+      <option value="high">High</option>
+      <option value="urgent">Urgent</option>
+    </select>
+
+    <div />
+    
+    <textarea
+      value={recommendationForm.recommendation_summary}
+      onChange={(event) =>
+        onRecommendationFormChange({
+          recommendation_summary: event.target.value,
+        })
+      }
+      placeholder="Recommendation summary, supporting rationale, costs, concerns, or committee findings..."
+      rows={4}
+      className="input sm:col-span-2"
+    />
+
+    <button
+      onClick={onCreateRecommendation}
+      disabled={creatingRecommendationId === committee.id}
+      className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-50 sm:col-span-2"
+    >
+      {creatingRecommendationId === committee.id
+        ? "Creating Recommendation..."
+        : "Create Recommendation"}
+    </button>
+  </div>
+</section>
 
             <div className="mt-4 space-y-3">
               {members.length === 0 ? (
