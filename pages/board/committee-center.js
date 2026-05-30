@@ -640,31 +640,24 @@ export default function CommitteeMembersCenter() {
       </section>
 
       <style jsx>{`
-        .input {
+       .input {
   width: 100%;
   border-radius: 0.9rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background-color: #020617;
-  color: #ffffff;
+  background: #ffffff;
+  color: #020617;
   padding: 0.85rem 1rem;
   outline: none;
-  appearance: none;
-  -webkit-appearance: none;
 }
 
 .input::placeholder {
-  color: rgba(148, 163, 184, 0.9);
+  color: #64748b;
 }
 
-        .input:focus {
-          border-color: rgba(251, 191, 36, 0.45);
-          box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
-        }
-
-        option {
-          background: #020617;
-          color: white;
-        }
+option {
+  background: #ffffff;
+  color: #020617;
+}
       `}</style>
     </main>
   );
