@@ -647,7 +647,7 @@ export default function CommitteeMembersCenter() {
         </section>
       </section>
 
-      <style jsx>{`
+      <style jsx global>{`
   .input {
     width: 100%;
     border-radius: 0.9rem;
