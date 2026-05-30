@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -20,27 +19,29 @@ export default function BoardReports() {
   }, []);
 
   async function loadReports() {
-    try {
-      setLoadingReports(true);
-      setSystemMessage("");
+  try {
+    setLoadingReports(true);
+    setSystemMessage("");
 
-      const { data, error } = await supabase
-        .from("association_board_reports")
-        .select("*")
-        .eq("association_id", DEFAULT_ASSOCIATION_ID)
-        .order("created_at", { ascending: false });
+    const response = await fetch(
+      `/api/reports/list?association_id=${encodeURIComponent(DEFAULT_ASSOCIATION_ID)}`
+    );
 
-      if (error) throw error;
+    const payload = await response.json();
 
-      setReports(data || []);
-    } catch (error) {
-      console.error("Unable to load board reports:", error);
-      setReports([]);
-      setSystemMessage(error.message || "Unable to load board reports.");
-    } finally {
-      setLoadingReports(false);
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to load association reports.");
     }
+
+    setReports(payload.reports || []);
+  } catch (error) {
+    console.error("Unable to load association reports:", error);
+    setReports([]);
+    setSystemMessage(error.message || "Unable to load association reports.");
+  } finally {
+    setLoadingReports(false);
   }
+}
 
   const readyReports = useMemo(
     () =>
@@ -113,10 +114,10 @@ export default function BoardReports() {
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-5 md:grid-cols-4">
-          <Metric label="Reports Ready" value={readyReports.length} />
-          <Metric label="Draft Reports" value={draftReports.length} />
-          <Metric label="Shared Reports" value={sharedReports.length} />
-          <Metric label="Linked Records" value={linkedRecords.length} />
+          <Metric label="Total Reports" value={reports.length} />
+<Metric label="Financial Reports" value={reports.filter((report) => report.report_category === "financial").length} />
+<Metric label="Compliance Reports" value={reports.filter((report) => report.report_category === "compliance").length} />
+<Metric label="Board-Ready Reports" value={reports.filter((report) => Boolean(report.report_url)).length} />
         </div>
 
         {systemMessage && (
