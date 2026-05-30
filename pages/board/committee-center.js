@@ -877,8 +877,13 @@ onCreateRecommendation,
         </div>
 
         <div className="space-y-5">
-          
-            <div className="mt-4 space-y-3">
+
+  <section className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+    <h4 className="text-lg font-semibold text-amber-200">
+      Committee Members
+    </h4>
+
+    <div className="mt-4 space-y-3">
               {members.length === 0 ? (
                 <p className="text-sm text-slate-500">
                   No members have been added yet.
