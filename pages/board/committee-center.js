@@ -648,30 +648,42 @@ export default function CommitteeMembersCenter() {
       </section>
 
       <style jsx>{`
-       .input {
-  width: 100%;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(15, 23, 42, 0.9);
-  color: #ffffff;
-  padding: 0.85rem 1rem;
-  outline: none;
-}
+  .input {
+    width: 100%;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    padding: 0.85rem 1rem;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+  }
 
-.input::placeholder {
-  color: rgba(148, 163, 184, 0.95);
-}
+  .input::placeholder {
+    color: rgba(148, 163, 184, 0.95) !important;
+    -webkit-text-fill-color: rgba(148, 163, 184, 0.95) !important;
+  }
 
-.input:focus {
-  border-color: rgba(251, 191, 36, 0.45);
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
-}
+  .input:focus {
+    border-color: rgba(251, 191, 36, 0.45);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+  }
 
-option {
-  background: #020617;
-  color: #ffffff;
-}
-      `}</style>
+  input.input,
+  textarea.input,
+  select.input {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  option {
+    background: #020617;
+    color: #ffffff;
+  }
+`}</style>
     </main>
   );
 }
