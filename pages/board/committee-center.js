@@ -3,254 +3,394 @@ import Link from "next/link";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
-const closedStatuses = ["completed", "archived", "closed"];
+const committeeTypes = [
+  "general",
+  "architectural",
+  "finance",
+  "landscape",
+  "rules",
+  "insurance",
+  "reserve",
+  "social",
+  "technology",
+  "special_project",
+];
 
-export default function BoardCommitteeCenter() {
+const documentCategories = [
+  "charter",
+  "meeting_notes",
+  "guidelines",
+  "application",
+  "financial",
+  "proposal",
+  "photos",
+  "legal",
+  "other",
+];
+
+export default function CommitteeMembersCenter() {
   const [committees, setCommittees] = useState([]);
   const [members, setMembers] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
-  const [operationalRecords, setOperationalRecords] = useState([]);
-  const [loadingCommittees, setLoadingCommittees] = useState(true);
-  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+
   const [creatingCommittee, setCreatingCommittee] = useState(false);
+  const [addingMemberId, setAddingMemberId] = useState("");
+  const [uploadingDocumentId, setUploadingDocumentId] = useState("");
 
   const [committeeForm, setCommitteeForm] = useState({
-  committee_name: "",
-  committee_type: "general",
-  purpose: "",
-  chair_name: "",
-  status: "active",
-});
+    committee_name: "",
+    committee_type: "general",
+    purpose: "",
+    chair_name: "",
+    status: "active",
+  });
+
+  const [memberForms, setMemberForms] = useState({});
+  const [documentForms, setDocumentForms] = useState({});
 
   useEffect(() => {
-  loadCommittees();
-  loadCommitteeMembers();
-  loadCommitteeRecommendations();
-  loadCommitteeRecords();
-}, []);
+    loadAll();
+  }, []);
 
-  async function createCommittee(event) {
-  event.preventDefault();
-
-  try {
-    setCreatingCommittee(true);
-    setSystemMessage("");
-
-    const response = await fetch("/api/committees/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        association_id: DEFAULT_ASSOCIATION_ID,
-        ...committeeForm,
-      }),
-    });
-
-    const payload = await response.json();
-
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.message || "Unable to create committee.");
-    }
-
-    setCommitteeForm({
-      committee_name: "",
-      committee_type: "general",
-      purpose: "",
-      chair_name: "",
-      status: "active",
-    });
-
-    await loadCommittees();
-    setSystemMessage("Committee created successfully.");
-  } catch (error) {
-    console.error("Unable to create committee:", error);
-    setSystemMessage(error.message || "Unable to create committee.");
-  } finally {
-    setCreatingCommittee(false);
+  async function loadAll() {
+    setLoading(true);
+    await Promise.all([
+      loadCommittees(),
+      loadCommitteeMembers(),
+      loadCommitteeRecommendations(),
+      loadCommitteeDocuments(),
+    ]);
+    setLoading(false);
   }
-}
 
   async function loadCommittees() {
-  try {
-    setLoadingCommittees(true);
-    setSystemMessage("");
-
-    const response = await fetch(
-      `/api/committees/list?association_id=${encodeURIComponent(
-        DEFAULT_ASSOCIATION_ID
-      )}`
-    );
-
-    const payload = await response.json();
-
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.message || "Unable to load committees.");
-    }
-
-    setCommittees(payload.committees || []);
-  } catch (error) {
-    console.error("Unable to load committees:", error);
-    setCommittees([]);
-    setSystemMessage(error.message || "Unable to load committees.");
-  } finally {
-    setLoadingCommittees(false);
-  }
-}
-
-async function loadCommitteeMembers() {
-  try {
-    const response = await fetch(
-      `/api/committees/list-members?association_id=${encodeURIComponent(
-        DEFAULT_ASSOCIATION_ID
-      )}`
-    );
-
-    const payload = await response.json();
-
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.message || "Unable to load committee members.");
-    }
-
-    setMembers(payload.members || []);
-  } catch (error) {
-    console.error("Unable to load committee members:", error);
-  }
-}
-
-async function loadCommitteeRecommendations() {
-  try {
-    const response = await fetch(
-      `/api/committees/list-recommendations?association_id=${encodeURIComponent(
-        DEFAULT_ASSOCIATION_ID
-      )}`
-    );
-
-    const payload = await response.json();
-
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.message || "Unable to load committee recommendations.");
-    }
-
-    setRecommendations(payload.recommendations || []);
-  } catch (error) {
-    console.error("Unable to load committee recommendations:", error);
-  }
-}
-  
-  async function loadCommitteeRecords() {
     try {
-      setLoadingRecords(true);
-
       const response = await fetch(
-        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/committees/list?association_id=${encodeURIComponent(
+          DEFAULT_ASSOCIATION_ID
+        )}`
       );
 
       const payload = await response.json();
 
       if (!response.ok || !payload.success) {
-        throw new Error(payload.message || "Unable to load committee operational records.");
+        throw new Error(payload.message || "Unable to load committees.");
       }
 
-      const records = (payload.openRecords || []).filter((record) => {
-        const combined = `${record.request_type || ""} ${record.title || ""} ${
-          record.description || ""
-        } ${record.assigned_to || ""}`.toLowerCase();
-
-        const status = String(record.status || "").toLowerCase();
-
-        return (
-          !closedStatuses.includes(status) &&
-          (combined.includes("committee") ||
-            combined.includes("arc") ||
-            combined.includes("architectural") ||
-            combined.includes("finance committee") ||
-            combined.includes("landscape") ||
-            combined.includes("rules committee") ||
-            combined.includes("recommendation"))
-        );
-      });
-
-      setOperationalRecords(records);
+      setCommittees(payload.committees || []);
     } catch (error) {
-      console.error("Unable to load committee records:", error);
-    } finally {
-      setLoadingRecords(false);
+      console.error("Unable to load committees:", error);
+      setSystemMessage(error.message || "Unable to load committees.");
     }
   }
 
-  const totalOpenItems = useMemo(
-    () =>
-      committees.reduce(
-        (sum, committee) => sum + Number(committee.open_items || 0),
-        0
-      ),
-    [committees]
-  );
+  async function loadCommitteeMembers() {
+    try {
+      const response = await fetch(
+        `/api/committees/list-members?association_id=${encodeURIComponent(
+          DEFAULT_ASSOCIATION_ID
+        )}`
+      );
 
-  const totalBoardReady = useMemo(
-    () =>
-      committees.reduce(
-        (sum, committee) => sum + Number(committee.board_ready_items || 0),
-        0
-      ),
-    [committees]
-  );
+      const payload = await response.json();
 
-  const totalAssignedTasks = useMemo(
-    () =>
-      committees.reduce(
-        (sum, committee) => sum + Number(committee.assigned_tasks_count || 0),
-        0
-      ),
-    [committees]
-  );
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load committee members.");
+      }
 
-  const boardReadyRecords = useMemo(
-    () => operationalRecords.filter((record) => record.board_review_required),
-    [operationalRecords]
-  );
+      setMembers(payload.members || []);
+    } catch (error) {
+      console.error("Unable to load committee members:", error);
+    }
+  }
 
-  const arcRecords = useMemo(
-    () =>
-      operationalRecords.filter((record) =>
-        `${record.request_type || ""} ${record.title || ""} ${record.description || ""}`
-          .toLowerCase()
-          .includes("arc") ||
-        `${record.request_type || ""} ${record.title || ""} ${record.description || ""}`
-          .toLowerCase()
-          .includes("architectural")
-      ),
-    [operationalRecords]
-  );
+  async function loadCommitteeRecommendations() {
+    try {
+      const response = await fetch(
+        `/api/committees/list-recommendations?association_id=${encodeURIComponent(
+          DEFAULT_ASSOCIATION_ID
+        )}`
+      );
 
-  const priorityRecords = useMemo(
-    () =>
-      operationalRecords.filter((record) =>
-        ["critical", "high"].includes(String(record.priority || "").toLowerCase())
-      ),
-    [operationalRecords]
-  );
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load recommendations.");
+      }
+
+      setRecommendations(payload.recommendations || []);
+    } catch (error) {
+      console.error("Unable to load committee recommendations:", error);
+    }
+  }
+
+  async function loadCommitteeDocuments() {
+    try {
+      const response = await fetch(
+        `/api/committees/list-documents?association_id=${encodeURIComponent(
+          DEFAULT_ASSOCIATION_ID
+        )}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load committee documents.");
+      }
+
+      setDocuments(payload.documents || []);
+    } catch (error) {
+      console.error("Unable to load committee documents:", error);
+    }
+  }
+
+  async function createCommittee(event) {
+    event.preventDefault();
+
+    try {
+      setCreatingCommittee(true);
+      setSystemMessage("");
+
+      const response = await fetch("/api/committees/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          ...committeeForm,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to create committee.");
+      }
+
+      setCommitteeForm({
+        committee_name: "",
+        committee_type: "general",
+        purpose: "",
+        chair_name: "",
+        status: "active",
+      });
+
+      await loadCommittees();
+      setSystemMessage("Committee created successfully.");
+    } catch (error) {
+      console.error("Unable to create committee:", error);
+      setSystemMessage(error.message || "Unable to create committee.");
+    } finally {
+      setCreatingCommittee(false);
+    }
+  }
+
+  async function addCommitteeMember(committeeId) {
+    const form = memberForms[committeeId] || {};
+
+    if (!form.member_name) {
+      setSystemMessage("Member name is required.");
+      return;
+    }
+
+    try {
+      setAddingMemberId(committeeId);
+      setSystemMessage("");
+
+      const response = await fetch("/api/committees/add-member", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          committee_id: committeeId,
+          member_name: form.member_name,
+          member_role: form.member_role || "member",
+          email: form.email || "",
+          phone: form.phone || "",
+          status: "active",
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to add committee member.");
+      }
+
+      setMemberForms((current) => ({
+        ...current,
+        [committeeId]: {
+          member_name: "",
+          member_role: "member",
+          email: "",
+          phone: "",
+        },
+      }));
+
+      await loadCommitteeMembers();
+      setSystemMessage("Committee member added.");
+    } catch (error) {
+      console.error("Unable to add committee member:", error);
+      setSystemMessage(error.message || "Unable to add committee member.");
+    } finally {
+      setAddingMemberId("");
+    }
+  }
+
+  async function deleteCommittee(committeeId) {
+    if (!committeeId) return;
+
+    const confirmed = window.confirm(
+      "Delete this committee and its members/documents permanently?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSystemMessage("");
+
+      const response = await fetch(`/api/committees/delete?id=${committeeId}`, {
+        method: "DELETE",
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to delete committee.");
+      }
+
+      setCommittees((current) =>
+        current.filter((committee) => committee.id !== committeeId)
+      );
+
+      setMembers((current) =>
+        current.filter((member) => member.committee_id !== committeeId)
+      );
+
+      setDocuments((current) =>
+        current.filter((document) => document.committee_id !== committeeId)
+      );
+
+      setSystemMessage("Committee deleted.");
+    } catch (error) {
+      console.error("Unable to delete committee:", error);
+      setSystemMessage(error.message || "Unable to delete committee.");
+    }
+  }
+
+  async function deleteCommitteeMember(memberId) {
+    if (!memberId) return;
+
+    const confirmed = window.confirm("Delete this committee member?");
+    if (!confirmed) return;
+
+    try {
+      setSystemMessage("");
+
+      const response = await fetch(`/api/committees/delete-member?id=${memberId}`, {
+        method: "DELETE",
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to delete committee member.");
+      }
+
+      setMembers((current) => current.filter((member) => member.id !== memberId));
+      setSystemMessage("Committee member deleted.");
+    } catch (error) {
+      console.error("Unable to delete committee member:", error);
+      setSystemMessage(error.message || "Unable to delete committee member.");
+    }
+  }
+
+  async function uploadCommitteeDocument(committeeId) {
+    const form = documentForms[committeeId] || {};
+
+    if (!form.file) {
+      setSystemMessage("Choose a committee document to upload.");
+      return;
+    }
+
+    try {
+      setUploadingDocumentId(committeeId);
+      setSystemMessage("");
+
+      const fileBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(form.file);
+      });
+
+      const response = await fetch("/api/committees/upload-document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          committee_id: committeeId,
+          document_name: form.document_name || form.file.name,
+          document_category: form.document_category || "other",
+          description: form.description || "",
+          uploaded_by: "Admin",
+          file_name: form.file.name,
+          file_type: form.file.type,
+          file_base64: fileBase64,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to upload committee document.");
+      }
+
+      setDocumentForms((current) => ({
+        ...current,
+        [committeeId]: {
+          document_name: "",
+          document_category: "other",
+          description: "",
+          file: null,
+        },
+      }));
+
+      await loadCommitteeDocuments();
+      setSystemMessage("Committee document uploaded.");
+    } catch (error) {
+      console.error("Unable to upload committee document:", error);
+      setSystemMessage(error.message || "Unable to upload committee document.");
+    } finally {
+      setUploadingDocumentId("");
+    }
+  }
 
   const activeMembers = useMemo(
-  () =>
-    members.filter(
-      (member) =>
-        String(member.status || "").toLowerCase() === "active"
-    ),
-  [members]
-);
+    () =>
+      members.filter(
+        (member) => String(member.status || "").toLowerCase() === "active"
+      ),
+    [members]
+  );
 
-const boardRecommendations = useMemo(
-  () =>
-    recommendations.filter(
-      (recommendation) =>
-        String(recommendation.status || "").toLowerCase() ===
-        "sent_to_board"
-    ),
-  [recommendations]
-);
+  const boardRecommendations = useMemo(
+    () =>
+      recommendations.filter(
+        (recommendation) =>
+          String(recommendation.status || "").toLowerCase() === "sent_to_board"
+      ),
+    [recommendations]
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -265,9 +405,9 @@ const boardRecommendations = useMemo(
               Committee Members Center
             </h1>
 
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              Committee membership, recommendations, governance participation,
-committee oversight, and board-directed review workflows.
+            <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
+              Committee membership, documents, governance participation,
+              recommendations, and board-directed review workflows.
             </p>
           </div>
 
@@ -292,59 +432,19 @@ committee oversight, and board-directed review workflows.
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Distributed Committee Operations
+            Committee Governance Operations
           </p>
 
           <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
-            Committee activity now connects live committee structure with operational record tracking.
+            Manage association committees, members, records, documents, and
+            board-ready recommendations from one connected center.
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
-            ARC, finance, landscape, rules, and special committees can now operate through
-            a connected governance center that renders both committee records and centralized
-            operational intake items.
+            ARC, finance, landscape, rules, insurance, reserve, social,
+            technology, and special committees can now operate through a clean
+            governance workspace built for larger associations.
           </p>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={`/admin/operations/new?request_type=${encodeURIComponent(
-                "Special Project"
-              )}&return_path=${encodeURIComponent(
-                "/board/committee-center"
-              )}&return_label=${encodeURIComponent("Committee Center")}`}
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Committee Record
-            </Link>
-
-            <Link
-              href="/board/action-items"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Committee Recommendations
-            </Link>
-
-            <Link
-              href="/board/architectural-approvals"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Architectural Approvals
-            </Link>
-
-            <Link
-              href="/board/meeting-packet"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Committee Members
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-5 md:grid-cols-4">
-          <Metric label="Active Committees" value={committees.length} />
-<Metric label="Committee Members" value={members.length} />
-<Metric label="Recommendations" value={recommendations.length} />
-<Metric label="Board Ready" value={boardReadyRecords.length} />
         </div>
 
         {systemMessage && (
@@ -353,338 +453,451 @@ committee oversight, and board-directed review workflows.
           </div>
         )}
 
-<section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
-  <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-    Committee Setup
-  </p>
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+            Committee Setup
+          </p>
 
-  <h2 className="mt-2 text-3xl font-bold text-white">
-    Create Committee
-  </h2>
+          <h2 className="mt-2 text-3xl font-bold text-white">
+            Create Committee
+          </h2>
 
-  <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-300">
-    Create ARC, finance, landscape, rules, insurance, reserve, social,
-    technology, or special-purpose committees for larger association governance.
-  </p>
+          <form onSubmit={createCommittee} className="mt-6 grid gap-4 lg:grid-cols-2">
+            <input
+              value={committeeForm.committee_name}
+              onChange={(event) =>
+                setCommitteeForm({
+                  ...committeeForm,
+                  committee_name: event.target.value,
+                })
+              }
+              required
+              placeholder="Committee name..."
+              className="input"
+            />
 
-  <form onSubmit={createCommittee} className="mt-6 grid gap-4 lg:grid-cols-2">
-    <input
-      value={committeeForm.committee_name}
-      onChange={(event) =>
-        setCommitteeForm({
-          ...committeeForm,
-          committee_name: event.target.value,
-        })
-      }
-      required
-      placeholder="Committee name..."
-      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
-    />
-
-    <select
-      value={committeeForm.committee_type}
-      onChange={(event) =>
-        setCommitteeForm({
-          ...committeeForm,
-          committee_type: event.target.value,
-        })
-      }
-      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
-    >
-      <option value="general">General Committee</option>
-      <option value="architectural">Architectural / ARC</option>
-      <option value="finance">Finance Committee</option>
-      <option value="landscape">Landscape Committee</option>
-      <option value="rules">Rules Committee</option>
-      <option value="insurance">Insurance Committee</option>
-      <option value="reserve">Reserve Study Committee</option>
-      <option value="social">Social Committee</option>
-      <option value="technology">Technology Committee</option>
-      <option value="special_project">Special Project Committee</option>
-    </select>
-
-    <input
-      value={committeeForm.chair_name}
-      onChange={(event) =>
-        setCommitteeForm({
-          ...committeeForm,
-          chair_name: event.target.value,
-        })
-      }
-      placeholder="Committee chair name..."
-      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
-    />
-
-    <select
-      value={committeeForm.status}
-      onChange={(event) =>
-        setCommitteeForm({
-          ...committeeForm,
-          status: event.target.value,
-        })
-      }
-      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
-    >
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-      <option value="paused">Paused</option>
-    </select>
-
-    <textarea
-      value={committeeForm.purpose}
-      onChange={(event) =>
-        setCommitteeForm({
-          ...committeeForm,
-          purpose: event.target.value,
-        })
-      }
-      placeholder="Committee purpose, scope, responsibilities, or board direction..."
-      rows={5}
-      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none lg:col-span-2"
-    />
-
-    <button
-      type="submit"
-      disabled={creatingCommittee}
-      className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 py-4 font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50 lg:col-span-2"
-    >
-      {creatingCommittee ? "Creating Committee..." : "Create Committee"}
-    </button>
-  </form>
-</section>
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-  <InfoPanel
-    title="Committee Members"
-    count={activeMembers.length}
-    subtitle="Active committee participants"
-  />
-
-  <InfoPanel
-    title="Committee Recommendations"
-    count={recommendations.length}
-    subtitle="Submitted recommendations"
-  />
-
-  <InfoPanel
-    title="Board Recommendations"
-    count={boardRecommendations.length}
-    subtitle="Sent to Board Approval Queue"
-  />
-</div>
-
-        <div className="mt-10">
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-                Live Committee Queue
-              </p>
-
-              <h2 className="mt-3 text-3xl font-bold">
-                Association Committees
-              </h2>
-            </div>
-
-            <Link
-              href={`/admin/operations/new?request_type=${encodeURIComponent(
-                "Special Project"
-              )}&return_path=${encodeURIComponent(
-                "/board/committee-center"
-              )}&return_label=${encodeURIComponent("Committee Center")}`}
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            <select
+              value={committeeForm.committee_type}
+              onChange={(event) =>
+                setCommitteeForm({
+                  ...committeeForm,
+                  committee_type: event.target.value,
+                })
+              }
+              className="input"
             >
-              Create Committee Record
-            </Link>
+              {committeeTypes.map((type) => (
+                <option key={type} value={type}>
+                  {titleCase(type)}
+                </option>
+              ))}
+            </select>
+
+            <input
+              value={committeeForm.chair_name}
+              onChange={(event) =>
+                setCommitteeForm({
+                  ...committeeForm,
+                  chair_name: event.target.value,
+                })
+              }
+              placeholder="Chairperson name..."
+              className="input"
+            />
+
+            <select
+              value={committeeForm.status}
+              onChange={(event) =>
+                setCommitteeForm({
+                  ...committeeForm,
+                  status: event.target.value,
+                })
+              }
+              className="input"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="paused">Paused</option>
+            </select>
+
+            <textarea
+              value={committeeForm.purpose}
+              onChange={(event) =>
+                setCommitteeForm({
+                  ...committeeForm,
+                  purpose: event.target.value,
+                })
+              }
+              placeholder="Committee purpose, scope, responsibilities, or board direction..."
+              rows={4}
+              className="input lg:col-span-2"
+            />
+
+            <button
+              type="submit"
+              disabled={creatingCommittee}
+              className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 py-4 font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50 lg:col-span-2"
+            >
+              {creatingCommittee ? "Creating Committee..." : "Create Committee"}
+            </button>
+          </form>
+        </section>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
+          <Metric label="Active Committees" value={committees.length} />
+          <Metric label="Committee Members" value={activeMembers.length} />
+          <Metric label="Recommendations" value={recommendations.length} />
+          <Metric label="Documents" value={documents.length} />
+        </div>
+
+        <section className="mt-10">
+          <div className="mb-8">
+            <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+              Live Committee Queue
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold">
+              Association Committees
+            </h2>
           </div>
 
-          {loadingCommittees ? (
+          {loading ? (
             <Empty message="Loading committee activity..." />
           ) : committees.length === 0 ? (
             <Empty message="No committees are currently available." />
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6">
               {committees.map((committee) => (
-                <CommitteeCard key={committee.id} committee={committee} />
+                <CommitteeCard
+                  key={committee.id}
+                  committee={committee}
+                  members={members.filter(
+                    (member) => member.committee_id === committee.id
+                  )}
+                  documents={documents.filter(
+                    (document) => document.committee_id === committee.id
+                  )}
+                  memberForm={
+                    memberForms[committee.id] || {
+                      member_name: "",
+                      member_role: "member",
+                      email: "",
+                      phone: "",
+                    }
+                  }
+                  documentForm={
+                    documentForms[committee.id] || {
+                      document_name: "",
+                      document_category: "other",
+                      description: "",
+                      file: null,
+                    }
+                  }
+                  addingMemberId={addingMemberId}
+                  uploadingDocumentId={uploadingDocumentId}
+                  onMemberFormChange={(updates) =>
+                    setMemberForms((current) => ({
+                      ...current,
+                      [committee.id]: {
+                        member_name: current[committee.id]?.member_name || "",
+                        member_role: current[committee.id]?.member_role || "member",
+                        email: current[committee.id]?.email || "",
+                        phone: current[committee.id]?.phone || "",
+                        ...updates,
+                      },
+                    }))
+                  }
+                  onDocumentFormChange={(updates) =>
+                    setDocumentForms((current) => ({
+                      ...current,
+                      [committee.id]: {
+                        document_name: current[committee.id]?.document_name || "",
+                        document_category:
+                          current[committee.id]?.document_category || "other",
+                        description: current[committee.id]?.description || "",
+                        file: current[committee.id]?.file || null,
+                        ...updates,
+                      },
+                    }))
+                  }
+                  onAddMember={() => addCommitteeMember(committee.id)}
+                  onDeleteMember={deleteCommitteeMember}
+                  onDeleteCommittee={() => deleteCommittee(committee.id)}
+                  onUploadDocument={() => uploadCommitteeDocument(committee.id)}
+                />
               ))}
             </div>
           )}
-        </div>
-
-        <section className="mt-12 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-xl">
-            <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-              Governance Workflow
-            </p>
-
-            <h3 className="mt-3 text-3xl font-semibold">
-              Committee Recommendation Flow
-            </h3>
-
-            <div className="mt-8 space-y-4">
-              {[
-                "Create committee records through Admin Operations Intake",
-                "Track committee recommendations and assigned follow-up",
-                "Prepare board-ready summaries for review",
-                "Route ARC and policy matters into governance workflows",
-                "Connect committee recommendations to meeting packets",
-                "Preserve committee oversight history for future association review",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-slate-300"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-8 shadow-xl">
-            <p className="text-sm uppercase tracking-[0.25em] text-emerald-200">
-              Governance Oversight Active
-            </p>
-
-            <h3 className="mt-3 text-3xl font-semibold text-emerald-100">
-              Committees now operate inside the SPM governance system.
-            </h3>
-
-            <div className="mt-8 space-y-5 leading-8 text-slate-300">
-              <p>
-                This page now preserves direct committee table visibility while also
-                rendering committee-related records from the centralized operational
-                intake architecture.
-              </p>
-
-              <p>
-                Committee work can flow into action items, architectural approvals,
-                meeting packets, motion review, and board governance decisions without
-                becoming disconnected from the rest of the platform.
-              </p>
-            </div>
-
-            <div className="mt-8 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-5 text-emerald-100">
-              Committee Center is now aligned with distributed operational rendering.
-            </div>
-          </div>
         </section>
       </section>
+
+      <style jsx>{`
+        .input {
+          width: 100%;
+          border-radius: 0.9rem;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(15, 23, 42, 0.9);
+          padding: 0.85rem 1rem;
+          color: white;
+          outline: none;
+        }
+
+        .input:focus {
+          border-color: rgba(251, 191, 36, 0.45);
+          box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+        }
+
+        option {
+          background: #020617;
+          color: white;
+        }
+      `}</style>
     </main>
   );
 }
 
-function InfoPanel({
-  title,
-  count,
-  subtitle,
+function CommitteeCard({
+  committee,
+  members,
+  documents,
+  memberForm,
+  documentForm,
+  addingMemberId,
+  uploadingDocumentId,
+  onMemberFormChange,
+  onDocumentFormChange,
+  onAddMember,
+  onDeleteMember,
+  onDeleteCommittee,
+  onUploadDocument,
 }) {
   return (
-    <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
-      <h3 className="text-xl font-semibold text-amber-100">
-        {title}
-      </h3>
+    <article className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
+      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-2xl font-semibold">
+                {committee.committee_name || "Committee"}
+              </h3>
 
-      <div className="mt-6 text-5xl font-bold text-amber-300">
-        {count}
-      </div>
-
-      <div className="mt-3 text-sm text-slate-300">
-        {subtitle}
-      </div>
-    </div>
-  );
-}
-
-function OperationalPanel({ title, items }) {
-  return (
-    <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-6">
-      <h3 className="text-xl font-semibold text-amber-100">
-        {title}
-      </h3>
-
-      <div className="mt-6 space-y-4">
-        {items.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 text-sm text-slate-400">
-            No operational records found.
-          </div>
-        ) : (
-          items.slice(0, 5).map((item) => (
-            <div key={item.id} className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
-              <h4 className="font-semibold text-white">
-                {item.title || "Untitled Committee Record"}
-              </h4>
-
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                {item.description || "No description provided."}
+              <p className="mt-2 text-sm text-slate-400">
+                {titleCase(committee.committee_type || "general")}
               </p>
 
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                <span>{item.request_type || "Operational Record"}</span>
-                <span>•</span>
-                <span>{item.status || "Submitted"}</span>
-                <span>•</span>
-                <span>{item.priority || "Normal"}</span>
-              </div>
+              <p className="mt-5 leading-7 text-slate-300">
+                {committee.purpose || "Committee operational oversight."}
+              </p>
             </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
 
-function CommitteeCard({ committee }) {
-  return (
-    <article className="rounded-3xl border border-white/10 bg-slate-900 p-7 shadow-xl">
-      <div className="flex items-start justify-between gap-6">
-        <div>
-          <h3 className="text-2xl font-semibold">
-            {committee.committee_name || "Committee"}
-          </h3>
+            <div className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
+              {titleCase(committee.status || "active")}
+            </div>
+          </div>
 
-          <p className="mt-2 text-sm text-slate-400">
-            {committee.focus_area || "Association Operations"}
-          </p>
+          <div className="mt-6 grid gap-4 text-sm text-slate-300 sm:grid-cols-2">
+            <p>
+              <span className="text-slate-500">Chairperson:</span>{" "}
+              {committee.chair_name || "Not Assigned"}
+            </p>
 
-          <p className="mt-5 leading-7 text-slate-300">
-            {committee.description || "Committee operational oversight."}
-          </p>
+            <p>
+              <span className="text-slate-500">Members:</span>{" "}
+              {members.length}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Documents:</span>{" "}
+              {documents.length}
+            </p>
+
+            <p>
+              <span className="text-slate-500">Status:</span>{" "}
+              {titleCase(committee.status || "active")}
+            </p>
+          </div>
+
+          <button
+            onClick={onDeleteCommittee}
+            className="mt-6 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
+          >
+            Delete Committee
+          </button>
         </div>
 
-        <div className="text-right">
-          <div className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
-            {titleCase(committee.status || "active")}
-          </div>
+        <div className="space-y-5">
+          <section className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+            <h4 className="text-lg font-semibold text-amber-200">
+              Committee Members
+            </h4>
 
-          <div className="mt-5 text-3xl font-bold text-amber-300">
-            {committee.open_items || 0}
-          </div>
+            <div className="mt-4 space-y-3">
+              {members.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No members have been added yet.
+                </p>
+              ) : (
+                members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-white">
+                        {member.member_name}
+                      </p>
 
-          <div className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-            Open Items
-          </div>
+                      <p className="text-sm text-slate-400">
+                        {titleCase(member.member_role || "member")}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => onDeleteMember(member.id)}
+                      className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-200 hover:bg-red-500/20"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <input
+                value={memberForm.member_name}
+                onChange={(event) =>
+                  onMemberFormChange({ member_name: event.target.value })
+                }
+                placeholder="Member name..."
+                className="input"
+              />
+
+              <select
+                value={memberForm.member_role}
+                onChange={(event) =>
+                  onMemberFormChange({ member_role: event.target.value })
+                }
+                className="input"
+              >
+                <option value="chairperson">Chairperson</option>
+                <option value="member">Member</option>
+              </select>
+
+              <input
+                value={memberForm.email}
+                onChange={(event) =>
+                  onMemberFormChange({ email: event.target.value })
+                }
+                placeholder="Email..."
+                className="input"
+              />
+
+              <input
+                value={memberForm.phone}
+                onChange={(event) =>
+                  onMemberFormChange({ phone: event.target.value })
+                }
+                placeholder="Phone..."
+                className="input"
+              />
+
+              <button
+                onClick={onAddMember}
+                disabled={addingMemberId === committee.id}
+                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50 sm:col-span-2"
+              >
+                {addingMemberId === committee.id ? "Adding..." : "Add Member"}
+              </button>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+            <h4 className="text-lg font-semibold text-blue-200">
+              Committee Documents
+            </h4>
+
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Upload documents that committee members and board members need to access.
+            </p>
+
+            <div className="mt-4 space-y-3">
+              {documents.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No committee documents uploaded yet.
+                </p>
+              ) : (
+                documents.map((document) => (
+                  <a
+                    key={document.id}
+                    href={document.file_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-100 hover:bg-blue-500/20"
+                  >
+                    {documentButtonLabel(document)}
+                  </a>
+                ))
+              )}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <input
+                value={documentForm.document_name}
+                onChange={(event) =>
+                  onDocumentFormChange({ document_name: event.target.value })
+                }
+                placeholder="Document name..."
+                className="input"
+              />
+
+              <select
+                value={documentForm.document_category}
+                onChange={(event) =>
+                  onDocumentFormChange({ document_category: event.target.value })
+                }
+                className="input"
+              >
+                {documentCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {titleCase(category)}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="file"
+                onChange={(event) =>
+                  onDocumentFormChange({
+                    file: event.target.files?.[0] || null,
+                  })
+                }
+                className="input sm:col-span-2"
+                accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx,.ppt,.pptx"
+              />
+
+              <textarea
+                value={documentForm.description}
+                onChange={(event) =>
+                  onDocumentFormChange({ description: event.target.value })
+                }
+                placeholder="Document notes..."
+                rows={3}
+                className="input sm:col-span-2"
+              />
+
+              <button
+                onClick={onUploadDocument}
+                disabled={uploadingDocumentId === committee.id}
+                className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-200 hover:bg-blue-500/20 disabled:opacity-50 sm:col-span-2"
+              >
+                {uploadingDocumentId === committee.id
+                  ? "Uploading..."
+                  : "Upload Committee Document"}
+              </button>
+            </div>
+          </section>
         </div>
-      </div>
-
-      <div className="mt-6 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
-        <p>
-          <span className="text-slate-500">Chair:</span>{" "}
-          {committee.chair_name || "Not Assigned"}
-        </p>
-
-        <p>
-          <span className="text-slate-500">Board Ready:</span>{" "}
-          {committee.board_ready_items || 0}
-        </p>
-
-        <p>
-          <span className="text-slate-500">Meeting Notes:</span>{" "}
-          {committee.meeting_notes_count || 0}
-        </p>
-
-        <p>
-          <span className="text-slate-500">Assigned Tasks:</span>{" "}
-          {committee.assigned_tasks_count || 0}
-        </p>
       </div>
     </article>
   );
@@ -710,6 +923,25 @@ function Empty({ message }) {
       {message}
     </div>
   );
+}
+
+function documentButtonLabel(document) {
+  const type = String(document.file_type || "").toLowerCase();
+  const name = document.document_name || document.file_name || "Committee Document";
+
+  if (type.includes("pdf")) return `Open PDF: ${name}`;
+  if (type.startsWith("image/")) return `View Image: ${name}`;
+  if (type.includes("spreadsheet") || /\.(xlsx|xls|csv)$/i.test(name)) {
+    return `Open Spreadsheet: ${name}`;
+  }
+  if (type.includes("word") || /\.(doc|docx)$/i.test(name)) {
+    return `Open Document: ${name}`;
+  }
+  if (type.includes("presentation") || /\.(ppt|pptx)$/i.test(name)) {
+    return `Open Presentation: ${name}`;
+  }
+
+  return `Open File: ${name}`;
 }
 
 function titleCase(value) {
