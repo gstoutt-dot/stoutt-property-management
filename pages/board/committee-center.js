@@ -13,6 +13,15 @@ export default function BoardCommitteeCenter() {
   const [loadingCommittees, setLoadingCommittees] = useState(true);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+  const [creatingCommittee, setCreatingCommittee] = useState(false);
+
+  const [committeeForm, setCommitteeForm] = useState({
+  committee_name: "",
+  committee_type: "general",
+  purpose: "",
+  chair_name: "",
+  status: "active",
+});
 
   useEffect(() => {
   loadCommittees();
@@ -20,6 +29,48 @@ export default function BoardCommitteeCenter() {
   loadCommitteeRecommendations();
   loadCommitteeRecords();
 }, []);
+
+  async function createCommittee(event) {
+  event.preventDefault();
+
+  try {
+    setCreatingCommittee(true);
+    setSystemMessage("");
+
+    const response = await fetch("/api/committees/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        association_id: DEFAULT_ASSOCIATION_ID,
+        ...committeeForm,
+      }),
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to create committee.");
+    }
+
+    setCommitteeForm({
+      committee_name: "",
+      committee_type: "general",
+      purpose: "",
+      chair_name: "",
+      status: "active",
+    });
+
+    await loadCommittees();
+    setSystemMessage("Committee created successfully.");
+  } catch (error) {
+    console.error("Unable to create committee:", error);
+    setSystemMessage(error.message || "Unable to create committee.");
+  } finally {
+    setCreatingCommittee(false);
+  }
+}
 
   async function loadCommittees() {
   try {
@@ -301,6 +352,106 @@ committee oversight, and board-directed review workflows.
             {systemMessage}
           </div>
         )}
+
+<section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+  <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
+    Committee Setup
+  </p>
+
+  <h2 className="mt-2 text-3xl font-bold text-white">
+    Create Committee
+  </h2>
+
+  <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-300">
+    Create ARC, finance, landscape, rules, insurance, reserve, social,
+    technology, or special-purpose committees for larger association governance.
+  </p>
+
+  <form onSubmit={createCommittee} className="mt-6 grid gap-4 lg:grid-cols-2">
+    <input
+      value={committeeForm.committee_name}
+      onChange={(event) =>
+        setCommitteeForm({
+          ...committeeForm,
+          committee_name: event.target.value,
+        })
+      }
+      required
+      placeholder="Committee name..."
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    />
+
+    <select
+      value={committeeForm.committee_type}
+      onChange={(event) =>
+        setCommitteeForm({
+          ...committeeForm,
+          committee_type: event.target.value,
+        })
+      }
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    >
+      <option value="general">General Committee</option>
+      <option value="architectural">Architectural / ARC</option>
+      <option value="finance">Finance Committee</option>
+      <option value="landscape">Landscape Committee</option>
+      <option value="rules">Rules Committee</option>
+      <option value="insurance">Insurance Committee</option>
+      <option value="reserve">Reserve Study Committee</option>
+      <option value="social">Social Committee</option>
+      <option value="technology">Technology Committee</option>
+      <option value="special_project">Special Project Committee</option>
+    </select>
+
+    <input
+      value={committeeForm.chair_name}
+      onChange={(event) =>
+        setCommitteeForm({
+          ...committeeForm,
+          chair_name: event.target.value,
+        })
+      }
+      placeholder="Committee chair name..."
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    />
+
+    <select
+      value={committeeForm.status}
+      onChange={(event) =>
+        setCommitteeForm({
+          ...committeeForm,
+          status: event.target.value,
+        })
+      }
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none"
+    >
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+      <option value="paused">Paused</option>
+    </select>
+
+    <textarea
+      value={committeeForm.purpose}
+      onChange={(event) =>
+        setCommitteeForm({
+          ...committeeForm,
+          purpose: event.target.value,
+        })
+      }
+      placeholder="Committee purpose, scope, responsibilities, or board direction..."
+      rows={5}
+      className="rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none lg:col-span-2"
+    />
+
+    <button
+      type="submit"
+      disabled={creatingCommittee}
+      className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 py-4 font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50 lg:col-span-2"
+    >
+      {creatingCommittee ? "Creating Committee..." : "Create Committee"}
+    </button>
+  </form>
+</section>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
   <InfoPanel
