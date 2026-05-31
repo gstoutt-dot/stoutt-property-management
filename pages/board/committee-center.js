@@ -404,68 +404,62 @@ async function uploadCommitteeDocument(committeeId) {
     setSystemMessage("Choose a committee document to upload.");
     return;
   }
-  const form = documentForms[committeeId] || {};
-
-  if (!form.file) {
-    setSystemMessage("Choose a committee document to upload.");
-    return;
-  }
 
   try {
-      setUploadingDocumentId(committeeId);
-      setSystemMessage("");
+    setUploadingDocumentId(committeeId);
+    setSystemMessage("");
 
-      const fileBase64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
+    const fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(form.file);
-      });
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(form.file);
+    });
 
-      const response = await fetch("/api/committees/upload-document", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
-          committee_id: committeeId,
-          document_name: form.document_name || form.file.name,
-          document_category: form.document_category || "other",
-          description: form.description || "",
-          uploaded_by: "Admin",
-          file_name: form.file.name,
-          file_type: form.file.type,
-          file_base64: fileBase64,
-        }),
-      });
+    const response = await fetch("/api/committees/upload-document", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        association_id: DEFAULT_ASSOCIATION_ID,
+        committee_id: committeeId,
+        document_name: form.document_name || form.file.name,
+        document_category: form.document_category || "other",
+        description: form.description || "",
+        uploaded_by: "Admin",
+        file_name: form.file.name,
+        file_type: form.file.type,
+        file_base64: fileBase64,
+      }),
+    });
 
-      const payload = await response.json();
+    const payload = await response.json();
 
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.message || "Unable to upload committee document.");
-      }
-
-      setDocumentForms((current) => ({
-        ...current,
-        [committeeId]: {
-          document_name: "",
-          document_category: "other",
-          description: "",
-          file: null,
-        },
-      }));
-
-      await loadCommitteeDocuments();
-      setSystemMessage("Committee document uploaded.");
-    } catch (error) {
-      console.error("Unable to upload committee document:", error);
-      setSystemMessage(error.message || "Unable to upload committee document.");
-    } finally {
-      setUploadingDocumentId("");
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to upload committee document.");
     }
+
+    setDocumentForms((current) => ({
+      ...current,
+      [committeeId]: {
+        document_name: "",
+        document_category: "other",
+        description: "",
+        file: null,
+      },
+    }));
+
+    await loadCommitteeDocuments();
+    setSystemMessage("Committee document uploaded.");
+  } catch (error) {
+    console.error("Unable to upload committee document:", error);
+    setSystemMessage(error.message || "Unable to upload committee document.");
+  } finally {
+    setUploadingDocumentId("");
   }
+}
 
   const activeMembers = useMemo(
     () =>
