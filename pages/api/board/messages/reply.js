@@ -20,10 +20,31 @@ export default async function handler(req, res) {
 
     const now = new Date().toISOString();
 
+    const { data: existingMessage, error: loadError } = await supabaseAdmin
+      .from("board_messages")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (loadError) throw loadError;
+
+    const existingReplies = String(existingMessage.reply_body || "").trim();
+
+    const newReplyEntry = [
+      `REPLY FROM ${replied_by || "Management"}`,
+      `Date: ${new Date(now).toLocaleString("en-US")}`,
+      "",
+      String(reply_body).trim(),
+    ].join("\n");
+
+    const updatedReplyBody = existingReplies
+      ? `${existingReplies}\n\n---\n\n${newReplyEntry}`
+      : newReplyEntry;
+
     const { data, error } = await supabaseAdmin
       .from("board_messages")
       .update({
-        reply_body: String(reply_body).trim(),
+        reply_body: updatedReplyBody,
         replied_by: replied_by || "Management",
         replied_at: now,
         status: "replied",
