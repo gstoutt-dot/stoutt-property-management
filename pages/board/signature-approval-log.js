@@ -54,7 +54,7 @@ export default function BoardSignatureApprovalLog() {
     }
   }
 
-      async function signApproval(item) {
+        async function signApproval(item) {
     if (!item?.id) return;
 
     if (
@@ -68,15 +68,16 @@ export default function BoardSignatureApprovalLog() {
       return;
     }
 
-        const response = await fetch("/api/signature-approvals/update-status", {
+    const response = await fetch("/api/signature-approvals/update-status", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id: item.id,
-        status: newStatus,
-        certification_record: `${existingRecord}\n${governanceEntry}`,
+        status: "signed",
+        signed_at: new Date().toISOString(),
+        signed_by: item.required_signer || "Board",
       }),
     });
 
@@ -84,7 +85,7 @@ export default function BoardSignatureApprovalLog() {
 
     if (!response.ok || !result.success) {
       setSystemMessage(
-        result.message || "Unable to update signature approval item."
+        result.message || "Unable to sign approval item."
       );
 
       return;
