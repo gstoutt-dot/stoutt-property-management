@@ -85,10 +85,24 @@ export default function BoardMessageInbox() {
           </div>
         )}
 
-        <section className="mb-6 grid gap-4 md:grid-cols-3">
+                <section className="mb-6 grid gap-4 md:grid-cols-3">
           <Metric label="Messages" value={messages.length} />
           <Metric label="Unread / New" value={unreadCount} />
-          <Metric label="Channel" value="Board Inbox" />
+          <Metric label="Channel" value="Board / Management" />
+        </section>
+
+        <section className="mb-6 rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-6 shadow-xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
+            Contact Management
+          </p>
+
+          <h2 className="mt-2 text-2xl font-bold text-white">
+            Send Message to Manager
+          </h2>
+
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+            Send questions, concerns, requests, or board follow-up items directly to management. Administration will receive the message as part of the permanent operational record.
+          </p>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-3">
