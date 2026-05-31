@@ -53,11 +53,19 @@ export default function SignatureApprovalNew() {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
-        .from("association_signature_approvals")
-        .insert(payload);
+            const response = await fetch("/api/signature-approvals/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to create signature approval.");
+      }
 
       setSystemMessage("Signature approval created successfully.");
 
