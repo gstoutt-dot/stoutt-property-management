@@ -5,6 +5,7 @@ export default function BoardApprovalQueue() {
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+  const [boardNotes, setBoardNotes] = useState({});
 
   useEffect(() => {
     loadApprovals({ showLoading: true });
@@ -41,9 +42,11 @@ export default function BoardApprovalQueue() {
     }
   }
 
-  async function updateApproval(action, newStatus, eventType, message) {
+    async function updateApproval(action, newStatus, eventType, message) {
     try {
       setSystemMessage("");
+
+      const note = String(boardNotes[action.id] || "").trim();
 
       const response = await fetch("/api/admin/update-operational-record", {
         method: "POST",
@@ -55,6 +58,7 @@ export default function BoardApprovalQueue() {
           status: newStatus,
           board_event_type: eventType,
           board_message: message,
+          board_note: note,
         }),
       });
 
@@ -63,6 +67,11 @@ export default function BoardApprovalQueue() {
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Unable to update board approval item.");
       }
+
+      setBoardNotes((current) => ({
+        ...current,
+        [action.id]: "",
+      }));
 
       await loadApprovals({ showLoading: false });
       setSystemMessage(message);
@@ -205,7 +214,19 @@ export default function BoardApprovalQueue() {
                       </div>
                     </div>
 
-                    <div className="grid min-w-[260px] gap-3">
+                                        <div className="grid min-w-[280px] gap-3">
+                      <textarea
+                        value={boardNotes[action.id] || ""}
+                        onChange={(event) =>
+                          setBoardNotes((current) => ({
+                            ...current,
+                            [action.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Optional board note to Admin..."
+                        className="min-h-[110px] rounded-xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:border-amber-400/50"
+                      />
+
                       <button
                         onClick={() =>
                           updateApproval(
