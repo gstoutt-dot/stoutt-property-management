@@ -10,6 +10,8 @@ export default function BoardMessageInbox() {
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [sendingReply, setSendingReply] = useState(false);
+  const [replyBody, setReplyBody] = useState("");
   const [newMessage, setNewMessage] = useState({
     subject: "",
     message_body: "",
@@ -110,6 +112,51 @@ export default function BoardMessageInbox() {
       setSystemMessage(error.message || "Unable to send board message.");
     } finally {
       setSendingMessage(false);
+    }
+  }
+
+    async function sendReplyToMessage(event) {
+    event.preventDefault();
+
+    if (!activeMessage?.id || !replyBody.trim()) {
+      setSystemMessage("Reply message is required.");
+      return;
+    }
+
+    try {
+      setSendingReply(true);
+      setSystemMessage("");
+
+      const response = await fetch("/api/board/messages/reply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: activeMessage.id,
+          reply_body: replyBody.trim(),
+          replied_by: "Board Member",
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to send reply.");
+      }
+
+      setReplyBody("");
+
+      await loadMessages();
+
+      setActiveMessage(payload.message);
+
+      setSystemMessage("Reply sent.");
+    } catch (error) {
+      console.error("Unable to send reply:", error);
+      setSystemMessage(error.message || "Unable to send reply.");
+    } finally {
+      setSendingReply(false);
     }
   }
 
