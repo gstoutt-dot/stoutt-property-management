@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ success: false, message: "Method not allowed." });
     }
 
-    const {
+        const {
       association_id,
       subject,
       message_body,
@@ -16,6 +16,7 @@ export default async function handler(req, res) {
       sent_by_role,
       sent_to_role,
       message_type,
+      priority,
     } = req.body || {};
 
     if (!subject || !message_body) {
@@ -44,7 +45,39 @@ export default async function handler(req, res) {
       .select("*")
       .single();
 
-    if (error) throw error;
+        if (error) throw error;
+
+    if ((sent_by_role || "").toLowerCase() === "board") {
+      const { error: recordError } = await supabaseAdmin
+        .from("admin_operational_records")
+        .insert({
+          association_id: association_id || DEFAULT_ASSOCIATION_ID,
+          created_by: sent_by_name || "Board Member",
+          created_by_role: "board",
+          request_type: "board_message",
+          title: `Board Message: ${String(subject).trim()}`,
+          description: [
+            `Message Type: ${message_type || "general"}`,
+            `Priority: ${priority || "normal"}`,
+            "",
+            "Board Message:",
+            String(message_body).trim(),
+          ].join("\n"),
+          priority: priority || "normal",
+          status: "open",
+          assigned_to: "manager",
+          board_review_required: false,
+          owner_visible: false,
+          vendor_visible: false,
+          source_module: "board_message_inbox",
+          routing_target: "manager_command_center",
+          recommended_action: "Management response requested by board.",
+          created_at: now,
+          updated_at: now,
+        });
+
+      if (recordError) throw recordError;
+    }
 
     return res.status(200).json({ success: true, message: data });
   } catch (error) {
