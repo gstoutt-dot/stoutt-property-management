@@ -9,6 +9,8 @@ export default function BoardMessages() {
   const [activeMessage, setActiveMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [sendingReply, setSendingReply] = useState(false);
+  const [replyBody, setReplyBody] = useState("");
   const [systemMessage, setSystemMessage] = useState("");
 
   const [form, setForm] = useState({
@@ -124,6 +126,51 @@ export default function BoardMessages() {
       setSystemMessage(error.message || "Unable to send board message.");
     } finally {
       setSending(false);
+    }
+  }
+
+    async function sendReplyToMessage(event) {
+    event.preventDefault();
+
+    if (!activeMessage?.id || !replyBody.trim()) {
+      setSystemMessage("Reply message is required.");
+      return;
+    }
+
+    try {
+      setSendingReply(true);
+      setSystemMessage("");
+
+      const response = await fetch("/api/board/messages/reply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: activeMessage.id,
+          reply_body: replyBody.trim(),
+          replied_by: "Admin / Management",
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to send reply.");
+      }
+
+      setReplyBody("");
+
+      await loadMessages();
+
+      setActiveMessage(payload.message);
+
+      setSystemMessage("Reply sent to board.");
+    } catch (error) {
+      console.error("Unable to send reply:", error);
+      setSystemMessage(error.message || "Unable to send reply.");
+    } finally {
+      setSendingReply(false);
     }
   }
 
@@ -326,14 +373,14 @@ export default function BoardMessages() {
                       {formatDateTime(activeMessage.created_at)}
                     </p>
 
-                                        <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-300">
+                                                            <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-300">
                       {activeMessage.message_body}
                     </p>
 
                     {activeMessage.reply_body && (
                       <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-yellow-300">
-                          Board Reply
+                          Reply
                         </p>
 
                         <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-200">
@@ -346,6 +393,28 @@ export default function BoardMessages() {
                         </p>
                       </div>
                     )}
+
+                    <form onSubmit={sendReplyToMessage} className="mt-6">
+                      <p className="text-sm font-semibold text-yellow-300">
+                        Send Reply
+                      </p>
+
+                      <textarea
+                        value={replyBody}
+                        onChange={(event) => setReplyBody(event.target.value)}
+                        placeholder="Type management reply to board..."
+                        rows={4}
+                        className="mt-3 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/50"
+                      />
+
+                      <button
+                        type="submit"
+                        disabled={sendingReply}
+                        className="mt-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 disabled:opacity-50"
+                      >
+                        {sendingReply ? "Sending Reply..." : "Send Reply to Board"}
+                      </button>
+                    </form>
                   </div>
                 ) : (
                   <div className="mt-5 flex min-h-[260px] items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-sm text-slate-500">
