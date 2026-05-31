@@ -33,6 +33,7 @@ export default function CommitteeMembersCenter() {
   const [members, setMembers] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [boardResponses, setBoardResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
@@ -57,13 +58,14 @@ export default function CommitteeMembersCenter() {
     loadAll();
   }, []);
 
-  async function loadAll() {
+    async function loadAll() {
     setLoading(true);
     await Promise.all([
       loadCommittees(),
       loadCommitteeMembers(),
       loadCommitteeRecommendations(),
       loadCommitteeDocuments(),
+      loadBoardResponses(),
     ]);
     setLoading(false);
   }
@@ -129,7 +131,7 @@ export default function CommitteeMembersCenter() {
     }
   }
 
-  async function loadCommitteeDocuments() {
+    async function loadCommitteeDocuments() {
     try {
       const response = await fetch(
         `/api/committees/list-documents?association_id=${encodeURIComponent(
@@ -146,6 +148,29 @@ export default function CommitteeMembersCenter() {
       setDocuments(payload.documents || []);
     } catch (error) {
       console.error("Unable to load committee documents:", error);
+    }
+  }
+
+  async function loadBoardResponses() {
+    try {
+      const response = await fetch("/api/admin/operational-records");
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load board responses.");
+      }
+
+      const committeeBoardItems = (payload.records || []).filter((record) => {
+        return (
+          record.source_module === "committee_members_center" ||
+          record.request_type === "committee_review" ||
+          record.routing_target === "board_approval_queue"
+        );
+      });
+
+      setBoardResponses(committeeBoardItems);
+    } catch (error) {
+      console.error("Unable to load board responses:", error);
     }
   }
 
@@ -738,6 +763,10 @@ async function uploadCommitteeDocument(committeeId) {
                   onDeleteCommittee={() => deleteCommittee(committee.id)}
                   onSendToBoard={() => sendCommitteeToBoard(committee)}
                   onUploadDocument={() => uploadCommitteeDocument(committee.id)}
+                  boardResponse={findBoardResponseForCommittee(
+                    committee,
+                    boardResponses
+                  )}
 
 recommendationForm={
   recommendationForms[committee.id] || {
@@ -840,6 +869,7 @@ function CommitteeCard({
   onDeleteCommittee,
   onSendToBoard,
   onUploadDocument,
+  boardResponse,
 
 recommendationForm,
 creatingRecommendationId,
@@ -891,6 +921,39 @@ onCreateRecommendation,
               {titleCase(committee.status || "active")}
             </p>
           </div>
+
+                    {boardResponse && (
+            <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-300">
+                Board Response Received
+              </p>
+
+              <p className="mt-3 text-sm text-slate-300">
+                <span className="text-slate-500">Status:</span>{" "}
+                {titleCase(boardResponse.status || "board review")}
+              </p>
+
+              <p className="mt-2 text-sm text-slate-300">
+                <span className="text-slate-500">Last Action:</span>{" "}
+                {titleCase(boardResponse.board_last_action || "Pending")}
+              </p>
+
+              {boardResponse.board_last_message && (
+                <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/70 p-4">
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-slate-200">
+                    {boardResponse.board_last_message}
+                  </p>
+                </div>
+              )}
+
+              <p className="mt-3 text-xs text-slate-500">
+                Updated:{" "}
+                {boardResponse.board_updated_at
+                  ? new Date(boardResponse.board_updated_at).toLocaleString()
+                  : "Not yet updated"}
+              </p>
+            </div>
+          )}
 
           <div className="mt-6 flex flex-wrap gap-3">
   <button
@@ -1107,6 +1170,23 @@ function Empty({ message }) {
     <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] p-8 text-center text-sm text-slate-400">
       {message}
     </div>
+  );
+}
+
+function findBoardResponseForCommittee(committee, boardResponses) {
+  const committeeName = String(committee.committee_name || "").toLowerCase();
+  const expectedTitle = `${committeeName} review`;
+
+  return (
+    boardResponses.find((record) => {
+      const title = String(record.title || "").toLowerCase();
+      const description = String(record.description || "").toLowerCase();
+
+      return (
+        title === expectedTitle ||
+        description.includes(`committee: ${committeeName}`)
+      );
+    }) || null
   );
 }
 
