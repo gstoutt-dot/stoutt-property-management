@@ -21,8 +21,14 @@ export default function BoardMessages() {
     sent_by_role: "admin",
   });
 
-  useEffect(() => {
+    useEffect(() => {
     loadMessages();
+
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   async function loadMessages() {
