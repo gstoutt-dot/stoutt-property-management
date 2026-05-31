@@ -438,9 +438,12 @@ function ApprovalCard({
   onBoardAction,
   onSign,
 }) {
-  const signed =
-    String(item.status || "").toLowerCase() ===
-    "signed";
+  const status = String(item.status || "").toLowerCase();
+  const signed = status === "signed";
+  const boardApproved = status === "board_approved";
+  const lockedForSignature =
+    signed ||
+    boardApproved;
 
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-900/80 p-5">
@@ -460,13 +463,57 @@ function ApprovalCard({
           </h3>
         </div>
 
-        <span className="rounded-full border border-amber-300/30 px-4 py-1 text-sm text-amber-200">
+        <span
+          className={`rounded-full border px-4 py-1 text-sm ${
+            signed
+              ? "border-emerald-300/40 bg-emerald-400/10 text-emerald-200"
+              : boardApproved
+              ? "border-amber-300/40 bg-amber-400/10 text-amber-200"
+              : "border-amber-300/30 text-amber-200"
+          }`}
+        >
           {titleCase(
             item.status ||
               "pending_signature"
           )}
         </span>
       </div>
+
+      {signed && (
+        <div className="mt-5 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-300">
+            Signed and Certified
+          </p>
+
+          <h4 className="mt-3 text-2xl font-bold text-emerald-100">
+            Signature Authorization Completed
+          </h4>
+
+          <div className="mt-4 grid gap-3 text-sm text-slate-200 md:grid-cols-2">
+            <p>
+              <span className="text-slate-500">
+                Signed By:
+              </span>{" "}
+              {item.signed_by ||
+                item.required_signer ||
+                "Board"}
+            </p>
+
+            <p>
+              <span className="text-slate-500">
+                Signed Date:
+              </span>{" "}
+              {item.signed_at
+                ? new Date(item.signed_at).toLocaleString()
+                : "N/A"}
+            </p>
+          </div>
+
+          <p className="mt-4 text-sm leading-6 text-emerald-100/80">
+            This approval is now locked as a signed governance authorization record.
+          </p>
+        </div>
+      )}
 
       <div className="mt-5 grid gap-4 text-sm text-slate-300 md:grid-cols-2">
         <p>
@@ -485,34 +532,19 @@ function ApprovalCard({
             "Board Operations"}
         </p>
 
-        <p className="md:col-span-2">
-          <span className="text-slate-500">
-            Certification Record:
-          </span>{" "}
-          {item.certification_record ||
-            "No certification record available."}
-        </p>
-
-        {item.signed_at && (
-          <p>
-            <span className="text-slate-500">
-              Signed:
-            </span>{" "}
-            {formatDate(item.signed_at)}
+        <div className="md:col-span-2 rounded-xl border border-white/10 bg-slate-950/60 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Certification Record
           </p>
-        )}
 
-        {item.signed_by && (
-          <p>
-            <span className="text-slate-500">
-              Signed By:
-            </span>{" "}
-            {item.signed_by}
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-200">
+            {item.certification_record ||
+              "No certification record available."}
           </p>
-        )}
+        </div>
       </div>
 
-            {!signed && (
+      {!signed && !lockedForSignature && (
         <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
           <p className="text-sm font-semibold text-amber-200">
             Board Authorization Actions
@@ -567,6 +599,18 @@ function ApprovalCard({
               Request More Info
             </button>
           </div>
+        </div>
+      )}
+
+      {boardApproved && (
+        <div className="mt-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+            Board Approved For Signature
+          </p>
+
+          <p className="mt-3 text-sm leading-6 text-slate-200">
+            Board authorization has been completed. This record is now ready for certification by the required signer.
+          </p>
 
           <button
             onClick={() => onSign(item)}
