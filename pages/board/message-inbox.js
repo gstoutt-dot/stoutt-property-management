@@ -9,6 +9,14 @@ export default function BoardMessageInbox() {
   const [activeMessage, setActiveMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [newMessage, setNewMessage] = useState({
+    subject: "",
+    message_body: "",
+    message_type: "general_question",
+    priority: "normal",
+    sent_by_name: "Board Member",
+  });
 
   useEffect(() => {
     loadMessages();
@@ -41,6 +49,67 @@ export default function BoardMessageInbox() {
       setSystemMessage(error.message || "Unable to load board inbox.");
     } finally {
       setLoading(false);
+    }
+  }
+
+    function updateNewMessage(field, value) {
+    setNewMessage((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  async function sendMessageToManagement(event) {
+    event.preventDefault();
+
+    if (!newMessage.subject.trim() || !newMessage.message_body.trim()) {
+      setSystemMessage("Subject and message are required.");
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      setSystemMessage("");
+
+      const response = await fetch("/api/board/messages/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          subject: newMessage.subject.trim(),
+          message_body: newMessage.message_body.trim(),
+          sent_by_name: newMessage.sent_by_name || "Board Member",
+          sent_by_role: "board",
+          sent_to_role: "management",
+          message_type: newMessage.message_type,
+          priority: newMessage.priority,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to send message.");
+      }
+
+      setNewMessage({
+        subject: "",
+        message_body: "",
+        message_type: "general_question",
+        priority: "normal",
+        sent_by_name: "Board Member",
+      });
+
+      await loadMessages();
+
+      setSystemMessage("Message sent to management and administration.");
+    } catch (error) {
+      console.error("Unable to send board message:", error);
+      setSystemMessage(error.message || "Unable to send board message.");
+    } finally {
+      setSendingMessage(false);
     }
   }
 
