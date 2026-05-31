@@ -20,8 +20,14 @@ export default function BoardMessageInbox() {
     sent_by_name: "Board Member",
   });
 
-  useEffect(() => {
+    useEffect(() => {
     loadMessages();
+
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   async function loadMessages() {
