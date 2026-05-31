@@ -98,7 +98,7 @@ export default function BoardSignatureApprovalLog() {
     );
   }
 
-    async function updateBoardApprovalStatus(item, newStatus, message) {
+      async function updateBoardApprovalStatus(item, newStatus, message) {
     if (!item?.id) return;
 
     const note = String(boardNotes[item.id] || "").trim();
@@ -151,6 +151,37 @@ export default function BoardSignatureApprovalLog() {
     await loadApprovals();
 
     setSystemMessage(message);
+  }
+
+  async function deleteSignatureApproval(item) {
+    if (!item?.id) return;
+
+    const confirmed = window.confirm(
+      "Delete this signature approval record permanently?"
+    );
+
+    if (!confirmed) return;
+
+    const response = await fetch(
+      `/api/signature-approvals/delete?id=${encodeURIComponent(item.id)}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      setSystemMessage(
+        result.message || "Unable to delete signature approval."
+      );
+
+      return;
+    }
+
+    await loadApprovals();
+
+    setSystemMessage("Signature approval deleted.");
   }
 
     const pendingSignatures =
@@ -341,7 +372,7 @@ export default function BoardSignatureApprovalLog() {
               <Empty message="No signature approvals are currently available for this view." />
             ) : (
               filteredApprovals.map((item) => (
-                                <ApprovalCard
+                                                <ApprovalCard
                   key={item.id}
                   item={item}
                   boardNote={boardNotes[item.id] || ""}
@@ -353,6 +384,7 @@ export default function BoardSignatureApprovalLog() {
                   }
                   onBoardAction={updateBoardApprovalStatus}
                   onSign={signApproval}
+                  onDelete={deleteSignatureApproval}
                 />
               ))
             )}
@@ -437,6 +469,7 @@ function ApprovalCard({
   onBoardNoteChange,
   onBoardAction,
   onSign,
+  onDelete,
 }) {
   const status = String(item.status || "").toLowerCase();
   const signed = status === "signed";
@@ -647,7 +680,7 @@ function ApprovalCard({
         </div>
       )}
 
-      {boardApproved && (
+            {boardApproved && (
         <div className="mt-5 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
             Board Approved For Signature
@@ -665,6 +698,15 @@ function ApprovalCard({
           </button>
         </div>
       )}
+
+      <div className="mt-5 flex justify-end">
+        <button
+          onClick={() => onDelete(item)}
+          className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
+        >
+          Delete Signature Approval
+        </button>
+      </div>
     </article>
   );
 }
