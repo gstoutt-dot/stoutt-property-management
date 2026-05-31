@@ -30,20 +30,19 @@ export default function BoardSignatureApprovalLog() {
       setLoadingApprovals(true);
       setSystemMessage("");
 
-      const { data, error } = await supabase
-        .from("association_signature_approvals")
-        .select("*")
-        .eq(
-          "association_id",
+            const response = await fetch(
+        `/api/signature-approvals/list?association_id=${encodeURIComponent(
           DEFAULT_ASSOCIATION_ID
-        )
-        .order("due_date", {
-          ascending: true,
-        });
+        )}`
+      );
 
-      if (error) throw error;
+      const result = await response.json();
 
-      setApprovals(data || []);
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to load signature approvals.");
+      }
+
+      setApprovals(result.approvals || []);
     } catch (error) {
       console.error(
         "Unable to load signature approvals:",
