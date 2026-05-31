@@ -23,17 +23,17 @@ export default function BoardMessageInbox() {
     useEffect(() => {
     loadMessages();
 
-    const interval = setInterval(() => {
-      loadMessages();
+        const interval = setInterval(() => {
+      loadMessages({ silent: true });
     }, 10000);
 
     return () => clearInterval(interval);
   }, []);
 
-  async function loadMessages() {
+    async function loadMessages({ silent = false } = {}) {
     try {
-      setLoading(true);
-      setSystemMessage("");
+      if (!silent) setLoading(true);
+      if (!silent) setSystemMessage("");
 
       const response = await fetch(
         `/api/board/messages/list?association_id=${encodeURIComponent(
@@ -55,8 +55,8 @@ export default function BoardMessageInbox() {
     } catch (error) {
       console.error("Unable to load board inbox:", error);
       setSystemMessage(error.message || "Unable to load board inbox.");
-    } finally {
-      setLoading(false);
+        } finally {
+      if (!silent) setLoading(false);
     }
   }
 
