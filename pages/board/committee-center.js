@@ -329,13 +329,7 @@ export default function CommitteeMembersCenter() {
   }
 }
 
-  async function uploadCommitteeDocument(committeeId) {
-  const form = documentForms[committeeId] || {};
-
-  if (!form.file) {
-    setSystemMessage("Choose a committee document to upload.");
-    return;
-  }
+  async function createRecommendation(committeeId) {
   const form = recommendationForms[committeeId] || {};
 
   if (!form.recommendation_title) {
@@ -357,15 +351,12 @@ export default function CommitteeMembersCenter() {
         body: JSON.stringify({
           association_id: DEFAULT_ASSOCIATION_ID,
           committee_id: committeeId,
-          recommendation_title:
-            form.recommendation_title,
+          recommendation_title: form.recommendation_title,
           recommendation_summary:
             form.recommendation_summary || "",
           recommendation_category:
-            form.recommendation_category ||
-            "general",
-          priority:
-            form.priority || "normal",
+            form.recommendation_category || "general",
+          priority: form.priority || "normal",
           status: "draft",
           submitted_by: "Committee",
         }),
@@ -376,8 +367,7 @@ export default function CommitteeMembersCenter() {
 
     if (!response.ok || !payload.success) {
       throw new Error(
-        payload.message ||
-          "Unable to create recommendation."
+        payload.message || "Unable to create recommendation."
       );
     }
 
@@ -400,15 +390,20 @@ export default function CommitteeMembersCenter() {
     console.error(error);
 
     setSystemMessage(
-      error.message ||
-        "Unable to create recommendation."
+      error.message || "Unable to create recommendation."
     );
-    } finally {
+  } finally {
     setCreatingRecommendationId("");
   }
 }
 
 async function uploadCommitteeDocument(committeeId) {
+  const form = documentForms[committeeId] || {};
+
+  if (!form.file) {
+    setSystemMessage("Choose a committee document to upload.");
+    return;
+  }
   const form = documentForms[committeeId] || {};
 
   if (!form.file) {
