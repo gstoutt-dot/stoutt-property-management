@@ -31,11 +31,16 @@ export default async function handler(req, res) {
     const existingReplies = String(existingMessage.reply_body || "").trim();
 
     const newReplyEntry = [
-      `REPLY FROM ${replied_by || "Management"}`,
-      `Date: ${new Date(now).toLocaleString("en-US")}`,
-      "",
-      String(reply_body).trim(),
-    ].join("\n");
+      const easternTime = new Date(now).toLocaleString("en-US", {
+  timeZone: "America/New_York",
+});
+
+const newReplyEntry = [
+  `REPLY FROM ${replied_by || "Management"}`,
+  `Date: ${easternTime}`,
+  "",
+  String(reply_body).trim(),
+].join("\n");
 
     const updatedReplyBody = existingReplies
       ? `${existingReplies}\n\n---\n\n${newReplyEntry}`
