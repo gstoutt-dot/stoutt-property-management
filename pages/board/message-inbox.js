@@ -91,7 +91,7 @@ export default function BoardMessageInbox() {
           <Metric label="Channel" value="Board / Management" />
         </section>
 
-        <section className="mb-6 rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-6 shadow-xl">
+                <section className="mb-6 rounded-3xl border border-yellow-400/20 bg-yellow-400/10 p-6 shadow-xl">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-yellow-300">
             Contact Management
           </p>
@@ -103,6 +103,75 @@ export default function BoardMessageInbox() {
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
             Send questions, concerns, requests, or board follow-up items directly to management. Administration will receive the message as part of the permanent operational record.
           </p>
+
+          <form onSubmit={sendMessageToManagement} className="mt-5 grid gap-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <input
+                value={newMessage.sent_by_name}
+                onChange={(event) =>
+                  updateNewMessage("sent_by_name", event.target.value)
+                }
+                placeholder="Your name or board role..."
+                className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/50"
+              />
+
+              <select
+                value={newMessage.message_type}
+                onChange={(event) =>
+                  updateNewMessage("message_type", event.target.value)
+                }
+                className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/50"
+              >
+                <option value="general_question">General Question</option>
+                <option value="financial_question">Financial Question</option>
+                <option value="vendor_concern">Vendor Concern</option>
+                <option value="owner_concern">Owner Concern</option>
+                <option value="insurance_question">Insurance Question</option>
+                <option value="legal_question">Legal Question</option>
+                <option value="emergency_issue">Emergency Issue</option>
+                <option value="other">Other</option>
+              </select>
+
+              <select
+                value={newMessage.priority}
+                onChange={(event) =>
+                  updateNewMessage("priority", event.target.value)
+                }
+                className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/50"
+              >
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <input
+              value={newMessage.subject}
+              onChange={(event) =>
+                updateNewMessage("subject", event.target.value)
+              }
+              placeholder="Subject..."
+              className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/50"
+            />
+
+            <textarea
+              value={newMessage.message_body}
+              onChange={(event) =>
+                updateNewMessage("message_body", event.target.value)
+              }
+              placeholder="Type your message to management..."
+              rows={5}
+              className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/50"
+            />
+
+            <button
+              type="submit"
+              disabled={sendingMessage}
+              className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/20 disabled:opacity-50"
+            >
+              {sendingMessage ? "Sending..." : "Send to Management"}
+            </button>
+          </form>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-3">
