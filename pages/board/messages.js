@@ -326,9 +326,26 @@ export default function BoardMessages() {
                       {formatDateTime(activeMessage.created_at)}
                     </p>
 
-                    <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-300">
+                                        <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-300">
                       {activeMessage.message_body}
                     </p>
+
+                    {activeMessage.reply_body && (
+                      <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-yellow-300">
+                          Board Reply
+                        </p>
+
+                        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-200">
+                          {activeMessage.reply_body}
+                        </p>
+
+                        <p className="mt-3 text-xs text-slate-500">
+                          Replied by {activeMessage.replied_by || "Board Member"} ·{" "}
+                          {formatDateTime(activeMessage.replied_at)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="mt-5 flex min-h-[260px] items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-sm text-slate-500">
