@@ -532,15 +532,69 @@ function ApprovalCard({
             "Board Operations"}
         </p>
 
-        <div className="md:col-span-2 rounded-xl border border-white/10 bg-slate-950/60 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Certification Record
+                <div className="md:col-span-2 rounded-xl border border-white/10 bg-slate-950/60 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+            Governance Timeline
           </p>
 
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-200">
-            {item.certification_record ||
-              "No certification record available."}
-          </p>
+          <div className="mt-4 space-y-4">
+            <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Original Certification Record
+              </p>
+
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-200">
+                {cleanCertificationRecord(item.certification_record)}
+              </p>
+            </div>
+
+            {extractGovernanceUpdates(item.certification_record).map(
+              (entry, index) => (
+                <div
+                  key={`${entry.action}-${entry.date}-${index}`}
+                  className="rounded-xl border border-amber-400/20 bg-amber-400/10 p-4"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+                    Board Authorization Update
+                  </p>
+
+                  <p className="mt-2 text-sm font-semibold text-white">
+                    {entry.action || "Board action recorded."}
+                  </p>
+
+                  {entry.date && (
+                    <p className="mt-2 text-xs text-slate-400">
+                      {entry.date}
+                    </p>
+                  )}
+
+                  {entry.note && (
+                    <p className="mt-3 whitespace-pre-wrap rounded-lg border border-white/10 bg-slate-950/60 p-3 text-sm leading-6 text-slate-200">
+                      {entry.note}
+                    </p>
+                  )}
+                </div>
+              )
+            )}
+
+            {signed && (
+              <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
+                  Signed And Certified
+                </p>
+
+                <p className="mt-2 text-sm font-semibold text-white">
+                  Signed by {item.signed_by || item.required_signer || "Board"}
+                </p>
+
+                <p className="mt-2 text-xs text-slate-400">
+                  {item.signed_at
+                    ? new Date(item.signed_at).toLocaleString()
+                    : "Signature date not recorded."}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -622,6 +676,55 @@ function ApprovalCard({
       )}
     </article>
   );
+}
+
+function cleanCertificationRecord(record = "") {
+  const text = String(record || "").trim();
+
+  if (!text) return "No certification record available.";
+
+  const marker = "BOARD SIGNATURE AUTHORIZATION UPDATE";
+  const markerIndex = text.indexOf(marker);
+
+  if (markerIndex === -1) {
+    return text;
+  }
+
+  return text.slice(0, markerIndex).trim() || "Original certification record not provided.";
+}
+
+function extractGovernanceUpdates(record = "") {
+  const text = String(record || "");
+
+  if (!text.includes("BOARD SIGNATURE AUTHORIZATION UPDATE")) {
+    return [];
+  }
+
+  return text
+    .split("BOARD SIGNATURE AUTHORIZATION UPDATE")
+    .slice(1)
+    .map((entry) => {
+      const lines = entry
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      const actionLine =
+        lines.find((line) => line.startsWith("Action:")) || "";
+
+      const dateLine =
+        lines.find((line) => line.startsWith("Date:")) || "";
+
+      const noteLine =
+        lines.find((line) => line.startsWith("Board Note:")) || "";
+
+      return {
+        action: actionLine.replace("Action:", "").trim(),
+        date: dateLine.replace("Date:", "").trim(),
+        note: noteLine.replace("Board Note:", "").trim(),
+      };
+    })
+    .filter((entry) => entry.action || entry.date || entry.note);
 }
 
 function Metric({ label, value }) {
