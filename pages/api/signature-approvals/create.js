@@ -18,9 +18,21 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data, error } = await supabaseAdmin
+        const { data, error } = await supabaseAdmin
       .from("association_signature_approvals")
-      .insert(payload)
+      .insert({
+        association_id: payload.association_id,
+        title: payload.title,
+        approval_category: payload.approval_category,
+        required_signer: payload.required_signer,
+        linked_workflow: payload.linked_workflow,
+        certification_record: payload.certification_record,
+        priority: payload.priority,
+        status: payload.status,
+        due_date: payload.due_date,
+        created_at: payload.created_at,
+        updated_at: payload.updated_at,
+      })
       .select("*")
       .single();
 
