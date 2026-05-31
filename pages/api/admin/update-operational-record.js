@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { id, status, board_event_type, board_message } = req.body || {};
+    const { id, status, board_event_type, board_message, board_note } = req.body || {};
 
     if (!id) {
       return res.status(400).json({
@@ -18,10 +18,16 @@ export default async function handler(req, res) {
       });
     }
 
+    const cleanNote = String(board_note || "").trim();
+
+    const finalBoardMessage = cleanNote
+      ? `${board_message}\n\nBoard Note:\n${cleanNote}`
+      : board_message;
+
     const updatePayload = {
       status,
       board_last_action: board_event_type,
-      board_last_message: board_message,
+      board_last_message: finalBoardMessage,
       board_updated_at: new Date().toISOString(),
     };
 
