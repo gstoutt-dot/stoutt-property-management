@@ -6,13 +6,8 @@ const DEFAULT_ASSOCIATION_ID =
   "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function BoardSignatureApprovalLog() {
-  const [approvals, setApprovals] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [loadingApprovals, setLoadingApprovals] =
-    useState(true);
+    const [approvals, setApprovals] = useState([]);
 
-  const [systemMessage, setSystemMessage] =
-    useState("");
 
   useEffect(() => {
     loadApprovals();
@@ -60,7 +55,7 @@ export default function BoardSignatureApprovalLog() {
     }
   }
 
-    async function signApproval(item) {
+      async function signApproval(item) {
     if (!item?.id) return;
 
     if (
@@ -98,6 +93,52 @@ export default function BoardSignatureApprovalLog() {
     setSystemMessage(
       "Approval item signed and certified."
     );
+  }
+
+  async function updateBoardApprovalStatus(item, newStatus, message) {
+    if (!item?.id) return;
+
+    const note = String(boardNotes[item.id] || "").trim();
+
+    const existingRecord =
+      item.certification_record ||
+      "No certification record available.";
+
+    const governanceEntry = [
+      "",
+      "BOARD SIGNATURE AUTHORIZATION UPDATE",
+      `Action: ${message}`,
+      `Date: ${new Date().toLocaleString()}`,
+      note ? `Board Note: ${note}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const { error } = await supabase
+      .from("association_signature_approvals")
+      .update({
+        status: newStatus,
+        certification_record: `${existingRecord}\n${governanceEntry}`,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", item.id);
+
+    if (error) {
+      setSystemMessage(
+        "Unable to update signature approval item."
+      );
+
+      return;
+    }
+
+    setBoardNotes((current) => ({
+      ...current,
+      [item.id]: "",
+    }));
+
+    await loadApprovals();
+
+    setSystemMessage(message);
   }
 
     const pendingSignatures =
@@ -288,9 +329,17 @@ export default function BoardSignatureApprovalLog() {
               <Empty message="No signature approvals are currently available for this view." />
             ) : (
               filteredApprovals.map((item) => (
-                <ApprovalCard
+                                <ApprovalCard
                   key={item.id}
                   item={item}
+                  boardNote={boardNotes[item.id] || ""}
+                  onBoardNoteChange={(value) =>
+                    setBoardNotes((current) => ({
+                      ...current,
+                      [item.id]: value,
+                    }))
+                  }
+                  onBoardAction={updateBoardApprovalStatus}
                   onSign={signApproval}
                 />
               ))
@@ -372,6 +421,9 @@ export default function BoardSignatureApprovalLog() {
 
 function ApprovalCard({
   item,
+  boardNote,
+  onBoardNoteChange,
+  onBoardAction,
   onSign,
 }) {
   const signed =
@@ -448,13 +500,69 @@ function ApprovalCard({
         )}
       </div>
 
-      {!signed && (
-        <button
-          onClick={() => onSign(item)}
-          className="mt-5 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200"
-        >
-          Sign / Certify
-        </button>
+            {!signed && (
+        <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+          <p className="text-sm font-semibold text-amber-200">
+            Board Authorization Actions
+          </p>
+
+          <textarea
+            value={boardNote}
+            onChange={(event) =>
+              onBoardNoteChange(event.target.value)
+            }
+            placeholder="Optional board note for the signature authorization record..."
+            className="mt-3 min-h-[100px] w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-amber-400/50"
+          />
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              onClick={() =>
+                onBoardAction(
+                  item,
+                  "board_acknowledged",
+                  "Board acknowledged signature approval request."
+                )
+              }
+              className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/20"
+            >
+              Acknowledge
+            </button>
+
+            <button
+              onClick={() =>
+                onBoardAction(
+                  item,
+                  "board_approved",
+                  "Board approved signature authorization."
+                )
+              }
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+            >
+              Approve Signature
+            </button>
+
+            <button
+              onClick={() =>
+                onBoardAction(
+                  item,
+                  "more_info_requested",
+                  "Board requested more information before signature authorization."
+                )
+              }
+              className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-3 text-sm font-semibold text-sky-300 hover:bg-sky-400/20"
+            >
+              Request More Info
+            </button>
+          </div>
+
+          <button
+            onClick={() => onSign(item)}
+            className="mt-4 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200"
+          >
+            Sign / Certify
+          </button>
+        </div>
       )}
     </article>
   );
