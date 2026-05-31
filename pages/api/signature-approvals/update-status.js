@@ -9,8 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { id, status, certification_record } = req.body || {};
-
+        const { id, status, certification_record, signed_at, signed_by } = req.body || {};
     if (!id) {
       return res.status(400).json({
         success: false,
@@ -23,8 +22,16 @@ export default async function handler(req, res) {
       updated_at: new Date().toISOString(),
     };
 
-    if (certification_record !== undefined) {
+        if (certification_record !== undefined) {
       updatePayload.certification_record = certification_record;
+    }
+
+    if (signed_at !== undefined) {
+      updatePayload.signed_at = signed_at;
+    }
+
+    if (signed_by !== undefined) {
+      updatePayload.signed_by = signed_by;
     }
 
     const { data, error } = await supabaseAdmin
