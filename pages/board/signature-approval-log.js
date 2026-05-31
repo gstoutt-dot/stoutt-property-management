@@ -60,8 +60,19 @@ export default function BoardSignatureApprovalLog() {
     }
   }
 
-  async function signApproval(item) {
+    async function signApproval(item) {
     if (!item?.id) return;
+
+    if (
+      String(item.status || "").toLowerCase() !==
+      "board_approved"
+    ) {
+      setSystemMessage(
+        "Board approval is required before certification."
+      );
+
+      return;
+    }
 
     const { error } = await supabase
       .from("association_signature_approvals")
@@ -89,12 +100,15 @@ export default function BoardSignatureApprovalLog() {
     );
   }
 
-  const pendingSignatures =
+    const pendingSignatures =
     approvals.filter((item) =>
       [
         "pending_signature",
         "awaiting_approval",
         "in_review",
+        "board_acknowledged",
+        "board_approved",
+        "more_info_requested",
       ].includes(
         String(item.status || "").toLowerCase()
       )
