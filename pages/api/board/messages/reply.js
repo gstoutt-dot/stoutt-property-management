@@ -30,8 +30,7 @@ export default async function handler(req, res) {
 
     const existingReplies = String(existingMessage.reply_body || "").trim();
 
-    const newReplyEntry = [
-      const easternTime = new Date(now).toLocaleString("en-US", {
+    const easternTime = new Date(now).toLocaleString("en-US", {
   timeZone: "America/New_York",
 });
 
@@ -41,7 +40,6 @@ const newReplyEntry = [
   "",
   String(reply_body).trim(),
 ].join("\n");
-
     const updatedReplyBody = existingReplies
       ? `${existingReplies}\n\n---\n\n${newReplyEntry}`
       : newReplyEntry;
