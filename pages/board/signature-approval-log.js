@@ -15,14 +15,8 @@ export default function BoardSignatureApprovalLog() {
   const [systemMessage, setSystemMessage] =
     useState("");
 
-  useEffect(() => {
+    useEffect(() => {
     loadApprovals();
-
-    const interval = setInterval(() => {
-      loadApprovals();
-    }, 10000);
-
-    return () => clearInterval(interval);
   }, []);
 
   async function loadApprovals() {
