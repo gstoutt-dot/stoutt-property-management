@@ -245,6 +245,33 @@ export default function CommitteeMembersCenter() {
     }
   }
 
+  async function sendCommitteeToBoard(committee) {
+  if (!committee?.id) return;
+
+  try {
+    setSystemMessage("");
+
+    const response = await fetch("/api/committees/send-committee-to-board", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ committee }),
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.message || "Unable to send committee to board.");
+    }
+
+    setSystemMessage("Committee sent to Board Approval Queue.");
+  } catch (error) {
+    console.error("Unable to send committee to board:", error);
+    setSystemMessage(error.message || "Unable to send committee to board.");
+  }
+}
+
   async function deleteCommittee(committeeId) {
     if (!committeeId) return;
 
@@ -709,6 +736,7 @@ async function uploadCommitteeDocument(committeeId) {
                   onAddMember={() => addCommitteeMember(committee.id)}
                   onDeleteMember={deleteCommitteeMember}
                   onDeleteCommittee={() => deleteCommittee(committee.id)}
+                  onSendToBoard={() => sendCommitteeToBoard(committee)}
                   onUploadDocument={() => uploadCommitteeDocument(committee.id)}
 
 recommendationForm={
@@ -810,7 +838,8 @@ function CommitteeCard({
   onAddMember,
   onDeleteMember,
   onDeleteCommittee,
-onUploadDocument,
+  onSendToBoard,
+  onUploadDocument,
 
 recommendationForm,
 creatingRecommendationId,
@@ -863,12 +892,21 @@ onCreateRecommendation,
             </p>
           </div>
 
-          <button
-            onClick={onDeleteCommittee}
-            className="mt-6 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
-          >
-            Delete Committee
-          </button>
+          <div className="mt-6 flex flex-wrap gap-3">
+  <button
+    onClick={onSendToBoard}
+    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+  >
+    Send to Board
+  </button>
+
+  <button
+    onClick={onDeleteCommittee}
+    className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
+  >
+    Delete Committee
+  </button>
+</div>
         </div>
 
         <div className="space-y-5">
