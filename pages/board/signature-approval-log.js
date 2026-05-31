@@ -6,8 +6,14 @@ const DEFAULT_ASSOCIATION_ID =
   "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function BoardSignatureApprovalLog() {
-    const [approvals, setApprovals] = useState([]);
+  const [approvals, setApprovals] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const [boardNotes, setBoardNotes] = useState({});
+  const [loadingApprovals, setLoadingApprovals] =
+    useState(true);
 
+  const [systemMessage, setSystemMessage] =
+    useState("");
 
   useEffect(() => {
     loadApprovals();
