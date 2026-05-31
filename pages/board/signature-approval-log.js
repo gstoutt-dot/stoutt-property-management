@@ -538,16 +538,7 @@ function ApprovalCard({
           </p>
 
           <div className="mt-4 space-y-4">
-            <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Original Certification Record
-              </p>
-
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-200">
-                {cleanCertificationRecord(item.certification_record)}
-              </p>
-            </div>
-
+            
             {extractGovernanceUpdates(item.certification_record).map(
               (entry, index) => (
                 <div
@@ -676,21 +667,6 @@ function ApprovalCard({
       )}
     </article>
   );
-}
-
-function cleanCertificationRecord(record = "") {
-  const text = String(record || "").trim();
-
-  if (!text) return "No certification record available.";
-
-  const marker = "BOARD SIGNATURE AUTHORIZATION UPDATE";
-  const markerIndex = text.indexOf(marker);
-
-  if (markerIndex === -1) {
-    return text;
-  }
-
-  return text.slice(0, markerIndex).trim() || "Original certification record not provided.";
 }
 
 function extractGovernanceUpdates(record = "") {
