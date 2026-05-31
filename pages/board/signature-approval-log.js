@@ -68,20 +68,23 @@ export default function BoardSignatureApprovalLog() {
       return;
     }
 
-    const { error } = await supabase
-      .from("association_signature_approvals")
-      .update({
-        status: "signed",
-        signed_at: new Date().toISOString(),
-        signed_by:
-          item.required_signer || "Board",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", item.id);
+        const response = await fetch("/api/signature-approvals/update-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: item.id,
+        status: newStatus,
+        certification_record: `${existingRecord}\n${governanceEntry}`,
+      }),
+    });
 
-    if (error) {
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
       setSystemMessage(
-        "Unable to sign approval item."
+        result.message || "Unable to update signature approval item."
       );
 
       return;
