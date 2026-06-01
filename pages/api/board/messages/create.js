@@ -1,4 +1,6 @@
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { createBoardNotification } from "../../../../lib/notificationRouter";
+import { getBoardNotificationRecipients } from "../../../../lib/boardNotificationRecipients";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -46,6 +48,45 @@ export default async function handler(req, res) {
       .single();
 
         if (error) throw error;
+
+        if ((sent_to_role || "").toLowerCase() === "board") {
+      const boardRecipientsResult = await getBoardNotificationRecipients(
+        association_id || DEFAULT_ASSOCIATION_ID
+      );
+
+      await createBoardNotification({
+        associationId: association_id || DEFAULT_ASSOCIATION_ID,
+        notificationType: "board_message",
+        title: `New board message: ${String(subject).trim()}`,
+        message:
+          "Management has sent a new board message. Please log in to SPM to review and respond.",
+        relatedEntityType: "board_message",
+        relatedEntityId: data.id,
+        priority: priority || message_type || "normal",
+      });
+
+      await supabaseAdmin
+        .from("notifications")
+        .insert(
+          (boardRecipientsResult.recipients || []).map((recipient) => ({
+            association_id: association_id || DEFAULT_ASSOCIATION_ID,
+            recipient_user_id: null,
+            recipient_role: "board",
+            notification_type: "board_message_contact_alert",
+            title: `New board message: ${String(subject).trim()}`,
+            message:
+              "Management has sent a new board message. Please log in to SPM to review and respond.",
+            related_entity_type: "board_message",
+            related_entity_id: data.id,
+            priority: priority || "normal",
+            delivery_channel: "email_ready",
+            delivery_status: "pending_email_configuration",
+            created_by_user_id: null,
+            is_read: false,
+          }))
+        );
+    }
+
 
     if ((sent_by_role || "").toLowerCase() === "board") {
       const { error: recordError } = await supabaseAdmin
