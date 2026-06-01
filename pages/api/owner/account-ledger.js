@@ -63,6 +63,23 @@ const totalCredits = filteredEntries.reduce(
   0
 );
 
+let ownerBalanceRecord = null;
+
+let balanceQuery = supabaseAdmin
+  .from("owner_account_balances")
+  .select("current_balance, monthly_assessment, synced_at")
+  .eq("association_id", associationId);
+
+if (unitNumber) {
+  balanceQuery = balanceQuery.eq("unit_number", unitNumber);
+} else if (ownerUserId) {
+  balanceQuery = balanceQuery.eq("owner_user_id", ownerUserId);
+}
+
+const { data: balanceData } = await balanceQuery.maybeSingle();
+
+ownerBalanceRecord = balanceData || null;
+
     return res.status(200).json({
       success: true,
       associationId,
@@ -74,6 +91,9 @@ summary: {
   totalPayments,
   totalCredits,
   netActivity: totalCharges - totalPayments - totalCredits,
+  currentBalanceDue: Number(ownerBalanceRecord?.current_balance || 0),
+  monthlyAssessment: Number(ownerBalanceRecord?.monthly_assessment || 0),
+  balanceSyncedAt: ownerBalanceRecord?.synced_at || null,
 },
 entries: filteredEntries,
     });
