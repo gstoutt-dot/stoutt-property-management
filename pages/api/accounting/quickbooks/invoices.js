@@ -82,7 +82,7 @@ export default async function handler(req, res) {
     const invoices = qbData?.QueryResponse?.Invoice || [];
     const now = new Date().toISOString();
 
-    const normalizedInvoices = invoices.map((invoice) => {
+        const normalizedInvoices = invoices.map((invoice) => {
       const customerRef = invoice.CustomerRef || {};
 
       return {
@@ -107,6 +107,73 @@ export default async function handler(req, res) {
       };
     });
 
+    const latestAssessmentByCustomerId = new Map();
+
+    normalizedInvoices.forEach((invoice) => {
+      const customerId = invoice.quickbooks_customer_id;
+      const amount = Number(invoice.total_amount || 0);
+
+      if (!customerId || amount <= 0) return;
+
+      const existing = latestAssessmentByCustomerId.get(customerId);
+
+      if (
+        !existing ||
+        new Date(invoice.invoice_date || 0) > new Date(existing.invoice_date || 0)
+      ) {
+        latestAssessmentByCustomerId.set(customerId, invoice);
+      }
+    });
+
+    let ownerAssessmentUpdates = 0;
+    const assessmentUpdateErrors = [];
+
+    for (const [customerId, invoice] of latestAssessmentByCustomerId.entries()) {
+      const { data: ownerBalance, error: findError } = await supabaseAdmin
+        .from("owner_account_balances")
+        .select("*")
+        .eq("association_id", association_id)
+        .eq("account_number", customerId)
+        .maybeSingle();
+
+      if (findError) {
+        assessmentUpdateErrors.push({
+          quickbooks_customer_id: customerId,
+          error: findError.message,
+        });
+
+        continue;
+      }
+
+      if (!ownerBalance?.id) {
+        assessmentUpdateErrors.push({
+          quickbooks_customer_id: customerId,
+          error: "No matching owner balance record found.",
+        });
+
+        continue;
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("owner_account_balances")
+        .update({
+          monthly_assessment: Number(invoice.total_amount || 0),
+          synced_at: now,
+        })
+        .eq("id", ownerBalance.id);
+
+      if (updateError) {
+        assessmentUpdateErrors.push({
+          quickbooks_customer_id: customerId,
+          error: updateError.message,
+        });
+
+        continue;
+      }
+
+      ownerAssessmentUpdates += 1;
+    }
+
     await supabaseAdmin
       .from("quickbooks_connections")
       .update({
@@ -127,7 +194,9 @@ export default async function handler(req, res) {
         connection.last_token_refresh_at ||
         connection.last_refresh_at ||
         null,
-      invoice_count: invoices.length,
+            invoice_count: invoices.length,
+      owner_assessment_updates: ownerAssessmentUpdates,
+      assessment_update_errors: assessmentUpdateErrors,
       invoices: normalizedInvoices,
     });
   } catch (error) {
