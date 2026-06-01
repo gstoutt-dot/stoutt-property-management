@@ -30,16 +30,18 @@ export default async function handler(req, res) {
     }
 
     const now = new Date().toISOString();
+    const resolvedAssociationId = association_id || DEFAULT_ASSOCIATION_ID;
+    const resolvedSentToRole = sent_to_role || "board";
 
     const { data, error } = await supabaseAdmin
       .from("board_messages")
       .insert({
-        association_id: association_id || DEFAULT_ASSOCIATION_ID,
+        association_id: resolvedAssociationId,
         subject: String(subject).trim(),
         message_body: String(message_body).trim(),
         sent_by_name: sent_by_name || "Admin",
         sent_by_role: sent_by_role || "admin",
-        sent_to_role: sent_to_role || "board",
+        sent_to_role: resolvedSentToRole,
         message_type: message_type || "general",
         status: "sent",
         created_at: now,
@@ -50,8 +52,8 @@ export default async function handler(req, res) {
 
         if (error) throw error;
 
-        if ((sent_to_role || "").toLowerCase() === "board") {
-      const boardRecipientsResult = await getBoardNotificationRecipients(
+        if (String(resolvedSentToRole || "").toLowerCase() === "board") {
+          const boardRecipientsResult = await getBoardNotificationRecipients(
         association_id || DEFAULT_ASSOCIATION_ID
       );
 
@@ -83,25 +85,19 @@ export default async function handler(req, res) {
           error: emailResult.error,
         });
 
-        await supabaseAdmin.from("notifications").insert({
-          association_id: association_id || DEFAULT_ASSOCIATION_ID,
-          recipient_user_id: null,
-          recipient_role: "board",
-          notification_type: "board_message_email_alert",
+                await supabaseAdmin.from("notifications").insert({
+          association_id: resolvedAssociationId,
+          user_id: null,
+          request_id: null,
           title: `New board message: ${String(subject).trim()}`,
           message:
             "Management has sent a new board message. Please log in to SPM to review and respond.",
-          related_entity_type: "board_message",
-          related_entity_id: data.id,
-          priority: priority || "normal",
-          delivery_channel: "email",
-          delivery_status: emailResult.success
+          channel: "email",
+          status: emailResult.success
             ? "sent"
             : emailResult.skipped
             ? "skipped_pending_configuration"
             : "failed",
-          created_by_user_id: null,
-          is_read: false,
         });
       }
     }
