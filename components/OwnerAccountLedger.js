@@ -121,7 +121,7 @@ export default function OwnerAccountLedger({
             Current Balance Due
           </div>
           <div className="mt-2 text-2xl font-semibold text-yellow-100">
-            {money(currentBalanceAmount)}
+            {money(summary.currentBalanceDue ?? currentBalanceAmount)}
           </div>
         </div>
 
