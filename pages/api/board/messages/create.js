@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 import { createBoardNotification } from "../../../../lib/notificationRouter";
 import { getBoardNotificationRecipients } from "../../../../lib/boardNotificationRecipients";
+import { sendBoardMessageEmailAlert } from "../../../../lib/emailDelivery";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
@@ -65,26 +66,44 @@ export default async function handler(req, res) {
         priority: priority || message_type || "normal",
       });
 
-      await supabaseAdmin
-        .from("notifications")
-        .insert(
-          (boardRecipientsResult.recipients || []).map((recipient) => ({
-            association_id: association_id || DEFAULT_ASSOCIATION_ID,
-            recipient_user_id: null,
-            recipient_role: "board",
-            notification_type: "board_message_contact_alert",
-            title: `New board message: ${String(subject).trim()}`,
-            message:
-              "Management has sent a new board message. Please log in to SPM to review and respond.",
-            related_entity_type: "board_message",
-            related_entity_id: data.id,
-            priority: priority || "normal",
-            delivery_channel: "email_ready",
-            delivery_status: "pending_email_configuration",
-            created_by_user_id: null,
-            is_read: false,
-          }))
-        );
+            const emailResults = [];
+
+      for (const recipient of boardRecipientsResult.recipients || []) {
+        const emailResult = await sendBoardMessageEmailAlert({
+          to: recipient.email,
+          recipientName: recipient.name || "Board Member",
+          subject: `New board message: ${String(subject).trim()}`,
+          messageTitle: String(subject).trim(),
+        });
+
+        emailResults.push({
+          recipient_email: recipient.email,
+          success: emailResult.success,
+          skipped: emailResult.skipped,
+          error: emailResult.error,
+        });
+
+        await supabaseAdmin.from("notifications").insert({
+          association_id: association_id || DEFAULT_ASSOCIATION_ID,
+          recipient_user_id: null,
+          recipient_role: "board",
+          notification_type: "board_message_email_alert",
+          title: `New board message: ${String(subject).trim()}`,
+          message:
+            "Management has sent a new board message. Please log in to SPM to review and respond.",
+          related_entity_type: "board_message",
+          related_entity_id: data.id,
+          priority: priority || "normal",
+          delivery_channel: "email",
+          delivery_status: emailResult.success
+            ? "sent"
+            : emailResult.skipped
+            ? "skipped_pending_configuration"
+            : "failed",
+          created_by_user_id: null,
+          is_read: false,
+        });
+      }
     }
 
 
