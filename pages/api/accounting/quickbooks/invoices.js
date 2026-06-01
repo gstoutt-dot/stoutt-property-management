@@ -12,6 +12,28 @@ function getQuickBooksBaseUrl() {
     : "https://sandbox-quickbooks.api.intuit.com";
 }
 
+function extractMonthlyAssessmentAmount(invoice) {
+  const lines = Array.isArray(invoice.Line) ? invoice.Line : [];
+
+  const monthlyAssessmentLine = lines.find((line) => {
+    const itemName =
+      line?.SalesItemLineDetail?.ItemRef?.name ||
+      "";
+
+    return itemName.toLowerCase().includes("monthly assessment");
+  });
+
+  if (monthlyAssessmentLine) {
+    return Number(
+      monthlyAssessmentLine?.SalesItemLineDetail?.UnitPrice ||
+        monthlyAssessmentLine?.Amount ||
+        0
+    );
+  }
+
+  return Number(invoice.TotalAmt || 0);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({
@@ -111,7 +133,9 @@ export default async function handler(req, res) {
 
     normalizedInvoices.forEach((invoice) => {
       const customerId = invoice.quickbooks_customer_id;
-      const amount = Number(invoice.total_amount || 0);
+      const amount = Number(
+        extractMonthlyAssessmentAmount(invoice.raw_quickbooks_payload)
+      );
 
       if (!customerId || amount <= 0) return;
 
@@ -165,7 +189,9 @@ export default async function handler(req, res) {
       const { error: updateError } = await supabaseAdmin
         .from("owner_account_balances")
         .update({
-          monthly_assessment: Number(invoice.total_amount || 0),
+                    monthly_assessment: Number(
+            extractMonthlyAssessmentAmount(invoice.raw_quickbooks_payload)
+          ),
           synced_at: now,
         })
         .eq("id", ownerBalance.id);
