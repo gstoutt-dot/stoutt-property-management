@@ -14,14 +14,14 @@ export default function QuickBooksLiveAccounting() {
   const [financialData, setFinancialData] = useState(null);
   const [error, setError] = useState("");
 
-  async function loadFinancialSummary() {
+    async function loadFinancialSummary({ silent = false } = {}) {
     if (!associationId) {
       setError("Missing association_id. Open this page with a valid association_id.");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    if (!silent) setLoading(true);
+    if (!silent) setError("");
 
     try {
       const response = await fetch(
@@ -36,7 +36,55 @@ export default function QuickBooksLiveAccounting() {
 
       setFinancialData(data);
     } catch (err) {
-      setError(err.message || "Unable to load QuickBooks data.");
+      if (!silent) {
+        setError(err.message || "Unable to load QuickBooks data.");
+      }
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }
+
+  async function runFullQuickBooksSync() {
+    if (!associationId) {
+      setError("Missing association_id. Open this page with a valid association_id.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const balanceResponse = await fetch(
+        `/api/accounting/quickbooks/sync-live-balances?association_id=${associationId}`
+      );
+
+      const balanceData = await balanceResponse.json();
+
+      if (!balanceResponse.ok || !balanceData.success) {
+        throw new Error(
+          balanceData?.error ||
+            balanceData?.message ||
+            "Unable to sync QuickBooks balances."
+        );
+      }
+
+      const invoiceResponse = await fetch(
+        `/api/accounting/quickbooks/invoices?association_id=${associationId}`
+      );
+
+      const invoiceData = await invoiceResponse.json();
+
+      if (!invoiceResponse.ok || !invoiceData.success) {
+        throw new Error(
+          invoiceData?.error ||
+            invoiceData?.message ||
+            "Unable to sync QuickBooks invoices."
+        );
+      }
+
+      await loadFinancialSummary({ silent: true });
+    } catch (err) {
+      setError(err.message || "Unable to run QuickBooks sync.");
     } finally {
       setLoading(false);
     }
@@ -167,7 +215,7 @@ export default function QuickBooksLiveAccounting() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <button
-              onClick={loadFinancialSummary}
+              onClick={runFullQuickBooksSync}
               disabled={loading || !associationId}
               className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 disabled:opacity-50"
             >
