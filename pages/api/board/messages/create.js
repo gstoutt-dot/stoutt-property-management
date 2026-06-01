@@ -52,46 +52,39 @@ export default async function handler(req, res) {
 
         if (error) throw error;
 
-        if (String(resolvedSentToRole || "").toLowerCase() === "board") {
-          const boardRecipientsResult = await getBoardNotificationRecipients(
-        association_id || DEFAULT_ASSOCIATION_ID
-      );
+            if (String(resolvedSentToRole || "").toLowerCase() === "board") {
+      const notificationTitle = `New board message: ${String(subject).trim()}`;
+      const notificationMessage =
+        "Management has sent a new board message. Please log in to SPM to review and respond.";
 
-      await createBoardNotification({
-        associationId: association_id || DEFAULT_ASSOCIATION_ID,
-        notificationType: "board_message",
-        title: `New board message: ${String(subject).trim()}`,
-        message:
-          "Management has sent a new board message. Please log in to SPM to review and respond.",
-        relatedEntityType: "board_message",
-        relatedEntityId: data.id,
-        priority: priority || message_type || "normal",
+      await supabaseAdmin.from("notifications").insert({
+        association_id: resolvedAssociationId,
+        user_id: null,
+        request_id: null,
+        title: notificationTitle,
+        message: notificationMessage,
+        channel: "portal",
+        status: "unread",
       });
 
-            const emailResults = [];
+      const boardRecipientsResult = await getBoardNotificationRecipients(
+        resolvedAssociationId
+      );
 
       for (const recipient of boardRecipientsResult.recipients || []) {
         const emailResult = await sendBoardMessageEmailAlert({
           to: recipient.email,
           recipientName: recipient.name || "Board Member",
-          subject: `New board message: ${String(subject).trim()}`,
+          subject: notificationTitle,
           messageTitle: String(subject).trim(),
         });
 
-        emailResults.push({
-          recipient_email: recipient.email,
-          success: emailResult.success,
-          skipped: emailResult.skipped,
-          error: emailResult.error,
-        });
-
-                await supabaseAdmin.from("notifications").insert({
+        await supabaseAdmin.from("notifications").insert({
           association_id: resolvedAssociationId,
           user_id: null,
           request_id: null,
-          title: `New board message: ${String(subject).trim()}`,
-          message:
-            "Management has sent a new board message. Please log in to SPM to review and respond.",
+          title: notificationTitle,
+          message: notificationMessage,
           channel: "email",
           status: emailResult.success
             ? "sent"
@@ -101,7 +94,6 @@ export default async function handler(req, res) {
         });
       }
     }
-
 
     if ((sent_by_role || "").toLowerCase() === "board") {
       const { error: recordError } = await supabaseAdmin
