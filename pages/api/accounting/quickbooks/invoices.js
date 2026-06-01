@@ -129,17 +129,25 @@ export default async function handler(req, res) {
     const assessmentUpdateErrors = [];
 
     for (const [customerId, invoice] of latestAssessmentByCustomerId.entries()) {
+            const unitMatch = String(invoice.quickbooks_customer_name || "").match(
+        /Unit\s+([A-Za-z0-9-]+)/i
+      );
+
+      const unitNumber = unitMatch ? unitMatch[1] : "";
+
       const { data: ownerBalance, error: findError } = await supabaseAdmin
         .from("owner_account_balances")
         .select("*")
         .eq("association_id", association_id)
-        .eq("account_number", customerId)
+        .eq("unit_number", unitNumber)
         .maybeSingle();
 
       if (findError) {
-        assessmentUpdateErrors.push({
+                assessmentUpdateErrors.push({
           quickbooks_customer_id: customerId,
-          error: findError.message,
+          quickbooks_customer_name: invoice.quickbooks_customer_name,
+          extracted_unit_number: unitNumber,
+          error: "No matching owner balance record found.",
         });
 
         continue;
