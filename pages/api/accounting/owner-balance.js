@@ -324,10 +324,7 @@ export default async function handler(req, res) {
 
     const ledgerSummary = buildLedgerSummary(safeLedgerEntries);
 
-    const resolvedCurrentBalance =
-      safeLedgerEntries.length > 0
-        ? ledgerSummary.net_balance_from_ledger
-        : money(balance.current_balance);
+    const resolvedCurrentBalance = money(balance.current_balance);
 
     const responseBalance = {
       association_id: balance.association_id,
