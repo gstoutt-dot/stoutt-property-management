@@ -58,6 +58,8 @@ export default async function handler(req, res) {
       });
     }
 
+        const now = new Date().toISOString();
+
     const connection = await getValidQuickBooksConnection(association_id);
 
     if (!connection?.realm_id || !connection?.access_token) {
