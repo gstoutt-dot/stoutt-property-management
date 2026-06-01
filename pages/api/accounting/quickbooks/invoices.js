@@ -205,6 +205,88 @@ export default async function handler(req, res) {
         continue;
       }
 
+            const monthlyAssessmentAmount = Number(
+        extractMonthlyAssessmentAmount(invoice.raw_quickbooks_payload)
+      );
+
+      const ledgerEntry = {
+        association_id,
+        owner_user_id: ownerBalance.owner_user_id || null,
+        auth_user_id: ownerBalance.auth_user_id || null,
+        unit_number: ownerBalance.unit_number || unitNumber,
+        owner_name: ownerBalance.owner_name || invoice.quickbooks_customer_name || "",
+        owner_email: ownerBalance.owner_email || null,
+        quickbooks_customer_id: customerId,
+        quickbooks_transaction_id: invoice.quickbooks_invoice_id,
+        quickbooks_transaction_type: "Invoice",
+        transaction_type: "invoice",
+        transaction_date: invoice.invoice_date || null,
+        due_date: invoice.due_date || null,
+        description: `Invoice #${invoice.invoice_number || invoice.quickbooks_invoice_id}`,
+        memo: "Monthly Assessment",
+        charge_amount: monthlyAssessmentAmount,
+        payment_amount: 0,
+        credit_amount: 0,
+        open_balance: Number(invoice.balance || monthlyAssessmentAmount || 0),
+        status: invoice.status || "open",
+        source: "QuickBooks",
+        synced_at: now,
+        updated_at: now,
+      };
+
+      const { data: existingLedgerEntry, error: ledgerFindError } =
+        await supabaseAdmin
+          .from("owner_account_ledger_entries")
+          .select("id")
+          .eq("association_id", association_id)
+          .eq("quickbooks_transaction_id", invoice.quickbooks_invoice_id)
+          .eq("quickbooks_transaction_type", "Invoice")
+          .maybeSingle();
+
+      if (ledgerFindError) {
+        assessmentUpdateErrors.push({
+          quickbooks_customer_id: customerId,
+          quickbooks_customer_name: invoice.quickbooks_customer_name,
+          extracted_unit_number: unitNumber,
+          error: ledgerFindError.message,
+        });
+
+        continue;
+      }
+
+      if (existingLedgerEntry?.id) {
+        const { error: ledgerUpdateError } = await supabaseAdmin
+          .from("owner_account_ledger_entries")
+          .update(ledgerEntry)
+          .eq("id", existingLedgerEntry.id);
+
+        if (ledgerUpdateError) {
+          assessmentUpdateErrors.push({
+            quickbooks_customer_id: customerId,
+            quickbooks_customer_name: invoice.quickbooks_customer_name,
+            extracted_unit_number: unitNumber,
+            error: ledgerUpdateError.message,
+          });
+
+          continue;
+        }
+      } else {
+        const { error: ledgerInsertError } = await supabaseAdmin
+          .from("owner_account_ledger_entries")
+          .insert(ledgerEntry);
+
+        if (ledgerInsertError) {
+          assessmentUpdateErrors.push({
+            quickbooks_customer_id: customerId,
+            quickbooks_customer_name: invoice.quickbooks_customer_name,
+            extracted_unit_number: unitNumber,
+            error: ledgerInsertError.message,
+          });
+
+          continue;
+        }
+      }
+
       ownerAssessmentUpdates += 1;
     }
 
