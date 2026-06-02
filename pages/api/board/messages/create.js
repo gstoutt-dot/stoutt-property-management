@@ -72,11 +72,12 @@ export default async function handler(req, res) {
       );
 
       for (const recipient of boardRecipientsResult.recipients || []) {
-        const emailResult = await sendBoardMessageEmailAlert({
+          const emailResult = await sendBoardMessageEmailAlert({
           to: recipient.email,
           recipientName: recipient.name || "Board Member",
           subject: notificationTitle,
           messageTitle: String(subject).trim(),
+          messageBody: String(message_body).trim(),
         });
 
         await supabaseAdmin.from("notifications").insert({
