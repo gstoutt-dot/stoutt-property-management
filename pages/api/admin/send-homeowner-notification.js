@@ -4,7 +4,7 @@ import { sendHomeownerNotificationEmailAlert } from "../../../lib/emailDelivery"
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
-      const { associationId, association_id } = req.query || {}; 
+      const { associationId, association_id } = req.query || {};
 
       const resolvedAssociationId = String(
         associationId || association_id || ""
@@ -17,78 +17,18 @@ export default async function handler(req, res) {
         });
       }
 
-            const { data, error } = await supabaseAdmin
+      const { data, error } = await supabaseAdmin
         .from("homeowner_notifications")
-        .insert(insertPayload)
         .select("*")
-        .single();
+        .eq("association_id", resolvedAssociationId)
+        .order("created_at", { ascending: false })
+        .limit(12);
 
-      if (error) {
-        throw error;
-      }
-
-      let ownerQuery = supabaseAdmin
-        .from("owner_account_balances")
-        .select("owner_name, owner_email, unit_number, owner_user_id")
-        .eq("association_id", resolvedAssociationId);
-
-      if (resolvedSendTo === "Specific Unit" && targetUnitNumber) {
-        ownerQuery = ownerQuery.eq("unit_number", targetUnitNumber);
-      }
-
-      if (resolvedSendTo === "Specific Owner" && targetOwnerUserId) {
-        ownerQuery = ownerQuery.eq("owner_user_id", targetOwnerUserId);
-      }
-
-      const { data: ownerRecipients, error: ownerRecipientError } =
-        await ownerQuery;
-
-      if (ownerRecipientError) {
-        throw ownerRecipientError;
-      }
-
-      const emailResults = [];
-
-      for (const owner of ownerRecipients || []) {
-        if (!owner.owner_email) continue;
-
-        const emailResult = await sendHomeownerNotificationEmailAlert({
-          to: owner.owner_email,
-          recipientName: owner.owner_name || "Homeowner",
-          subject: `New homeowner notice: ${resolvedTitle}`,
-          notificationTitle: resolvedTitle,
-          messageBody: resolvedMessage,
-        });
-
-        emailResults.push({
-          unit_number: owner.unit_number,
-          owner_name: owner.owner_name,
-          owner_email: owner.owner_email,
-          success: emailResult.success,
-          skipped: emailResult.skipped,
-          error: emailResult.error,
-        });
-
-        await supabaseAdmin.from("notifications").insert({
-          association_id: resolvedAssociationId,
-          user_id: null,
-          request_id: null,
-          title: `New homeowner notice: ${resolvedTitle}`,
-          message:
-            "Management has sent a homeowner notice. Please log in to SPM to review your homeowner message center.",
-          channel: "email",
-          status: emailResult.success
-            ? "sent"
-            : emailResult.skipped
-            ? "skipped_pending_configuration"
-            : "failed",
-        });
-      }
+      if (error) throw error;
 
       return res.status(200).json({
         success: true,
-        notification: data,
-        email_results: emailResults,
+        notifications: data || [],
       });
     }
 
@@ -170,7 +110,7 @@ export default async function handler(req, res) {
         targetOwnerUserId = resolvedOwnerUserId;
       }
 
-            const insertPayload = {
+      const insertPayload = {
         association_id: resolvedAssociationId,
         owner_user_id: targetOwnerUserId,
         unit_number: targetUnitNumber,
@@ -181,18 +121,75 @@ export default async function handler(req, res) {
         read_status: false,
       };
 
-      const { data, error } = await supabaseAdmin
-        .from("homeowner_notifications")
-        .insert(insertPayload)
-        .select("*")
-        .single();
-      if (error) {
-        throw error;
+      const { data: notification, error: notificationError } =
+        await supabaseAdmin
+          .from("homeowner_notifications")
+          .insert(insertPayload)
+          .select("*")
+          .single();
+
+      if (notificationError) throw notificationError;
+
+      let ownerQuery = supabaseAdmin
+        .from("owner_account_balances")
+        .select("owner_name, owner_email, unit_number, owner_user_id")
+        .eq("association_id", resolvedAssociationId);
+
+      if (resolvedSendTo === "Specific Unit" && targetUnitNumber) {
+        ownerQuery = ownerQuery.eq("unit_number", targetUnitNumber);
+      }
+
+      if (resolvedSendTo === "Specific Owner" && targetOwnerUserId) {
+        ownerQuery = ownerQuery.eq("owner_user_id", targetOwnerUserId);
+      }
+
+      const { data: ownerRecipients, error: ownerRecipientError } =
+        await ownerQuery;
+
+      if (ownerRecipientError) throw ownerRecipientError;
+
+      const emailResults = [];
+
+      for (const owner of ownerRecipients || []) {
+        if (!owner.owner_email) continue;
+
+        const emailResult = await sendHomeownerNotificationEmailAlert({
+          to: owner.owner_email,
+          recipientName: owner.owner_name || "Homeowner",
+          subject: `New homeowner notice: ${resolvedTitle}`,
+          notificationTitle: resolvedTitle,
+          messageBody: resolvedMessage,
+        });
+
+        emailResults.push({
+          unit_number: owner.unit_number,
+          owner_name: owner.owner_name,
+          owner_email: owner.owner_email,
+          success: emailResult.success,
+          skipped: emailResult.skipped,
+          error: emailResult.error,
+        });
+
+        await supabaseAdmin.from("notifications").insert({
+          association_id: resolvedAssociationId,
+          user_id: null,
+          request_id: null,
+          title: `New homeowner notice: ${resolvedTitle}`,
+          message:
+            "Management has sent a homeowner notice. Please log in to SPM to review your homeowner message center.",
+          channel: "email",
+          status: emailResult.success
+            ? "sent"
+            : emailResult.skipped
+            ? "skipped_pending_configuration"
+            : "failed",
+        });
       }
 
       return res.status(200).json({
         success: true,
-        notification: data,
+        notification,
+        email_results: emailResults,
       });
     }
 
