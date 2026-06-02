@@ -45,9 +45,10 @@ const sections = [
       "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
     items: [
       {
-      title: "Manager Command Center",
-      href: "/portal/manager#live-queue",
+        title: "Manager Command Center",
+        href: "/portal/manager#live-queue",
       },
+      { title: "Association Work Orders", href: "/admin/association-work-orders" },
       { title: "BOS Action Center", href: "/bos/action-center?returnTo=/admin" },
       { title: "New Operational Record", href: "/admin/operations/new" },
       { title: "Association Onboarding Records", href: "/association-onboarding-records" },
@@ -92,7 +93,7 @@ const sections = [
   { title: "Budget Planning", href: "/board/budget-planning" },
   { title: "Capital Projects", href: "/board/capital-projects" },
   { title: "Vendor Performance", href: "/board/vendor-performance" },
-  { title: "Preferred Vendors", href: "/board/vendors" },
+  { title: "Association Approved Vendors", href: "/board/vendors" },
 ],
   },
   {
