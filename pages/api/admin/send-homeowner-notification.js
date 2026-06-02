@@ -170,23 +170,22 @@ export default async function handler(req, res) {
         targetOwnerUserId = resolvedOwnerUserId;
       }
 
-      const insertPayload = {
-  association_id: resolvedAssociationId,
-  owner_user_id: targetOwnerUserId,
-  unit_number: targetUnitNumber,
-  category: resolvedCategory,
-  priority: resolvedPriority,
-  title: resolvedTitle,
-  message: resolvedMessage,
-  read_status: false,
-};
+            const insertPayload = {
+        association_id: resolvedAssociationId,
+        owner_user_id: targetOwnerUserId,
+        unit_number: targetUnitNumber,
+        category: resolvedCategory,
+        priority: resolvedPriority,
+        title: resolvedTitle,
+        message: resolvedMessage,
+        read_status: false,
+      };
 
       const { data, error } = await supabaseAdmin
         .from("homeowner_notifications")
         .insert(insertPayload)
         .select("*")
         .single();
-
       if (error) {
         throw error;
       }
