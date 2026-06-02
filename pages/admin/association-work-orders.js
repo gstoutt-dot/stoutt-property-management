@@ -76,7 +76,7 @@ export default function AssociationWorkOrders() {
     return () => clearInterval(interval);
   }, []);
 
-  async function loadWorkOrders({ showLoading = false } = {}) {
+    async function loadWorkOrders({ showLoading = false } = {}) {
     try {
       if (showLoading) {
         setLoading(true);
@@ -107,6 +107,37 @@ export default function AssociationWorkOrders() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function deleteWorkOrder(request) {
+    const confirmed = window.confirm(
+      `Delete "${request.title || "this work order"}" permanently? This will also remove the linked manager workflow record.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/admin/delete-work-order?id=${encodeURIComponent(request.id)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete work order.");
+      }
+
+      setSystemMessage("Work order deleted successfully.");
+      await loadWorkOrders({ showLoading: false });
+    } catch (error) {
+      console.error("Delete work order error:", error);
+      setSystemMessage(error.message || "Unable to delete work order.");
     }
   }
 
@@ -400,7 +431,7 @@ export default function AssociationWorkOrders() {
                       )}
                     </div>
 
-                    <div className="flex shrink-0 flex-col gap-3 lg:w-64">
+                                        <div className="flex shrink-0 flex-col gap-3 lg:w-64">
                       <button
                         onClick={() =>
                           setSelectedRequestId(
@@ -420,6 +451,13 @@ export default function AssociationWorkOrders() {
                       >
                         Process in Manager Center
                       </Link>
+
+                      <button
+                        onClick={() => deleteWorkOrder(request)}
+                        className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
+                      >
+                        Delete Work Order
+                      </button>
                     </div>
                   </div>
                 </article>
