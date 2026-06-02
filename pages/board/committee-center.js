@@ -1021,13 +1021,21 @@ onCreateRecommendation,
                 className="input"
               />
 
-              <select
+                            <select
                 value={memberForm.member_role}
                 onChange={(event) =>
                   onMemberFormChange({ member_role: event.target.value })
                 }
                 className="input"
               >
+                <option value="board_president">Board President</option>
+                <option value="board_vice_president">Board Vice President</option>
+                <option value="board_treasurer">Board Treasurer</option>
+                <option value="board_secretary">Board Secretary</option>
+                <option value="board_director">Board Director</option>
+                <option value="board_member">Board Member</option>
+                <option value="committee_chairperson">Committee Chairperson</option>
+                <option value="committee_member">Committee Member</option>
                 <option value="chairperson">Chairperson</option>
                 <option value="member">Member</option>
               </select>
