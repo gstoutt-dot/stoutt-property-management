@@ -402,6 +402,13 @@ export default function Vendors() {
               Refresh Vendors
             </button>
 
+                <Link
+  href="/portal/manager/vendor-invoices"
+  className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20"
+>
+  Vendor Invoice Processing
+</Link>
+
             <Link
               href="/portal/manager/vendor-dispatch"
               className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
