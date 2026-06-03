@@ -1,6 +1,7 @@
 // /pages/api/accounting/quickbooks/vendors.js
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getValidQuickBooksConnection } from "../../../../lib/quickbooksTokenManager";
 
 const QUICKBOOKS_MINOR_VERSION = "75";
 
@@ -59,18 +60,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .select("*")
-      .eq("association_id", association_id)
-      .eq("connection_status", "connected")
-      .single();
+    const connection = await getValidQuickBooksConnection(association_id);
 
-    if (connectionError || !connection) {
+    if (!connection?.realm_id || !connection?.access_token) {
       return res.status(404).json({
         success: false,
-        error: "No active QuickBooks connection found for this association.",
-        details: connectionError?.message || null,
+        error: "No valid QuickBooks connection found for this association.",
       });
     }
 
@@ -99,6 +94,14 @@ export default async function handler(req, res) {
     if (!qbResponse.ok) {
       console.error("QuickBooks vendor pull failed:", qbData);
 
+      await supabaseAdmin
+        .from("quickbooks_connections")
+        .update({
+          sync_error: JSON.stringify(qbData),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("association_id", association_id);
+
       return res.status(502).json({
         success: false,
         error: "QuickBooks vendor pull failed.",
@@ -107,6 +110,7 @@ export default async function handler(req, res) {
     }
 
     const vendors = qbData?.QueryResponse?.Vendor || [];
+    const now = new Date().toISOString();
 
     const normalizedVendors = vendors.map((vendor) => {
       const displayName =
@@ -130,7 +134,7 @@ export default async function handler(req, res) {
         balance: Number(vendor.Balance || 0),
         vendor_type: vendor.Vendor1099 ? "1099 Vendor" : "Vendor",
         sync_status: "vendor_synced",
-        last_synced_at: new Date().toISOString(),
+        last_synced_at: now,
       };
     });
 
@@ -152,12 +156,27 @@ export default async function handler(req, res) {
       }
     }
 
+    await supabaseAdmin
+      .from("quickbooks_connections")
+      .update({
+        last_vendor_sync_at: now,
+        sync_error: null,
+        updated_at: now,
+      })
+      .eq("association_id", association_id);
+
     return res.status(200).json({
       success: true,
       message: "QuickBooks vendors synchronized successfully.",
       association_id,
       realm_id: realmId,
-      vendor_count: vendors.length,
+      token_status: "valid",
+      access_token_expires_at: connection.access_token_expires_at || null,
+      last_token_refresh_at:
+        connection.last_token_refresh_at ||
+        connection.last_refresh_at ||
+        null,
+      vendor_count: normalizedVendors.length,
       vendors: normalizedVendors,
     });
   } catch (error) {
