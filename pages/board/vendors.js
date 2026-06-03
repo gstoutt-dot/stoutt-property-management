@@ -16,13 +16,21 @@ const documentTypes = [
 
 export default function Vendors() {
   const [vendors, setVendors] = useState([]);
+  const [vendorDocuments, setVendorDocuments] = useState([]);
+  const [documentForms, setDocumentForms] = useState({});
+  const [uploadingDocumentId, setUploadingDocumentId] = useState("");
   const [loadingVendors, setLoadingVendors] = useState(true);
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    loadVendors();
+    loadAll();
   }, []);
+
+  async function loadAll() {
+    await Promise.all([loadVendors(), loadVendorDocuments()]);
+  }
 
   async function loadVendors() {
     try {
@@ -46,6 +54,137 @@ export default function Vendors() {
       setSystemMessage(error.message || "Unable to load vendors.");
     } finally {
       setLoadingVendors(false);
+    }
+  }
+
+  async function loadVendorDocuments() {
+    try {
+      setLoadingDocuments(true);
+
+      const response = await fetch(
+        `/api/vendors/list-documents?association_id=${encodeURIComponent(
+          DEFAULT_ASSOCIATION_ID
+        )}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load vendor documents.");
+      }
+
+      setVendorDocuments(payload.documents || []);
+    } catch (error) {
+      console.error("Unable to load vendor documents:", error);
+      setVendorDocuments([]);
+      setSystemMessage(error.message || "Unable to load vendor documents.");
+    } finally {
+      setLoadingDocuments(false);
+    }
+  }
+
+  async function uploadVendorDocument(vendor) {
+    const vendorId = getVendorId(vendor);
+    const form = documentForms[vendorId] || {};
+
+    if (!vendorId) {
+      setSystemMessage("Unable to upload. Vendor id is missing.");
+      return;
+    }
+
+    if (!form.file) {
+      setSystemMessage("Choose a vendor document to upload.");
+      return;
+    }
+
+    try {
+      setUploadingDocumentId(vendorId);
+      setSystemMessage("");
+
+      const fileBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(form.file);
+      });
+
+      const response = await fetch("/api/vendors/upload-document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          vendor_id: vendorId,
+          document_name: form.document_name || form.file.name,
+          document_category: form.document_category || "Other",
+          description: form.description || "",
+          uploaded_by: "Admin",
+          file_name: form.file.name,
+          file_type: form.file.type,
+          file_base64: fileBase64,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to upload vendor document.");
+      }
+
+      setDocumentForms((current) => ({
+        ...current,
+        [vendorId]: {
+          document_name: "",
+          document_category: "Other",
+          description: "",
+          file: null,
+        },
+      }));
+
+      await loadVendorDocuments();
+
+      setSystemMessage("Vendor document uploaded.");
+    } catch (error) {
+      console.error("Unable to upload vendor document:", error);
+      setSystemMessage(error.message || "Unable to upload vendor document.");
+    } finally {
+      setUploadingDocumentId("");
+    }
+  }
+
+  async function deleteVendorDocument(document) {
+    if (!document?.id) return;
+
+    const confirmed = window.confirm(
+      "Delete this vendor document permanently?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSystemMessage("");
+
+      const response = await fetch(
+        `/api/vendors/delete-document?id=${encodeURIComponent(document.id)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to delete vendor document.");
+      }
+
+      await loadVendorDocuments();
+
+      setSystemMessage("Vendor document deleted.");
+    } catch (error) {
+      console.error("Unable to delete vendor document:", error);
+      setSystemMessage(error.message || "Unable to delete vendor document.");
     }
   }
 
@@ -81,6 +220,13 @@ export default function Vendors() {
   const vendorsWithPhone = vendors.filter(
     (vendor) => vendor.phone || vendor.primary_phone
   );
+
+  const vendorsWithDocuments = vendors.filter((vendor) => {
+    const vendorId = getVendorId(vendor);
+    return vendorDocuments.some(
+      (document) => String(document.vendor_id) === String(vendorId)
+    );
+  });
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -148,7 +294,7 @@ export default function Vendors() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <button
-              onClick={loadVendors}
+              onClick={loadAll}
               className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
             >
               Refresh Vendors
@@ -173,8 +319,8 @@ export default function Vendors() {
         <div className="mt-8 grid gap-5 md:grid-cols-4">
           <Metric label="Synced Vendors" value={vendors.length} />
           <Metric label="Active Vendors" value={activeVendors.length} />
-          <Metric label="Email Ready" value={vendorsWithEmail.length} />
-          <Metric label="Phone Ready" value={vendorsWithPhone.length} />
+          <Metric label="Documented Vendors" value={vendorsWithDocuments.length} />
+          <Metric label="Vendor Documents" value={vendorDocuments.length} />
         </div>
 
         {systemMessage && (
@@ -195,9 +341,9 @@ export default function Vendors() {
               </h3>
 
               <p className="mt-2 text-sm text-slate-400">
-                Vendors below are sourced from the association vendor feed. The
-                next connection layer will attach legal documentation, board
-                review, and signature certification to each vendor file.
+                Vendors below are sourced from the association vendor feed.
+                Legal documentation can now be attached directly to each vendor
+                file.
               </p>
             </div>
           </div>
@@ -212,17 +358,51 @@ export default function Vendors() {
           </div>
 
           <div className="mt-6 space-y-6">
-            {loadingVendors ? (
-              <Empty message="Loading association vendors..." />
+            {loadingVendors || loadingDocuments ? (
+              <Empty message="Loading association vendors and documents..." />
             ) : filteredVendors.length === 0 ? (
               <Empty message="No vendor records match the current search." />
             ) : (
-              filteredVendors.map((vendor, index) => (
-                <VendorCard
-                  key={vendor.id || vendor.quickbooks_vendor_id || index}
-                  vendor={vendor}
-                />
-              ))
+              filteredVendors.map((vendor, index) => {
+                const vendorId = getVendorId(vendor);
+
+                return (
+                  <VendorCard
+                    key={vendorId || vendor.quickbooks_vendor_id || index}
+                    vendor={vendor}
+                    documents={vendorDocuments.filter(
+                      (document) =>
+                        String(document.vendor_id) === String(vendorId)
+                    )}
+                    documentForm={
+                      documentForms[vendorId] || {
+                        document_name: "",
+                        document_category: "Other",
+                        description: "",
+                        file: null,
+                      }
+                    }
+                    uploadingDocumentId={uploadingDocumentId}
+                    onDocumentFormChange={(updates) =>
+                      setDocumentForms((current) => ({
+                        ...current,
+                        [vendorId]: {
+                          document_name:
+                            current[vendorId]?.document_name || "",
+                          document_category:
+                            current[vendorId]?.document_category || "Other",
+                          description:
+                            current[vendorId]?.description || "",
+                          file: current[vendorId]?.file || null,
+                          ...updates,
+                        },
+                      }))
+                    }
+                    onUploadDocument={() => uploadVendorDocument(vendor)}
+                    onDeleteDocument={deleteVendorDocument}
+                  />
+                );
+              })
             )}
           </div>
         </div>
@@ -269,7 +449,17 @@ export default function Vendors() {
   );
 }
 
-function VendorCard({ vendor }) {
+function VendorCard({
+  vendor,
+  documents,
+  documentForm,
+  uploadingDocumentId,
+  onDocumentFormChange,
+  onUploadDocument,
+  onDeleteDocument,
+}) {
+  const vendorId = getVendorId(vendor);
+
   const vendorName =
     vendor.vendor_name ||
     vendor.vendor_display_name ||
@@ -278,6 +468,13 @@ function VendorCard({ vendor }) {
 
   const vendorEmail = vendor.email || vendor.primary_email || "";
   const vendorPhone = vendor.phone || vendor.primary_phone || "";
+
+  const hasW9 = hasDocumentCategory(documents, "W9");
+  const hasInsurance = hasDocumentCategory(documents, "Certificate of Insurance");
+  const hasContract = hasDocumentCategory(documents, "Contract");
+  const hasLicense = hasDocumentCategory(documents, "License");
+
+  const legalFileComplete = hasW9 && hasInsurance && (hasContract || hasLicense);
 
   return (
     <article className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
@@ -290,14 +487,12 @@ function VendorCard({ vendor }) {
                 {vendor.quickbooks_vendor_id || vendor.id || "N/A"}
               </p>
 
-              <h4 className="mt-2 text-2xl font-semibold">
-                {vendorName}
-              </h4>
+              <h4 className="mt-2 text-2xl font-semibold">{vendorName}</h4>
 
               <p className="mt-3 text-sm leading-6 text-slate-400">
                 Association vendor record synchronized from the accounting
                 vendor source. Compliance documentation and governance approvals
-                will determine association-approved status.
+                determine association-approved status.
               </p>
             </div>
 
@@ -319,7 +514,10 @@ function VendorCard({ vendor }) {
             </p>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <StatusPill label="Legal File" value="Pending Documents" />
+              <StatusPill
+                label="Legal File"
+                value={legalFileComplete ? "Documents Started" : "Pending Documents"}
+              />
               <StatusPill label="Board Authorization" value="Not Sent" />
               <StatusPill label="Signature Certification" value="Not Certified" />
               <StatusPill label="Payment Readiness" value="Not Authorized" />
@@ -375,58 +573,101 @@ function VendorCard({ vendor }) {
             </h4>
 
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              Phase 1 structure only. Next step will connect upload, view, and
-              delete controls using the existing document pattern.
+              Upload W9s, insurance certificates, licenses, contracts,
+              proposals, invoices, photos, and supporting vendor documents.
             </p>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {documentTypes.map((documentType) => (
-                <div
-                  key={documentType}
-                  className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3"
-                >
-                  <p className="text-sm font-semibold text-slate-200">
-                    {documentType}
-                  </p>
+            <div className="mt-4 space-y-3">
+              {documents.length === 0 ? (
+                <p className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-500">
+                  No vendor documents uploaded yet.
+                </p>
+              ) : (
+                documents.map((document) => (
+                  <div
+                    key={document.id}
+                    className="rounded-xl border border-blue-400/20 bg-blue-500/10 p-4"
+                  >
+                    <a
+                      href={document.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-sm font-semibold text-blue-100 hover:underline"
+                    >
+                      {documentButtonLabel(document)}
+                    </a>
 
-                  <p className="mt-1 text-xs text-slate-500">
-                    Not uploaded
-                  </p>
-                </div>
-              ))}
+                    <p className="mt-2 text-xs text-slate-400">
+                      {document.document_category || "Vendor Document"}
+                      {document.description ? ` · ${document.description}` : ""}
+                    </p>
+
+                    <button
+                      onClick={() => onDeleteDocument(document)}
+                      className="mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-200 hover:bg-red-500/20"
+                    >
+                      Delete Document
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <input
+                value={documentForm.document_name}
+                onChange={(event) =>
+                  onDocumentFormChange({ document_name: event.target.value })
+                }
                 placeholder="Document name..."
                 className="input"
-                disabled
               />
 
-              <select className="input" disabled>
+              <select
+                value={documentForm.document_category}
+                onChange={(event) =>
+                  onDocumentFormChange({
+                    document_category: event.target.value,
+                  })
+                }
+                className="input"
+              >
                 {documentTypes.map((type) => (
-                  <option key={type}>{type}</option>
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
 
               <input
                 type="file"
+                onChange={(event) =>
+                  onDocumentFormChange({
+                    file: event.target.files?.[0] || null,
+                  })
+                }
                 className="input sm:col-span-2"
-                disabled
+                accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx,.ppt,.pptx"
               />
 
               <textarea
+                value={documentForm.description}
+                onChange={(event) =>
+                  onDocumentFormChange({ description: event.target.value })
+                }
                 placeholder="Document notes..."
                 rows={3}
                 className="input sm:col-span-2"
-                disabled
               />
 
               <button
-                disabled
-                className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-200 opacity-50 sm:col-span-2"
+                onClick={onUploadDocument}
+                disabled={uploadingDocumentId === vendorId}
+                className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-200 hover:bg-blue-500/20 disabled:opacity-50 sm:col-span-2"
               >
-                Upload Vendor Document — Next Connection
+                {uploadingDocumentId === vendorId
+                  ? "Uploading..."
+                  : "Upload Vendor Document"}
               </button>
             </div>
           </section>
@@ -435,11 +676,6 @@ function VendorCard({ vendor }) {
             <h4 className="text-lg font-semibold text-emerald-200">
               Governance + Payment Readiness
             </h4>
-
-            <p className="mt-2 text-sm leading-6 text-slate-400">
-              Vendor authorization should connect to board review and signature
-              certification before future Ava-assisted invoice processing.
-            </p>
 
             <div className="mt-4 grid gap-3">
               <GovernanceLine label="Board Review" value="Not Sent" />
@@ -464,28 +700,21 @@ function VendorCard({ vendor }) {
               </Link>
             </div>
           </section>
-
-          <section className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-            <h4 className="text-lg font-semibold text-red-200">
-              Administrative Cleanup
-            </h4>
-
-            <p className="mt-2 text-sm leading-6 text-slate-400">
-              Vendor documents, test notes, and vendor review records will be
-              deletable after the document layer is connected. QuickBooks vendors
-              should be deactivated rather than permanently deleted.
-            </p>
-
-            <button
-              disabled
-              className="mt-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 opacity-50"
-            >
-              Deactivate Vendor — Next Connection
-            </button>
-          </section>
         </div>
       </div>
     </article>
+  );
+}
+
+function getVendorId(vendor) {
+  return vendor?.id || "";
+}
+
+function hasDocumentCategory(documents, category) {
+  return documents.some(
+    (document) =>
+      String(document.document_category || "").toLowerCase() ===
+      String(category || "").toLowerCase()
   );
 }
 
@@ -501,8 +730,7 @@ function Metric({ label, value }) {
 function Info({ label, value }) {
   return (
     <p>
-      <span className="text-slate-500">{label}:</span>{" "}
-      {value || "—"}
+      <span className="text-slate-500">{label}:</span> {value || "—"}
     </p>
   );
 }
@@ -513,9 +741,7 @@ function StatusPill({ label, value }) {
       <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-sm font-semibold text-amber-200">
-        {value}
-      </p>
+      <p className="mt-1 text-sm font-semibold text-amber-200">{value}</p>
     </div>
   );
 }
@@ -535,4 +761,23 @@ function Empty({ message }) {
       {message}
     </div>
   );
+}
+
+function documentButtonLabel(document) {
+  const type = String(document.file_type || "").toLowerCase();
+  const name = document.document_name || document.file_name || "Vendor Document";
+
+  if (type.includes("pdf")) return `Open PDF: ${name}`;
+  if (type.startsWith("image/")) return `View Image: ${name}`;
+  if (type.includes("spreadsheet") || /\.(xlsx|xls|csv)$/i.test(name)) {
+    return `Open Spreadsheet: ${name}`;
+  }
+  if (type.includes("word") || /\.(doc|docx)$/i.test(name)) {
+    return `Open Document: ${name}`;
+  }
+  if (type.includes("presentation") || /\.(ppt|pptx)$/i.test(name)) {
+    return `Open Presentation: ${name}`;
+  }
+
+  return `Open File: ${name}`;
 }
