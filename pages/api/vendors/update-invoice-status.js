@@ -15,6 +15,11 @@ export default async function handler(req, res) {
       manager_note,
       board_note,
       payment_readiness,
+      action,
+      actor_name,
+      authorized_board_role,
+      returned_to_vendor_note,
+      payment_reference,
     } = req.body || {};
 
     if (!id || !status) {
@@ -24,15 +29,48 @@ export default async function handler(req, res) {
       });
     }
 
+    const now = new Date().toISOString();
+
+    const updatePayload = {
+      status,
+      manager_note: manager_note || "",
+      board_note: board_note || "",
+      payment_readiness: payment_readiness || "Locked",
+      updated_at: now,
+    };
+
+    if (action === "manager_approval") {
+      updatePayload.manager_approved_at = now;
+      updatePayload.manager_approved_by = actor_name || "Manager";
+      updatePayload.payment_readiness = "Manager Approved";
+    }
+
+    if (action === "board_approval") {
+      updatePayload.board_approved_at = now;
+      updatePayload.board_approved_by = actor_name || "Board Treasurer";
+      updatePayload.authorized_board_role =
+        authorized_board_role || "Treasurer";
+      updatePayload.payment_readiness = "Board Approved";
+    }
+
+    if (action === "return_to_vendor") {
+      updatePayload.returned_to_vendor_at = now;
+      updatePayload.returned_to_vendor_note =
+        returned_to_vendor_note || manager_note || "";
+      updatePayload.payment_readiness = "Locked";
+    }
+
+    if (action === "pay_now") {
+      updatePayload.paid_at = now;
+      updatePayload.paid_by = actor_name || "Manager";
+      updatePayload.payment_status = "Paid";
+      updatePayload.payment_reference = payment_reference || "";
+      updatePayload.payment_readiness = "Paid";
+    }
+
     const { data, error } = await supabaseAdmin
       .from("association_vendor_invoices")
-      .update({
-        status,
-        manager_note: manager_note || "",
-        board_note: board_note || "",
-        payment_readiness: payment_readiness || "Locked",
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", id)
       .select("*")
       .single();
