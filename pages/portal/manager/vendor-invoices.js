@@ -11,14 +11,6 @@ const requiredDocumentTypes = [
   "Vendor Proposal",
 ];
 
-const invoiceStatuses = [
-  "Needs Verification",
-  "Needs Documentation",
-  "Ready for Board",
-  "Approved for Payment",
-  "Rejected",
-];
-
 export default function ManagerVendorInvoices() {
   const [vendors, setVendors] = useState([]);
   const [vendorDocuments, setVendorDocuments] = useState([]);
@@ -34,6 +26,8 @@ export default function ManagerVendorInvoices() {
     file: null,
   });
   const [managerNotes, setManagerNotes] = useState({});
+  const [returnNotes, setReturnNotes] = useState({});
+  const [paymentReferences, setPaymentReferences] = useState({});
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [savingId, setSavingId] = useState("");
@@ -128,10 +122,18 @@ export default function ManagerVendorInvoices() {
       });
 
       const noteMap = {};
+      const returnMap = {};
+      const paymentMap = {};
+
       safeInvoices.forEach((invoice) => {
         noteMap[invoice.id] = invoice.manager_note || "";
+        returnMap[invoice.id] = invoice.returned_to_vendor_note || "";
+        paymentMap[invoice.id] = invoice.payment_reference || "";
       });
+
       setManagerNotes(noteMap);
+      setReturnNotes(returnMap);
+      setPaymentReferences(paymentMap);
     } catch (error) {
       console.error("Unable to load vendor invoices:", error);
       setInvoices([]);
@@ -224,11 +226,44 @@ export default function ManagerVendorInvoices() {
     }
   }
 
-  async function updateInvoiceStatus(invoice, status) {
+  async function updateInvoiceAction(invoice, action) {
     if (!invoice?.id) return;
 
-    const readiness =
-      status === "Approved for Payment" ? "Ready for Payment Review" : "Locked";
+    const actionConfig = {
+      manager_approval: {
+        status: "Manager Approved",
+        payment_readiness: "Manager Approved",
+        actor_name: "Manager",
+      },
+      board_approval: {
+        status: "Board Approved",
+        payment_readiness: "Board Approved",
+        actor_name: "Board Treasurer",
+        authorized_board_role: "Treasurer",
+      },
+      return_to_vendor: {
+        status: "Returned To Vendor",
+        payment_readiness: "Locked",
+        actor_name: "Manager",
+      },
+      pay_now: {
+        status: "Paid",
+        payment_readiness: "Paid",
+        actor_name: "Manager",
+      },
+    };
+
+    const config = actionConfig[action];
+
+    if (!config) return;
+
+    if (action === "pay_now" && !invoice.board_approved_at) {
+      const confirmed = window.confirm(
+        "This invoice does not show board approval yet. Continue with Pay Now anyway?"
+      );
+
+      if (!confirmed) return;
+    }
 
     try {
       setSavingId(invoice.id);
@@ -241,10 +276,15 @@ export default function ManagerVendorInvoices() {
         },
         body: JSON.stringify({
           id: invoice.id,
-          status,
+          status: config.status,
           manager_note: managerNotes[invoice.id] || "",
           board_note: invoice.board_note || "",
-          payment_readiness: readiness,
+          payment_readiness: config.payment_readiness,
+          action,
+          actor_name: config.actor_name,
+          authorized_board_role: config.authorized_board_role || "",
+          returned_to_vendor_note: returnNotes[invoice.id] || "",
+          payment_reference: paymentReferences[invoice.id] || "",
         }),
       });
 
@@ -256,7 +296,7 @@ export default function ManagerVendorInvoices() {
 
       await loadInvoices();
 
-      setSystemMessage(`Invoice marked ${status}.`);
+      setSystemMessage(`Invoice updated: ${config.status}.`);
     } catch (error) {
       console.error("Unable to update invoice:", error);
       setSystemMessage(error.message || "Unable to update invoice.");
@@ -310,17 +350,10 @@ export default function ManagerVendorInvoices() {
   const stats = useMemo(() => {
     return {
       total: invoices.length,
-      verification: invoices.filter(
-        (invoice) => invoice.status === "Needs Verification"
-      ).length,
-      documentation: invoices.filter(
-        (invoice) => invoice.status === "Needs Documentation"
-      ).length,
-      board: invoices.filter((invoice) => invoice.status === "Ready for Board")
-        .length,
-      payment: invoices.filter(
-        (invoice) => invoice.status === "Approved for Payment"
-      ).length,
+      manager: invoices.filter((invoice) => invoice.manager_approved_at).length,
+      board: invoices.filter((invoice) => invoice.board_approved_at).length,
+      returned: invoices.filter((invoice) => invoice.status === "Returned To Vendor").length,
+      paid: invoices.filter((invoice) => invoice.payment_status === "Paid").length,
     };
   }, [invoices]);
 
@@ -338,9 +371,9 @@ export default function ManagerVendorInvoices() {
             </h1>
 
             <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
-              Upload vendor invoices, verify approved vendor compliance,
-              review documentation, and prepare payment authorization without
-              bypassing board or signature controls.
+              Upload, verify, approve, return, and mark vendor invoices paid
+              while preserving manager review, board treasurer approval, and
+              payment execution history.
             </p>
           </div>
 
@@ -372,18 +405,18 @@ export default function ManagerVendorInvoices() {
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="rounded-3xl border border-amber-400/20 bg-gradient-to-br from-slate-900 to-slate-950 p-8 shadow-2xl">
           <p className="text-sm uppercase tracking-[0.25em] text-amber-300">
-            Invoice Verification + Payment Readiness
+            Invoice Approval + Payment Control
           </p>
 
           <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
-            Vendor invoices are reviewed against the approved vendor file before
-            payment readiness is allowed.
+            Vendor invoices move from manager verification to treasurer approval
+            before payment is executed.
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
-            This page does not pay vendors automatically. It creates the
-            operational verification layer required before future Ava-assisted
-            payment processing can safely occur.
+            Pay Now records payment execution inside SPM. It does not yet
+            transmit a live bank payment. Future Ava automation can use this
+            same chain after board approval.
           </p>
         </div>
 
@@ -395,10 +428,10 @@ export default function ManagerVendorInvoices() {
 
         <div className="mt-8 grid gap-5 md:grid-cols-5">
           <Metric label="Invoices" value={stats.total} />
-          <Metric label="Verification" value={stats.verification} />
-          <Metric label="Docs Needed" value={stats.documentation} />
-          <Metric label="Board Ready" value={stats.board} />
-          <Metric label="Payment Ready" value={stats.payment} />
+          <Metric label="Manager Approved" value={stats.manager} />
+          <Metric label="Board Approved" value={stats.board} />
+          <Metric label="Returned" value={stats.returned} />
+          <Metric label="Paid" value={stats.paid} />
         </div>
 
         <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
@@ -558,6 +591,11 @@ export default function ManagerVendorInvoices() {
                         <p className="mt-2 text-sm leading-6 text-slate-400">
                           {invoice.description || "No description provided."}
                         </p>
+
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                          <StatusBadge label={invoice.status || "Needs Verification"} />
+                          <StatusBadge label={invoice.payment_status || "Not Paid"} />
+                        </div>
                       </div>
 
                       <div className="text-right">
@@ -566,7 +604,7 @@ export default function ManagerVendorInvoices() {
                         </p>
 
                         <p className="mt-2 text-xs text-slate-500">
-                          {invoice.status || "Needs Verification"}
+                          {invoice.payment_readiness || "Locked"}
                         </p>
                       </div>
                     </div>
@@ -582,22 +620,32 @@ export default function ManagerVendorInvoices() {
             ) : (
               <InvoiceReviewPanel
                 invoice={selected}
-                vendor={vendors.find(
-                  (vendor) =>
-                    String(getVendorId(vendor)) === String(selected.vendor_id)
-                )}
                 vendorDocuments={vendorDocuments.filter(
                   (document) =>
                     String(document.vendor_id) === String(selected.vendor_id)
                 )}
                 managerNote={managerNotes[selected.id] || ""}
+                returnNote={returnNotes[selected.id] || ""}
+                paymentReference={paymentReferences[selected.id] || ""}
                 onManagerNoteChange={(value) =>
                   setManagerNotes((current) => ({
                     ...current,
                     [selected.id]: value,
                   }))
                 }
-                onUpdateStatus={updateInvoiceStatus}
+                onReturnNoteChange={(value) =>
+                  setReturnNotes((current) => ({
+                    ...current,
+                    [selected.id]: value,
+                  }))
+                }
+                onPaymentReferenceChange={(value) =>
+                  setPaymentReferences((current) => ({
+                    ...current,
+                    [selected.id]: value,
+                  }))
+                }
+                onUpdateAction={updateInvoiceAction}
                 onDeleteInvoice={deleteInvoice}
                 savingId={savingId}
                 deletingId={deletingId}
@@ -650,17 +698,23 @@ export default function ManagerVendorInvoices() {
 
 function InvoiceReviewPanel({
   invoice,
-  vendor,
   vendorDocuments,
   managerNote,
+  returnNote,
+  paymentReference,
   onManagerNoteChange,
-  onUpdateStatus,
+  onReturnNoteChange,
+  onPaymentReferenceChange,
+  onUpdateAction,
   onDeleteInvoice,
   savingId,
   deletingId,
 }) {
   const missingRequiredDocuments = getMissingRequiredDocuments(vendorDocuments);
   const legalFileComplete = missingRequiredDocuments.length === 0;
+  const managerApproved = !!invoice.manager_approved_at;
+  const boardApproved = !!invoice.board_approved_at;
+  const paid = invoice.payment_status === "Paid";
 
   return (
     <div>
@@ -677,6 +731,7 @@ function InvoiceReviewPanel({
         <Detail label="Amount" value={formatCurrency(invoice.amount)} />
         <Detail label="Status" value={invoice.status || "Needs Verification"} />
         <Detail label="Payment Readiness" value={invoice.payment_readiness || "Locked"} />
+        <Detail label="Payment Status" value={invoice.payment_status || "Not Paid"} />
       </div>
 
       {invoice.file_url && (
@@ -725,31 +780,95 @@ function InvoiceReviewPanel({
         )}
       </div>
 
+      <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
+          Approval Trail
+        </p>
+
+        <ApprovalLine
+          label="Manager Approval"
+          value={
+            managerApproved
+              ? `Approved by ${invoice.manager_approved_by || "Manager"}`
+              : "Pending"
+          }
+          complete={managerApproved}
+        />
+
+        <ApprovalLine
+          label="Board Treasurer Approval"
+          value={
+            boardApproved
+              ? `Approved by ${invoice.board_approved_by || "Board Treasurer"}`
+              : "Pending"
+          }
+          complete={boardApproved}
+        />
+
+        <ApprovalLine
+          label="Payment Execution"
+          value={paid ? `Paid by ${invoice.paid_by || "Manager"}` : "Not Paid"}
+          complete={paid}
+        />
+      </div>
+
       <textarea
         value={managerNote}
         onChange={(event) => onManagerNoteChange(event.target.value)}
         placeholder="Manager verification note..."
-        rows={4}
+        rows={3}
         className="input mt-5"
       />
 
+      <textarea
+        value={returnNote}
+        onChange={(event) => onReturnNoteChange(event.target.value)}
+        placeholder="Return-to-vendor note or correction request..."
+        rows={3}
+        className="input mt-3"
+      />
+
+      <input
+        value={paymentReference}
+        onChange={(event) => onPaymentReferenceChange(event.target.value)}
+        placeholder="Payment reference / check number / confirmation..."
+        className="input mt-3"
+      />
+
       <div className="mt-5 grid gap-3">
-        {invoiceStatuses.map((status) => (
-          <button
-            key={status}
-            onClick={() => onUpdateStatus(invoice, status)}
-            disabled={savingId === invoice.id}
-            className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold disabled:opacity-50 ${
-              status === "Approved for Payment"
-                ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20"
-                : status === "Rejected"
-                ? "border-red-400/30 bg-red-500/10 text-red-200 hover:bg-red-500/20"
-                : "border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/10"
-            }`}
-          >
-            {savingId === invoice.id ? "Saving..." : status}
-          </button>
-        ))}
+        <button
+          onClick={() => onUpdateAction(invoice, "manager_approval")}
+          disabled={savingId === invoice.id}
+          className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-left text-sm font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50"
+        >
+          {savingId === invoice.id ? "Saving..." : "Manager Approval"}
+        </button>
+
+        <button
+          onClick={() => onUpdateAction(invoice, "board_approval")}
+          disabled={savingId === invoice.id}
+          className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-50"
+        >
+          {savingId === invoice.id
+            ? "Saving..."
+            : "Board Approval - Treasurer"}
+        </button>
+
+        <button
+          onClick={() => onUpdateAction(invoice, "return_to_vendor")}
+          disabled={savingId === invoice.id}
+          className="rounded-xl border border-sky-400/30 bg-sky-500/10 px-4 py-3 text-left text-sm font-semibold text-sky-200 hover:bg-sky-500/20 disabled:opacity-50"
+        >
+          {savingId === invoice.id ? "Saving..." : "Return To Vendor"}
+        </button>
+
+        <button
+          onClick={() => onUpdateAction(invoice, "pay_now")}
+          disabled={savingId === invoice.id}
+          className="rounded-xl border border-yellow-400/40 bg-yellow-400 px-4 py-3 text-left text-sm font-bold text-slate-950 hover:bg-yellow-300 disabled:opacity-50"
+        >
+          {savingId === invoice.id ? "Saving..." : "Pay Now"}
+        </button>
 
         <button
           onClick={() => onDeleteInvoice(invoice)}
@@ -795,6 +914,35 @@ function Metric({ label, value }) {
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
       <div className="text-3xl font-bold text-amber-300">{value}</div>
       <div className="mt-2 text-sm text-slate-300">{label}</div>
+    </div>
+  );
+}
+
+function StatusBadge({ label }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-slate-300">
+      {label}
+    </span>
+  );
+}
+
+function ApprovalLine({ label, value, complete }) {
+  return (
+    <div
+      className={`mt-3 rounded-xl border px-4 py-3 text-sm ${
+        complete
+          ? "border-emerald-400/30 bg-emerald-500/10"
+          : "border-white/10 bg-white/[0.03]"
+      }`}
+    >
+      <div className="text-slate-400">{label}</div>
+      <div
+        className={`mt-1 font-semibold ${
+          complete ? "text-emerald-200" : "text-slate-200"
+        }`}
+      >
+        {value}
+      </div>
     </div>
   );
 }
