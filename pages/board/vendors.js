@@ -17,8 +17,10 @@ const documentTypes = [
 export default function Vendors() {
   const [vendors, setVendors] = useState([]);
   const [vendorDocuments, setVendorDocuments] = useState([]);
+  const [boardResponses, setBoardResponses] = useState([]);
   const [documentForms, setDocumentForms] = useState({});
   const [uploadingDocumentId, setUploadingDocumentId] = useState("");
+  const [sendingVendorId, setSendingVendorId] = useState("");
   const [loadingVendors, setLoadingVendors] = useState(true);
   const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
@@ -29,7 +31,11 @@ export default function Vendors() {
   }, []);
 
   async function loadAll() {
-    await Promise.all([loadVendors(), loadVendorDocuments()]);
+    await Promise.all([
+      loadVendors(),
+      loadVendorDocuments(),
+      loadBoardResponses(),
+    ]);
   }
 
   async function loadVendors() {
@@ -83,6 +89,39 @@ export default function Vendors() {
     }
   }
 
+  async function loadBoardResponses() {
+    try {
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${encodeURIComponent(
+          DEFAULT_ASSOCIATION_ID
+        )}`
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load board responses.");
+      }
+
+      const records = payload.records || payload.openRecords || [];
+
+      const vendorBoardItems = records.filter((record) => {
+        return (
+          record.source_module === "association_approved_vendors" ||
+          record.request_type === "vendor_authorization" ||
+          String(record.title || "")
+            .toLowerCase()
+            .includes("vendor authorization review")
+        );
+      });
+
+      setBoardResponses(vendorBoardItems);
+    } catch (error) {
+      console.error("Unable to load vendor board responses:", error);
+      setBoardResponses([]);
+    }
+  }
+
   async function uploadVendorDocument(vendor) {
     const vendorId = getVendorId(vendor);
     const form = documentForms[vendorId] || {};
@@ -103,7 +142,6 @@ export default function Vendors() {
 
       const fileBase64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-
         reader.onload = () => resolve(reader.result);
         reader.onerror = reject;
         reader.readAsDataURL(form.file);
@@ -144,7 +182,6 @@ export default function Vendors() {
       }));
 
       await loadVendorDocuments();
-
       setSystemMessage("Vendor document uploaded.");
     } catch (error) {
       console.error("Unable to upload vendor document:", error);
@@ -180,11 +217,54 @@ export default function Vendors() {
       }
 
       await loadVendorDocuments();
-
       setSystemMessage("Vendor document deleted.");
     } catch (error) {
       console.error("Unable to delete vendor document:", error);
       setSystemMessage(error.message || "Unable to delete vendor document.");
+    }
+  }
+
+  async function sendVendorToBoard(vendor) {
+    const vendorId = getVendorId(vendor);
+
+    if (!vendorId) {
+      setSystemMessage("Unable to send vendor to board. Vendor id is missing.");
+      return;
+    }
+
+    const vendorDocs = vendorDocuments.filter(
+      (document) => String(document.vendor_id) === String(vendorId)
+    );
+
+    try {
+      setSendingVendorId(vendorId);
+      setSystemMessage("");
+
+      const response = await fetch("/api/vendors/send-vendor-to-board", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          vendor,
+          documents: vendorDocs,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to send vendor to board.");
+      }
+
+      await loadBoardResponses();
+      setSystemMessage("Vendor authorization sent to Board Approval Queue.");
+    } catch (error) {
+      console.error("Unable to send vendor to board:", error);
+      setSystemMessage(error.message || "Unable to send vendor to board.");
+    } finally {
+      setSendingVendorId("");
     }
   }
 
@@ -212,14 +292,6 @@ export default function Vendors() {
   }, [vendors, searchTerm]);
 
   const activeVendors = vendors.filter((vendor) => vendor.active !== false);
-
-  const vendorsWithEmail = vendors.filter(
-    (vendor) => vendor.email || vendor.primary_email
-  );
-
-  const vendorsWithPhone = vendors.filter(
-    (vendor) => vendor.phone || vendor.primary_phone
-  );
 
   const vendorsWithDocuments = vendors.filter((vendor) => {
     const vendorId = getVendorId(vendor);
@@ -330,22 +402,20 @@ export default function Vendors() {
         )}
 
         <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-amber-300">
-                Live QuickBooks Vendor Feed
-              </p>
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-amber-300">
+              Live QuickBooks Vendor Feed
+            </p>
 
-              <h3 className="mt-3 text-2xl font-semibold">
-                Approved Vendor Registry
-              </h3>
+            <h3 className="mt-3 text-2xl font-semibold">
+              Approved Vendor Registry
+            </h3>
 
-              <p className="mt-2 text-sm text-slate-400">
-                Vendors below are sourced from the association vendor feed.
-                Legal documentation can now be attached directly to each vendor
-                file.
-              </p>
-            </div>
+            <p className="mt-2 text-sm text-slate-400">
+              Vendors below are sourced from the association vendor feed.
+              Legal documentation and board authorization can now be attached
+              directly to each vendor file.
+            </p>
           </div>
 
           <div className="mt-5 rounded-3xl border border-white/10 bg-slate-950/70 p-4">
@@ -374,6 +444,10 @@ export default function Vendors() {
                       (document) =>
                         String(document.vendor_id) === String(vendorId)
                     )}
+                    boardResponse={findBoardResponseForVendor(
+                      vendor,
+                      boardResponses
+                    )}
                     documentForm={
                       documentForms[vendorId] || {
                         document_name: "",
@@ -383,6 +457,7 @@ export default function Vendors() {
                       }
                     }
                     uploadingDocumentId={uploadingDocumentId}
+                    sendingVendorId={sendingVendorId}
                     onDocumentFormChange={(updates) =>
                       setDocumentForms((current) => ({
                         ...current,
@@ -391,8 +466,7 @@ export default function Vendors() {
                             current[vendorId]?.document_name || "",
                           document_category:
                             current[vendorId]?.document_category || "Other",
-                          description:
-                            current[vendorId]?.description || "",
+                          description: current[vendorId]?.description || "",
                           file: current[vendorId]?.file || null,
                           ...updates,
                         },
@@ -400,6 +474,7 @@ export default function Vendors() {
                     }
                     onUploadDocument={() => uploadVendorDocument(vendor)}
                     onDeleteDocument={deleteVendorDocument}
+                    onSendToBoard={() => sendVendorToBoard(vendor)}
                   />
                 );
               })
@@ -452,11 +527,14 @@ export default function Vendors() {
 function VendorCard({
   vendor,
   documents,
+  boardResponse,
   documentForm,
   uploadingDocumentId,
+  sendingVendorId,
   onDocumentFormChange,
   onUploadDocument,
   onDeleteDocument,
+  onSendToBoard,
 }) {
   const vendorId = getVendorId(vendor);
 
@@ -518,7 +596,10 @@ function VendorCard({
                 label="Legal File"
                 value={legalFileComplete ? "Documents Started" : "Pending Documents"}
               />
-              <StatusPill label="Board Authorization" value="Not Sent" />
+              <StatusPill
+                label="Board Authorization"
+                value={boardResponse ? titleCase(boardResponse.status || "Submitted") : "Not Sent"}
+              />
               <StatusPill label="Signature Certification" value="Not Certified" />
               <StatusPill label="Payment Readiness" value="Not Authorized" />
             </div>
@@ -678,18 +759,57 @@ function VendorCard({
             </h4>
 
             <div className="mt-4 grid gap-3">
-              <GovernanceLine label="Board Review" value="Not Sent" />
+              <GovernanceLine
+                label="Board Review"
+                value={boardResponse ? titleCase(boardResponse.status || "Submitted") : "Not Sent"}
+              />
               <GovernanceLine label="Signature Approval" value="Not Created" />
               <GovernanceLine label="Certification" value="Not Signed" />
               <GovernanceLine label="Invoice Processing" value="Locked" />
             </div>
 
+            {boardResponse && (
+              <div className="mt-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-300">
+                  Board Response Received
+                </p>
+
+                <p className="mt-3 text-sm text-slate-300">
+                  <span className="text-slate-500">Status:</span>{" "}
+                  {titleCase(boardResponse.status || "board review")}
+                </p>
+
+                <p className="mt-2 text-sm text-slate-300">
+                  <span className="text-slate-500">Last Action:</span>{" "}
+                  {titleCase(boardResponse.board_last_action || "Pending")}
+                </p>
+
+                {boardResponse.board_last_message && (
+                  <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/70 p-4">
+                    <p className="whitespace-pre-wrap text-sm leading-6 text-slate-200">
+                      {boardResponse.board_last_message}
+                    </p>
+                  </div>
+                )}
+
+                <p className="mt-3 text-xs text-slate-500">
+                  Updated:{" "}
+                  {boardResponse.board_updated_at
+                    ? new Date(boardResponse.board_updated_at).toLocaleString()
+                    : "Not yet updated"}
+                </p>
+              </div>
+            )}
+
             <div className="mt-5 flex flex-wrap gap-3">
               <button
-                disabled
-                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 opacity-50"
+                onClick={onSendToBoard}
+                disabled={sendingVendorId === vendorId}
+                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50"
               >
-                Send Vendor To Board — Next Connection
+                {sendingVendorId === vendorId
+                  ? "Sending Vendor..."
+                  : "Send Vendor To Board"}
               </button>
 
               <Link
@@ -715,6 +835,29 @@ function hasDocumentCategory(documents, category) {
     (document) =>
       String(document.document_category || "").toLowerCase() ===
       String(category || "").toLowerCase()
+  );
+}
+
+function findBoardResponseForVendor(vendor, boardResponses) {
+  const vendorName = String(
+    vendor.vendor_name ||
+      vendor.vendor_display_name ||
+      vendor.company_name ||
+      ""
+  ).toLowerCase();
+
+  const expectedTitle = `${vendorName} vendor authorization review`;
+
+  return (
+    boardResponses.find((record) => {
+      const title = String(record.title || "").toLowerCase();
+      const description = String(record.description || "").toLowerCase();
+
+      return (
+        title === expectedTitle ||
+        description.includes(`vendor: ${vendorName}`)
+      );
+    }) || null
   );
 }
 
@@ -780,4 +923,12 @@ function documentButtonLabel(document) {
   }
 
   return `Open File: ${name}`;
+}
+
+function titleCase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
