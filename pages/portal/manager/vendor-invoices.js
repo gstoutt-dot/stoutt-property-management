@@ -854,6 +854,46 @@ function InvoiceReviewPanel({
             : "Board Approval - Treasurer"}
         </button>
 
+          <button
+  onClick={async () => {
+    try {
+      const response = await fetch(
+        "/api/vendors/send-invoice-to-board",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            association_id: DEFAULT_ASSOCIATION_ID,
+            invoice,
+            manager_note: managerNote || "",
+            compliance_status: legalFileComplete
+              ? "Vendor Legal File Complete"
+              : "Vendor Legal File Incomplete",
+            missing_documents: missingRequiredDocuments,
+          }),
+        }
+      );
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message || "Unable to send invoice to board."
+        );
+      }
+
+      window.location.reload();
+    } catch (error) {
+      alert(error.message);
+    }
+  }}
+  className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-left text-sm font-semibold text-blue-200 hover:bg-blue-500/20"
+>
+  Send Invoice To Board
+</button>
+
         <button
           onClick={() => onUpdateAction(invoice, "return_to_vendor")}
           disabled={savingId === invoice.id}
