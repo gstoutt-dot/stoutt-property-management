@@ -1,9 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 const closedStatuses = ["completed", "closed", "archived"];
+
+const requestTypes = [
+  "Common Area Maintenance",
+  "Building Maintenance",
+  "Roof Leak",
+  "Water Intrusion",
+  "Plumbing",
+  "Electrical",
+  "Lighting / Electrical",
+  "HVAC / Air Conditioning",
+  "Elevator Issue",
+  "Landscape / Irrigation",
+  "Tree Trimming",
+  "Pool / Spa Issue",
+  "Gate / Access Control",
+  "Security Concern",
+  "Janitorial / Cleaning",
+  "Pest Control",
+  "Trash / Recycling",
+  "Vendor Damage Report",
+  "Other",
+];
 
 function formatDate(value) {
   if (!value) return "Recently";
@@ -60,14 +83,27 @@ function statusStyle(status) {
 
 export default function AssociationWorkOrders() {
   const [requests, setRequests] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRequestId, setSelectedRequestId] = useState(null);
 
+  const [requestType, setRequestType] = useState("Common Area Maintenance");
+  const [priority, setPriority] = useState("Normal");
+  const [selectedVendorId, setSelectedVendorId] = useState("");
+  const [title, setTitle] = useState("");
+  const [unitNumber, setUnitNumber] = useState("Association");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
   useEffect(() => {
     loadWorkOrders({ showLoading: true });
+    loadVendors();
 
     const interval = setInterval(() => {
       loadWorkOrders({ showLoading: false });
@@ -76,7 +112,7 @@ export default function AssociationWorkOrders() {
     return () => clearInterval(interval);
   }, []);
 
-    async function loadWorkOrders({ showLoading = false } = {}) {
+  async function loadWorkOrders({ showLoading = false } = {}) {
     try {
       if (showLoading) {
         setLoading(true);
@@ -107,6 +143,116 @@ export default function AssociationWorkOrders() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadVendors() {
+    const { data, error } = await supabase
+      .from("association_vendors")
+      .select("*")
+      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .eq("active", true)
+      .order("vendor_name", { ascending: true });
+
+    if (error) {
+      console.error("Association vendors load failed:", error);
+      return;
+    }
+
+    setVendors(data || []);
+  }
+
+  async function submitRequest() {
+    try {
+      setSubmitting(true);
+      setSubmitError("");
+      setSubmitMessage("");
+
+      const selectedVendor = vendors.find(
+        (vendor) => String(vendor.id) === String(selectedVendorId)
+      );
+
+      const response = await fetch("/api/homeowner/service-request/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          associationId: DEFAULT_ASSOCIATION_ID,
+          ownerUserId: "",
+          ownerName: "Association Management",
+          ownerEmail: "",
+          unitNumber,
+          requestType,
+          priority,
+          title,
+          description,
+          location,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Unable to submit work order.");
+      }
+
+      if (selectedVendor && data.bosAction?.id) {
+        const { error: workflowError } = await supabase
+          .from("manager_workflow_records")
+          .upsert(
+            {
+              source_record_id: String(data.bosAction.id),
+              source_table: "bos_actions",
+              association_id: DEFAULT_ASSOCIATION_ID,
+              selected_vendor_id: String(selectedVendor.id),
+              vendor_name:
+                selectedVendor.vendor_name ||
+                selectedVendor.vendor_display_name ||
+                selectedVendor.company_name ||
+                "",
+              vendor_phone:
+                selectedVendor.phone || selectedVendor.primary_phone || "",
+              vendor_email:
+                selectedVendor.email || selectedVendor.primary_email || "",
+              dispatch_note: "",
+              internal_assignment: "",
+              due_date: null,
+              pending_note: "",
+              notes: [],
+              timeline: [
+                {
+                  text: "Approved vendor selected from Association Work Orders",
+                  date: new Date().toLocaleString(),
+                },
+              ],
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "source_record_id,source_table",
+            }
+          );
+
+        if (workflowError) {
+          throw workflowError;
+        }
+      }
+
+      setSubmitMessage("Association work order created successfully.");
+      setTitle("");
+      setDescription("");
+      setLocation("");
+      setUnitNumber("Association");
+      setPriority("Normal");
+      setRequestType("Common Area Maintenance");
+      setSelectedVendorId("");
+
+      await loadWorkOrders({ showLoading: false });
+    } catch (error) {
+      console.error("Create association work order failed:", error);
+      setSubmitError(error.message || "Unable to submit work order.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -145,9 +291,7 @@ export default function AssociationWorkOrders() {
     () =>
       requests.filter(
         (request) =>
-          !closedStatuses.includes(
-            String(request.status || "").toLowerCase()
-          )
+          !closedStatuses.includes(String(request.status || "").toLowerCase())
       ),
     [requests]
   );
@@ -194,8 +338,7 @@ export default function AssociationWorkOrders() {
 
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "open" &&
-          !closedStatuses.includes(statusValue)) ||
+        (statusFilter === "open" && !closedStatuses.includes(statusValue)) ||
         (statusFilter === "vendor" &&
           (statusValue.includes("approved") ||
             workflowValue.includes("vendor") ||
@@ -240,9 +383,9 @@ export default function AssociationWorkOrders() {
             </h1>
 
             <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
-              Association-wide work order registry showing homeowner service
-              requests, workflow status, owner/unit details, management review
-              progress, and vendor dispatch readiness.
+              Create association work orders, assign an approved vendor when
+              needed, and monitor all homeowner and management-created service
+              requests from one operational registry.
             </p>
           </div>
 
@@ -278,7 +421,132 @@ export default function AssociationWorkOrders() {
           </div>
         )}
 
-        <div className="grid gap-5 md:grid-cols-4">
+        <div className="rounded-3xl border border-amber-400/20 bg-white/[0.04] p-6 shadow-2xl">
+          <p className="text-sm font-medium text-amber-300">
+            Create Association Work Order
+          </p>
+
+          <h2 className="mt-2 text-2xl font-semibold">
+            Produce a work order for association processing
+          </h2>
+
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+            This uses the same service request workflow already connected to
+            homeowner requests, BOS processing, manager review, and vendor dispatch.
+          </p>
+
+          <form
+            className="mt-6 space-y-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitRequest();
+            }}
+          >
+            <div className="grid gap-5 md:grid-cols-3">
+              <Field label="Request Type">
+                <select
+                  value={requestType}
+                  onChange={(event) => setRequestType(event.target.value)}
+                  className={inputClass}
+                >
+                  {requestTypes.map((type) => (
+                    <option key={type}>{type}</option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Priority">
+                <select
+                  value={priority}
+                  onChange={(event) => setPriority(event.target.value)}
+                  className={inputClass}
+                >
+                  <option>Normal</option>
+                  <option>High</option>
+                  <option>Emergency</option>
+                </select>
+              </Field>
+
+              <Field label="Association Approved Vendor">
+                <select
+                  value={selectedVendorId}
+                  onChange={(event) => setSelectedVendorId(event.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Select approved vendor if applicable</option>
+                  {vendors.map((vendor) => (
+                    <option key={vendor.id} value={vendor.id}>
+                      {vendor.vendor_name ||
+                        vendor.vendor_display_name ||
+                        vendor.company_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <Field label="Work Order Title">
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  className={inputClass}
+                  placeholder="Example: Elevator service request"
+                />
+              </Field>
+
+              <Field label="Unit / Area">
+                <input
+                  value={unitNumber}
+                  onChange={(event) => setUnitNumber(event.target.value)}
+                  className={inputClass}
+                  placeholder="Association, Building 1, Unit 101, Pool Area..."
+                />
+              </Field>
+            </div>
+
+            <Field label="Description">
+              <textarea
+                rows="5"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                className={inputClass}
+                placeholder="Describe the work needed, issue, location, timing, and any important instructions."
+              />
+            </Field>
+
+            <Field label="Location">
+              <input
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                className={inputClass}
+                placeholder="Building, common area, unit, equipment location, etc."
+              />
+            </Field>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full rounded-2xl bg-amber-400 px-5 py-4 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "Creating Work Order..." : "Create Association Work Order"}
+            </button>
+
+            {submitMessage && (
+              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                {submitMessage}
+              </div>
+            )}
+
+            {submitError && (
+              <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {submitError}
+              </div>
+            )}
+          </form>
+        </div>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-4">
           <Metric label="Total Work Orders" value={requests.length} />
           <Metric label="Open Work Orders" value={openRequests.length} />
           <Metric label="Vendor / Scheduled" value={vendorReadyRequests.length} />
@@ -307,12 +575,12 @@ export default function AssociationWorkOrders() {
               </p>
 
               <h2 className="mt-3 text-2xl font-semibold">
-                Homeowner Service Requests
+                Association Service Requests
               </h2>
 
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-                These records originate from the homeowner work order form and
-                reflect the associated BOS workflow status when available.
+                These records originate from homeowner requests or management-created
+                work orders and reflect the associated BOS workflow status when available.
               </p>
             </div>
 
@@ -431,7 +699,7 @@ export default function AssociationWorkOrders() {
                       )}
                     </div>
 
-                                        <div className="flex shrink-0 flex-col gap-3 lg:w-64">
+                    <div className="flex shrink-0 flex-col gap-3 lg:w-64">
                       <button
                         onClick={() =>
                           setSelectedRequestId(
@@ -467,6 +735,18 @@ export default function AssociationWorkOrders() {
         </div>
       </section>
     </main>
+  );
+}
+
+const inputClass =
+  "mt-2 w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-amber-400";
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <label className="text-sm text-slate-300">{label}</label>
+      {children}
+    </div>
   );
 }
 
