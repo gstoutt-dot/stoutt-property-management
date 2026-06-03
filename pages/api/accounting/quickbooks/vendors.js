@@ -15,6 +15,18 @@ function getQuickBooksBaseUrl() {
   return "https://sandbox-quickbooks.api.intuit.com";
 }
 
+async function loadSavedVendors(associationId) {
+  const { data, error } = await supabaseAdmin
+    .from("association_vendors")
+    .select("*")
+    .eq("association_id", associationId)
+    .order("vendor_name", { ascending: true });
+
+  if (error) throw error;
+
+  return data || [];
+}
+
 function normalizeVendorAddress(vendor) {
   const address = vendor.BillAddr || vendor.PrimaryAddr || {};
 
@@ -135,6 +147,7 @@ export default async function handler(req, res) {
         vendor_type: vendor.Vendor1099 ? "1099 Vendor" : "Vendor",
         sync_status: "vendor_synced",
         last_synced_at: now,
+        updated_at: now,
       };
     });
 
@@ -165,6 +178,8 @@ export default async function handler(req, res) {
       })
       .eq("association_id", association_id);
 
+    const savedVendors = await loadSavedVendors(association_id);
+
     return res.status(200).json({
       success: true,
       message: "QuickBooks vendors synchronized successfully.",
@@ -176,8 +191,8 @@ export default async function handler(req, res) {
         connection.last_token_refresh_at ||
         connection.last_refresh_at ||
         null,
-      vendor_count: normalizedVendors.length,
-      vendors: normalizedVendors,
+      vendor_count: savedVendors.length,
+      vendors: savedVendors,
     });
   } catch (error) {
     console.error("QuickBooks vendors sync error:", error);
