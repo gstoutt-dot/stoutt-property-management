@@ -3,16 +3,21 @@ import Link from "next/link";
 
 const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
-const documentTypes = [
+const requiredDocumentTypes = [
   "W9",
   "Certificate of Insurance",
-  "License",
-  "Contract",
-  "Proposal",
+  "Business License",
+  "Executed Contract",
+  "Vendor Proposal",
+];
+
+const optionalDocumentTypes = [
   "Invoice",
   "Photos",
-  "Other",
+  "Additional Documentation",
 ];
+
+const documentTypes = [...requiredDocumentTypes, ...optionalDocumentTypes];
 
 export default function Vendors() {
   const [vendors, setVendors] = useState([]);
@@ -131,6 +136,11 @@ export default function Vendors() {
       return;
     }
 
+    if (!form.document_category) {
+      setSystemMessage("Choose the required vendor document type.");
+      return;
+    }
+
     if (!form.file) {
       setSystemMessage("Choose a vendor document to upload.");
       return;
@@ -155,8 +165,8 @@ export default function Vendors() {
         body: JSON.stringify({
           association_id: DEFAULT_ASSOCIATION_ID,
           vendor_id: vendorId,
-          document_name: form.document_name || form.file.name,
-          document_category: form.document_category || "Other",
+          document_name: form.document_category,
+          document_category: form.document_category,
           description: form.description || "",
           uploaded_by: "Admin",
           file_name: form.file.name,
@@ -174,8 +184,7 @@ export default function Vendors() {
       setDocumentForms((current) => ({
         ...current,
         [vendorId]: {
-          document_name: "",
-          document_category: "Other",
+          document_category: "W9",
           description: "",
           file: null,
         },
@@ -235,6 +244,18 @@ export default function Vendors() {
     const vendorDocs = vendorDocuments.filter(
       (document) => String(document.vendor_id) === String(vendorId)
     );
+
+    const missingDocuments = getMissingRequiredDocuments(vendorDocs);
+
+    if (missingDocuments.length > 0) {
+      const confirmed = window.confirm(
+        `This vendor is missing required documents:\n\n${missingDocuments.join(
+          "\n"
+        )}\n\nSend to board anyway?`
+      );
+
+      if (!confirmed) return;
+    }
 
     try {
       setSendingVendorId(vendorId);
@@ -300,6 +321,15 @@ export default function Vendors() {
     );
   });
 
+  const vendorsWithCompleteLegalFiles = vendors.filter((vendor) => {
+    const vendorId = getVendorId(vendor);
+    const documents = vendorDocuments.filter(
+      (document) => String(document.vendor_id) === String(vendorId)
+    );
+
+    return getMissingRequiredDocuments(documents).length === 0;
+  });
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
@@ -359,9 +389,9 @@ export default function Vendors() {
 
           <p className="mt-4 max-w-4xl text-slate-300">
             A vendor becomes association approved when the association can
-            document the W9, insurance, license, contract, board authorization,
-            and signature approval pathway required for future invoice and
-            payment processing.
+            document the W9, insurance, license, contract, proposal, board
+            authorization, and signature approval pathway required for future
+            invoice and payment processing.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -392,7 +422,10 @@ export default function Vendors() {
           <Metric label="Synced Vendors" value={vendors.length} />
           <Metric label="Active Vendors" value={activeVendors.length} />
           <Metric label="Documented Vendors" value={vendorsWithDocuments.length} />
-          <Metric label="Vendor Documents" value={vendorDocuments.length} />
+          <Metric
+            label="Complete Legal Files"
+            value={vendorsWithCompleteLegalFiles.length}
+          />
         </div>
 
         {systemMessage && (
@@ -413,8 +446,8 @@ export default function Vendors() {
 
             <p className="mt-2 text-sm text-slate-400">
               Vendors below are sourced from the association vendor feed.
-              Legal documentation and board authorization can now be attached
-              directly to each vendor file.
+              Required legal documents are tracked by exact document type so
+              the compliance status remains accurate.
             </p>
           </div>
 
@@ -450,8 +483,7 @@ export default function Vendors() {
                     )}
                     documentForm={
                       documentForms[vendorId] || {
-                        document_name: "",
-                        document_category: "Other",
+                        document_category: "W9",
                         description: "",
                         file: null,
                       }
@@ -462,10 +494,8 @@ export default function Vendors() {
                       setDocumentForms((current) => ({
                         ...current,
                         [vendorId]: {
-                          document_name:
-                            current[vendorId]?.document_name || "",
                           document_category:
-                            current[vendorId]?.document_category || "Other",
+                            current[vendorId]?.document_category || "W9",
                           description: current[vendorId]?.description || "",
                           file: current[vendorId]?.file || null,
                           ...updates,
@@ -547,15 +577,19 @@ function VendorCard({
   const vendorEmail = vendor.email || vendor.primary_email || "";
   const vendorPhone = vendor.phone || vendor.primary_phone || "";
 
-  const hasW9 = hasDocumentCategory(documents, "W9");
-  const hasInsurance = hasDocumentCategory(documents, "Certificate of Insurance");
-  const hasContract = hasDocumentCategory(documents, "Contract");
-  const hasLicense = hasDocumentCategory(documents, "License");
-
-  const legalFileComplete = hasW9 && hasInsurance && (hasContract || hasLicense);
+  const missingRequiredDocuments = getMissingRequiredDocuments(documents);
+  const uploadedRequiredCount =
+    requiredDocumentTypes.length - missingRequiredDocuments.length;
+  const legalFileComplete = missingRequiredDocuments.length === 0;
 
   return (
-    <article className="rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-xl">
+    <article
+      className={`rounded-3xl border p-6 shadow-xl ${
+        legalFileComplete
+          ? "border-emerald-400/30 bg-slate-900"
+          : "border-white/10 bg-slate-900"
+      }`}
+    >
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <div>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -574,8 +608,14 @@ function VendorCard({
               </p>
             </div>
 
-            <div className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
-              {vendor.active === false ? "Inactive" : "Active"}
+            <div
+              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                legalFileComplete
+                  ? "border-emerald-300/40 bg-emerald-400/10 text-emerald-200"
+                  : "border-amber-300/30 bg-amber-300/10 text-amber-200"
+              }`}
+            >
+              {legalFileComplete ? "Legal File Complete" : "Documents Pending"}
             </div>
           </div>
 
@@ -586,7 +626,39 @@ function VendorCard({
             <Info label="Sync Status" value={vendor.sync_status || "vendor_synced"} />
           </div>
 
-          <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5">
+          <div
+            className={`mt-6 rounded-2xl border p-5 ${
+              legalFileComplete
+                ? "border-emerald-400/20 bg-emerald-400/10"
+                : "border-amber-400/20 bg-amber-400/10"
+            }`}
+          >
+            <p
+              className={`text-xs font-semibold uppercase tracking-[0.25em] ${
+                legalFileComplete ? "text-emerald-300" : "text-amber-300"
+              }`}
+            >
+              Required Legal File
+            </p>
+
+            <h5 className="mt-3 text-xl font-semibold">
+              {legalFileComplete
+                ? "Vendor Legal File Complete"
+                : `${uploadedRequiredCount} / ${requiredDocumentTypes.length} Required Documents Uploaded`}
+            </h5>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {requiredDocumentTypes.map((type) => (
+                <DocumentChecklistItem
+                  key={type}
+                  label={type}
+                  uploaded={hasDocumentCategory(documents, type)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
               Approval Status
             </p>
@@ -594,14 +666,24 @@ function VendorCard({
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <StatusPill
                 label="Legal File"
-                value={legalFileComplete ? "Documents Started" : "Pending Documents"}
+                value={legalFileComplete ? "Complete" : "Pending Documents"}
+                complete={legalFileComplete}
               />
               <StatusPill
                 label="Board Authorization"
                 value={boardResponse ? titleCase(boardResponse.status || "Submitted") : "Not Sent"}
+                complete={!!boardResponse}
               />
-              <StatusPill label="Signature Certification" value="Not Certified" />
-              <StatusPill label="Payment Readiness" value="Not Authorized" />
+              <StatusPill
+                label="Signature Certification"
+                value="Not Certified"
+                complete={false}
+              />
+              <StatusPill
+                label="Payment Readiness"
+                value="Not Authorized"
+                complete={false}
+              />
             </div>
           </div>
 
@@ -654,8 +736,9 @@ function VendorCard({
             </h4>
 
             <p className="mt-2 text-sm leading-6 text-slate-400">
-              Upload W9s, insurance certificates, licenses, contracts,
-              proposals, invoices, photos, and supporting vendor documents.
+              Upload documents using the exact required document type. The legal
+              checklist turns green only when every required document type is
+              present for this vendor.
             </p>
 
             <div className="mt-4 space-y-3">
@@ -694,16 +777,7 @@ function VendorCard({
               )}
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <input
-                value={documentForm.document_name}
-                onChange={(event) =>
-                  onDocumentFormChange({ document_name: event.target.value })
-                }
-                placeholder="Document name..."
-                className="input"
-              />
-
+            <div className="mt-5 grid gap-3">
               <select
                 value={documentForm.document_category}
                 onChange={(event) =>
@@ -713,11 +787,21 @@ function VendorCard({
                 }
                 className="input"
               >
-                {documentTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
+                <optgroup label="Required Vendor Documents">
+                  {requiredDocumentTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </optgroup>
+
+                <optgroup label="Optional Vendor Documents">
+                  {optionalDocumentTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
 
               <input
@@ -727,7 +811,7 @@ function VendorCard({
                     file: event.target.files?.[0] || null,
                   })
                 }
-                className="input sm:col-span-2"
+                className="input"
                 accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.doc,.docx,.ppt,.pptx"
               />
 
@@ -738,13 +822,13 @@ function VendorCard({
                 }
                 placeholder="Document notes..."
                 rows={3}
-                className="input sm:col-span-2"
+                className="input"
               />
 
               <button
                 onClick={onUploadDocument}
                 disabled={uploadingDocumentId === vendorId}
-                className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-200 hover:bg-blue-500/20 disabled:opacity-50 sm:col-span-2"
+                className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-200 hover:bg-blue-500/20 disabled:opacity-50"
               >
                 {uploadingDocumentId === vendorId
                   ? "Uploading..."
@@ -760,8 +844,14 @@ function VendorCard({
 
             <div className="mt-4 grid gap-3">
               <GovernanceLine
+                label="Legal File"
+                value={legalFileComplete ? "Complete" : "Incomplete"}
+                complete={legalFileComplete}
+              />
+              <GovernanceLine
                 label="Board Review"
                 value={boardResponse ? titleCase(boardResponse.status || "Submitted") : "Not Sent"}
+                complete={!!boardResponse}
               />
               <GovernanceLine label="Signature Approval" value="Not Created" />
               <GovernanceLine label="Certification" value="Not Signed" />
@@ -838,6 +928,12 @@ function hasDocumentCategory(documents, category) {
   );
 }
 
+function getMissingRequiredDocuments(documents) {
+  return requiredDocumentTypes.filter(
+    (type) => !hasDocumentCategory(documents, type)
+  );
+}
+
 function findBoardResponseForVendor(vendor, boardResponses) {
   const vendorName = String(
     vendor.vendor_name ||
@@ -878,22 +974,68 @@ function Info({ label, value }) {
   );
 }
 
-function StatusPill({ label, value }) {
+function DocumentChecklistItem({ label, uploaded }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3">
-      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-        {label}
+    <div
+      className={`rounded-xl border px-4 py-3 ${
+        uploaded
+          ? "border-emerald-400/30 bg-emerald-500/10"
+          : "border-red-400/30 bg-red-500/10"
+      }`}
+    >
+      <p
+        className={`text-sm font-semibold ${
+          uploaded ? "text-emerald-200" : "text-red-200"
+        }`}
+      >
+        {uploaded ? "Uploaded" : "Missing"}
       </p>
-      <p className="mt-1 text-sm font-semibold text-amber-200">{value}</p>
+
+      <p className="mt-1 text-xs text-slate-300">{label}</p>
     </div>
   );
 }
 
-function GovernanceLine({ label, value }) {
+function StatusPill({ label, value, complete }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm">
+    <div
+      className={`rounded-xl border px-4 py-3 ${
+        complete
+          ? "border-emerald-400/30 bg-emerald-500/10"
+          : "border-white/10 bg-slate-950/60"
+      }`}
+    >
+      <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-sm font-semibold ${
+          complete ? "text-emerald-200" : "text-amber-200"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function GovernanceLine({ label, value, complete }) {
+  return (
+    <div
+      className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3 text-sm ${
+        complete
+          ? "border-emerald-400/30 bg-emerald-500/10"
+          : "border-white/10 bg-white/[0.03]"
+      }`}
+    >
       <span className="text-slate-400">{label}</span>
-      <span className="font-semibold text-slate-200">{value}</span>
+      <span
+        className={`font-semibold ${
+          complete ? "text-emerald-200" : "text-slate-200"
+        }`}
+      >
+        {value}
+      </span>
     </div>
   );
 }
