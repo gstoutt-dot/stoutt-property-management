@@ -70,6 +70,7 @@ export default function ProspectPipeline() {
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadProspects();
@@ -92,6 +93,48 @@ export default function ProspectPipeline() {
       setMessage(error.message || "Unable to load prospects.");
     } finally {
       setLoading(false);
+    }
+  }
+
+    async function importProspectCsv(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      setImporting(true);
+      setMessage("");
+
+      const csvData = await file.text();
+
+      const response = await fetch("/api/prospects/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          csvData,
+          fileName: file.name,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to import prospects.");
+      }
+
+      await loadProspects();
+
+      setMessage(
+        `Imported ${payload.imported} prospects from ${file.name}.`
+      );
+
+      event.target.value = "";
+    } catch (error) {
+      setMessage(error.message || "Unable to import prospects.");
+    } finally {
+      setImporting(false);
     }
   }
 
@@ -218,13 +261,23 @@ export default function ProspectPipeline() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-3">
               <Link
                 href="/admin"
                 className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
               >
                 Admin Dashboard
               </Link>
+
+              <label className="cursor-pointer rounded-xl border border-sky-400/30 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-200 hover:bg-sky-500/20">
+                Import CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={importProspectCsv}
+                  className="hidden"
+                />
+              </label>
 
               <button
                 onClick={loadProspects}
