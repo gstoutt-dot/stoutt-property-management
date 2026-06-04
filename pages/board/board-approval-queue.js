@@ -114,7 +114,7 @@ export default function BoardApprovalQueue() {
           });
         }
 
-        if (eventType === "board_acknowledged") {
+                if (eventType === "board_acknowledged") {
           await fetch("/api/vendors/update-invoice-status", {
             method: "POST",
             headers: {
@@ -125,6 +125,8 @@ export default function BoardApprovalQueue() {
               status: "Board Review In Progress",
               board_note: note || message,
               payment_readiness: "Board Review In Progress",
+              action: "board_acknowledged",
+              actor_name: "Board Member",
             }),
           });
         }
