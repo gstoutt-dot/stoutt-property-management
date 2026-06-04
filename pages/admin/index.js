@@ -421,19 +421,54 @@ export default function ProspectPipeline() {
               </label>
             </FormSection>
 
-            <FormSection title="Board / Contact Information">
-              <input className="input" placeholder="President Name" value={form.president_name || ""} onChange={(e) => updateField("president_name", e.target.value)} />
-              <input className="input" placeholder="President Email" value={form.president_email || ""} onChange={(e) => updateField("president_email", e.target.value)} />
-              <input className="input" placeholder="President Phone" value={form.president_phone || ""} onChange={(e) => updateField("president_phone", e.target.value)} />
-              <input className="input" placeholder="Treasurer Name" value={form.treasurer_name || ""} onChange={(e) => updateField("treasurer_name", e.target.value)} />
-              <input className="input" placeholder="Treasurer Email" value={form.treasurer_email || ""} onChange={(e) => updateField("treasurer_email", e.target.value)} />
-              <input className="input" placeholder="Treasurer Phone" value={form.treasurer_phone || ""} onChange={(e) => updateField("treasurer_phone", e.target.value)} />
-              <input className="input" placeholder="Manager Contact Name" value={form.manager_contact_name || ""} onChange={(e) => updateField("manager_contact_name", e.target.value)} />
-              <input className="input" placeholder="Manager Contact Email" value={form.manager_contact_email || ""} onChange={(e) => updateField("manager_contact_email", e.target.value)} />
-              <input className="input" placeholder="Manager Contact Phone" value={form.manager_contact_phone || ""} onChange={(e) => updateField("manager_contact_phone", e.target.value)} />
-              <input className="input" placeholder="Main Phone" value={form.main_phone || ""} onChange={(e) => updateField("main_phone", e.target.value)} />
-              <input className="input" placeholder="Main Email" value={form.main_email || ""} onChange={(e) => updateField("main_email", e.target.value)} />
-              <input className="input" placeholder="Website" value={form.website || ""} onChange={(e) => updateField("website", e.target.value)} />
+                        <FormSection title="Board / Contact Information">
+              <div className="md:col-span-2 rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-4">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">
+                  Board President
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <input className="input" placeholder="President Name" value={form.president_name || ""} onChange={(e) => updateField("president_name", e.target.value)} />
+                  <input className="input" placeholder="President Phone" value={form.president_phone || ""} onChange={(e) => updateField("president_phone", e.target.value)} />
+                  <input className="input" placeholder="President Email" value={form.president_email || ""} onChange={(e) => updateField("president_email", e.target.value)} />
+                </div>
+              </div>
+
+              <div className="md:col-span-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/[0.04] p-4">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-emerald-300">
+                  Board Treasurer
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <input className="input" placeholder="Treasurer Name" value={form.treasurer_name || ""} onChange={(e) => updateField("treasurer_name", e.target.value)} />
+                  <input className="input" placeholder="Treasurer Phone" value={form.treasurer_phone || ""} onChange={(e) => updateField("treasurer_phone", e.target.value)} />
+                  <input className="input" placeholder="Treasurer Email" value={form.treasurer_email || ""} onChange={(e) => updateField("treasurer_email", e.target.value)} />
+                </div>
+              </div>
+
+              <div className="md:col-span-2 rounded-2xl border border-sky-400/20 bg-sky-500/[0.04] p-4">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-sky-300">
+                  Current Manager / Property Contact
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <input className="input" placeholder="Manager Contact Name" value={form.manager_contact_name || ""} onChange={(e) => updateField("manager_contact_name", e.target.value)} />
+                  <input className="input" placeholder="Manager Contact Phone" value={form.manager_contact_phone || ""} onChange={(e) => updateField("manager_contact_phone", e.target.value)} />
+                  <input className="input" placeholder="Manager Contact Email" value={form.manager_contact_email || ""} onChange={(e) => updateField("manager_contact_email", e.target.value)} />
+                </div>
+              </div>
+
+              <div className="md:col-span-2 rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-slate-300">
+                  General Association Contact
+                </p>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <input className="input" placeholder="Main Phone" value={form.main_phone || ""} onChange={(e) => updateField("main_phone", e.target.value)} />
+                  <input className="input" placeholder="Main Email" value={form.main_email || ""} onChange={(e) => updateField("main_email", e.target.value)} />
+                  <input className="input" placeholder="Website" value={form.website || ""} onChange={(e) => updateField("website", e.target.value)} />
+                </div>
+              </div>
             </FormSection>
 
             <FormSection title="Sales Status / Follow-Up">
