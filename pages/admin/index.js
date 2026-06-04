@@ -52,6 +52,7 @@ const sections = [
       { title: "BOS Action Center", href: "/bos/action-center?returnTo=/admin" },
       { title: "New Operational Record", href: "/admin/operations/new" },
       { title: "Association Onboarding Records", href: "/association-onboarding-records" },
+      { title: "Prospect Pipeline", href: "/admin/prospect-pipeline" },
       { title: "Board Message Inbox", href: "/board/messages" },
       { title: "Association Calendar", href: "/board/calendar" },
       { title: "Board & Members Meetings", href: "/portal/board/meetings" },
