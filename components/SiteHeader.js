@@ -93,7 +93,7 @@ export default function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <a href="/homeowner-login" className={secondaryBtn}>
+          <a href="/portal/owner/login" className={secondaryBtn}>
             Homeowner Access
           </a>
           <a href={PHONE_HREF} className={primaryBtn}>
