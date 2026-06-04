@@ -36,7 +36,9 @@ export default async function handler(req, res) {
         title: `${invoice.vendor_name || "Vendor"} Invoice Approval - ${
           invoice.invoice_number || "Invoice"
         }`,
-        description: [
+          description: [
+          `SPM_VENDOR_INVOICE_ID: ${invoice.id}`,
+          "",
           `Vendor: ${invoice.vendor_name || "Vendor"}`,
           `Invoice Number: ${invoice.invoice_number || "N/A"}`,
           `Amount: $${Number(invoice.amount || 0).toLocaleString()}`,
