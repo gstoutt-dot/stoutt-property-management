@@ -74,6 +74,62 @@ export default function BoardApprovalQueue() {
         throw new Error(result.message || "Unable to update board approval item.");
       }
 
+            const vendorInvoiceId = extractVendorInvoiceId(action.description);
+
+      if (vendorInvoiceId) {
+        if (eventType === "board_approved") {
+          await fetch("/api/vendors/update-invoice-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: vendorInvoiceId,
+              status: "Board Approved",
+              board_note: note || message,
+              payment_readiness: "Board Approved",
+              action: "board_approval",
+              actor_name: "Board Treasurer",
+              authorized_board_role: "Treasurer",
+            }),
+          });
+        }
+
+        if (eventType === "more_info_requested") {
+          await fetch("/api/vendors/update-invoice-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: vendorInvoiceId,
+              status: "Needs Documentation",
+              board_note: note || message,
+              payment_readiness: "Locked",
+              action: "return_to_vendor",
+              actor_name: "Board Treasurer",
+              authorized_board_role: "Treasurer",
+              returned_to_vendor_note: note || message,
+            }),
+          });
+        }
+
+        if (eventType === "board_acknowledged") {
+          await fetch("/api/vendors/update-invoice-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: vendorInvoiceId,
+              status: "Board Review In Progress",
+              board_note: note || message,
+              payment_readiness: "Board Review In Progress",
+            }),
+          });
+        }
+      }
+
       setBoardNotes((current) => ({
         ...current,
         [action.id]: "",
@@ -284,6 +340,26 @@ export default function BoardApprovalQueue() {
       </section>
     </main>
   );
+}
+
+function extractVendorInvoiceId(description = "") {
+  const match = String(description || "").match(
+    /SPM_VENDOR_INVOICE_ID:\s*([a-f0-9-]+)/i
+  );
+
+  return match ? match[1] : "";
+}
+
+function cleanApprovalDescription(description = "") {
+  return String(description || "")
+    .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
+    .replace(/REPORT_ATTACHMENT_METADATA_START[\s\S]*?REPORT_ATTACHMENT_METADATA_END/g, "")
+    .replace(/Association Report:[^\n]*\n?/gi, "")
+    .replace(/Report Category:[^\n]*\n?/gi, "")
+    .replace(/Uploaded By:[^\n]*\n?/gi, "")
+    .replace(/Uploaded At:[^\n]*\n?/gi, "")
+    .replace(/Report Summary:\s*/gi, "")
+    .trim();
 }
 
 function cleanApprovalDescription(description = "") {
