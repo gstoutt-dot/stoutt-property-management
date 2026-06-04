@@ -8,8 +8,14 @@ export default function BoardApprovalQueue() {
   const [boardNotes, setBoardNotes] = useState({});
 
   useEffect(() => {
-    loadApprovals({ showLoading: true });
-  }, []);
+  loadApprovals({ showLoading: true });
+
+  const refreshInterval = setInterval(() => {
+    loadApprovals({ showLoading: false });
+  }, 10000);
+
+  return () => clearInterval(refreshInterval);
+}, []);
 
   async function loadApprovals({ showLoading = false } = {}) {
     try {
