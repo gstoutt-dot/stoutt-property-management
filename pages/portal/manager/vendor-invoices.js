@@ -823,7 +823,7 @@ function InvoiceReviewPanel({
           Approval Trail
         </p>
 
-        <ApprovalLine
+                <ApprovalLine
           label="Manager Approval"
           value={
             managerApproved
@@ -831,6 +831,18 @@ function InvoiceReviewPanel({
               : "Pending"
           }
           complete={managerApproved}
+        />
+
+        <ApprovalLine
+          label="Board Acknowledgement"
+          value={
+            invoice.board_acknowledged_at
+              ? `Acknowledged by ${
+                  invoice.board_acknowledged_by || "Board Member"
+                }`
+              : "Pending"
+          }
+          complete={!!invoice.board_acknowledged_at}
         />
 
         <ApprovalLine
@@ -842,6 +854,15 @@ function InvoiceReviewPanel({
           }
           complete={boardApproved}
         />
+
+        {invoice.board_last_message && (
+          <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm">
+            <div className="text-slate-400">Latest Board Message</div>
+            <div className="mt-1 whitespace-pre-wrap font-semibold text-slate-200">
+              {invoice.board_last_message}
+            </div>
+          </div>
+        )}
 
         <ApprovalLine
           label="Payment Execution"
