@@ -45,18 +45,34 @@ export default async function handler(req, res) {
       updatePayload.payment_readiness = "Manager Approved";
     }
 
+    if (action === "board_acknowledged") {
+      updatePayload.board_acknowledged_at = now;
+      updatePayload.board_acknowledged_by = actor_name || "Board Member";
+      updatePayload.board_last_action = "Acknowledged";
+      updatePayload.board_last_message = board_note || "";
+      updatePayload.board_updated_at = now;
+      updatePayload.payment_readiness = "Board Review In Progress";
+    }
+
     if (action === "board_approval") {
       updatePayload.board_approved_at = now;
       updatePayload.board_approved_by = actor_name || "Board Treasurer";
       updatePayload.authorized_board_role =
         authorized_board_role || "Treasurer";
+      updatePayload.board_last_action = "Approved";
+      updatePayload.board_last_message = board_note || "";
+      updatePayload.board_updated_at = now;
       updatePayload.payment_readiness = "Board Approved";
     }
 
     if (action === "return_to_vendor") {
       updatePayload.returned_to_vendor_at = now;
       updatePayload.returned_to_vendor_note =
-        returned_to_vendor_note || manager_note || "";
+        returned_to_vendor_note || manager_note || board_note || "";
+      updatePayload.board_last_action = "Returned / More Info Requested";
+      updatePayload.board_last_message =
+        returned_to_vendor_note || board_note || manager_note || "";
+      updatePayload.board_updated_at = now;
       updatePayload.payment_readiness = "Locked";
     }
 
