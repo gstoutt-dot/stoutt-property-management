@@ -34,23 +34,8 @@ export default function ManagerVendorInvoices() {
   const [deletingId, setDeletingId] = useState("");
   const [systemMessage, setSystemMessage] = useState("");
 
-    useEffect(() => {
+  useEffect(() => {
     loadAll();
-
-    const refreshInterval = setInterval(() => {
-      loadInvoices();
-    }, 5000);
-
-    const handleFocus = () => {
-      loadAll();
-    };
-
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      clearInterval(refreshInterval);
-      window.removeEventListener("focus", handleFocus);
-    };
   }, []);
 
   async function loadAll() {
