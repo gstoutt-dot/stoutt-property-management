@@ -31,6 +31,7 @@ export default function ManagerVendorInvoices() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [savingId, setSavingId] = useState("");
+  const [sendingToBoardId, setSendingToBoardId] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [systemMessage, setSystemMessage] = useState("");
 
@@ -226,6 +227,46 @@ export default function ManagerVendorInvoices() {
     }
   }
 
+  async function sendInvoiceToBoard(invoice, managerNote, legalFileComplete, missingRequiredDocuments) {
+    if (!invoice?.id) return;
+
+    try {
+      setSendingToBoardId(invoice.id);
+      setSystemMessage("");
+
+      const response = await fetch("/api/vendors/send-invoice-to-board", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          association_id: DEFAULT_ASSOCIATION_ID,
+          invoice,
+          manager_note: managerNote || "",
+          compliance_status: legalFileComplete
+            ? "Vendor Legal File Complete"
+            : "Vendor Legal File Incomplete",
+          missing_documents: missingRequiredDocuments,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to send invoice to board.");
+      }
+
+      await loadInvoices();
+
+      setSystemMessage("Invoice sent to Board Approval Queue.");
+    } catch (error) {
+      console.error("Unable to send invoice to board:", error);
+      setSystemMessage(error.message || "Unable to send invoice to board.");
+    } finally {
+      setSendingToBoardId("");
+    }
+  }
+
   async function updateInvoiceAction(invoice, action) {
     if (!invoice?.id) return;
 
@@ -234,12 +275,6 @@ export default function ManagerVendorInvoices() {
         status: "Manager Approved",
         payment_readiness: "Manager Approved",
         actor_name: "Manager",
-      },
-      board_approval: {
-        status: "Board Approved",
-        payment_readiness: "Board Approved",
-        actor_name: "Board Treasurer",
-        authorized_board_role: "Treasurer",
       },
       return_to_vendor: {
         status: "Returned To Vendor",
@@ -282,7 +317,6 @@ export default function ManagerVendorInvoices() {
           payment_readiness: config.payment_readiness,
           action,
           actor_name: config.actor_name,
-          authorized_board_role: config.authorized_board_role || "",
           returned_to_vendor_note: returnNotes[invoice.id] || "",
           payment_reference: paymentReferences[invoice.id] || "",
         }),
@@ -371,9 +405,9 @@ export default function ManagerVendorInvoices() {
             </h1>
 
             <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">
-              Upload, verify, approve, return, and mark vendor invoices paid
-              while preserving manager review, board treasurer approval, and
-              payment execution history.
+              Upload, verify, send to board, return, and mark vendor invoices
+              paid while preserving manager review, board treasurer approval,
+              and payment execution history.
             </p>
           </div>
 
@@ -409,8 +443,8 @@ export default function ManagerVendorInvoices() {
           </p>
 
           <h2 className="mt-3 max-w-5xl text-4xl font-semibold leading-tight">
-            Vendor invoices move from manager verification to treasurer approval
-            before payment is executed.
+            Vendor invoices move from manager verification to board treasurer
+            approval before payment is executed.
           </h2>
 
           <p className="mt-4 max-w-4xl text-slate-300">
@@ -627,6 +661,7 @@ export default function ManagerVendorInvoices() {
                 managerNote={managerNotes[selected.id] || ""}
                 returnNote={returnNotes[selected.id] || ""}
                 paymentReference={paymentReferences[selected.id] || ""}
+                sendingToBoardId={sendingToBoardId}
                 onManagerNoteChange={(value) =>
                   setManagerNotes((current) => ({
                     ...current,
@@ -646,6 +681,7 @@ export default function ManagerVendorInvoices() {
                   }))
                 }
                 onUpdateAction={updateInvoiceAction}
+                onSendToBoard={sendInvoiceToBoard}
                 onDeleteInvoice={deleteInvoice}
                 savingId={savingId}
                 deletingId={deletingId}
@@ -702,10 +738,12 @@ function InvoiceReviewPanel({
   managerNote,
   returnNote,
   paymentReference,
+  sendingToBoardId,
   onManagerNoteChange,
   onReturnNoteChange,
   onPaymentReferenceChange,
   onUpdateAction,
+  onSendToBoard,
   onDeleteInvoice,
   savingId,
   deletingId,
@@ -845,54 +883,21 @@ function InvoiceReviewPanel({
         </button>
 
         <button
-          onClick={() => onUpdateAction(invoice, "board_approval")}
-          disabled={savingId === invoice.id}
-          className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-left text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-50"
+          onClick={() =>
+            onSendToBoard(
+              invoice,
+              managerNote,
+              legalFileComplete,
+              missingRequiredDocuments
+            )
+          }
+          disabled={sendingToBoardId === invoice.id}
+          className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-left text-sm font-semibold text-blue-200 hover:bg-blue-500/20 disabled:opacity-50"
         >
-          {savingId === invoice.id
-            ? "Saving..."
-            : "Board Approval - Treasurer"}
+          {sendingToBoardId === invoice.id
+            ? "Sending To Board..."
+            : "Send Invoice To Board"}
         </button>
-
-          <button
-  onClick={async () => {
-    try {
-      const response = await fetch(
-        "/api/vendors/send-invoice-to-board",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            association_id: DEFAULT_ASSOCIATION_ID,
-            invoice,
-            manager_note: managerNote || "",
-            compliance_status: legalFileComplete
-              ? "Vendor Legal File Complete"
-              : "Vendor Legal File Incomplete",
-            missing_documents: missingRequiredDocuments,
-          }),
-        }
-      );
-
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(
-          payload.message || "Unable to send invoice to board."
-        );
-      }
-
-      window.location.reload();
-    } catch (error) {
-      alert(error.message);
-    }
-  }}
-  className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-left text-sm font-semibold text-blue-200 hover:bg-blue-500/20"
->
-  Send Invoice To Board
-</button>
 
         <button
           onClick={() => onUpdateAction(invoice, "return_to_vendor")}
