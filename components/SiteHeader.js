@@ -143,7 +143,7 @@ export default function SiteHeader() {
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <a
-                href="/homeowner-login"
+                href="/portal/owner/login"
                 onClick={() => setMobileOpen(false)}
                 className={secondaryBtn}
               >
