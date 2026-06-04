@@ -38,6 +38,22 @@ export default async function handler(req, res) {
       }
     }
 
+    const expectedTitle = `${invoice.vendor_name || "Vendor"} Invoice Approval - ${
+      invoice.invoice_number || "Invoice"
+    }`;
+
+    const { error: boardDeleteError } = await supabaseAdmin
+      .from("admin_operational_records")
+      .delete()
+      .eq("association_id", invoice.association_id)
+      .eq("source_module", "vendor_invoice_processing")
+      .eq("request_type", "vendor_invoice_approval")
+      .eq("title", expectedTitle);
+
+    if (boardDeleteError) {
+      console.error("Vendor invoice board queue delete warning:", boardDeleteError);
+    }
+
     const { error: deleteError } = await supabaseAdmin
       .from("association_vendor_invoices")
       .delete()
@@ -47,7 +63,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "Vendor invoice deleted.",
+      message: "Vendor invoice and matching board queue record deleted.",
     });
   } catch (error) {
     console.error("Vendor invoice delete error:", error);
