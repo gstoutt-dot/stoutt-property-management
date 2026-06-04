@@ -1,727 +1,576 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const emptyProspect = {
+  association_name: "",
+  community_name: "",
+  association_type: "Condominium",
+  address: "",
+  city: "",
+  state: "FL",
+  zip: "",
+  county: "Broward",
+  units: "",
+  current_management_company: "",
+  contract_expiration: "",
+  self_managed: false,
+  internal_staff: false,
+  accounting_provider: "",
+  president_name: "",
+  president_email: "",
+  president_phone: "",
+  treasurer_name: "",
+  treasurer_email: "",
+  treasurer_phone: "",
+  secretary_name: "",
+  board_member_notes: "",
+  manager_contact_name: "",
+  manager_contact_email: "",
+  manager_contact_phone: "",
+  main_phone: "",
+  main_email: "",
+  website: "",
+  pain_points: "",
+  technology_issues: "",
+  financial_issues: "",
+  board_frustrations: "",
+  operational_issues: "",
+  status: "Lead",
+  priority: "Normal",
+  lead_source: "",
+  last_contact_date: "",
+  next_follow_up_date: "",
+  presentation_date: "",
+  proposal_date: "",
+  outcome: "",
+  notes: "",
+};
 
-const operationalHealth = [
-  {
-    title: "QuickBooks Synchronization",
-    status: "Connected",
-    detail: "Production accounting sync is available.",
-    tone: "stable",
-  },
-  {
-    title: "Notification Routing",
-    status: "Operational",
-    detail: "Routing layer is prepared for workflow alerts.",
-    tone: "stable",
-  },
-  {
-    title: "Association Workflow Engine",
-    status: "Stable",
-    detail: "Core BOS workflow lifecycle is active.",
-    tone: "stable",
-  },
-  {
-    title: "Board Operations",
-    status: "Live",
-    detail: "Board command surfaces are online.",
-    tone: "stable",
-  },
-  {
-    title: "Owner Portal Access",
-    status: "Online",
-    detail: "Owner dashboard and login foundation are active.",
-    tone: "stable",
-  },
+const statusOptions = [
+  "Lead",
+  "Research",
+  "Initial Contact",
+  "Follow Up",
+  "Presentation Scheduled",
+  "Proposal Sent",
+  "Board Review",
+  "Contract Pending",
+  "Won",
+  "Lost",
 ];
 
-const sections = [
-  {
-    title: "Daily Operations Center",
-    eyebrow: "Day-to-Day Command",
-    description:
-      "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
-    items: [
-      {
-        title: "Manager Command Center",
-        href: "/portal/manager#live-queue",
-      },
-      { title: "Association Work Orders", href: "/admin/association-work-orders" },
-      { title: "BOS Action Center", href: "/bos/action-center?returnTo=/admin" },
-      { title: "New Operational Record", href: "/admin/operations/new" },
-      { title: "Association Onboarding Records", href: "/association-onboarding-records" },
-      { title: "Prospect Pipeline", href: "/admin/prospect-pipeline" },
-      { title: "Board Message Inbox", href: "/board/messages" },
-      { title: "Association Calendar", href: "/board/calendar" },
-      { title: "Board & Members Meetings", href: "/portal/board/meetings" },
-      { title: "Association Reporting Center", href: "/board/reports" },
-      { title: "Association Search Center", href: "/board/search-center" },
-    ],
-  },
-  {
-    title: "Governance & Board Operations",
-    eyebrow: "Board Administration",
-    description:
-      "Governance tools for voting, motions, committees, signatures, elections, documents, notifications, and board decision records.",
-    items: [
-      { title: "QuickBooks Live", href: "/accounting/quickbooks-live" },
-      { title: "Admin Notifications", href: "/admin/notifications" },
-      { title: "Association Documents", href: "/board/documents" },
-      { title: "Board & Member Meetings", href: "/portal/board/meetings" },
-      { title: "Committee Members Center", href: "/board/committee-center" },
-      { title: "Board Signature Approval Log", href: "/board/signature-approval-log" },
-      { title: "Member Voting", href: "/portal/board/member-voting" },
-      { title: "Association Voting Center", href: "/board/voting-center" },
-      { title: "Association Motion Center", href: "/board/motion-center" },
-      { title: "Association Elections", href: "/board/elections" },
-    ],
-  },
-  {
-    title: "Financial Planning & Oversight",
-    eyebrow: "Annual & Strategic Financial Work",
-    description:
-      "Planning tools for budget preparation, financial review, capital projects, and vendor performance oversight.",
-    items: [
-  { title: "Financial Review", href: "/board/financial-review" },
+const priorityOptions = ["Low", "Normal", "High", "Critical"];
 
-{
-  title: "Management Accounting Reports",
-  href: "/board/management-accounting-reports",
-},
-
-  { title: "Budget Planning", href: "/board/budget-planning" },
-  { title: "Capital Projects", href: "/board/capital-projects" },
-  { title: "Vendor Performance", href: "/board/vendor-performance" },
-  { title: "Association Approved Vendors", href: "/board/vendors" },
-],
-  },
-  {
-    title: "Legal, Risk & Compliance",
-    eyebrow: "Protection Layer",
-    description:
-      "Controlled areas for violations, legal review, insurance, risk tracking, and policy reference.",
-    items: [
-      { title: "Compliance Dashboard", href: "/board/compliance-dashboard" },
-      { title: "Compliance Calendar", href: "/board/compliance-calendar" },
-      { title: "Violation Review", href: "/board/violation-review" },
-      { title: "Legal Review", href: "/board/legal-review" },
-      { title: "Insurance & Risk", href: "/board/insurance-risk" },
-      { title: "Policy Library", href: "/board/policy-library" },
-      { title: "Maintenance Review", href: "/board/maintenance-review" },
-    ],
-  },
-  {
-    title: "Infrastructure & Expansion",
-    eyebrow: "System Growth",
-    description:
-      "Support tools for technology integrations, training, platform expansion, and operating continuity.",
-    items: [
-      { title: "Technology Integrations", href: "/board/technology-integrations" },
-      { title: "Help & Training", href: "/board/help-training" },
-      { title: "Architectural Approvals", href: "/board/architectural-approvals" },
-    ],
-  },
-];
-
-const closedStatuses = ["completed", "archived", "closed"];
-
-function routeForRecord(record) {
-  const target = String(record.routing_target || "").toLowerCase();
-  const type = String(record.request_type || "").toLowerCase();
-
-  if (type.includes("insurance")) return "/board/insurance-risk";
-  if (type.includes("legal")) return "/board/legal-review";
-  if (type.includes("budget")) return "/board/budget-planning";
-  if (type.includes("financial")) return "/board/financial-review";
-  if (type.includes("election")) return "/board/elections";
-  if (type.includes("capital")) return "/board/capital-projects";
-  if (type.includes("vendor")) return "/board/vendor-performance";
-  if (type.includes("policy")) return "/board/policy-library";
-  if (type.includes("meeting")) return "/portal/board/meetings";
-  if (type.includes("violation")) return "/board/violation-review";
-  if (type.includes("maintenance")) return "/board/maintenance-review";
-  if (type.includes("compliance")) return "/board/compliance-dashboard";
-  if (type.includes("architectural")) return "/board/architectural-approvals";
-
-  if (target.includes("bos")) return "/bos/action-center";
-  if (target.includes("approval")) return "/board/board-approval-queue";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("legal") || target.includes("risk")) return "/board/legal-review";
-  if (target.includes("vendor")) return "/board/vendors";
-  if (target.includes("owner")) return "/portal/owner";
-
-  return "/admin/operations/new";
-}
-
-function toneStyle(tone) {
-  if (tone === "attention") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
-  if (tone === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
-  return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
-}
-
-function priorityStyle(priority) {
-  const value = String(priority || "").toLowerCase();
-  if (value === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
-  if (value === "high") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
-  if (value === "normal") return "border-sky-400/30 bg-sky-400/10 text-sky-300";
-  return "border-slate-400/30 bg-slate-400/10 text-slate-300";
-}
-
-function formatDate(value) {
-  if (!value) return "No due date";
-
-  return new Date(value).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatStatus(value) {
-  return String(value || "")
-    .replaceAll("_", " ")
-    .replaceAll("-", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function cleanAdminRecordDescription(description = "") {
-  return String(description || "")
-    .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
-    .replace(/https?:\/\/\S+/gi, "")
-    .replace(/Attachments?:[\s\S]*$/gi, "")
-    .trim();
-}
-
-export default function AdminDashboard() {
-  const router = useRouter();
-
-  const [records, setRecords] = useState([]);
-  const [loadingRecords, setLoadingRecords] = useState(true);
-  const [systemMessage, setSystemMessage] = useState("");
-  const [portalUserName, setPortalUserName] = useState("Admin");
-  const [portalRole, setPortalRole] = useState("admin");
-  const [showAllRecords, setShowAllRecords] = useState(false);
+export default function ProspectPipeline() {
+  const [prospects, setProspects] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [form, setForm] = useState(emptyProspect);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem("spmPortalLoggedIn");
-    const role = localStorage.getItem("spmPortalRole");
-    const name = localStorage.getItem("spmPortalUserName");
-
-    if (loggedIn !== "true" || role !== "admin") {
-      router.push("/admin-login");
-      return;
-    }
-
-    setPortalUserName(name || "Admin");
-    setPortalRole(role || "admin");
-  }, [router]);
-
-  useEffect(() => {
-    loadOperationalRecords({ showLoading: true });
-
-    const interval = setInterval(() => {
-      loadOperationalRecords({ showLoading: false });
-    }, 30000);
-
-    return () => clearInterval(interval);
+    loadProspects();
   }, []);
 
-  function handleLogout() {
-    localStorage.removeItem("spmPortalLoggedIn");
-    localStorage.removeItem("spmPortalUser");
-    localStorage.removeItem("spmPortalUserName");
-    localStorage.removeItem("spmPortalRole");
-
-    router.push("/admin-login");
-  }
-
-  async function loadOperationalRecords({ showLoading = false } = {}) {
+  async function loadProspects() {
     try {
-      if (showLoading) {
-        setLoadingRecords(true);
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch("/api/prospects/list");
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Unable to load prospects.");
       }
 
-      setSystemMessage("");
+      setProspects(payload.prospects || []);
+    } catch (error) {
+      setMessage(error.message || "Unable to load prospects.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      const response = await fetch(
-        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
-      );
+  async function saveProspect() {
+    try {
+      setSaving(true);
+      setMessage("");
+
+      const response = await fetch("/api/prospects/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
 
       const payload = await response.json();
 
       if (!response.ok || !payload.success) {
-        throw new Error(
-          payload.message || "Unable to load admin operational records."
-        );
+        throw new Error(payload.message || "Unable to save prospect.");
       }
 
-      setRecords(payload.openRecords || []);
-    } catch (error) {
-      console.error("Unable to load admin operational records:", error);
+      setMessage("Prospect saved.");
 
-      setSystemMessage(
-        error.message || "Unable to load admin operational records."
-      );
+      await loadProspects();
+
+      setSelected(payload.prospect);
+      setForm(payload.prospect);
+    } catch (error) {
+      setMessage(error.message || "Unable to save prospect.");
     } finally {
-      setLoadingRecords(false);
+      setSaving(false);
     }
   }
 
-  async function archiveRecord(recordId, event) {
-    event.preventDefault();
-    event.stopPropagation();
+  async function deleteProspect(id) {
+    if (!confirm("Delete this prospect?")) return;
 
-    try {
-      const response = await fetch("/api/admin/operational-records", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: recordId,
-          status: "archived",
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to archive record.");
-      }
-
-      await loadOperationalRecords({ showLoading: false });
-    } catch (error) {
-      console.error("Archive error:", error);
-      setSystemMessage(error.message || "Unable to archive operational record.");
-    }
-  }
-
-  async function deleteRecord(recordId, event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const confirmed = window.confirm("Delete this operational record permanently?");
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch(`/api/admin/operational-records?id=${recordId}`, {
-        method: "DELETE",
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to delete record.");
-      }
-
-      await loadOperationalRecords({ showLoading: false });
-    } catch (error) {
-      console.error("Delete error:", error);
-      setSystemMessage(error.message || "Unable to delete operational record.");
-    }
-  }
-
-  const openRecords = useMemo(
-    () =>
-      records.filter(
-        (record) =>
-          !closedStatuses.includes(String(record.status || "").toLowerCase())
-      ),
-    [records]
-  );
-
-  const criticalRecords = useMemo(
-    () =>
-      openRecords.filter(
-        (record) => String(record.priority || "").toLowerCase() === "critical"
-      ),
-    [openRecords]
-  );
-
-  const boardReviewRecords = useMemo(
-    () => openRecords.filter((record) => Boolean(record.board_review_required)),
-    [openRecords]
-  );
-
-  const intelligenceMetrics = [
-    { label: "Associations", value: "1", status: "Active", tone: "stable" },
-    {
-      label: "Open Admin Items",
-      value: openRecords.length,
-      status: openRecords.length > 0 ? "Needs Review" : "Clear",
-      tone: openRecords.length > 0 ? "attention" : "stable",
-    },
-    {
-      label: "Critical Items",
-      value: criticalRecords.length,
-      status: criticalRecords.length > 0 ? "Immediate" : "Clear",
-      tone: criticalRecords.length > 0 ? "critical" : "stable",
-    },
-    {
-      label: "Board Review",
-      value: boardReviewRecords.length,
-      status: boardReviewRecords.length > 0 ? "Pending" : "Clear",
-      tone: boardReviewRecords.length > 0 ? "attention" : "stable",
-    },
-  ];
-
-  const priorityRecords = useMemo(() => {
-    const priorityRank = {
-      critical: 1,
-      high: 2,
-      normal: 3,
-      low: 4,
-    };
-
-    return [...openRecords].sort((a, b) => {
-      const aRank = priorityRank[String(a.priority || "").toLowerCase()] || 5;
-      const bRank = priorityRank[String(b.priority || "").toLowerCase()] || 5;
-
-      return aRank - bRank;
+    const response = await fetch(`/api/prospects/delete?id=${id}`, {
+      method: "DELETE",
     });
-  }, [openRecords]);
 
-  const displayedRecords = showAllRecords
-    ? priorityRecords
-    : priorityRecords.slice(0, 5);
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      alert(payload.message || "Unable to delete prospect.");
+      return;
+    }
+
+    await loadProspects();
+
+    setSelected(null);
+    setForm(emptyProspect);
+    setMessage("Prospect deleted.");
+  }
+
+  function updateField(field, value) {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  const filteredProspects = useMemo(() => {
+    const search = String(searchTerm || "").toLowerCase().trim();
+
+    return prospects.filter((prospect) => {
+      const matchesSearch =
+        !search ||
+        [
+          prospect.association_name,
+          prospect.community_name,
+          prospect.city,
+          prospect.current_management_company,
+          prospect.president_name,
+          prospect.treasurer_name,
+          prospect.manager_contact_name,
+          prospect.main_email,
+          prospect.main_phone,
+          prospect.status,
+          prospect.priority,
+          prospect.pain_points,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(search);
+
+      const matchesStatus =
+        statusFilter === "All" || prospect.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [prospects, searchTerm, statusFilter]);
+
+  const stats = useMemo(() => {
+    return {
+      total: prospects.length,
+      followUps: prospects.filter((p) => isFollowUpDue(p.next_follow_up_date)).length,
+      presentations: prospects.filter((p) => p.status === "Presentation Scheduled").length,
+      proposals: prospects.filter((p) => p.status === "Proposal Sent").length,
+      contracts: prospects.filter((p) => p.status === "Contract Pending").length,
+      won: prospects.filter((p) => p.status === "Won").length,
+    };
+  }, [prospects]);
 
   return (
-    <main className="min-h-screen bg-[#020617] text-white">
+    <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-5xl">
-              <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
-                SPM Administrative Command Center
-              </div>
+        <div className="mx-auto max-w-7xl px-6 py-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+                SPM Sales Command Center
+              </p>
 
-              <h1 className="mt-6 text-4xl font-bold tracking-tight md:text-6xl">
-                ADMIN DASHBOARD
+              <h1 className="mt-3 text-4xl font-bold">
+                Prospect Pipeline
               </h1>
 
-              <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-                Central operational control for association oversight, board activity,
-                financial coordination, compliance, annual planning, and platform
-                administration.
+              <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300">
+                Track Broward association prospects, board contacts, current
+                management, follow-ups, presentations, proposals, pain points,
+                and contract opportunities.
               </p>
             </div>
 
-            <div className="w-full rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/30 lg:w-80">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                Secure Admin Access
-              </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/admin"
+                className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+              >
+                Admin Dashboard
+              </Link>
 
-              <h2 className="mt-3 text-2xl font-bold text-amber-300">
-                {portalUserName}
-              </h2>
+              <button
+                onClick={loadProspects}
+                className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              >
+                Refresh
+              </button>
 
-              <p className="mt-1 text-sm text-slate-400">
-                Current Role: {String(portalRole || "admin").toUpperCase()}
-              </p>
-
-              <div className="mt-5 grid gap-3">
-                <Link href="/" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
-                  Homepage
-                </Link>
-
-                <Link href="/board" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
-                  Admin Dashboard
-                </Link>
-
-                <Link href="/portal/owner" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
-                  Homeowner Dashboard
-                </Link>
-
-                <button
-                  onClick={handleLogout}
-                  className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
-                >
-                  Logout / Switch Role
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setSelected(null);
+                  setForm(emptyProspect);
+                  setMessage("");
+                }}
+                className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20"
+              >
+                New Prospect
+              </button>
             </div>
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
-            {intelligenceMetrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 shadow-2xl shadow-black/20"
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                  {metric.label}
-                </p>
-
-                <div className="mt-3 text-3xl font-black text-amber-300">
-                  {metric.value}
-                </div>
-
-                <div
-                  className={`mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(
-                    metric.tone
-                  )}`}
-                >
-                  {metric.status}
-                </div>
-              </div>
-            ))}
+          <div className="mt-8 grid gap-4 md:grid-cols-6">
+            <StatCard label="Prospects" value={stats.total} />
+            <StatCard label="Follow-Ups Due" value={stats.followUps} />
+            <StatCard label="Presentations" value={stats.presentations} />
+            <StatCard label="Proposals" value={stats.proposals} />
+            <StatCard label="Contracts" value={stats.contracts} />
+            <StatCard label="Won" value={stats.won} />
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
-        {systemMessage && (
+        {message && (
           <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-sm font-semibold text-amber-200">
-            {systemMessage}
+            {message}
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
-          <section className="rounded-[2rem] border border-amber-400/20 bg-amber-400/[0.05] p-6 shadow-2xl shadow-black/30">
-            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-                  Priority Attention Queue
-                </p>
+        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.3fr]">
+          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <div className="mb-5">
+              <p className="text-xs uppercase tracking-[0.25em] text-amber-300">
+                Broward Target List
+              </p>
 
-                <h2 className="mt-3 text-3xl font-bold">
-                  Live Administrative Records
-                </h2>
-
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                  Showing the highest-priority operational records first. Use See More
-                  when deeper review is needed.
-                </p>
-              </div>
-
-              <Link
-                href="/admin/operations/new"
-                className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
-              >
-                New Record
-              </Link>
+              <h2 className="mt-3 text-2xl font-bold">
+                Associations
+              </h2>
             </div>
 
-            <div className="space-y-4">
-              {loadingRecords ? (
-                <div className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 text-sm text-slate-400">
-                  Loading administrative records...
-                </div>
-              ) : priorityRecords.length === 0 ? (
-                <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-5">
-                  <div className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                    Clear
-                  </div>
+            <div className="grid gap-3">
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="input"
+                placeholder="Search association, city, management company, board member..."
+              />
 
-                  <h3 className="mt-4 text-2xl font-bold">
-                    No open administrative alerts
-                  </h3>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="input"
+              >
+                <option value="All">All Statuses</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                  <p className="mt-3 text-sm leading-7 text-slate-300">
-                    Submitted operational records will appear here when they require
-                    administrative review.
-                  </p>
-                </div>
+            <div className="mt-5 space-y-3">
+              {loading ? (
+                <Empty message="Loading prospects..." />
+              ) : filteredProspects.length === 0 ? (
+                <Empty message="No prospects match the current search." />
               ) : (
-                displayedRecords.map((record) => (
-                  <Link
-                    key={record.id}
-                    href={routeForRecord(record)}
-                    className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
+                filteredProspects.map((prospect) => (
+                  <button
+                    key={prospect.id}
+                    onClick={() => {
+                      setSelected(prospect);
+                      setForm(prospect);
+                      setMessage("");
+                    }}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                      selected?.id === prospect.id
+                        ? "border-amber-400/60 bg-amber-400/10"
+                        : "border-white/10 bg-slate-900 hover:border-amber-400/30"
+                    }`}
                   >
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="flex items-start justify-between gap-4">
                       <div>
-                        <div className="flex flex-wrap gap-2">
-                          <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(record.priority)}`}>
-                            {record.priority || "Normal"}
-                          </div>
-
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
-                            {record.request_type || "Operational Record"}
-                          </div>
-
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
-                            Due: {formatDate(record.due_date)}
-                          </div>
-
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-slate-300">
-                            {formatStatus(record.status || "submitted")}
-                          </div>
-
-                          {record.board_review_required && (
-                            <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
-                              Board Review
-                            </div>
-                          )}
+                        <div className="font-semibold text-white">
+                          {prospect.association_name || "Unnamed Association"}
                         </div>
 
-                        <h3 className="mt-4 text-2xl font-bold">
-                          {record.title}
-                        </h3>
+                        <div className="mt-1 text-sm text-slate-400">
+                          {prospect.city || "City Unknown"} ·{" "}
+                          {prospect.units ? `${prospect.units} units` : "Units TBD"}
+                        </div>
 
-                        <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-7 text-slate-400">
-  {cleanAdminRecordDescription(record.description) ||
-    "Administrative operational record submitted for review."}
-</p>
-
-                        <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
-                            Recommended Action
-                          </p>
-
-                          <p className="mt-2 text-sm leading-6 text-slate-300">
-                            {record.recommended_action ||
-                              "Review this item and determine the next operational step."}
-                          </p>
+                        <div className="mt-2 text-xs text-slate-500">
+                          {prospect.current_management_company ||
+                            "Management company unknown"}
                         </div>
                       </div>
 
-                      <div className="flex shrink-0 flex-col gap-2">
-                        <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-center text-sm font-semibold text-amber-300">
-                          Review
+                      <div className="text-right">
+                        <Badge tone={prospect.priority}>
+                          {prospect.priority || "Normal"}
+                        </Badge>
+
+                        <div className="mt-2 text-xs text-amber-300">
+                          {prospect.status || "Lead"}
                         </div>
-
-                        <button
-                          onClick={(event) => archiveRecord(record.id, event)}
-                          className="rounded-xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-300 hover:bg-sky-400/20"
-                        >
-                          Archive
-                        </button>
-
-                        <button
-                          onClick={(event) => deleteRecord(record.id, event)}
-                          className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 hover:bg-red-500/20"
-                        >
-                          Delete
-                        </button>
                       </div>
                     </div>
-                  </Link>
+
+                    {isFollowUpDue(prospect.next_follow_up_date) && (
+                      <div className="mt-3 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-200">
+                        Follow-up due
+                      </div>
+                    )}
+                  </button>
                 ))
               )}
             </div>
-
-            {priorityRecords.length > 5 && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={() => setShowAllRecords(!showAllRecords)}
-                  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-                >
-                  {showAllRecords ? "Show Less" : "See More"}
-                </button>
-              </div>
-            )}
           </section>
 
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
-            <div className="mb-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-300">
-                Operational Health
-              </p>
-
-              <h2 className="mt-3 text-3xl font-bold">
-                System Status
-              </h2>
-
-              <p className="mt-3 text-sm leading-7 text-slate-400">
-                Stability indicators for the systems that support daily association
-                operations and administrative control.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {operationalHealth.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-[#020617]/60 px-4 py-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {item.title}
-                      </p>
-
-                      <p className="mt-2 text-xs leading-5 text-slate-500">
-                        {item.detail}
-                      </p>
-                    </div>
-
-                    <div className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(item.tone)}`}>
-                      {item.status}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="mt-10 space-y-10">
-          {sections.map((section) => (
-            <section
-              key={section.title}
-              className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-                  {section.eyebrow}
+          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-amber-300">
+                  Prospect Record
                 </p>
 
-                <h2 className="mt-3 text-3xl font-bold">
-                  {section.title}
+                <h2 className="mt-3 text-2xl font-bold">
+                  {form.association_name || "New Prospect"}
                 </h2>
-
-                <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-400">
-                  {section.description}
-                </p>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {section.items.map((item) => (
-                  <Link
-                    key={`${section.title}-${item.href}`}
-                    href={item.href}
-                    className="group rounded-3xl border border-white/10 bg-[#020617]/70 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.06]"
+              <div className="flex gap-3">
+                <button
+                  onClick={saveProspect}
+                  disabled={saving}
+                  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save Prospect"}
+                </button>
+
+                {selected && (
+                  <button
+                    onClick={() => deleteProspect(selected.id)}
+                    className="rounded-xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-200 hover:bg-red-500/20"
                   >
-                    <div className="mb-4 inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                      Live / Ready
-                    </div>
-
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-xl font-bold text-white">
-                        {item.title}
-                      </h3>
-
-                      <span className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-semibold text-amber-300 transition group-hover:bg-amber-400/20">
-                        Open
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+                    Delete
+                  </button>
+                )}
               </div>
-            </section>
-          ))}
+            </div>
+
+            <FormSection title="Association Information">
+              <input className="input" placeholder="Association Name" value={form.association_name || ""} onChange={(e) => updateField("association_name", e.target.value)} />
+              <input className="input" placeholder="Community Name" value={form.community_name || ""} onChange={(e) => updateField("community_name", e.target.value)} />
+              <select className="input" value={form.association_type || "Condominium"} onChange={(e) => updateField("association_type", e.target.value)}>
+                <option>Condominium</option>
+                <option>HOA</option>
+                <option>Cooperative</option>
+                <option>Master Association</option>
+              </select>
+              <input className="input" placeholder="Units" value={form.units || ""} onChange={(e) => updateField("units", e.target.value)} />
+              <input className="input md:col-span-2" placeholder="Address" value={form.address || ""} onChange={(e) => updateField("address", e.target.value)} />
+              <input className="input" placeholder="City" value={form.city || ""} onChange={(e) => updateField("city", e.target.value)} />
+              <input className="input" placeholder="Zip" value={form.zip || ""} onChange={(e) => updateField("zip", e.target.value)} />
+            </FormSection>
+
+            <FormSection title="Current Management / Accounting">
+              <input className="input" placeholder="Current Management Company" value={form.current_management_company || ""} onChange={(e) => updateField("current_management_company", e.target.value)} />
+              <input className="input" type="date" value={form.contract_expiration || ""} onChange={(e) => updateField("contract_expiration", e.target.value)} />
+              <input className="input" placeholder="Accounting Provider" value={form.accounting_provider || ""} onChange={(e) => updateField("accounting_provider", e.target.value)} />
+              <input className="input" placeholder="Lead Source" value={form.lead_source || ""} onChange={(e) => updateField("lead_source", e.target.value)} />
+
+              <label className="checkbox-card">
+                <input type="checkbox" checked={!!form.self_managed} onChange={(e) => updateField("self_managed", e.target.checked)} />
+                Self Managed
+              </label>
+
+              <label className="checkbox-card">
+                <input type="checkbox" checked={!!form.internal_staff} onChange={(e) => updateField("internal_staff", e.target.checked)} />
+                Internal Staff
+              </label>
+            </FormSection>
+
+            <FormSection title="Board / Contact Information">
+              <input className="input" placeholder="President Name" value={form.president_name || ""} onChange={(e) => updateField("president_name", e.target.value)} />
+              <input className="input" placeholder="President Email" value={form.president_email || ""} onChange={(e) => updateField("president_email", e.target.value)} />
+              <input className="input" placeholder="President Phone" value={form.president_phone || ""} onChange={(e) => updateField("president_phone", e.target.value)} />
+              <input className="input" placeholder="Treasurer Name" value={form.treasurer_name || ""} onChange={(e) => updateField("treasurer_name", e.target.value)} />
+              <input className="input" placeholder="Treasurer Email" value={form.treasurer_email || ""} onChange={(e) => updateField("treasurer_email", e.target.value)} />
+              <input className="input" placeholder="Treasurer Phone" value={form.treasurer_phone || ""} onChange={(e) => updateField("treasurer_phone", e.target.value)} />
+              <input className="input" placeholder="Manager Contact Name" value={form.manager_contact_name || ""} onChange={(e) => updateField("manager_contact_name", e.target.value)} />
+              <input className="input" placeholder="Manager Contact Email" value={form.manager_contact_email || ""} onChange={(e) => updateField("manager_contact_email", e.target.value)} />
+              <input className="input" placeholder="Manager Contact Phone" value={form.manager_contact_phone || ""} onChange={(e) => updateField("manager_contact_phone", e.target.value)} />
+              <input className="input" placeholder="Main Phone" value={form.main_phone || ""} onChange={(e) => updateField("main_phone", e.target.value)} />
+              <input className="input" placeholder="Main Email" value={form.main_email || ""} onChange={(e) => updateField("main_email", e.target.value)} />
+              <input className="input" placeholder="Website" value={form.website || ""} onChange={(e) => updateField("website", e.target.value)} />
+            </FormSection>
+
+            <FormSection title="Sales Status / Follow-Up">
+              <select className="input" value={form.status || "Lead"} onChange={(e) => updateField("status", e.target.value)}>
+                {statusOptions.map((status) => (
+                  <option key={status}>{status}</option>
+                ))}
+              </select>
+
+              <select className="input" value={form.priority || "Normal"} onChange={(e) => updateField("priority", e.target.value)}>
+                {priorityOptions.map((priority) => (
+                  <option key={priority}>{priority}</option>
+                ))}
+              </select>
+
+              <input className="input" type="date" value={form.last_contact_date || ""} onChange={(e) => updateField("last_contact_date", e.target.value)} />
+              <input className="input" type="date" value={form.next_follow_up_date || ""} onChange={(e) => updateField("next_follow_up_date", e.target.value)} />
+              <input className="input" type="date" value={form.presentation_date || ""} onChange={(e) => updateField("presentation_date", e.target.value)} />
+              <input className="input" type="date" value={form.proposal_date || ""} onChange={(e) => updateField("proposal_date", e.target.value)} />
+              <input className="input md:col-span-2" placeholder="Outcome" value={form.outcome || ""} onChange={(e) => updateField("outcome", e.target.value)} />
+            </FormSection>
+
+            <FormSection title="Sales Intelligence">
+              <textarea className="input md:col-span-2" rows={4} placeholder="Pain Points" value={form.pain_points || ""} onChange={(e) => updateField("pain_points", e.target.value)} />
+              <textarea className="input" rows={4} placeholder="Technology Issues" value={form.technology_issues || ""} onChange={(e) => updateField("technology_issues", e.target.value)} />
+              <textarea className="input" rows={4} placeholder="Financial Issues" value={form.financial_issues || ""} onChange={(e) => updateField("financial_issues", e.target.value)} />
+              <textarea className="input" rows={4} placeholder="Board Frustrations" value={form.board_frustrations || ""} onChange={(e) => updateField("board_frustrations", e.target.value)} />
+              <textarea className="input" rows={4} placeholder="Operational Issues" value={form.operational_issues || ""} onChange={(e) => updateField("operational_issues", e.target.value)} />
+              <textarea className="input md:col-span-2" rows={5} placeholder="General Notes" value={form.notes || ""} onChange={(e) => updateField("notes", e.target.value)} />
+            </FormSection>
+          </section>
         </div>
-
-        <section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Administrative Operating Philosophy
-          </p>
-
-          <h2 className="mt-3 text-3xl font-bold">
-            Calm control over the entire association operating system.
-          </h2>
-
-          <p className="mt-4 max-w-5xl text-sm leading-7 text-slate-300">
-            This dashboard is structured around operational awareness, governance
-            coordination, financial planning, compliance protection, escalation
-            management, and long-term association oversight so SPM can operate as
-            a true administrative command infrastructure.
-          </p>
-        </section>
       </section>
+
+      <style jsx global>{`
+        .input {
+          width: 100%;
+          border-radius: 0.9rem;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background-color: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+          padding: 0.85rem 1rem;
+          outline: none;
+          appearance: none;
+          -webkit-appearance: none;
+        }
+
+        .input::placeholder {
+          color: rgba(148, 163, 184, 0.95) !important;
+          -webkit-text-fill-color: rgba(148, 163, 184, 0.95) !important;
+        }
+
+        option {
+          background: #020617;
+          color: #ffffff;
+        }
+
+        .checkbox-card {
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+          border-radius: 0.9rem;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background-color: rgba(15, 23, 42, 0.9);
+          color: #ffffff;
+          padding: 0.85rem 1rem;
+          font-size: 0.9rem;
+        }
+      `}</style>
     </main>
   );
+}
+
+function FormSection({ title, children }) {
+  return (
+    <section className="mt-8 rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+      <h3 className="mb-4 text-lg font-semibold text-amber-300">
+        {title}
+      </h3>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+      <div className="text-3xl font-bold text-amber-300">
+        {value}
+      </div>
+
+      <div className="mt-2 text-sm text-slate-400">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function Badge({ tone, children }) {
+  const value = String(tone || "").toLowerCase();
+
+  const style =
+    value === "critical"
+      ? "border-red-400/30 bg-red-500/10 text-red-200"
+      : value === "high"
+      ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
+      : value === "low"
+      ? "border-slate-400/30 bg-slate-400/10 text-slate-300"
+      : "border-sky-400/30 bg-sky-400/10 text-sky-300";
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${style}`}>
+      {children}
+    </span>
+  );
+}
+
+function Empty({ message }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
+      {message}
+    </div>
+  );
+}
+
+function isFollowUpDue(dateValue) {
+  if (!dateValue) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const followUp = new Date(dateValue);
+  followUp.setHours(0, 0, 0, 0);
+
+  return followUp <= today;
 }
