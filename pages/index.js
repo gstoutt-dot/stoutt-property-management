@@ -9,7 +9,6 @@ export default function HomePage() {
   { label: "Services", href: "/services" },
   { label: "Alignment", href: "/alignment" },
   { label: "Why Switch", href: "/why-switch" },
-  { label: "BOSai Library", href: "/bosai-legacy-library" },
   { label: "About Us", href: "/about-us" },
   { label: "Founder", href: "https://glennstoutt.com", external: true },
   { label: "Collections", href: "/collections" },
