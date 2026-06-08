@@ -7,30 +7,35 @@ export default function BosaiLegacyLibraryPage() {
       title: "The BOSai℠ Executive Playbook",
       theme: "Leadership • Stewardship • Service • Executive Playbook",
       text: "A professional framework for community association leadership, board alignment, governance support, operational discipline, and the management philosophy behind BOSai℠.",
+      pdf: "/bosai-volume-1.pdf",
     },
     {
       volume: "Volume II",
       title: "The BOSai℠ Community Association Operations Platform",
       theme: "Leadership • Stewardship • Service • Communities",
       text: "A practical operating framework for self-managed communities, board dashboards, homeowner access, association calendars, approval queues, committees, vendors, and resident engagement.",
+      pdf: "/bosai-volume-2.pdf",
     },
     {
       volume: "Volume III",
       title: "The BOSai℠ Financial Intelligence Platform",
       theme: "Leadership • Stewardship • Service • Finance",
       text: "A financial stewardship framework focused on assessment intelligence, accounts receivable, accounts payable, vendor oversight, budget intelligence, reserves, and transparency.",
+      pdf: "/bosai-volume-3.pdf",
     },
     {
       volume: "Volume IV",
       title: "The BOSai℠ CAM Enterprise Platform",
       theme: "Leadership • Stewardship • Service • CAM Enterprise",
       text: "A professional enterprise framework for community association managers seeking to build scalable, accountable, service-driven management organizations.",
+      pdf: "/bosai-volume-4.pdf",
     },
     {
       volume: "Volume V",
       title: "The BOSai℠ Leadership Legacy",
       theme: "Leadership • Stewardship • Service • Legacy",
       text: "A personal leadership and legacy volume preserving the principles of character, stewardship, mentorship, service, faith, hope, and love.",
+      pdf: "/bosai-volume-5.pdf",
     },
   ];
 
