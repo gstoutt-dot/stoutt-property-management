@@ -144,10 +144,10 @@ export default function BosaiLegacyLibraryPage() {
           <div className="grid gap-10 rounded-[2rem] border border-yellow-400/20 bg-black/30 p-8 shadow-[0_20px_90px_rgba(0,0,0,0.45)] lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:p-12">
             <div>
               <img
-                src="/vol-v.png"
-                alt="The BOSai Leadership Legacy Volume V Founder's Edition"
-                className="w-full rounded-[1.5rem] border border-white/10 object-cover"
-              />
+  src="/vol-v.png"
+  alt="The BOSai Leadership Legacy Volume V Founder's Edition"
+  className="max-w-full h-auto rounded-[1.5rem] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+/>
             </div>
 
             <div>
