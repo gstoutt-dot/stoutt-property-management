@@ -1,4 +1,6 @@
 import React from "react";
+import SiteHeader from "../components/SiteHeader";
+import StickyMobileCTA from "../components/StickyMobileCTA";
 
 export default function BosaiLegacyLibraryPage() {
   const volumes = [
@@ -41,6 +43,7 @@ export default function BosaiLegacyLibraryPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+    <SiteHeader />
       <main>
         <section className="relative overflow-hidden px-5 py-24 sm:px-6 lg:px-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.14),transparent_45%)]" />
@@ -205,6 +208,8 @@ export default function BosaiLegacyLibraryPage() {
           </div>
         </section>
       </main>
-    </div>
+
+<StickyMobileCTA />
+</div>
   );
 }
