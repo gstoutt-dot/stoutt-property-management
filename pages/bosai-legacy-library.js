@@ -52,7 +52,7 @@ export default function BosaiLegacyLibraryPage() {
             </div>
 
             <h1 className="mx-auto mt-5 max-w-5xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
-              Five Volumes. One Philosophy.
+              Five Volumes. One Philosophy. One Standard.
             </h1>
 
             <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70">
