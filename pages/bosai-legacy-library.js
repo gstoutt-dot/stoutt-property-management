@@ -140,6 +140,14 @@ export default function BosaiLegacyLibraryPage() {
                 <p className="mt-5 text-base leading-8 text-white/70">
                   {book.text}
                 </p>
+                  <a
+  href={book.pdf}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-6 inline-flex rounded-full border border-yellow-400/30 px-5 py-2.5 text-sm font-semibold text-yellow-200 transition hover:bg-yellow-400 hover:text-slate-950"
+>
+  View PDF
+</a>
               </div>
             ))}
           </div>
