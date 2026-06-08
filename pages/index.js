@@ -9,6 +9,7 @@ export default function HomePage() {
   { label: "Services", href: "/services" },
   { label: "Alignment", href: "/alignment" },
   { label: "Why Switch", href: "/why-switch" },
+  { label: "BOSai Library", href: "/bosai-legacy-library" },
   { label: "About Us", href: "/about-us" },
   { label: "Founder", href: "https://glennstoutt.com", external: true },
   { label: "Collections", href: "/collections" },
@@ -330,6 +331,63 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <section className="border-y border-yellow-400/10 bg-black/30 py-20 sm:py-24 lg:py-28">
+  <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+    <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <div>
+        <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+          The BOSai℠ Legacy Library
+        </div>
+
+        <h2 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+          Five volumes. One philosophy. Leadership before technology.
+        </h2>
+
+        <p className="mt-6 text-lg leading-8 text-white/70">
+          The BOSai℠ Legacy Library is a five-volume professional collection
+          documenting the leadership principles, operational frameworks,
+          financial intelligence systems, enterprise management models, and
+          legacy philosophy behind the BOSai℠ ecosystem.
+        </p>
+
+        <p className="mt-5 text-lg leading-8 text-white/70">
+          These volumes support the software, the service model, and the
+          management philosophy behind Stoutt Property Management.
+        </p>
+
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+          <a href="/bosai-legacy-library" className={premiumButton}>
+            Explore The Library
+          </a>
+
+          <a
+            href="https://glennstoutt.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={subtleButton}
+          >
+            Visit Founder Site
+          </a>
+        </div>
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-[360px] w-[360px] rounded-full bg-yellow-400/10 blur-3xl" />
+        </div>
+
+        <div className="relative overflow-hidden rounded-[2rem] border border-yellow-400/20 bg-white/[0.04] p-5 shadow-[0_20px_80px_rgba(0,0,0,0.4)]">
+          <img
+            src="/5-vol-library.png"
+            alt="The BOSai Legacy Library Five Volume Set"
+            className="w-full rounded-[1.5rem] object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
         <section className="border-y border-white/10 bg-white/[0.03] py-20 sm:py-24 lg:py-28">
   <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
