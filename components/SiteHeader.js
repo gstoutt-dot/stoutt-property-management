@@ -5,50 +5,51 @@ export default function SiteHeader() {
   const [boardMenuOpen, setBoardMenuOpen] = useState(false);
 
   const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/alignment", label: "Alignment" },
-  { href: "/why-switch", label: "Why Switch" },
-  { href: "/bosai-legacy-library", label: "BOSai Library" },
-  { href: "/about-us", label: "About Us" },
-  { href: "https://glennstoutt.com", label: "Founder", external: true },
-  { href: "/collections", label: "Collections" },
-  { href: "/coverage", label: "Coverage" },
-];
+    { href: "/", label: "Home" },
+    { href: "/services", label: "Services" },
+    { href: "/alignment", label: "Alignment" },
+    { href: "/why-switch", label: "Why Switch" },
+    { href: "/bosai-legacy-library", label: "BOSai Library" },
+    { href: "/about-us", label: "About Us" },
+    { href: "https://glennstoutt.com", label: "Founder", external: true },
+    { href: "/collections", label: "Collections" },
+    { href: "/coverage", label: "Coverage" },
+  ];
 
   const boardEducationLinks = [
-  { href: "/board-education", label: "Education & Compliance" },
-  { href: "/board-workshops", label: "Board Workshops" },
-  { href: "/compliance-alerts", label: "Compliance Alerts" },
-  {
-    href: "/florida-board-education-requirements",
-    label: "Florida Education Requirements",
-  },
-  {
-    href: "/florida-condo-law-updates-2024-2025",
-    label: "Florida Condo Law Updates 2024–2025",
-  },
-  {
-    href: "/board-fiduciary-duties",
-    label: "Board Fiduciary Duties",
-  },
-  {
-    href: "/reserve-studies-sirs-guide",
-    label: "Reserve Studies & SIRS Guide",
-  },
-  {
-    href: "/milestone-inspection-guide",
-    label: "Milestone Inspection Guide",
-  },
-  {
-    href: "/vendor-selection-procurement-guide",
-    label: "Vendor Selection & Procurement Guide",
-  },
-  {
-    href: "/official-records-guide",
-    label: "Official Records Guide",
-  },
-];
+    { href: "/board-education", label: "Education & Compliance" },
+    { href: "/board-workshops", label: "Board Workshops" },
+    { href: "/compliance-alerts", label: "Compliance Alerts" },
+    {
+      href: "/florida-board-education-requirements",
+      label: "Florida Education Requirements",
+    },
+    {
+      href: "/florida-condo-law-updates-2024-2025",
+      label: "Florida Condo Law Updates 2024–2025",
+    },
+    {
+      href: "/board-fiduciary-duties",
+      label: "Board Fiduciary Duties",
+    },
+    {
+      href: "/reserve-studies-sirs-guide",
+      label: "Reserve Studies & SIRS Guide",
+    },
+    {
+      href: "/milestone-inspection-guide",
+      label: "Milestone Inspection Guide",
+    },
+    {
+      href: "/vendor-selection-procurement-guide",
+      label: "Vendor Selection & Procurement Guide",
+    },
+    {
+      href: "/official-records-guide",
+      label: "Official Records Guide",
+    },
+  ];
+
   const PHONE_HREF = "tel:+17546004755";
 
   const linkClasses =
@@ -98,8 +99,8 @@ export default function SiteHeader() {
             </button>
 
             {boardMenuOpen && (
-className="absolute right-0 top-full z-50 mt-4 w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-              {boardEducationLinks.map((item) => (
+              <div className="absolute right-0 top-full z-50 mt-4 w-80 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+                {boardEducationLinks.map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
@@ -118,6 +119,7 @@ className="absolute right-0 top-full z-50 mt-4 w-80 rounded-3xl border border-ye
           <a href="/portal/owner/login" className={secondaryBtn}>
             Homeowner Access
           </a>
+
           <a href={PHONE_HREF} className={primaryBtn}>
             Call Now
           </a>
