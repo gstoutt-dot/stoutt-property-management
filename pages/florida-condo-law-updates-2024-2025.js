@@ -1,4 +1,6 @@
 import React from "react";
+import SiteHeader from "../components/SiteHeader";
+import StickyMobileCTA from "../components/StickyMobileCTA";
 
 export default function FloridaCondoLawUpdates20242025() {
   const sections = [
@@ -29,8 +31,10 @@ export default function FloridaCondoLawUpdates20242025() {
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    return (
+    <div className="min-h-screen bg-slate-950 pb-24 text-white lg:pb-0">
+      <SiteHeader />
+
       <main className="relative z-10">
         <section className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24">
           <a
@@ -213,7 +217,9 @@ export default function FloridaCondoLawUpdates20242025() {
             </p>
           </div>
         </section>
-      </main>
+            </main>
+
+      <StickyMobileCTA />
     </div>
   );
 }
