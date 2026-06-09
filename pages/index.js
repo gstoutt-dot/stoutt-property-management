@@ -23,6 +23,10 @@ export default function HomePage() {
     href: "/florida-board-education-requirements",
     label: "Florida Education Requirements"
   },
+  {
+    href: "/florida-condo-law-updates-2024-2025",
+    label: "Florida Condo Law Updates 2024–2025"
+  },
 ];
 
   const selectedProperties = [
@@ -180,13 +184,16 @@ export default function HomePage() {
           </a>
         ))}
 
-        <a
-          href="/board-education"
-          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
-          onClick={() => setMobileOpen(false)}
-        >
-          Board Education
-        </a>
+                {boardEducationLinks.map((item) => (
+          <a
+            key={item.label}
+            href={item.href}
+            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/85 transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10"
+            onClick={() => setMobileOpen(false)}
+          >
+            {item.label}
+          </a>
+        ))}
 
         <a
   href="/portal/owner/login"
