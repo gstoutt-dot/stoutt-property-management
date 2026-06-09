@@ -19,13 +19,40 @@ export default function HomePage() {
   { href: "/board-education", label: "Education & Compliance" },
   { href: "/board-workshops", label: "Board Workshops" },
   { href: "/compliance-alerts", label: "Compliance Alerts" },
+
   {
     href: "/florida-board-education-requirements",
     label: "Florida Education Requirements"
   },
+
   {
     href: "/florida-condo-law-updates-2024-2025",
     label: "Florida Condo Law Updates 2024–2025"
+  },
+
+  {
+    href: "/board-fiduciary-duties",
+    label: "Board Fiduciary Duties"
+  },
+
+  {
+    href: "/reserve-studies-sirs-guide",
+    label: "Reserve Studies & SIRS Guide"
+  },
+
+  {
+    href: "/milestone-inspection-guide",
+    label: "Milestone Inspection Guide"
+  },
+
+  {
+    href: "/vendor-selection-procurement-guide",
+    label: "Vendor Selection & Procurement Guide"
+  },
+
+  {
+    href: "/official-records-guide",
+    label: "Official Records Guide"
   },
 ];
 
