@@ -7,10 +7,9 @@ export default function SiteHeader() {
   const navLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
-
   { href: "/alignment", label: "Alignment" },
-
   { href: "/why-switch", label: "Why Switch" },
+  { href: "/bosai-legacy-library", label: "BOSai Library" },
   { href: "/about-us", label: "About Us" },
   { href: "https://glennstoutt.com", label: "Founder", external: true },
   { href: "/collections", label: "Collections" },
@@ -18,14 +17,18 @@ export default function SiteHeader() {
 ];
 
   const boardEducationLinks = [
-  { href: "/board-education", label: "Education & Compliance" },
-  { href: "/board-workshops", label: "Board Workshops" },
-  { href: "/compliance-alerts", label: "Compliance Alerts" },
-  {
-    href: "/florida-board-education-requirements",
-    label: "Florida Education Requirements"
-  },
-];
+    { href: "/board-education", label: "Education & Compliance" },
+    { href: "/board-workshops", label: "Board Workshops" },
+    { href: "/compliance-alerts", label: "Compliance Alerts" },
+    {
+      href: "/florida-board-education-requirements",
+      label: "Florida Education Requirements",
+    },
+    {
+      href: "/florida-condo-law-updates-2024-2025",
+      label: "Florida Condo Law Updates 2024–2025",
+    },
+  ];
 
   const PHONE_HREF = "tel:+17546004755";
 
@@ -76,7 +79,7 @@ export default function SiteHeader() {
             </button>
 
             {boardMenuOpen && (
-              <div className="absolute left-0 top-full z-50 mt-4 w-64 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+              <div className="absolute left-0 top-full z-50 mt-4 w-72 rounded-3xl border border-yellow-400/20 bg-slate-950/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
                 {boardEducationLinks.map((item) => (
                   <a
                     key={item.label}
