@@ -144,13 +144,59 @@ function buildLedgerSummary(entries = []) {
 
 function buildAvaAccountingMessage(balance, ledgerSummary, verification) {
   const currentBalance = formatMoney(balance.current_balance);
-  const monthlyAssessment = formatMoney(balance.monthly_assessment);
 
   const parts = [];
 
   parts.push(
-    `Thank you. I found the account for Unit ${balance.unit_number}. Your current balance is ${currentBalance}. Your monthly assessment is ${monthlyAssessment}.`
+    `Thank you. I found the account for Unit ${balance.unit_number}. Your current balance is ${currentBalance}.`
   );
+
+  if (money(balance.current_balance) > 0) {
+    parts.push(
+      `A balance is currently outstanding on the account.`
+    );
+  } else {
+    parts.push(
+      `The account currently reflects no outstanding balance.`
+    );
+  }
+
+  if (ledgerSummary.late_fees > 0) {
+    parts.push(
+      `The account includes ${formatMoney(
+        ledgerSummary.late_fees
+      )} in late fees.`
+    );
+  }
+
+  if (ledgerSummary.violation_fees > 0) {
+    parts.push(
+      `The account includes ${formatMoney(
+        ledgerSummary.violation_fees
+      )} in violation fees.`
+    );
+  }
+
+  if (ledgerSummary.special_assessments > 0) {
+    parts.push(
+      `The account includes ${formatMoney(
+        ledgerSummary.special_assessments
+      )} in special assessments.`
+    );
+  }
+
+  if (verification?.verifiedBy) {
+    parts.push(
+      `I verified this information using your ${verification.verifiedBy}.`
+    );
+  }
+
+  parts.push(
+    "If you believe any balance is incorrect, management can review the account through the account review process."
+  );
+
+  return parts.join(" ");
+}
 
   const detailLines = [];
 
