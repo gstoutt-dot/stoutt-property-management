@@ -266,20 +266,24 @@ export default function HomeownerAva() {
     const prompt = rawPrompt.toLowerCase();
 
     if (!rawPrompt) {
-      pushAvaResponse(
-  `Your current balance is ${formattedBalance}. If something looks incorrect, management can review your account through the account review workflow.`,
-  [
-    { label: "Open Payment Center", href: "/homeowner/payment" },
-    {
-      label: "Request Account Review",
-      href: "/homeowner/account-review",
-    },
-  ]
-);
+  pushAvaResponse(
+    `Your current balance is ${formattedBalance}. If something looks incorrect, management can review your account through the account review workflow.`,
+    [
+      { label: "Open Payment Center", href: "/homeowner/payment" },
+      {
+        label: "Request Account Review",
+        href: "/homeowner/account-review",
+      },
+    ]
+  );
 
-    setSelectedPrompt("");
+  setSelectedPrompt("");
+  return;
+}
 
-    const isAccountingQuestion =
+setSelectedPrompt("");
+
+const isAccountingQuestion =
       prompt.includes("balance") ||
       prompt.includes("payment") ||
       prompt.includes("assessment") ||
