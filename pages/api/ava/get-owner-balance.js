@@ -37,7 +37,11 @@ function namesMatch(a, b) {
 function classifyLedgerEntry(entry) {
   const text = `${entry.description || ""} ${entry.memo || ""}`.toLowerCase();
 
-  if (text.includes("late_fee") || text.includes("late fee") || text.includes("late")) {
+  if (
+    text.includes("late_fee") ||
+    text.includes("late fee") ||
+    text.includes("late")
+  ) {
     return "late_fees";
   }
 
@@ -144,7 +148,6 @@ function buildLedgerSummary(entries = []) {
 
 function buildAvaAccountingMessage(balance, ledgerSummary, verification) {
   const currentBalance = formatMoney(balance.current_balance);
-
   const parts = [];
 
   parts.push(
@@ -152,20 +155,14 @@ function buildAvaAccountingMessage(balance, ledgerSummary, verification) {
   );
 
   if (money(balance.current_balance) > 0) {
-    parts.push(
-      `A balance is currently outstanding on the account.`
-    );
+    parts.push("A balance is currently outstanding on the account.");
   } else {
-    parts.push(
-      `The account currently reflects no outstanding balance.`
-    );
+    parts.push("The account currently reflects no outstanding balance.");
   }
 
   if (ledgerSummary.late_fees > 0) {
     parts.push(
-      `The account includes ${formatMoney(
-        ledgerSummary.late_fees
-      )} in late fees.`
+      `The account includes ${formatMoney(ledgerSummary.late_fees)} in late fees.`
     );
   }
 
@@ -185,81 +182,44 @@ function buildAvaAccountingMessage(balance, ledgerSummary, verification) {
     );
   }
 
-  if (verification?.verifiedBy) {
-    parts.push(
-      `I verified this information using your ${verification.verifiedBy}.`
-    );
-  }
-
-  parts.push(
-    "If you believe any balance is incorrect, management can review the account through the account review process."
-  );
-
-  return parts.join(" ");
-}
-
-  const detailLines = [];
-
-  if (ledgerSummary.monthly_assessments > 0) {
-    detailLines.push(
-      `${formatMoney(ledgerSummary.monthly_assessments)} in assessment charges`
-    );
-  }
-
-  if (ledgerSummary.late_fees > 0) {
-    detailLines.push(`${formatMoney(ledgerSummary.late_fees)} in late fees`);
-  }
-
-  if (ledgerSummary.violation_fees > 0) {
-    detailLines.push(
-      `${formatMoney(ledgerSummary.violation_fees)} in violation fees`
-    );
-  }
-
-  if (ledgerSummary.special_assessments > 0) {
-    detailLines.push(
-      `${formatMoney(ledgerSummary.special_assessments)} in special assessments`
-    );
-  }
-
   if (ledgerSummary.interest_charges > 0) {
-    detailLines.push(
-      `${formatMoney(ledgerSummary.interest_charges)} in interest charges`
+    parts.push(
+      `The account includes ${formatMoney(
+        ledgerSummary.interest_charges
+      )} in interest charges.`
     );
   }
 
   if (ledgerSummary.collections_or_legal_fees > 0) {
-    detailLines.push(
-      `${formatMoney(
+    parts.push(
+      `The account includes ${formatMoney(
         ledgerSummary.collections_or_legal_fees
-      )} in collections or legal fees`
+      )} in collections or legal fees.`
     );
   }
 
   if (ledgerSummary.credits_or_adjustments > 0) {
-    detailLines.push(
-      `${formatMoney(
+    parts.push(
+      `The account includes ${formatMoney(
         ledgerSummary.credits_or_adjustments
-      )} in credits or adjustments`
+      )} in credits or adjustments.`
     );
-  }
-
-  if (detailLines.length > 0) {
-    parts.push(`The ledger detail currently shows ${detailLines.join(", ")}.`);
   }
 
   if (ledgerSummary.payments > 0) {
     parts.push(
-      `Payments posted in the ledger total ${formatMoney(ledgerSummary.payments)}.`
+      `Payments posted in the ledger total ${formatMoney(
+        ledgerSummary.payments
+      )}.`
     );
   }
 
   if (verification?.verifiedBy) {
-    parts.push(`I verified this using your ${verification.verifiedBy}.`);
+    parts.push(`I verified this information using your ${verification.verifiedBy}.`);
   }
 
   parts.push(
-    "If something looks incorrect, management can review your account through the account review workflow."
+    "If you believe any balance is incorrect, management can review the account through the account review process."
   );
 
   return parts.join(" ");
@@ -496,9 +456,7 @@ export default async function handler(req, res) {
       DEFAULT_ASSOCIATION_ID;
 
     const unitNumber =
-      cleanText(source.unitNumber) ||
-      cleanText(source.unit_number) ||
-      "";
+      cleanText(source.unitNumber) || cleanText(source.unit_number) || "";
 
     const callerName =
       cleanText(source.callerName) ||
@@ -590,9 +548,7 @@ export default async function handler(req, res) {
 
     const { balance, balanceError } = await findOwnerBalance({
       associationId,
-      unitNumber:
-        verification.candidate?.unit_number ||
-        unitNumber,
+      unitNumber: verification.candidate?.unit_number || unitNumber,
       ownerUserId,
     });
 
@@ -613,7 +569,6 @@ export default async function handler(req, res) {
     });
 
     const ledgerSummary = buildLedgerSummary(ledgerEntries);
-
     const resolvedCurrentBalance = money(balance.current_balance);
 
     const responseBalance = {
@@ -621,27 +576,19 @@ export default async function handler(req, res) {
       current_balance: resolvedCurrentBalance,
     };
 
-    // ============================================
-// AVA FINANCIAL CALL LOGGING
-// ============================================
-
-try {
-  await supabaseAdmin
-    .from("admin_operational_records")
-    .insert({
-      association_id: associationId,
-      created_by: callerName || "Ava Financial Inquiry",
-      created_by_role: "Ava",
-      request_type: "financial",
-      title: `Account Balance Inquiry - Unit ${balance.unit_number}`,
-      description: `
+    try {
+      await supabaseAdmin.from("admin_operational_records").insert({
+        association_id: associationId,
+        created_by: callerName || "Ava Financial Inquiry",
+        created_by_role: "Ava",
+        request_type: "financial",
+        title: `Account Balance Inquiry - Unit ${balance.unit_number}`,
+        description: `
 A homeowner contacted Ava regarding account balance information.
 
 Owner: ${
-        balance.owner_name ||
-        verification.candidate?.owner_name ||
-        callerName
-      }
+          balance.owner_name || verification.candidate?.owner_name || callerName
+        }
 
 Unit: ${balance.unit_number}
 
@@ -649,13 +596,9 @@ Verified By: ${verification.verifiedBy}
 
 Current Balance: ${formatMoney(resolvedCurrentBalance)}
 
-Monthly Assessment: ${formatMoney(balance.monthly_assessment)}
-
 Late Fees: ${formatMoney(ledgerSummary.late_fees)}
 
-Violation Fees: ${formatMoney(
-        ledgerSummary.violation_fees
-      )}
+Violation Fees: ${formatMoney(ledgerSummary.violation_fees)}
 
 Source: Ava AI Phone Accounting Inquiry
 
@@ -667,24 +610,21 @@ Manager Follow Up Recommended If:
 - payment missing
 - collections concerns
 - violation fee dispute
-      `,
-      priority: "Normal",
-      status: "Submitted",
-      assigned_to: null,
-      board_review_required: false,
-      owner_visible: false,
-      vendor_visible: false,
-      source_module: "Ava AI Phone Accounting Inquiry",
-      routing_target: "Manager Command Center",
-      recommended_action:
-        "Review homeowner financial inquiry and coordinate accounting follow up if necessary.",
-    });
-} catch (loggingError) {
-  console.error(
-    "Unable to create Ava financial intake log:",
-    loggingError
-  );
-}
+        `,
+        priority: "Normal",
+        status: "Submitted",
+        assigned_to: null,
+        board_review_required: false,
+        owner_visible: false,
+        vendor_visible: false,
+        source_module: "Ava AI Phone Accounting Inquiry",
+        routing_target: "Manager Command Center",
+        recommended_action:
+          "Review homeowner financial inquiry and coordinate accounting follow up if necessary.",
+      });
+    } catch (loggingError) {
+      console.error("Unable to create Ava financial intake log:", loggingError);
+    }
 
     return res.status(200).json({
       success: true,
@@ -692,18 +632,12 @@ Manager Follow Up Recommended If:
       association_id: associationId,
       unit_number: balance.unit_number,
       owner_name:
-        balance.owner_name ||
-        verification.candidate?.owner_name ||
-        callerName,
+        balance.owner_name || verification.candidate?.owner_name || callerName,
       balance: responseBalance,
       ledger_summary: ledgerSummary,
-      ava_accounting_response: buildAvaAccountingMessage(
-        responseBalance,
-        ledgerSummary,
-        {
-          verifiedBy: verification.verifiedBy,
-        }
-      ),
+      ava_accounting_response: buildAvaAccountingMessage(responseBalance, ledgerSummary, {
+        verifiedBy: verification.verifiedBy,
+      }),
       ledger_error: ledgerError ? ledgerError.message : null,
     });
   } catch (error) {
