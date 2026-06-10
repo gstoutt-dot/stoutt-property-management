@@ -181,8 +181,8 @@ export default function HomeownerAva() {
 
   async function getAccountingResponse() {
     if (!ownerProfile?.association_id) {
-      return `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`;
-    }
+  return `Your current balance is ${formattedBalance}.`;
+}
 
     const response = await fetch(
       `/api/accounting/owner-balance?associationId=${encodeURIComponent(
@@ -266,17 +266,16 @@ export default function HomeownerAva() {
     const prompt = rawPrompt.toLowerCase();
 
     if (!rawPrompt) {
-      pushAvaResponse("Please enter a question for Ava.");
-      return;
-    }
-
-    setConversation((current) => [
-      ...current,
-      {
-        role: "user",
-        message: rawPrompt,
-      },
-    ]);
+      pushAvaResponse(
+  `Your current balance is ${formattedBalance}. If something looks incorrect, management can review your account through the account review workflow.`,
+  [
+    { label: "Open Payment Center", href: "/homeowner/payment" },
+    {
+      label: "Request Account Review",
+      href: "/homeowner/account-review",
+    },
+  ]
+);
 
     setSelectedPrompt("");
 
