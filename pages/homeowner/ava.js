@@ -203,9 +203,9 @@ export default function HomeownerAva() {
     }
 
     return (
-      data?.ava_accounting_response ||
-      `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}.`
-    );
+  data?.ava_accounting_response ||
+  `Your current balance is ${formattedBalance}. If something looks incorrect, management can review your account through the account review workflow.`
+);
   }
 
   async function getDocumentResponse(promptText) {
@@ -321,15 +321,15 @@ const isAccountingQuestion =
         console.error("Ava accounting response failed:", accountingError);
 
         pushAvaResponse(
-          `Your current balance is ${formattedBalance}. Your monthly assessment is ${formattedAssessment}. If something looks incorrect, management can review your account through the account review workflow.`,
-          [
-            { label: "Open Payment Center", href: "/homeowner/payment" },
-            {
-              label: "Request Account Review",
-              href: "/homeowner/account-review",
-            },
-          ]
-        );
+  `Your current balance is ${formattedBalance}. If something looks incorrect, management can review your account through the account review workflow.`,
+  [
+    { label: "Open Payment Center", href: "/homeowner/payment" },
+    {
+      label: "Request Account Review",
+      href: "/homeowner/account-review",
+    },
+  ]
+);
       }
 
       return;
