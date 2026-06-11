@@ -172,15 +172,49 @@ async function uploadKnowledgeDocument() {
 
             <div className="mt-6 grid gap-5">
               <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Association
-                </label>
-                <input
-                  value={SUNSET_ASSOCIATION_NAME}
-                  disabled
-                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-slate-300"
-                />
-              </div>
+  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+    Upload DOCX Knowledge Document
+  </label>
+
+  <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <input
+      type="file"
+      accept=".docx"
+      onChange={(event) =>
+        setUploadedFile(event.target.files?.[0] || null)
+      }
+      className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-yellow-400 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-950 hover:file:bg-yellow-300"
+    />
+
+    <button
+      type="button"
+      onClick={uploadKnowledgeDocument}
+      disabled={uploading || !uploadedFile || !documentTitle}
+      className="mt-4 w-full rounded-xl border border-yellow-400/30 px-6 py-4 text-sm font-semibold text-yellow-300 hover:bg-yellow-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {uploading ? "Processing Document..." : "Upload DOCX to Ava Knowledge Base"}
+    </button>
+
+    <p className="mt-3 text-xs leading-5 text-slate-500">
+      Upload DOCX governing documents, rules, FAQs, maintenance matrices, or
+      company information. Ava will read the document, create knowledge chunks,
+      and attach them to this association.
+    </p>
+  </div>
+</div>
+
+<div>
+  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+    Manual Knowledge Content
+  </label>
+  <textarea
+    rows="10"
+    value={chunkText}
+    onChange={(event) => setChunkText(event.target.value)}
+    className="w-full resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm leading-6 text-white outline-none focus:border-yellow-400/50"
+    placeholder="Paste the association-specific rule, FAQ, maintenance responsibility, policy, or governing document excerpt here."
+  />
+</div>
 
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
