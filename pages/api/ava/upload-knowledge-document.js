@@ -13,27 +13,92 @@ function clean(value) {
   return String(value || "").trim();
 }
 
-function splitIntoChunks(text, maxLength = 1800) {
-  const paragraphs = clean(text)
+function prepareDocumentText(text) {
+  return clean(text)
+    .replace(/\r/g, "\n")
+    .replace(/\s+-\s+/g, "\n")
+    .replace(
+      /(Pool Rules|Parking Rules|Noise Rules|Pet Rules|Rental Rules|Architectural Rules|Maintenance Responsibility|FAQ|Frequently Asked Questions|Resident Accounts|Association Overview|Company Information|Declaration Excerpts)/gi,
+      "\n$1"
+    );
+}
+
+function isLikelyHeading(line) {
+  const text = clean(line);
+
+  if (!text) return false;
+
+  const lower = text.toLowerCase();
+
+  return (
+    lower.endsWith("rules") ||
+    lower.includes("responsibility") ||
+    lower.includes("faq") ||
+    lower.includes("overview") ||
+    lower.includes("declaration") ||
+    lower.includes("resident accounts") ||
+    lower.includes("company information") ||
+    lower.includes("maintenance matrix")
+  );
+}
+
+function splitIntoChunks(text, maxLength = 900) {
+  const preparedText = prepareDocumentText(text);
+
+  const lines = preparedText
     .split(/\n+/)
     .map((item) => clean(item))
     .filter(Boolean);
 
-  const chunks = [];
-  let current = "";
+  const sections = [];
+  let currentTitle = "";
+  let currentBody = [];
 
-  for (const paragraph of paragraphs) {
-    if ((current + "\n\n" + paragraph).length > maxLength) {
-      if (current) chunks.push(current);
-      current = paragraph;
+  for (const line of lines) {
+    if (isLikelyHeading(line)) {
+      if (currentTitle || currentBody.length > 0) {
+        sections.push([currentTitle, ...currentBody].filter(Boolean).join("\n"));
+      }
+
+      currentTitle = line;
+      currentBody = [];
     } else {
-      current = current ? `${current}\n\n${paragraph}` : paragraph;
+      currentBody.push(line);
     }
   }
 
-  if (current) chunks.push(current);
+  if (currentTitle || currentBody.length > 0) {
+    sections.push([currentTitle, ...currentBody].filter(Boolean).join("\n"));
+  }
 
-  return chunks;
+  const chunks = [];
+
+  for (const section of sections) {
+    if (section.length <= maxLength) {
+      chunks.push(section);
+      continue;
+    }
+
+    const sentences = section
+      .split(/(?<=[.!?])\s+/)
+      .map((sentence) => clean(sentence))
+      .filter(Boolean);
+
+    let current = "";
+
+    for (const sentence of sentences) {
+      if ((current + " " + sentence).length > maxLength) {
+        if (current) chunks.push(current);
+        current = sentence;
+      } else {
+        current = current ? `${current} ${sentence}` : sentence;
+      }
+    }
+
+    if (current) chunks.push(current);
+  }
+
+  return chunks.filter(Boolean);
 }
 
 function parseForm(req) {
@@ -117,7 +182,7 @@ export default async function handler(req, res) {
     if (extension !== "docx") {
       return res.status(400).json({
         success: false,
-        error: "Only DOCX files are supported in this first upload version.",
+        error: "Only DOCX files are supported in this upload version.",
       });
     }
 
