@@ -45,23 +45,90 @@ function tokenize(value) {
           "our",
           "unit",
           "association",
+          "policy",
+          "rules",
+          "rule",
         ].includes(word)
     );
 }
 
-function expandQuestionTerms(question) {
-  const terms = new Set(tokenize(question));
+function getIntent(question) {
+  const text = normalize(question);
 
-  if (terms.has("car") || terms.has("cars") || terms.has("park") || terms.has("parking")) {
-    terms.add("parking");
-    terms.add("park");
-    terms.add("vehicle");
-    terms.add("vehicles");
-    terms.add("guest");
-    terms.add("commercial");
+  if (
+    text.includes("pet") ||
+    text.includes("pets") ||
+    text.includes("dog") ||
+    text.includes("cat") ||
+    text.includes("animal")
+  ) {
+    return "pet";
   }
 
-  if (terms.has("pet") || terms.has("pets")) {
+  if (
+    text.includes("park") ||
+    text.includes("parking") ||
+    text.includes("car") ||
+    text.includes("vehicle") ||
+    text.includes("guest space") ||
+    text.includes("commercial vehicle")
+  ) {
+    return "parking";
+  }
+
+  if (
+    text.includes("rent") ||
+    text.includes("rental") ||
+    text.includes("lease") ||
+    text.includes("tenant")
+  ) {
+    return "rental";
+  }
+
+  if (
+    text.includes("pool") ||
+    text.includes("clubhouse") ||
+    text.includes("amenity")
+  ) {
+    return "pool";
+  }
+
+  if (
+    text.includes("noise") ||
+    text.includes("quiet") ||
+    text.includes("party") ||
+    text.includes("loud")
+  ) {
+    return "noise";
+  }
+
+  if (
+    text.includes("architectural") ||
+    text.includes("modification") ||
+    text.includes("modify") ||
+    text.includes("exterior") ||
+    text.includes("window covering")
+  ) {
+    return "architectural";
+  }
+
+  if (
+    text.includes("repair") ||
+    text.includes("maintenance") ||
+    text.includes("responsible") ||
+    text.includes("responsibility")
+  ) {
+    return "maintenance";
+  }
+
+  return "general";
+}
+
+function expandQuestionTerms(question) {
+  const terms = new Set(tokenize(question));
+  const intent = getIntent(question);
+
+  if (intent === "pet") {
     terms.add("pet");
     terms.add("pets");
     terms.add("animal");
@@ -70,9 +137,22 @@ function expandQuestionTerms(question) {
     terms.add("dogs");
     terms.add("cat");
     terms.add("cats");
+    terms.add("leashed");
+    terms.add("cleanup");
   }
 
-  if (terms.has("rent") || terms.has("rental") || terms.has("rentals") || terms.has("lease") || terms.has("leasing")) {
+  if (intent === "parking") {
+    terms.add("parking");
+    terms.add("park");
+    terms.add("vehicle");
+    terms.add("vehicles");
+    terms.add("guest");
+    terms.add("commercial");
+    terms.add("assigned");
+    terms.add("towed");
+  }
+
+  if (intent === "rental") {
     terms.add("rent");
     terms.add("rental");
     terms.add("rentals");
@@ -81,9 +161,10 @@ function expandQuestionTerms(question) {
     terms.add("leasing");
     terms.add("tenant");
     terms.add("occupancy");
+    terms.add("application");
   }
 
-  if (terms.has("pool") || terms.has("amenity") || terms.has("amenities")) {
+  if (intent === "pool") {
     terms.add("pool");
     terms.add("amenity");
     terms.add("amenities");
@@ -92,22 +173,30 @@ function expandQuestionTerms(question) {
     terms.add("hours");
     terms.add("glass");
     terms.add("swim");
+    terms.add("attire");
   }
 
-  if (terms.has("noise") || terms.has("quiet")) {
+  if (intent === "noise") {
     terms.add("noise");
     terms.add("quiet");
     terms.add("hours");
     terms.add("disturb");
     terms.add("disturbs");
+    terms.add("party");
+    terms.add("loud");
   }
 
-  if (
-    terms.has("repair") ||
-    terms.has("maintenance") ||
-    terms.has("responsible") ||
-    terms.has("responsibility")
-  ) {
+  if (intent === "architectural") {
+    terms.add("architectural");
+    terms.add("exterior");
+    terms.add("modification");
+    terms.add("modifications");
+    terms.add("approval");
+    terms.add("window");
+    terms.add("coverings");
+  }
+
+  if (intent === "maintenance") {
     terms.add("maintenance");
     terms.add("repair");
     terms.add("repairs");
@@ -120,9 +209,22 @@ function expandQuestionTerms(question) {
   return Array.from(terms);
 }
 
+function expectedHeadingForIntent(intent) {
+  if (intent === "pet") return "pet rules";
+  if (intent === "parking") return "parking rules";
+  if (intent === "rental") return "rental rules";
+  if (intent === "pool") return "pool rules";
+  if (intent === "noise") return "noise rules";
+  if (intent === "architectural") return "architectural rules";
+  if (intent === "maintenance") return "maintenance responsibility";
+  return "";
+}
+
 function keywordScore(text, question) {
   const source = normalize(text);
   const terms = expandQuestionTerms(question);
+  const intent = getIntent(question);
+  const expectedHeading = expectedHeadingForIntent(intent);
 
   let score = 0;
 
@@ -130,14 +232,26 @@ function keywordScore(text, question) {
     if (source.includes(term)) score += 1;
   }
 
+  if (expectedHeading && source.includes(expectedHeading)) {
+    score += 25;
+  }
+
+  if (intent === "pet" && source.includes("pet rules")) score += 40;
+  if (intent === "parking" && source.includes("parking rules")) score += 40;
+  if (intent === "rental" && source.includes("rental rules")) score += 40;
+  if (intent === "pool" && source.includes("pool rules")) score += 40;
+  if (intent === "noise" && source.includes("noise rules")) score += 40;
+  if (intent === "architectural" && source.includes("architectural rules")) {
+    score += 40;
+  }
+
   return score;
 }
 
 function isHeading(value) {
-  const text = clean(value);
-  const lower = normalize(text);
+  const lower = normalize(value);
 
-  if (!text) return false;
+  if (!lower) return false;
 
   return (
     lower === "pool rules" ||
@@ -158,7 +272,10 @@ function splitIntoAnswerUnits(text) {
   return clean(text)
     .replace(/\s+-\s+/g, "\n")
     .replace(/\. - /g, ".\n")
-    .replace(/(Pool Rules|Parking Rules|Noise Rules|Pet Rules|Rental Rules|Architectural Rules)/gi, "\n$1\n")
+    .replace(
+      /(Pool Rules|Parking Rules|Noise Rules|Pet Rules|Rental Rules|Architectural Rules)/gi,
+      "\n$1\n"
+    )
     .split(/\n+/)
     .map((item) => clean(item))
     .filter(Boolean);
@@ -172,14 +289,34 @@ function buildSectionFromHeading(units, headingIndex) {
 
     selected.push(units[index]);
 
-    if (selected.join(" ").length > 700) break;
+    if (selected.join(" ").length > 900) break;
   }
 
   return selected.join(" ");
 }
 
+function findIntentHeadingIndex(units, question) {
+  const intent = getIntent(question);
+  const heading = expectedHeadingForIntent(intent);
+
+  if (!heading) return -1;
+
+  return units.findIndex((unit) => normalize(unit) === heading);
+}
+
 function findBestAnswerText(chunkText, question) {
   const units = splitIntoAnswerUnits(chunkText);
+  const intentHeadingIndex = findIntentHeadingIndex(units, question);
+
+  if (intentHeadingIndex >= 0) {
+    const sectionAnswer = buildSectionFromHeading(units, intentHeadingIndex);
+
+    if (sectionAnswer.length <= 1000) {
+      return sectionAnswer;
+    }
+
+    return `${sectionAnswer.slice(0, 997)}...`;
+  }
 
   const rankedUnits = units
     .map((unit, index) => ({
@@ -204,11 +341,11 @@ function findBestAnswerText(chunkText, question) {
   if (bestUnit.heading) {
     const sectionAnswer = buildSectionFromHeading(units, bestUnit.index);
 
-    if (sectionAnswer.length <= 900) {
+    if (sectionAnswer.length <= 1000) {
       return sectionAnswer;
     }
 
-    return `${sectionAnswer.slice(0, 897)}...`;
+    return `${sectionAnswer.slice(0, 997)}...`;
   }
 
   const relatedHeadingIndex = units
@@ -223,11 +360,11 @@ function findBestAnswerText(chunkText, question) {
   if (relatedHeadingIndex !== undefined) {
     const sectionAnswer = buildSectionFromHeading(units, relatedHeadingIndex);
 
-    if (sectionAnswer.length <= 900) {
+    if (sectionAnswer.length <= 1000) {
       return sectionAnswer;
     }
 
-    return `${sectionAnswer.slice(0, 897)}...`;
+    return `${sectionAnswer.slice(0, 997)}...`;
   }
 
   if (bestUnit.text.length <= 700) {
