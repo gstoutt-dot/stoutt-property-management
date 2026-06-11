@@ -40,12 +40,26 @@ function tokenize(value) {
           "shall",
           "should",
           "would",
+          "my",
+          "your",
+          "our",
+          "unit",
+          "association",
         ].includes(word)
     );
 }
 
 function expandQuestionTerms(question) {
   const terms = new Set(tokenize(question));
+
+  if (terms.has("car") || terms.has("cars") || terms.has("park") || terms.has("parking")) {
+    terms.add("parking");
+    terms.add("park");
+    terms.add("vehicle");
+    terms.add("vehicles");
+    terms.add("guest");
+    terms.add("commercial");
+  }
 
   if (terms.has("pet") || terms.has("pets")) {
     terms.add("pet");
@@ -58,13 +72,15 @@ function expandQuestionTerms(question) {
     terms.add("cats");
   }
 
-  if (terms.has("rent") || terms.has("rental") || terms.has("lease")) {
+  if (terms.has("rent") || terms.has("rental") || terms.has("rentals") || terms.has("lease") || terms.has("leasing")) {
     terms.add("rent");
     terms.add("rental");
     terms.add("rentals");
     terms.add("lease");
+    terms.add("leases");
     terms.add("leasing");
     terms.add("tenant");
+    terms.add("occupancy");
   }
 
   if (terms.has("pool") || terms.has("amenity") || terms.has("amenities")) {
@@ -74,6 +90,16 @@ function expandQuestionTerms(question) {
     terms.add("clubhouse");
     terms.add("reservation");
     terms.add("hours");
+    terms.add("glass");
+    terms.add("swim");
+  }
+
+  if (terms.has("noise") || terms.has("quiet")) {
+    terms.add("noise");
+    terms.add("quiet");
+    terms.add("hours");
+    terms.add("disturb");
+    terms.add("disturbs");
   }
 
   if (
@@ -84,6 +110,7 @@ function expandQuestionTerms(question) {
   ) {
     terms.add("maintenance");
     terms.add("repair");
+    terms.add("repairs");
     terms.add("responsibility");
     terms.add("responsible");
     terms.add("owner");
@@ -106,36 +133,108 @@ function keywordScore(text, question) {
   return score;
 }
 
+function isHeading(value) {
+  const text = clean(value);
+  const lower = normalize(text);
+
+  if (!text) return false;
+
+  return (
+    lower === "pool rules" ||
+    lower === "parking rules" ||
+    lower === "noise rules" ||
+    lower === "pet rules" ||
+    lower === "rental rules" ||
+    lower === "architectural rules" ||
+    lower.includes("maintenance responsibility") ||
+    lower.includes("resident accounts") ||
+    lower.includes("association overview") ||
+    lower.includes("company information") ||
+    lower.includes("declaration excerpts")
+  );
+}
+
 function splitIntoAnswerUnits(text) {
   return clean(text)
     .replace(/\s+-\s+/g, "\n")
     .replace(/\. - /g, ".\n")
+    .replace(/(Pool Rules|Parking Rules|Noise Rules|Pet Rules|Rental Rules|Architectural Rules)/gi, "\n$1\n")
     .split(/\n+/)
     .map((item) => clean(item))
     .filter(Boolean);
 }
 
+function buildSectionFromHeading(units, headingIndex) {
+  const selected = [units[headingIndex]];
+
+  for (let index = headingIndex + 1; index < units.length; index += 1) {
+    if (isHeading(units[index])) break;
+
+    selected.push(units[index]);
+
+    if (selected.join(" ").length > 700) break;
+  }
+
+  return selected.join(" ");
+}
+
 function findBestAnswerText(chunkText, question) {
   const units = splitIntoAnswerUnits(chunkText);
+
   const rankedUnits = units
-    .map((unit) => ({
+    .map((unit, index) => ({
       text: unit,
+      index,
       score: keywordScore(unit, question),
+      heading: isHeading(unit),
     }))
     .filter((unit) => unit.score > 0)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      if (a.heading && !b.heading) return -1;
+      if (!a.heading && b.heading) return 1;
+      return b.score - a.score;
+    });
 
   if (rankedUnits.length === 0) {
     return chunkText;
   }
 
-  const bestUnit = rankedUnits[0].text;
+  const bestUnit = rankedUnits[0];
 
-  if (bestUnit.length <= 700) {
-    return bestUnit;
+  if (bestUnit.heading) {
+    const sectionAnswer = buildSectionFromHeading(units, bestUnit.index);
+
+    if (sectionAnswer.length <= 900) {
+      return sectionAnswer;
+    }
+
+    return `${sectionAnswer.slice(0, 897)}...`;
   }
 
-  return `${bestUnit.slice(0, 697)}...`;
+  const relatedHeadingIndex = units
+    .slice(0, bestUnit.index)
+    .map((unit, index) => ({
+      unit,
+      index,
+    }))
+    .reverse()
+    .find((item) => isHeading(item.unit))?.index;
+
+  if (relatedHeadingIndex !== undefined) {
+    const sectionAnswer = buildSectionFromHeading(units, relatedHeadingIndex);
+
+    if (sectionAnswer.length <= 900) {
+      return sectionAnswer;
+    }
+
+    return `${sectionAnswer.slice(0, 897)}...`;
+  }
+
+  if (bestUnit.text.length <= 700) {
+    return bestUnit.text;
+  }
+
+  return `${bestUnit.text.slice(0, 697)}...`;
 }
 
 function polishAnswer(answer, source) {
