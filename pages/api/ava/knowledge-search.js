@@ -32,6 +32,14 @@ function tokenize(value) {
           "their",
           "about",
           "please",
+          "have",
+          "does",
+          "can",
+          "may",
+          "will",
+          "shall",
+          "should",
+          "would",
         ].includes(word)
     );
 }
@@ -65,6 +73,7 @@ function expandQuestionTerms(question) {
     terms.add("amenities");
     terms.add("clubhouse");
     terms.add("reservation");
+    terms.add("hours");
   }
 
   if (
@@ -95,6 +104,55 @@ function keywordScore(text, question) {
   }
 
   return score;
+}
+
+function splitIntoAnswerUnits(text) {
+  return clean(text)
+    .replace(/\s+-\s+/g, "\n")
+    .replace(/\. - /g, ".\n")
+    .split(/\n+/)
+    .map((item) => clean(item))
+    .filter(Boolean);
+}
+
+function findBestAnswerText(chunkText, question) {
+  const units = splitIntoAnswerUnits(chunkText);
+  const rankedUnits = units
+    .map((unit) => ({
+      text: unit,
+      score: keywordScore(unit, question),
+    }))
+    .filter((unit) => unit.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  if (rankedUnits.length === 0) {
+    return chunkText;
+  }
+
+  const bestUnit = rankedUnits[0].text;
+
+  if (bestUnit.length <= 700) {
+    return bestUnit;
+  }
+
+  return `${bestUnit.slice(0, 697)}...`;
+}
+
+function polishAnswer(answer, source) {
+  const cleanAnswer = clean(answer);
+
+  if (!cleanAnswer) {
+    return "I do not see a clear answer in the association knowledge base. Management can review this and follow up directly.";
+  }
+
+  const title = clean(source?.document_title);
+  const category = clean(source?.document_category);
+
+  if (category || title) {
+    return `According to ${title || category}, ${cleanAnswer}`;
+  }
+
+  return cleanAnswer;
 }
 
 export default async function handler(req, res) {
@@ -164,11 +222,12 @@ export default async function handler(req, res) {
     }
 
     const best = ranked[0];
+    const answerText = findBestAnswerText(best.chunk_text, question);
 
     return res.status(200).json({
       success: true,
       found: true,
-      answer: best.chunk_text,
+      answer: polishAnswer(answerText, best),
       sources: ranked.map((chunk) => ({
         document_title: chunk.document_title,
         document_category: chunk.document_category,
