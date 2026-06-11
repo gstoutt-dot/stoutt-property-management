@@ -8,17 +8,90 @@ function normalize(value) {
   return clean(value).toLowerCase();
 }
 
-function keywordScore(text, question) {
-  const source = normalize(text);
-  const words = normalize(question)
+function tokenize(value) {
+  return normalize(value)
     .split(/\s+/)
     .map((word) => word.replace(/[^a-z0-9]/g, ""))
-    .filter((word) => word.length > 3);
+    .filter(Boolean)
+    .filter(
+      (word) =>
+        ![
+          "the",
+          "and",
+          "for",
+          "are",
+          "with",
+          "this",
+          "that",
+          "from",
+          "what",
+          "when",
+          "where",
+          "which",
+          "there",
+          "their",
+          "about",
+          "please",
+        ].includes(word)
+    );
+}
+
+function expandQuestionTerms(question) {
+  const terms = new Set(tokenize(question));
+
+  if (terms.has("pet") || terms.has("pets")) {
+    terms.add("pet");
+    terms.add("pets");
+    terms.add("animal");
+    terms.add("animals");
+    terms.add("dog");
+    terms.add("dogs");
+    terms.add("cat");
+    terms.add("cats");
+  }
+
+  if (terms.has("rent") || terms.has("rental") || terms.has("lease")) {
+    terms.add("rent");
+    terms.add("rental");
+    terms.add("rentals");
+    terms.add("lease");
+    terms.add("leasing");
+    terms.add("tenant");
+  }
+
+  if (terms.has("pool") || terms.has("amenity") || terms.has("amenities")) {
+    terms.add("pool");
+    terms.add("amenity");
+    terms.add("amenities");
+    terms.add("clubhouse");
+    terms.add("reservation");
+  }
+
+  if (
+    terms.has("repair") ||
+    terms.has("maintenance") ||
+    terms.has("responsible") ||
+    terms.has("responsibility")
+  ) {
+    terms.add("maintenance");
+    terms.add("repair");
+    terms.add("responsibility");
+    terms.add("responsible");
+    terms.add("owner");
+    terms.add("association");
+  }
+
+  return Array.from(terms);
+}
+
+function keywordScore(text, question) {
+  const source = normalize(text);
+  const terms = expandQuestionTerms(question);
 
   let score = 0;
 
-  for (const word of words) {
-    if (source.includes(word)) score += 1;
+  for (const term of terms) {
+    if (source.includes(term)) score += 1;
   }
 
   return score;
