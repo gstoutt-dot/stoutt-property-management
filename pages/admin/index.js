@@ -68,6 +68,7 @@ const sections = [
       { title: "QuickBooks Live", href: "/accounting/quickbooks-live" },
       { title: "Admin Notifications", href: "/admin/notifications" },
       { title: "Association Documents", href: "/board/documents" },
+      { title: "Ava Knowledge Center", href: "/portal/ava/knowledge-center" },
       { title: "Board & Member Meetings", href: "/portal/board/meetings" },
       { title: "Committee Members Center", href: "/board/committee-center" },
       { title: "Board Signature Approval Log", href: "/board/signature-approval-log" },
