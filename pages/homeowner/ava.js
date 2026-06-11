@@ -180,33 +180,46 @@ export default function HomeownerAva() {
   }
 
   async function getAccountingResponse() {
-    if (!ownerProfile?.association_id) {
-  return `Your current balance is ${formattedBalance}.`;
-}
-
-    const response = await fetch(
-      `/api/accounting/owner-balance?associationId=${encodeURIComponent(
-        ownerProfile.association_id || ""
-      )}&ownerUserId=${encodeURIComponent(
-        ownerProfile.id || ""
-      )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.success) {
-      throw new Error(data?.error || "Unable to load accounting details.");
-    }
-
-    if (data?.balance) {
-      setBalance(data.balance);
-    }
-
-    return (
-  data?.ava_accounting_response ||
-  `Your current balance is ${formattedBalance}. If something looks incorrect, management can review your account through the account review workflow.`
-);
+  if (!ownerProfile?.unitNumber) {
+    return `Your current balance is ${formattedBalance}.`;
   }
+
+  const response = await fetch("/api/ava/get-owner-balance", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      associationId: ownerProfile.association_id || FALLBACK_ASSOCIATION_ID,
+      unitNumber: ownerProfile.unitNumber,
+      callerName:
+        ownerProfile.ownerName ||
+        ownerProfile.owner_name ||
+        balance?.owner_name ||
+        "",
+      callerEmail:
+        ownerProfile.email ||
+        ownerProfile.owner_email ||
+        "",
+      callerPhone:
+        ownerProfile.phone ||
+        ownerProfile.owner_phone ||
+        "",
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.ava_accounting_response) {
+    throw new Error(data?.error || "Unable to load Ava accounting response.");
+  }
+
+  if (data?.balance) {
+    setBalance(data.balance);
+  }
+
+  return data.ava_accounting_response;
+}
 
   async function getDocumentResponse(promptText) {
     if (!ownerProfile?.association_id) {
