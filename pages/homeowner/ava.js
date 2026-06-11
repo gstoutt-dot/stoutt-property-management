@@ -221,58 +221,36 @@ export default function HomeownerAva() {
   return data.ava_accounting_response;
 }
 
-  async function getDocumentResponse(promptText) {
-    if (!ownerProfile?.association_id) {
-      return "I could not load the homeowner document system right now.";
-    }
+  async function getKnowledgeResponse(promptText) {
+  const associationId =
+    ownerProfile?.association_id || FALLBACK_ASSOCIATION_ID;
 
-    const response = await fetch(
-      `/api/homeowner/documents/list?associationId=${encodeURIComponent(
-        ownerProfile.association_id || ""
-      )}&ownerUserId=${encodeURIComponent(
-        ownerProfile.id || ""
-      )}&unitNumber=${encodeURIComponent(ownerProfile.unitNumber || "")}`
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.success) {
-      throw new Error(data?.error || "Unable to load homeowner documents.");
-    }
-
-    const documents = Array.isArray(data.documents) ? data.documents : [];
-
-    if (documents.length === 0) {
-      return "There are currently no homeowner documents available.";
-    }
-
-    const searchWords = String(promptText || "")
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((word) => word.length > 3);
-
-    const matchingDocument = documents.find((doc) => {
-      const text = `
-        ${doc.title || ""}
-        ${doc.document_name || ""}
-        ${doc.category || ""}
-        ${doc.description || ""}
-        ${doc.document_type || ""}
-      `.toLowerCase();
-
-      return searchWords.some((word) => text.includes(word));
-    });
-
-    if (matchingDocument) {
-      return `I found a matching document called "${
-        matchingDocument.title ||
-        matchingDocument.document_name ||
-        "Association Document"
-      }" in your homeowner records. You can open it from the Documents section.`;
-    }
-
-    return `I found ${documents.length} homeowner document(s) available in your document center.`;
+  if (!associationId) {
+    return "I could not load the association knowledge base right now.";
   }
+
+  const response = await fetch("/api/ava/knowledge-search", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      associationId,
+      question: promptText,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.error || "Unable to search association knowledge.");
+  }
+
+  return (
+    data?.answer ||
+    "I do not see a clear answer in the association knowledge base. Management can review this and follow up directly."
+  );
+}
 
   async function handleAskAva() {
     const rawPrompt = String(selectedPrompt || "").trim();
@@ -348,37 +326,60 @@ const isAccountingQuestion =
       return;
     }
 
-    const isDocumentQuestion =
+        const isKnowledgeQuestion =
       prompt.includes("document") ||
       prompt.includes("documents") ||
       prompt.includes("rules") ||
+      prompt.includes("rule") ||
       prompt.includes("forms") ||
       prompt.includes("policy") ||
+      prompt.includes("policies") ||
       prompt.includes("pet") ||
       prompt.includes("pets") ||
-      prompt.includes("minutes") ||
-      prompt.includes("meeting minutes") ||
-      prompt.includes("bylaws") ||
+      prompt.includes("dog") ||
+      prompt.includes("cat") ||
+      prompt.includes("parking") ||
+      prompt.includes("park") ||
+      prompt.includes("pool") ||
+      prompt.includes("clubhouse") ||
+      prompt.includes("amenity") ||
+      prompt.includes("amenities") ||
+      prompt.includes("rental") ||
+      prompt.includes("rent") ||
+      prompt.includes("lease") ||
+      prompt.includes("architectural") ||
+      prompt.includes("modification") ||
+      prompt.includes("noise") ||
+      prompt.includes("quiet") ||
+      prompt.includes("maintenance responsibility") ||
+      prompt.includes("responsible") ||
       prompt.includes("declaration") ||
-      prompt.includes("insurance") ||
-      prompt.includes("budget") ||
-      prompt.includes("financial") ||
-      prompt.includes("notice") ||
-      prompt.includes("notices");
+      prompt.includes("bylaws") ||
+      prompt.includes("governing") ||
+      prompt.includes("management company") ||
+      prompt.includes("property management") ||
+      prompt.includes("stoutt") ||
+      prompt.includes("who manages") ||
+      prompt.includes("who do i contact") ||
+      prompt.includes("contact management");
 
-    if (isDocumentQuestion) {
+    if (isKnowledgeQuestion) {
       try {
-        const documentResponse = await getDocumentResponse(rawPrompt);
+        const knowledgeResponse = await getKnowledgeResponse(rawPrompt);
 
-        pushAvaResponse(documentResponse, [
+        pushAvaResponse(knowledgeResponse, [
           { label: "Open Documents", href: "/homeowner/documents" },
+          { label: "Create Maintenance Request", href: "/homeowner/work-orders" },
         ]);
-      } catch (documentError) {
-        console.error("Ava document response failed:", documentError);
+      } catch (knowledgeError) {
+        console.error("Ava knowledge response failed:", knowledgeError);
 
         pushAvaResponse(
-          "I can see your homeowner document center, but I could not search the documents right now. Please open the Documents section to review the available files.",
-          [{ label: "Open Documents", href: "/homeowner/documents" }]
+          "I could not search the association knowledge base right now. Management can review this and follow up directly.",
+          [
+            { label: "Open Documents", href: "/homeowner/documents" },
+            { label: "Create Maintenance Request", href: "/homeowner/work-orders" },
+          ]
         );
       }
 
