@@ -326,7 +326,42 @@ const isAccountingQuestion =
       return;
     }
 
-        const isKnowledgeQuestion =
+            const isMaintenanceProblem =
+      prompt.includes("maintenance") ||
+      prompt.includes("repair") ||
+      prompt.includes("broken") ||
+      prompt.includes("leak") ||
+      prompt.includes("leaking") ||
+      prompt.includes("plumbing") ||
+      prompt.includes("electrical") ||
+      prompt.includes("water") ||
+      prompt.includes("ceiling") ||
+      prompt.includes("roof") ||
+      prompt.includes("air conditioning") ||
+      prompt.includes("ac ") ||
+      prompt.includes("hvac") ||
+      prompt.includes("toilet") ||
+      prompt.includes("sink") ||
+      prompt.includes("drain") ||
+      prompt.includes("balcony") ||
+      prompt.includes("railing") ||
+      prompt.includes("gate") ||
+      prompt.includes("door") ||
+      prompt.includes("elevator") ||
+      prompt.includes("pool issue") ||
+      prompt.includes("landscaping") ||
+      prompt.includes("sprinkler");
+
+    if (isMaintenanceProblem) {
+      pushAvaResponse(
+        "Please submit a maintenance request so management can review the issue and coordinate follow-up. Your request will be sent directly to the property management team.",
+        [{ label: "Create Maintenance Request", href: "/homeowner/work-orders" }]
+      );
+
+      return;
+    }
+
+    const isKnowledgeQuestion =
       prompt.includes("document") ||
       prompt.includes("documents") ||
       prompt.includes("rules") ||
@@ -369,17 +404,13 @@ const isAccountingQuestion =
 
         pushAvaResponse(knowledgeResponse, [
           { label: "Open Documents", href: "/homeowner/documents" },
-          { label: "Create Maintenance Request", href: "/homeowner/work-orders" },
         ]);
       } catch (knowledgeError) {
         console.error("Ava knowledge response failed:", knowledgeError);
 
         pushAvaResponse(
           "I could not search the association knowledge base right now. Management can review this and follow up directly.",
-          [
-            { label: "Open Documents", href: "/homeowner/documents" },
-            { label: "Create Maintenance Request", href: "/homeowner/work-orders" },
-          ]
+          [{ label: "Open Documents", href: "/homeowner/documents" }]
         );
       }
 
