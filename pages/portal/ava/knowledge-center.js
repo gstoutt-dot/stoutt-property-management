@@ -16,7 +16,8 @@ export default function AvaKnowledgeCenter() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
   async function saveKnowledge() {
     setSaving(true);
     setMessage("");
@@ -57,37 +58,88 @@ export default function AvaKnowledgeCenter() {
   }
 
   async function testKnowledge() {
-    setTesting(true);
-    setTestAnswer("");
-    setTestSources([]);
-    setError("");
+  setTesting(true);
+  setTestAnswer("");
+  setTestSources([]);
+  setError("");
 
-    try {
-      const response = await fetch("/api/ava/knowledge-search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          associationId: SUNSET_ASSOCIATION_ID,
-          question: testQuestion,
-        }),
-      });
+  try {
+    const response = await fetch("/api/ava/knowledge-search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        associationId: SUNSET_ASSOCIATION_ID,
+        question: testQuestion,
+      }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.error || "Unable to search Ava knowledge.");
-      }
-
-      setTestAnswer(data.answer || "No answer returned.");
-      setTestSources(data.sources || []);
-    } catch (testError) {
-      setError(testError.message || "Unable to test Ava knowledge.");
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || "Unable to search Ava knowledge.");
     }
 
-    setTesting(false);
+    setTestAnswer(data.answer || "No answer returned.");
+    setTestSources(data.sources || []);
+  } catch (testError) {
+    setError(testError.message || "Unable to test Ava knowledge.");
   }
+
+  setTesting(false);
+}
+
+async function uploadKnowledgeDocument() {
+  if (!uploadedFile) {
+    setError("Please select a DOCX file.");
+    return;
+  }
+
+  setUploading(true);
+  setError("");
+  setMessage("");
+
+  try {
+    const formData = new FormData();
+
+    formData.append("file", uploadedFile);
+    formData.append("associationId", SUNSET_ASSOCIATION_ID);
+    formData.append("associationName", SUNSET_ASSOCIATION_NAME);
+    formData.append("documentTitle", documentTitle);
+    formData.append("documentCategory", documentCategory);
+    formData.append("sourcePage", sourcePage);
+    formData.append("uploadedBy", "Admin");
+
+    const response = await fetch(
+      "/api/ava/upload-knowledge-document",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      throw new Error(
+        data?.error || "Unable to upload knowledge document."
+      );
+    }
+
+    setMessage(
+      `Document processed successfully. ${data.chunk_count} knowledge chunks created.`
+    );
+
+    setUploadedFile(null);
+  } catch (uploadError) {
+    setError(
+      uploadError.message || "Unable to upload knowledge document."
+    );
+  }
+
+  setUploading(false);
+}
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
