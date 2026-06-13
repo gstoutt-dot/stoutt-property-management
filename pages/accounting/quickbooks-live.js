@@ -1,22 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 
+function getStoredAssociationId() {
+  if (typeof window === "undefined") return "";
+
+  return localStorage.getItem("spm_selected_association_id") || "";
+}
+
+function getStoredAssociationName() {
+  if (typeof window === "undefined") return "";
+
+  return localStorage.getItem("spm_selected_association_name") || "";
+}
+
 export default function QuickBooksLiveAccounting() {
   const router = useRouter();
 
-     const associationId = String(
+  const associationId = String(
     router.query.association_id ||
       router.query.associationId ||
-      "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2"
+      getStoredAssociationId()
   ).trim();
+
+  const storedAssociationName = getStoredAssociationName();
 
   const [loading, setLoading] = useState(false);
   const [financialData, setFinancialData] = useState(null);
   const [error, setError] = useState("");
 
-    async function loadFinancialSummary({ silent = false } = {}) {
+  async function loadFinancialSummary({ silent = false } = {}) {
     if (!associationId) {
-      setError("Missing association_id. Open this page with a valid association_id.");
+      setError("Missing association_id. Please log in and select an association.");
       return;
     }
 
@@ -46,7 +60,7 @@ export default function QuickBooksLiveAccounting() {
 
   async function runFullQuickBooksSync() {
     if (!associationId) {
-      setError("Missing association_id. Open this page with a valid association_id.");
+      setError("Missing association_id. Please log in and select an association.");
       return;
     }
 
