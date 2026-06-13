@@ -119,21 +119,26 @@ export default function AdminLoginPage() {
   }
 
   async function checkApprovedAccess(userEmail, role) {
-    const { data, error: approvalError } = await supabase
-      .from("portal_access_approvals")
-      .select("id, status")
-      .eq("association_id", selectedAssociation.id)
-      .eq("email", userEmail)
-      .eq("role", role)
-      .eq("status", "approved")
-      .maybeSingle();
+    const response = await fetch("/api/portal/check-access", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        association_id: selectedAssociation.id,
+        email: userEmail,
+        role,
+      }),
+    });
 
-    if (approvalError) {
-      console.error("Access approval check failed:", approvalError);
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Portal access API failed:", result);
       return false;
     }
 
-    return Boolean(data?.id);
+    return Boolean(result.approved);
   }
 
   async function createManagerPendingRequest(userEmail) {
