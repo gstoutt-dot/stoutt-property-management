@@ -44,9 +44,51 @@ export default function AdminLoginPage() {
   }, [associations, selectedAssociationId]);
 
   useEffect(() => {
-    let mounted = true;
+  let mounted = true;
 
-    async function loadAssociations() {
+  async function loadAssociations() {
+    setLoadingAssociations(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("associations")
+        .select("id, name, status")
+        .order("name", { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!mounted) return;
+
+      const activeAssociations = Array.isArray(data)
+        ? data.filter((association) => association.status === "active")
+        : [];
+
+      if (activeAssociations.length > 0) {
+        setAssociations(activeAssociations);
+        setSelectedAssociationId(activeAssociations[0].id);
+      } else {
+        setAssociations(FALLBACK_ASSOCIATIONS);
+        setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
+      }
+    } catch (error) {
+      console.error("Association load failed:", error);
+      setAssociations(FALLBACK_ASSOCIATIONS);
+      setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
+    }
+
+    if (mounted) {
+      setLoadingAssociations(false);
+    }
+  }
+
+  loadAssociations();
+
+  return () => {
+    mounted = false;
+  };
+}, []);
       setLoadingAssociations(true);
 
       try {
