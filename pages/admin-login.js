@@ -2,12 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
 
-const PORTAL_ROLES = [
-  { value: "board", label: "Board Member" },
-  { value: "manager", label: "Manager" },
-  { value: "admin", label: "Admin" },
-];
-
 const FALLBACK_ASSOCIATIONS = [
   {
     id: "79893883-6141-4dcc-ba1a-034d70a0dc96",
@@ -16,19 +10,24 @@ const FALLBACK_ASSOCIATIONS = [
   },
 ];
 
+const PORTAL_ROLES = [
+  { value: "board", label: "Board Member" },
+  { value: "manager", label: "Manager" },
+  { value: "admin", label: "Admin" },
+];
+
 export default function AdminLoginPage() {
   const router = useRouter();
 
   const [mode, setMode] = useState("signin");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("glenn@stouttmgmt.com");
   const [password, setPassword] = useState("");
-
   const [portalRole, setPortalRole] = useState("admin");
-  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
 
+  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
   const [selectedAssociationId, setSelectedAssociationId] = useState(
-  FALLBACK_ASSOCIATIONS[0].id
-);
+    FALLBACK_ASSOCIATIONS[0].id
+  );
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,83 +37,49 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
 
   const selectedAssociation = useMemo(() => {
-    return associations.find(
-      (association) => String(association.id) === String(selectedAssociationId)
+    return (
+      associations.find(
+        (association) => String(association.id) === String(selectedAssociationId)
+      ) || FALLBACK_ASSOCIATIONS[0]
     );
   }, [associations, selectedAssociationId]);
 
   useEffect(() => {
-  let mounted = true;
+    let mounted = true;
 
-  async function loadAssociations() {
-    setLoadingAssociations(true);
-
-    try {
-      const { data, error } = await supabase
-        .from("associations")
-        .select("id, name, status")
-        .order("name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      if (!mounted) return;
-
-      const activeAssociations = Array.isArray(data)
-        ? data.filter((association) => association.status === "active")
-        : [];
-
-      if (activeAssociations.length > 0) {
-        setAssociations(activeAssociations);
-        setSelectedAssociationId(activeAssociations[0].id);
-      } else {
-        setAssociations(FALLBACK_ASSOCIATIONS);
-        setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
-      }
-    } catch (error) {
-      console.error("Association load failed:", error);
-      setAssociations(FALLBACK_ASSOCIATIONS);
-      setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
-    }
-
-    if (mounted) {
-      setLoadingAssociations(false);
-    }
-  }
-
-  loadAssociations();
-
-  return () => {
-    mounted = false;
-  };
-}, []);
+    async function loadAssociations() {
       setLoadingAssociations(true);
 
       try {
-        const { data, error } = await supabase
+        const { data, error: associationError } = await supabase
           .from("associations")
           .select("id, name, status")
           .order("name", { ascending: true });
 
-        if (error) {
-          throw error;
+        if (associationError) {
+          throw associationError;
         }
 
         if (!mounted) return;
 
         const activeAssociations = Array.isArray(data)
-          ? data.filter((association) => association.status !== "inactive")
+          ? data.filter((association) => association.status === "active")
           : [];
 
-        setAssociations(activeAssociations);
-
         if (activeAssociations.length > 0) {
+          setAssociations(activeAssociations);
           setSelectedAssociationId(activeAssociations[0].id);
+        } else {
+          setAssociations(FALLBACK_ASSOCIATIONS);
+          setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
         }
-      } catch (error) {
-        console.error("Association load failed:", error);
-        setError("Unable to load associations. Please check the associations table.");
+      } catch (loadError) {
+        console.error("Association load failed:", loadError);
+
+        if (mounted) {
+          setAssociations(FALLBACK_ASSOCIATIONS);
+          setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
+        }
       }
 
       if (mounted) {
@@ -127,15 +92,16 @@ export default function AdminLoginPage() {
     return () => {
       mounted = false;
     };
+  }, []);
 
-  const getRouteByRole = (role) => {
+  function getRouteByRole(role) {
     if (role === "manager") return "/portal/manager";
     if (role === "board") return "/board";
     if (role === "admin") return "/admin";
     return "/admin-login";
-  };
+  }
 
-  const storePortalContext = (role, userEmail) => {
+  function storePortalContext(role, userEmail) {
     localStorage.setItem("spmPortalLoggedIn", "true");
     localStorage.setItem("spmPortalUser", String(userEmail || "").toLowerCase());
     localStorage.setItem("spmPortalUserName", String(userEmail || ""));
@@ -145,14 +111,15 @@ export default function AdminLoginPage() {
       "spm_selected_association_id",
       String(selectedAssociation.id)
     );
+
     localStorage.setItem(
       "spm_selected_association_name",
       String(selectedAssociation.name || "")
     );
-  };
+  }
 
   async function checkApprovedAccess(userEmail, role) {
-    const { data, error } = await supabase
+    const { data, error: approvalError } = await supabase
       .from("portal_access_approvals")
       .select("id, status")
       .eq("association_id", selectedAssociation.id)
@@ -161,8 +128,8 @@ export default function AdminLoginPage() {
       .eq("status", "approved")
       .maybeSingle();
 
-    if (error) {
-      console.error("Access approval check failed:", error);
+    if (approvalError) {
+      console.error("Access approval check failed:", approvalError);
       return false;
     }
 
@@ -170,27 +137,29 @@ export default function AdminLoginPage() {
   }
 
   async function createManagerPendingRequest(userEmail) {
-    const { error } = await supabase.from("portal_access_approvals").upsert(
-      {
-        association_id: selectedAssociation.id,
-        association_name: selectedAssociation.name,
-        quickbooks_id: "",
-        email: userEmail,
-        role: "manager",
-        status: "pending",
-      },
-      {
-        onConflict: "association_id,email,role",
-      }
-    );
+    const { error: requestError } = await supabase
+      .from("portal_access_approvals")
+      .upsert(
+        {
+          association_id: selectedAssociation.id,
+          association_name: selectedAssociation.name,
+          quickbooks_id: "",
+          email: userEmail,
+          role: "manager",
+          status: "pending",
+        },
+        {
+          onConflict: "association_id,email,role",
+        }
+      );
 
-    if (error) {
-      throw error;
+    if (requestError) {
+      throw requestError;
     }
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
 
     setLoading(true);
     setError("");
@@ -291,8 +260,8 @@ export default function AdminLoginPage() {
 
       storePortalContext(portalRole, normalizedEmail);
       router.push(getRouteByRole(portalRole));
-    } catch (error) {
-      setError(error.message || "Unable to continue.");
+    } catch (submitError) {
+      setError(submitError.message || "Unable to continue.");
     }
 
     setLoading(false);
@@ -319,7 +288,8 @@ export default function AdminLoginPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              Association-controlled access for board, manager, and admin portals.
+              Association-controlled access for board, manager, and admin
+              portals.
             </p>
           </div>
 
@@ -331,7 +301,9 @@ export default function AdminLoginPage() {
 
               <select
                 value={selectedAssociationId}
-                onChange={(e) => setSelectedAssociationId(e.target.value)}
+                onChange={(event) =>
+                  setSelectedAssociationId(event.target.value)
+                }
                 disabled={loadingAssociations}
                 className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-60"
               >
@@ -354,7 +326,7 @@ export default function AdminLoginPage() {
 
               <select
                 value={portalRole}
-                onChange={(e) => setPortalRole(e.target.value)}
+                onChange={(event) => setPortalRole(event.target.value)}
                 className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
               >
                 {PORTAL_ROLES.map((role) => (
@@ -377,7 +349,7 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 autoComplete="username"
                 className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
                 placeholder="Enter email"
@@ -393,7 +365,7 @@ export default function AdminLoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   autoComplete={
                     mode === "signin" ? "current-password" : "new-password"
                   }
@@ -425,7 +397,9 @@ export default function AdminLoginPage() {
 
             <button
               type="submit"
-              disabled={loading || loadingAssociations || associations.length === 0}
+              disabled={
+                loading || loadingAssociations || associations.length === 0
+              }
               className="w-full rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading
@@ -457,7 +431,8 @@ export default function AdminLoginPage() {
 
           <p className="mt-6 text-center text-xs leading-5 text-slate-500">
             Portal access is association-scoped. Unknown users are blocked unless
-            their email has been approved for the selected association and portal type.
+            their email has been approved for the selected association and portal
+            type.
           </p>
         </div>
       </section>
