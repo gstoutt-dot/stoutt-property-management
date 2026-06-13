@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../../../lib/supabaseClient";
+
+const FALLBACK_ASSOCIATIONS = [
+  {
+    id: "sunset-condo",
+    name: "Sunset Condo Association",
+    quickbooks_id: "sunset-condo",
+  },
+];
 
 export default function OwnerLoginPage() {
   const router = useRouter();
@@ -9,11 +17,68 @@ export default function OwnerLoginPage() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("signin");
 
+  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
+  const [selectedAssociationId, setSelectedAssociationId] = useState(
+    FALLBACK_ASSOCIATIONS[0].id
+  );
+
+  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
 
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const selectedAssociation = useMemo(() => {
+    return (
+      associations.find(
+        (association) => String(association.id) === String(selectedAssociationId)
+      ) || associations[0]
+    );
+  }, [associations, selectedAssociationId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadAssociations() {
+      try {
+        const { data, error } = await supabase
+          .from("associations")
+          .select("id, name, quickbooks_id, quickbooks_company_id")
+          .order("name", { ascending: true });
+
+        if (error) {
+          console.warn("Association list unavailable:", error.message);
+          return;
+        }
+
+        if (!mounted) return;
+
+        if (Array.isArray(data) && data.length > 0) {
+          const normalizedAssociations = data.map((association) => ({
+            id: association.id,
+            name: association.name || "Unnamed Association",
+            quickbooks_id:
+              association.quickbooks_id ||
+              association.quickbooks_company_id ||
+              association.id,
+          }));
+
+          setAssociations(normalizedAssociations);
+          setSelectedAssociationId(normalizedAssociations[0].id);
+        }
+      } catch (error) {
+        console.warn("Association load failed:", error);
+      }
+    }
+
+    loadAssociations();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -26,7 +91,7 @@ export default function OwnerLoginPage() {
 
         if (!mounted) return;
 
-                if (session?.user) {
+        if (session?.user) {
           router.replace("/homeowner");
           return;
         }
@@ -44,7 +109,7 @@ export default function OwnerLoginPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "SIGNED_IN" && session?.user) {
+      if (event === "SIGNED_IN" && session?.user) {
         router.replace("/homeowner");
       }
     });
@@ -55,6 +120,25 @@ export default function OwnerLoginPage() {
     };
   }, [router]);
 
+  function storeAssociationContext() {
+    if (!selectedAssociation) return;
+
+    window.localStorage.setItem(
+      "spm_selected_association_id",
+      String(selectedAssociation.id)
+    );
+
+    window.localStorage.setItem(
+      "spm_selected_association_name",
+      String(selectedAssociation.name || "")
+    );
+
+    window.localStorage.setItem(
+      "spm_selected_quickbooks_id",
+      String(selectedAssociation.quickbooks_id || selectedAssociation.id)
+    );
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -64,6 +148,12 @@ export default function OwnerLoginPage() {
 
     const normalizedEmail = String(email || "").toLowerCase().trim();
 
+    if (!selectedAssociation?.id) {
+      setErrorMessage("Please select your association.");
+      setLoading(false);
+      return;
+    }
+
     if (!normalizedEmail || !password) {
       setErrorMessage("Please enter your email and password.");
       setLoading(false);
@@ -71,10 +161,21 @@ export default function OwnerLoginPage() {
     }
 
     try {
+      storeAssociationContext();
+
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
+          options: {
+            data: {
+              association_id: selectedAssociation.id,
+              association_name: selectedAssociation.name,
+              quickbooks_id:
+                selectedAssociation.quickbooks_id || selectedAssociation.id,
+              portal_role: "homeowner",
+            },
+          },
         });
 
         if (error) {
@@ -100,7 +201,7 @@ export default function OwnerLoginPage() {
         throw error;
       }
 
-            router.replace("/homeowner");
+      router.replace("/homeowner");
     } catch (error) {
       setErrorMessage(error.message || "Unable to continue.");
     }
@@ -167,10 +268,38 @@ export default function OwnerLoginPage() {
             </h2>
 
             <p className="mt-2 text-sm text-slate-400">
-              Use the email associated with your unit or invitation.
+              Select your association and use the email associated with your
+              unit or invitation.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Association
+                </label>
+
+                <select
+                  value={selectedAssociationId}
+                  onChange={(e) => setSelectedAssociationId(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/50"
+                >
+                  {associations.map((association) => (
+                    <option
+                      key={association.id}
+                      value={association.id}
+                      className="bg-slate-950 text-white"
+                    >
+                      {association.name}
+                    </option>
+                  ))}
+                </select>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  Association selection protects the correct QuickBooks and
+                  BOSai Association ID connection.
+                </p>
+              </div>
+
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Email
@@ -190,13 +319,23 @@ export default function OwnerLoginPage() {
                   Password
                 </label>
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/50"
-                  placeholder="Enter password"
-                />
+                <div className="flex overflow-hidden rounded-xl border border-white/10 bg-black/30 focus-within:border-yellow-400/50">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+                    placeholder="Enter password"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="border-l border-white/10 px-4 text-xs font-semibold uppercase tracking-wide text-yellow-300 hover:bg-yellow-400/10"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
               {errorMessage && (
