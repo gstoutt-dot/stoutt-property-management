@@ -8,6 +8,14 @@ const PORTAL_ROLES = [
   { value: "admin", label: "Admin" },
 ];
 
+const FALLBACK_ASSOCIATIONS = [
+  {
+    id: "79893883-6141-4dcc-ba1a-034d70a0dc96",
+    name: "Sunset Condo Association",
+    status: "active",
+  },
+];
+
 export default function AdminLoginPage() {
   const router = useRouter();
 
@@ -16,8 +24,11 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
 
   const [portalRole, setPortalRole] = useState("admin");
-  const [associations, setAssociations] = useState([]);
-  const [selectedAssociationId, setSelectedAssociationId] = useState("");
+  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
+
+  const [selectedAssociationId, setSelectedAssociationId] = useState(
+  FALLBACK_ASSOCIATIONS[0].id
+);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
