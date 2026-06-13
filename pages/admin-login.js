@@ -127,7 +127,6 @@ export default function AdminLoginPage() {
     return () => {
       mounted = false;
     };
-  }, []);
 
   const getRouteByRole = (role) => {
     if (role === "manager") return "/portal/manager";
