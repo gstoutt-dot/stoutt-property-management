@@ -2,14 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
 
-const FALLBACK_ASSOCIATIONS = [
-  {
-    id: "sunset-condo",
-    name: "Sunset Condo Association",
-    quickbooks_id: "sunset-condo",
-  },
-];
-
 const PORTAL_ROLES = [
   { value: "board", label: "Board Member" },
   { value: "manager", label: "Manager" },
@@ -23,23 +15,20 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [portalRole, setPortalRole] = useState("board");
-  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
-  const [selectedAssociationId, setSelectedAssociationId] = useState(
-    FALLBACK_ASSOCIATIONS[0].id
-  );
+  const [portalRole, setPortalRole] = useState("admin");
+  const [associations, setAssociations] = useState([]);
+  const [selectedAssociationId, setSelectedAssociationId] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingAssociations, setLoadingAssociations] = useState(true);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const selectedAssociation = useMemo(() => {
-    return (
-      associations.find(
-        (association) => String(association.id) === String(selectedAssociationId)
-      ) || associations[0]
+    return associations.find(
+      (association) => String(association.id) === String(selectedAssociationId)
     );
   }, [associations, selectedAssociationId]);
 
@@ -47,31 +36,36 @@ export default function AdminLoginPage() {
     let mounted = true;
 
     async function loadAssociations() {
+      setLoadingAssociations(true);
+
       try {
         const { data, error } = await supabase
           .from("associations")
-          .select("id, name, quickbooks_id, quickbooks_company_id")
+          .select("id, name, status")
           .order("name", { ascending: true });
 
-        if (error) return;
+        if (error) {
+          throw error;
+        }
 
         if (!mounted) return;
 
-        if (Array.isArray(data) && data.length > 0) {
-          const normalizedAssociations = data.map((association) => ({
-            id: association.id,
-            name: association.name || "Unnamed Association",
-            quickbooks_id:
-              association.quickbooks_id ||
-              association.quickbooks_company_id ||
-              association.id,
-          }));
+        const activeAssociations = Array.isArray(data)
+          ? data.filter((association) => association.status !== "inactive")
+          : [];
 
-          setAssociations(normalizedAssociations);
-          setSelectedAssociationId(normalizedAssociations[0].id);
+        setAssociations(activeAssociations);
+
+        if (activeAssociations.length > 0) {
+          setSelectedAssociationId(activeAssociations[0].id);
         }
       } catch (error) {
-        console.warn("Association load failed:", error);
+        console.error("Association load failed:", error);
+        setError("Unable to load associations. Please check the associations table.");
+      }
+
+      if (mounted) {
+        setLoadingAssociations(false);
       }
     }
 
@@ -103,10 +97,6 @@ export default function AdminLoginPage() {
       "spm_selected_association_name",
       String(selectedAssociation.name || "")
     );
-    localStorage.setItem(
-      "spm_selected_quickbooks_id",
-      String(selectedAssociation.quickbooks_id || selectedAssociation.id)
-    );
   };
 
   async function checkApprovedAccess(userEmail, role) {
@@ -132,7 +122,7 @@ export default function AdminLoginPage() {
       {
         association_id: selectedAssociation.id,
         association_name: selectedAssociation.name,
-        quickbooks_id: selectedAssociation.quickbooks_id || selectedAssociation.id,
+        quickbooks_id: "",
         email: userEmail,
         role: "manager",
         status: "pending",
@@ -213,8 +203,6 @@ export default function AdminLoginPage() {
               portal_role: portalRole,
               association_id: selectedAssociation.id,
               association_name: selectedAssociation.name,
-              quickbooks_id:
-                selectedAssociation.quickbooks_id || selectedAssociation.id,
             },
           },
         });
@@ -279,8 +267,7 @@ export default function AdminLoginPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              Association-controlled access for board, manager, and admin
-              portals.
+              Association-controlled access for board, manager, and admin portals.
             </p>
           </div>
 
@@ -293,7 +280,8 @@ export default function AdminLoginPage() {
               <select
                 value={selectedAssociationId}
                 onChange={(e) => setSelectedAssociationId(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
+                disabled={loadingAssociations}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-60"
               >
                 {associations.map((association) => (
                   <option
@@ -385,7 +373,7 @@ export default function AdminLoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || loadingAssociations || associations.length === 0}
               className="w-full rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading
@@ -417,8 +405,7 @@ export default function AdminLoginPage() {
 
           <p className="mt-6 text-center text-xs leading-5 text-slate-500">
             Portal access is association-scoped. Unknown users are blocked unless
-            their email has been approved for the selected association and portal
-            type.
+            their email has been approved for the selected association and portal type.
           </p>
         </div>
       </section>
