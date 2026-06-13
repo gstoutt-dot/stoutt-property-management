@@ -4,9 +4,9 @@ import { supabase } from "../../../lib/supabaseClient";
 
 const FALLBACK_ASSOCIATIONS = [
   {
-    id: "sunset-condo",
+    id: "79893883-6141-4dcc-ba1a-034d70a0dc96",
     name: "Sunset Condo Association",
-    quickbooks_id: "sunset-condo",
+    status: "active",
   },
 ];
 
@@ -23,9 +23,9 @@ export default function OwnerLoginPage() {
   );
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [loadingAssociations, setLoadingAssociations] = useState(true);
 
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,7 +34,7 @@ export default function OwnerLoginPage() {
     return (
       associations.find(
         (association) => String(association.id) === String(selectedAssociationId)
-      ) || associations[0]
+      ) || FALLBACK_ASSOCIATIONS[0]
     );
   }, [associations, selectedAssociationId]);
 
@@ -42,34 +42,42 @@ export default function OwnerLoginPage() {
     let mounted = true;
 
     async function loadAssociations() {
+      setLoadingAssociations(true);
+
       try {
         const { data, error } = await supabase
           .from("associations")
-          .select("id, name, quickbooks_id, quickbooks_company_id")
+          .select("id, name, status")
           .order("name", { ascending: true });
 
         if (error) {
-          console.warn("Association list unavailable:", error.message);
-          return;
+          throw error;
         }
 
         if (!mounted) return;
 
-        if (Array.isArray(data) && data.length > 0) {
-          const normalizedAssociations = data.map((association) => ({
-            id: association.id,
-            name: association.name || "Unnamed Association",
-            quickbooks_id:
-              association.quickbooks_id ||
-              association.quickbooks_company_id ||
-              association.id,
-          }));
+        const activeAssociations = Array.isArray(data)
+          ? data.filter((association) => association.status === "active")
+          : [];
 
-          setAssociations(normalizedAssociations);
-          setSelectedAssociationId(normalizedAssociations[0].id);
+        if (activeAssociations.length > 0) {
+          setAssociations(activeAssociations);
+          setSelectedAssociationId(activeAssociations[0].id);
+        } else {
+          setAssociations(FALLBACK_ASSOCIATIONS);
+          setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
         }
       } catch (error) {
-        console.warn("Association load failed:", error);
+        console.error("Association load failed:", error);
+
+        if (mounted) {
+          setAssociations(FALLBACK_ASSOCIATIONS);
+          setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
+        }
+      }
+
+      if (mounted) {
+        setLoadingAssociations(false);
       }
     }
 
@@ -120,23 +128,44 @@ export default function OwnerLoginPage() {
     };
   }, [router]);
 
-  function storeAssociationContext() {
-    if (!selectedAssociation) return;
+  function storeAssociationContext(userEmail) {
+    localStorage.setItem("spmPortalLoggedIn", "true");
+    localStorage.setItem("spmPortalUser", String(userEmail || "").toLowerCase());
+    localStorage.setItem("spmPortalUserName", String(userEmail || ""));
+    localStorage.setItem("spmPortalRole", "homeowner");
 
-    window.localStorage.setItem(
+    localStorage.setItem(
       "spm_selected_association_id",
       String(selectedAssociation.id)
     );
 
-    window.localStorage.setItem(
+    localStorage.setItem(
       "spm_selected_association_name",
       String(selectedAssociation.name || "")
     );
+  }
 
-    window.localStorage.setItem(
-      "spm_selected_quickbooks_id",
-      String(selectedAssociation.quickbooks_id || selectedAssociation.id)
-    );
+  async function checkApprovedAccess(userEmail) {
+    const response = await fetch("/api/portal/check-access", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        association_id: selectedAssociation.id,
+        email: userEmail,
+        role: "homeowner",
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Homeowner access API failed:", result);
+      return false;
+    }
+
+    return Boolean(result.approved);
   }
 
   async function handleSubmit(e) {
@@ -161,7 +190,15 @@ export default function OwnerLoginPage() {
     }
 
     try {
-      storeAssociationContext();
+      const approved = await checkApprovedAccess(normalizedEmail);
+
+      if (!approved) {
+        setErrorMessage(
+          "Access denied. This email is not approved for the selected association."
+        );
+        setLoading(false);
+        return;
+      }
 
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -171,8 +208,6 @@ export default function OwnerLoginPage() {
             data: {
               association_id: selectedAssociation.id,
               association_name: selectedAssociation.name,
-              quickbooks_id:
-                selectedAssociation.quickbooks_id || selectedAssociation.id,
               portal_role: "homeowner",
             },
           },
@@ -182,10 +217,7 @@ export default function OwnerLoginPage() {
           throw error;
         }
 
-        setMessage(
-          "Account created. Please check your email if confirmation is required, then sign in."
-        );
-
+        setMessage("Access created. You may now sign in.");
         setMode("signin");
         setPassword("");
         setLoading(false);
@@ -201,6 +233,7 @@ export default function OwnerLoginPage() {
         throw error;
       }
 
+      storeAssociationContext(normalizedEmail);
       router.replace("/homeowner");
     } catch (error) {
       setErrorMessage(error.message || "Unable to continue.");
@@ -268,8 +301,8 @@ export default function OwnerLoginPage() {
             </h2>
 
             <p className="mt-2 text-sm text-slate-400">
-              Select your association and use the email associated with your
-              unit or invitation.
+              Select your association and use the approved email associated with
+              your unit or invitation.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
@@ -281,7 +314,8 @@ export default function OwnerLoginPage() {
                 <select
                   value={selectedAssociationId}
                   onChange={(e) => setSelectedAssociationId(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/50"
+                  disabled={loadingAssociations}
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400/50 disabled:opacity-60"
                 >
                   {associations.map((association) => (
                     <option
@@ -295,8 +329,8 @@ export default function OwnerLoginPage() {
                 </select>
 
                 <p className="mt-2 text-xs text-slate-500">
-                  Association selection protects the correct QuickBooks and
-                  BOSai Association ID connection.
+                  Association selection protects the correct BOSai Association
+                  ID connection.
                 </p>
               </div>
 
@@ -352,7 +386,7 @@ export default function OwnerLoginPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || loadingAssociations}
                 className="w-full rounded-xl border border-yellow-400/30 bg-yellow-400 px-6 py-4 text-sm font-semibold text-slate-950 hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading
@@ -381,9 +415,8 @@ export default function OwnerLoginPage() {
             </div>
 
             <p className="mt-6 text-xs leading-5 text-slate-500">
-              Owner access is association-scoped. Financial data remains sourced
-              from QuickBooks and displayed through SPM’s HOA-safe operational
-              mirror.
+              Owner access is association-scoped. Unknown emails are blocked
+              unless approved for the selected association.
             </p>
           </div>
         </div>
