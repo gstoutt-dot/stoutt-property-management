@@ -1,64 +1,190 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import { supabase } from "../lib/supabaseClient";
 
-const TEMP_USERS = {
-  owner: {
-    password: "owner2026",
-    name: "Homeowner User",
-    role: "owner",
+const FALLBACK_ASSOCIATIONS = [
+  {
+    id: "sunset-condo",
+    name: "Sunset Condo Association",
+    quickbooks_id: "sunset-condo",
   },
-  manager: {
-    password: "manager2026",
-    name: "Property Manager",
-    role: "manager",
-  },
-  board: {
-    password: "board2026",
-    name: "Board Member",
-    role: "board",
-  },
-  glenn: {
-    password: "stoutt2026",
-    name: "Glenn Stoutt",
-    role: "admin",
-  },
-};
+];
 
-export default function HomeownerLogin() {
+const PORTAL_ROLES = [
+  { value: "board", label: "Board Member" },
+  { value: "manager", label: "Manager" },
+  { value: "admin", label: "Admin" },
+];
+
+export default function AdminLoginPage() {
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
+  const [mode, setMode] = useState("signin");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [portalRole, setPortalRole] = useState("board");
+  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
+  const [selectedAssociationId, setSelectedAssociationId] = useState(
+    FALLBACK_ASSOCIATIONS[0].id
+  );
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-    // ROLE-BASED ROUTING FUNCTION
+  const selectedAssociation = useMemo(() => {
+    return (
+      associations.find(
+        (association) => String(association.id) === String(selectedAssociationId)
+      ) || associations[0]
+    );
+  }, [associations, selectedAssociationId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadAssociations() {
+      try {
+        const { data, error } = await supabase
+          .from("associations")
+          .select("id, name, quickbooks_id, quickbooks_company_id")
+          .order("name", { ascending: true });
+
+        if (error) {
+          console.warn("Association list unavailable:", error.message);
+          return;
+        }
+
+        if (!mounted) return;
+
+        if (Array.isArray(data) && data.length > 0) {
+          const normalizedAssociations = data.map((association) => ({
+            id: association.id,
+            name: association.name || "Unnamed Association",
+            quickbooks_id:
+              association.quickbooks_id ||
+              association.quickbooks_company_id ||
+              association.id,
+          }));
+
+          setAssociations(normalizedAssociations);
+          setSelectedAssociationId(normalizedAssociations[0].id);
+        }
+      } catch (error) {
+        console.warn("Association load failed:", error);
+      }
+    }
+
+    loadAssociations();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const getRouteByRole = (role) => {
-    if (role === "owner") return "/portal/owner";
     if (role === "manager") return "/portal/manager";
     if (role === "board") return "/board";
     if (role === "admin") return "/admin";
-    return "/";
+    return "/admin-login";
   };
 
-  const handleLogin = (e) => {
+  const storePortalContext = (role, userEmail) => {
+    localStorage.setItem("spmPortalLoggedIn", "true");
+    localStorage.setItem("spmPortalUser", String(userEmail || "").toLowerCase());
+    localStorage.setItem("spmPortalUserName", String(userEmail || ""));
+    localStorage.setItem("spmPortalRole", role);
+
+    localStorage.setItem(
+      "spm_selected_association_id",
+      String(selectedAssociation.id)
+    );
+    localStorage.setItem(
+      "spm_selected_association_name",
+      String(selectedAssociation.name || "")
+    );
+    localStorage.setItem(
+      "spm_selected_quickbooks_id",
+      String(selectedAssociation.quickbooks_id || selectedAssociation.id)
+    );
+  };
+
+  async function handleSubmit(e) {
     e.preventDefault();
+
+    setLoading(true);
     setError("");
+    setMessage("");
 
-    const cleanUsername = username.trim().toLowerCase();
-    const user = TEMP_USERS[cleanUsername];
+    const normalizedEmail = String(email || "").toLowerCase().trim();
 
-    if (user && password === user.password) {
-      localStorage.setItem("spmPortalLoggedIn", "true");
-      localStorage.setItem("spmPortalUser", cleanUsername);
-      localStorage.setItem("spmPortalUserName", user.name);
-      localStorage.setItem("spmPortalRole", user.role);
-
-      router.push(getRouteByRole(user.role));
+    if (!selectedAssociation?.id) {
+      setError("Please select an association.");
+      setLoading(false);
       return;
     }
 
-    setError("Invalid username or password.");
-  };
+    if (!portalRole) {
+      setError("Please select a portal role.");
+      setLoading(false);
+      return;
+    }
+
+    if (!normalizedEmail || !password) {
+      setError("Please enter your email and password.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (mode === "signup") {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            data: {
+              portal_role: portalRole,
+              association_id: selectedAssociation.id,
+              association_name: selectedAssociation.name,
+              quickbooks_id:
+                selectedAssociation.quickbooks_id || selectedAssociation.id,
+            },
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        setMessage(
+          "Access created. Please check your email if confirmation is required, then sign in."
+        );
+        setMode("signin");
+        setPassword("");
+        setLoading(false);
+        return;
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      storePortalContext(portalRole, normalizedEmail);
+      router.push(getRouteByRole(portalRole));
+    } catch (error) {
+      setError(error.message || "Unable to continue.");
+    }
+
+    setLoading(false);
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -81,23 +207,69 @@ export default function HomeownerLogin() {
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              Login to access your assigned portal tools, dashboards, workflows,
-              and approval systems.
+              {mode === "signin"
+                ? "Sign in to access your assigned board, manager, or admin portal."
+                : "Create secure access for an assigned board, manager, or admin portal."}
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-200">
-                Username
+                Association
               </label>
+
+              <select
+                value={selectedAssociationId}
+                onChange={(e) => setSelectedAssociationId(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
+              >
+                {associations.map((association) => (
+                  <option
+                    key={association.id}
+                    value={association.id}
+                    className="bg-slate-950 text-white"
+                  >
+                    {association.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Portal Type
+              </label>
+
+              <select
+                value={portalRole}
+                onChange={(e) => setPortalRole(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
+              >
+                {PORTAL_ROLES.map((role) => (
+                  <option
+                    key={role.value}
+                    value={role.value}
+                    className="bg-slate-950 text-white"
+                  >
+                    {role.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Email
+              </label>
+
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 autoComplete="username"
                 className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
-                placeholder="Enter username"
+                placeholder="Enter email"
               />
             </div>
 
@@ -105,14 +277,27 @@ export default function HomeownerLogin() {
               <label className="mb-2 block text-sm font-medium text-slate-200">
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
-                placeholder="Enter password"
-              />
+
+              <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 transition focus-within:border-amber-400/60 focus-within:ring-2 focus-within:ring-amber-400/20">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={
+                    mode === "signin" ? "current-password" : "new-password"
+                  }
+                  className="w-full bg-transparent px-4 py-3 text-white outline-none placeholder:text-slate-500"
+                  placeholder="Enter password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="border-l border-white/10 px-4 text-xs font-semibold uppercase tracking-wide text-amber-300 transition hover:bg-amber-400/10"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -121,19 +306,48 @@ export default function HomeownerLogin() {
               </div>
             )}
 
+            {message && (
+              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                {message}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
+              disabled={loading}
+              className="w-full rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Enter Portal
+              {loading
+                ? "Please wait..."
+                : mode === "signin"
+                ? "Enter Portal"
+                : "Create Access"}
             </button>
           </form>
+
+          <div className="mt-6 border-t border-white/10 pt-5 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin");
+                setError("");
+                setMessage("");
+                setPassword("");
+              }}
+              className="text-sm font-medium text-amber-300 hover:text-amber-200"
+            >
+              {mode === "signin"
+                ? "Need to create board, manager, or admin access?"
+                : "Already have access? Sign in"}
+            </button>
+          </div>
+
+          <p className="mt-6 text-center text-xs leading-5 text-slate-500">
+            Portal access is association-scoped and tied to the selected BOSai
+            Association ID and QuickBooks company record.
+          </p>
         </div>
       </section>
     </main>
   );
 }
-
-
-
-
