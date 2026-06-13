@@ -53,10 +53,7 @@ export default function AdminLoginPage() {
           .select("id, name, quickbooks_id, quickbooks_company_id")
           .order("name", { ascending: true });
 
-        if (error) {
-          console.warn("Association list unavailable:", error.message);
-          return;
-        }
+        if (error) return;
 
         if (!mounted) return;
 
@@ -112,6 +109,44 @@ export default function AdminLoginPage() {
     );
   };
 
+  async function checkApprovedAccess(userEmail, role) {
+    const { data, error } = await supabase
+      .from("portal_access_approvals")
+      .select("id, status")
+      .eq("association_id", selectedAssociation.id)
+      .eq("email", userEmail)
+      .eq("role", role)
+      .eq("status", "approved")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Access approval check failed:", error);
+      return false;
+    }
+
+    return Boolean(data?.id);
+  }
+
+  async function createManagerPendingRequest(userEmail) {
+    const { error } = await supabase.from("portal_access_approvals").upsert(
+      {
+        association_id: selectedAssociation.id,
+        association_name: selectedAssociation.name,
+        quickbooks_id: selectedAssociation.quickbooks_id || selectedAssociation.id,
+        email: userEmail,
+        role: "manager",
+        status: "pending",
+      },
+      {
+        onConflict: "association_id,email,role",
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -128,7 +163,7 @@ export default function AdminLoginPage() {
     }
 
     if (!portalRole) {
-      setError("Please select a portal role.");
+      setError("Please select a portal type.");
       setLoading(false);
       return;
     }
@@ -141,6 +176,35 @@ export default function AdminLoginPage() {
 
     try {
       if (mode === "signup") {
+        if (portalRole === "admin") {
+          setError(
+            "Admin access cannot be created from this page. Admin access must be approved internally."
+          );
+          setLoading(false);
+          return;
+        }
+
+        if (portalRole === "manager") {
+          await createManagerPendingRequest(normalizedEmail);
+
+          setMessage(
+            "Manager access request submitted. Access will remain locked until Glenn approves it."
+          );
+          setPassword("");
+          setLoading(false);
+          return;
+        }
+
+        const approved = await checkApprovedAccess(normalizedEmail, portalRole);
+
+        if (!approved) {
+          setError(
+            "Access denied. This email is not approved for the selected association and portal type."
+          );
+          setLoading(false);
+          return;
+        }
+
         const { error: signUpError } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -159,11 +223,19 @@ export default function AdminLoginPage() {
           throw signUpError;
         }
 
-        setMessage(
-          "Access created. Please check your email if confirmation is required, then sign in."
-        );
+        setMessage("Access created. You may now sign in.");
         setMode("signin");
         setPassword("");
+        setLoading(false);
+        return;
+      }
+
+      const approved = await checkApprovedAccess(normalizedEmail, portalRole);
+
+      if (!approved) {
+        setError(
+          "Access denied. This email is not approved for the selected association and portal type."
+        );
         setLoading(false);
         return;
       }
@@ -207,9 +279,8 @@ export default function AdminLoginPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              {mode === "signin"
-                ? "Sign in to access your assigned board, manager, or admin portal."
-                : "Create secure access for an assigned board, manager, or admin portal."}
+              Association-controlled access for board, manager, and admin
+              portals.
             </p>
           </div>
 
@@ -321,6 +392,8 @@ export default function AdminLoginPage() {
                 ? "Please wait..."
                 : mode === "signin"
                 ? "Enter Portal"
+                : portalRole === "manager"
+                ? "Request Manager Access"
                 : "Create Access"}
             </button>
           </form>
@@ -337,14 +410,15 @@ export default function AdminLoginPage() {
               className="text-sm font-medium text-amber-300 hover:text-amber-200"
             >
               {mode === "signin"
-                ? "Need to create board, manager, or admin access?"
+                ? "Need to create board or manager access?"
                 : "Already have access? Sign in"}
             </button>
           </div>
 
           <p className="mt-6 text-center text-xs leading-5 text-slate-500">
-            Portal access is association-scoped and tied to the selected BOSai
-            Association ID and QuickBooks company record.
+            Portal access is association-scoped. Unknown users are blocked unless
+            their email has been approved for the selected association and portal
+            type.
           </p>
         </div>
       </section>
