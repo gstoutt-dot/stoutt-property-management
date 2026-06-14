@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const DEFAULT_ASSOCIATION_ID =
-  typeof window !== "undefined"
-    ? localStorage.getItem("spm_selected_association_id") || ""
-    : "";
+const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 
 export default function Documents() {
   const [documents, setDocuments] = useState([]);
@@ -465,3 +462,4 @@ function titleCase(value) {
     .replace(/-/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
+
