@@ -1,10 +1,19 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 
-const SUNSET_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const SUNSET_ASSOCIATION_NAME = "Sunset Condominium Association";
-
 export default function AvaKnowledgeCenter() {
+    const router = useRouter();
+
+  const associationId =
+    router.query.associationId ||
+    router.query.association_id ||
+    "";
+
+  const associationName =
+    router.query.associationName ||
+    router.query.association_name ||
+    "Selected Association";
   const [documentTitle, setDocumentTitle] = useState("");
   const [documentCategory, setDocumentCategory] = useState("Rules & Regulations");
   const [chunkText, setChunkText] = useState("");
@@ -30,8 +39,8 @@ export default function AvaKnowledgeCenter() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          associationId: SUNSET_ASSOCIATION_ID,
-          associationName: SUNSET_ASSOCIATION_NAME,
+          associationId: associationId,
+          associationName: associationName,
           documentTitle,
           documentCategory,
           chunkText,
@@ -70,7 +79,7 @@ export default function AvaKnowledgeCenter() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        associationId: SUNSET_ASSOCIATION_ID,
+        associationId: associationId,
         question: testQuestion,
       }),
     });
@@ -96,6 +105,11 @@ async function uploadKnowledgeDocument() {
     return;
   }
 
+  if (!associationId) {
+    setError("No association context found. Please return to the Admin Dashboard and reopen Ava Knowledge Center.");
+    return;
+  }
+
   setUploading(true);
   setError("");
   setMessage("");
@@ -104,8 +118,8 @@ async function uploadKnowledgeDocument() {
     const formData = new FormData();
 
     formData.append("file", uploadedFile);
-    formData.append("associationId", SUNSET_ASSOCIATION_ID);
-    formData.append("associationName", SUNSET_ASSOCIATION_NAME);
+    formData.append("associationId", associationId);
+    formData.append("associationName", associationName);
     formData.append("documentTitle", documentTitle);
     formData.append("documentCategory", documentCategory);
     formData.append("sourcePage", sourcePage);
@@ -158,8 +172,10 @@ async function uploadKnowledgeDocument() {
             </p>
           </div>
 
-          <Link
-            href="/portal"
+                    <Link
+            href={`/portal?associationId=${associationId}&associationName=${encodeURIComponent(
+              associationName
+            )}`}
             className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-yellow-400/60 hover:text-yellow-300"
           >
             Back to Admin Dashboard
