@@ -93,13 +93,15 @@ export default function CommitteeMembersCenter() {
     router.query.association_name,
   ]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (!associationId) {
       setSystemMessage("No association selected.");
       setLoading(false);
       return;
     }
 
+    setSystemMessage("");
+    setLoading(true);
     loadAll();
   }, [associationId]);
 
