@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
+const DEFAULT_ASSOCIATION_ID =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
 const closedStatuses = ["completed", "closed", "archived"];
 
 const requestTypes = [
@@ -120,6 +122,11 @@ export default function AssociationWorkOrders() {
 
       setSystemMessage("");
 
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
+
       const params = new URLSearchParams({
         associationId: DEFAULT_ASSOCIATION_ID,
       });
@@ -147,6 +154,7 @@ export default function AssociationWorkOrders() {
   }
 
   async function loadVendors() {
+    if (!DEFAULT_ASSOCIATION_ID) return;
     const { data, error } = await supabase
       .from("association_vendors")
       .select("*")
@@ -167,6 +175,10 @@ export default function AssociationWorkOrders() {
       setSubmitting(true);
       setSubmitError("");
       setSubmitMessage("");
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSubmitError("No association selected.");
+  return;
+}
 
       const selectedVendor = vendors.find(
         (vendor) => String(vendor.id) === String(selectedVendorId)
