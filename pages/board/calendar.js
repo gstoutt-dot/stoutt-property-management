@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const closedStatuses = ["completed", "archived", "closed", "cancelled"];
+const DEFAULT_ASSOCIATION_ID =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";const closedStatuses = ["completed", "archived", "closed", "cancelled"];
 
 const calendarEventTypes = [
   "board_meeting",
@@ -57,6 +59,12 @@ export default function AssociationCalendar() {
 
       setSystemMessage("");
 
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
+      
+      if (!DEFAULT_ASSOCIATION_ID) return;
       const response = await fetch(
         `/api/calendar/events?association_id=${encodeURIComponent(
           DEFAULT_ASSOCIATION_ID
@@ -131,6 +139,11 @@ export default function AssociationCalendar() {
       setSaving(true);
       setSystemMessage("");
 
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
+
       const response = await fetch("/api/calendar/events", {
         method: "POST",
         headers: {
@@ -171,6 +184,10 @@ export default function AssociationCalendar() {
 
   async function uploadCalendarAttachment(file, attachmentCategory) {
     if (!file) return null;
+
+    if (!DEFAULT_ASSOCIATION_ID) {
+  throw new Error("No association selected.");
+}
 
     const fileBase64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
