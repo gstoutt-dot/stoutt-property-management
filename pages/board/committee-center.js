@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 const committeeTypes = [
   "board",
   "general",
@@ -30,6 +28,8 @@ const documentCategories = [
 ];
 
 export default function CommitteeMembersCenter() {
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [committees, setCommittees] = useState([]);
   const [members, setMembers] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -55,9 +55,27 @@ export default function CommitteeMembersCenter() {
   const [recommendationForms, setRecommendationForms] = useState({});
   const [creatingRecommendationId, setCreatingRecommendationId] = useState("");
 
-  useEffect(() => {
-    loadAll();
+    useEffect(() => {
+    const storedAssociationId =
+      localStorage.getItem("spm_selected_association_id") || "";
+
+    const storedAssociationName =
+      localStorage.getItem("spm_selected_association_name") ||
+      "Selected Association";
+
+    setAssociationId(storedAssociationId);
+    setAssociationName(storedAssociationName);
   }, []);
+
+  useEffect(() => {
+    if (!associationId) {
+      setSystemMessage("No association selected.");
+      setLoading(false);
+      return;
+    }
+
+    loadAll();
+  }, [associationId]);
 
     async function loadAll() {
     setLoading(true);
@@ -75,7 +93,7 @@ export default function CommitteeMembersCenter() {
     try {
       const response = await fetch(
         `/api/committees/list?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
+          associationId
         )}`
       );
 
@@ -96,7 +114,7 @@ export default function CommitteeMembersCenter() {
     try {
       const response = await fetch(
         `/api/committees/list-members?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
+          associationId
         )}`
       );
 
@@ -116,7 +134,7 @@ export default function CommitteeMembersCenter() {
     try {
       const response = await fetch(
         `/api/committees/list-recommendations?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
+          associationId
         )}`
       );
 
@@ -136,7 +154,7 @@ export default function CommitteeMembersCenter() {
     try {
       const response = await fetch(
         `/api/committees/list-documents?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
+          associationId
         )}`
       );
 
@@ -154,7 +172,11 @@ export default function CommitteeMembersCenter() {
 
   async function loadBoardResponses() {
     try {
-      const response = await fetch("/api/admin/operational-records");
+      const response = await fetch(
+  `/api/admin/operational-records?association_id=${encodeURIComponent(
+    associationId
+  )}`
+);
       const payload = await response.json();
 
       if (!response.ok || !payload.success) {
@@ -188,7 +210,7 @@ export default function CommitteeMembersCenter() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           ...committeeForm,
         }),
       });
@@ -235,7 +257,7 @@ export default function CommitteeMembersCenter() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           committee_id: committeeId,
           member_name: form.member_name,
           member_role: form.member_role || "member",
@@ -402,7 +424,7 @@ export default function CommitteeMembersCenter() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           committee_id: committeeId,
           recommendation_title: form.recommendation_title,
           recommendation_summary:
@@ -476,7 +498,7 @@ async function uploadCommitteeDocument(committeeId) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        association_id: DEFAULT_ASSOCIATION_ID,
+        association_id: associationId,
         committee_id: committeeId,
         document_name: form.document_name || form.file.name,
         document_category: form.document_category || "other",
