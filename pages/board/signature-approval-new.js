@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabaseClient";
-
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+import { useRouter } from "next/router";
 
 export default function SignatureApprovalNew() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
+
   const [form, setForm] = useState({
     title: "",
     approval_category: "Contract Approval",
@@ -16,8 +19,43 @@ export default function SignatureApprovalNew() {
     due_date: "",
   });
 
-  const [saving, setSaving] = useState(false);
+    const [saving, setSaving] = useState(false);
   const [systemMessage, setSystemMessage] = useState("");
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.associationId ||
+      router.query.association_id ||
+      "";
+
+    const queryAssociationName =
+      router.query.associationName ||
+      router.query.association_name ||
+      "";
+
+    const storedAssociationId =
+      localStorage.getItem("spm_selected_association_id") || "";
+
+    const storedAssociationName =
+      localStorage.getItem("spm_selected_association_name") ||
+      "Selected Association";
+
+    setAssociationId(queryAssociationId || storedAssociationId);
+
+    setAssociationName(
+      queryAssociationName ||
+        storedAssociationName ||
+        "Selected Association"
+    );
+  }, [
+    router.isReady,
+    router.query.associationId,
+    router.query.association_id,
+    router.query.associationName,
+    router.query.association_name,
+  ]);
 
   function updateField(field, value) {
     setForm((current) => ({
@@ -29,8 +67,13 @@ export default function SignatureApprovalNew() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!form.title.trim()) {
+        if (!form.title.trim()) {
       setSystemMessage("Please enter an approval title.");
+      return;
+    }
+
+    if (!associationId) {
+      setSystemMessage("No association selected. Please return to the Admin Dashboard and reopen this page.");
       return;
     }
 
@@ -39,7 +82,7 @@ export default function SignatureApprovalNew() {
       setSystemMessage("");
 
       const payload = {
-        association_id: DEFAULT_ASSOCIATION_ID,
+        association_id: associationId,
         title: form.title.trim(),
         approval_category: form.approval_category,
         required_signer: form.required_signer.trim() || "Board",
@@ -103,7 +146,9 @@ export default function SignatureApprovalNew() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/board/signature-approval-log"
+              href={`/board/signature-approval-log?associationId=${associationId}&associationName=${encodeURIComponent(
+                associationName
+              )}`}
               className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
             >
               Signature Log
@@ -257,7 +302,9 @@ export default function SignatureApprovalNew() {
             </button>
 
             <Link
-              href="/board/signature-approval-log"
+              href={`/board/signature-approval-log?associationId=${associationId}&associationName=${encodeURIComponent(
+                associationName
+              )}`}
               className="rounded-2xl border border-white/10 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
             >
               Return to Signature Log
