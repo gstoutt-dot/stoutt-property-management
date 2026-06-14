@@ -2,7 +2,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import bosTheme from "../../styles/bos-theme";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const DEFAULT_ASSOCIATION_ID =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
 
 export default function BoardMessages() {
   const [messages, setMessages] = useState([]);
@@ -36,6 +39,11 @@ export default function BoardMessages() {
       if (!silent) setLoading(true);
       if (!silent) setSystemMessage("");
 
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
+
       const response = await fetch(
         `/api/board/messages/list?association_id=${encodeURIComponent(
           DEFAULT_ASSOCIATION_ID
@@ -65,6 +73,11 @@ export default function BoardMessages() {
 
   try {
     setSystemMessage("");
+
+    if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
 
     const response = await fetch(`/api/board/messages/delete?id=${messageId}`, {
       method: "DELETE",
