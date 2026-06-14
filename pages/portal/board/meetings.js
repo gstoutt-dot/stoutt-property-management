@@ -3,7 +3,9 @@ import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
 
 const DEFAULT_ASSOCIATION_ID =
-  "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
 
 const closedStatuses = ["completed", "archived", "closed"];
 
@@ -32,6 +34,11 @@ export default function BoardMeetings() {
       setLoading(true);
       setSystemMessage("");
 
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
+
       const packetResponse = await fetch(
         `/api/board/meeting-packets/list?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
@@ -57,7 +64,8 @@ export default function BoardMeetings() {
   async function loadMeetingRecords() {
     try {
       setLoadingRecords(true);
-
+      
+     if (!DEFAULT_ASSOCIATION_ID) return;
       const response = await fetch(
         `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
       );
@@ -102,6 +110,11 @@ export default function BoardMeetings() {
       setCreatingPacket(true);
       setSystemMessage("");
 
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
+
       if (!packetTitle.trim()) {
         setSystemMessage("Meeting packet title is required.");
         return;
@@ -142,9 +155,18 @@ export default function BoardMeetings() {
   async function uploadPacketAttachment(packet, file, documentCategory = "other") {
   if (!file || !packet?.id) return;
 
+    if (!DEFAULT_ASSOCIATION_ID) {
+  throw new Error("No association selected.");
+}
+
   try {
     setUploadingPacketId(packet.id);
     setSystemMessage("");
+
+    if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected.");
+  return;
+}
 
     const fileBase64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
