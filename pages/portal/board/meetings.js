@@ -2,14 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID =
-  typeof window !== "undefined"
-    ? localStorage.getItem("spm_selected_association_id") || ""
-    : "";
-
 const closedStatuses = ["completed", "archived", "closed"];
 
 export default function BoardMeetings() {
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [operationalRecords, setOperationalRecords] = useState([]);
   const [meetingPackets, setMeetingPackets] = useState([]);
 
@@ -24,23 +21,42 @@ export default function BoardMeetings() {
   const [uploadingPacketId, setUploadingPacketId] = useState("");
   const [documentCategories, setDocumentCategories] = useState({});
 
+    useEffect(() => {
+    const storedAssociationId =
+      localStorage.getItem("spm_selected_association_id") || "";
+
+    const storedAssociationName =
+      localStorage.getItem("spm_selected_association_name") ||
+      "Selected Association";
+
+    setAssociationId(storedAssociationId);
+    setAssociationName(storedAssociationName);
+  }, []);
+
   useEffect(() => {
+    if (!associationId) {
+      setSystemMessage("No association selected.");
+      setLoading(false);
+      setLoadingRecords(false);
+      return;
+    }
+
     loadMeetingData();
     loadMeetingRecords();
-  }, []);
+  }, [associationId]);
 
   async function loadMeetingData() {
     try {
       setLoading(true);
       setSystemMessage("");
 
-      if (!DEFAULT_ASSOCIATION_ID) {
+      if (!associationId) {
   setSystemMessage("No association selected.");
   return;
 }
 
       const packetResponse = await fetch(
-        `/api/board/meeting-packets/list?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/board/meeting-packets/list?association_id=${associationId}`
       );
 
       const packetPayload = await packetResponse.json();
@@ -65,9 +81,9 @@ export default function BoardMeetings() {
     try {
       setLoadingRecords(true);
       
-     if (!DEFAULT_ASSOCIATION_ID) return;
+     if (!associationId) return;
       const response = await fetch(
-        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/admin/operational-records?association_id=${associationId}`
       );
 
       const payload = await response.json();
@@ -110,7 +126,7 @@ export default function BoardMeetings() {
       setCreatingPacket(true);
       setSystemMessage("");
 
-      if (!DEFAULT_ASSOCIATION_ID) {
+      if (!associationId) {
   setSystemMessage("No association selected.");
   return;
 }
@@ -126,7 +142,7 @@ export default function BoardMeetings() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           title: packetTitle,
           agenda_text: agendaDraft,
           packet_notes: packetNotes,
@@ -155,7 +171,7 @@ export default function BoardMeetings() {
   async function uploadPacketAttachment(packet, file, documentCategory = "other") {
   if (!file || !packet?.id) return;
 
-    if (!DEFAULT_ASSOCIATION_ID) {
+    if (!associationId) {
   throw new Error("No association selected.");
 }
 
@@ -163,7 +179,7 @@ export default function BoardMeetings() {
     setUploadingPacketId(packet.id);
     setSystemMessage("");
 
-    if (!DEFAULT_ASSOCIATION_ID) {
+    if (!associationId) {
   setSystemMessage("No association selected.");
   return;
 }
@@ -184,7 +200,7 @@ export default function BoardMeetings() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           packet_id: packet.id,
           file_name: file.name,
           file_type: file.type,
@@ -222,7 +238,7 @@ export default function BoardMeetings() {
 
     const now = new Date().toISOString();
 
-    const { error: packetError } = await supabase
+        const { error: packetError } = await supabase
       .from("board_meeting_packets")
       .update({
         status: "Sent to Board",
@@ -230,7 +246,8 @@ export default function BoardMeetings() {
         sent_to_board_at: now,
         updated_at: now,
       })
-      .eq("id", packet.id);
+      .eq("id", packet.id)
+      .eq("association_id", associationId);
 
     if (packetError) {
       throw packetError;
@@ -244,7 +261,7 @@ export default function BoardMeetings() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           packet,
         }),
       }
