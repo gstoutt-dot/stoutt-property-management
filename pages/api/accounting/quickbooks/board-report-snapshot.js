@@ -2,7 +2,9 @@
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+function clean(value) {
+  return String(value || "").trim();
+}
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -13,10 +15,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const associationId = req.query.association_id || DEFAULT_ASSOCIATION_ID;
-    const reportKey = req.query.report_key;
+        const associationId =
+      clean(req.query.association_id) || clean(req.query.associationId);
 
-    if (!reportKey || typeof reportKey !== "string") {
+    const reportKey = clean(req.query.report_key || req.query.reportKey);
+
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required association_id.",
+      });
+    }
+
+    if (!reportKey) {
       return res.status(400).json({
         success: false,
         error: "Missing required report_key.",
