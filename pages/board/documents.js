@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+function getAssociationId() {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("spm_selected_association_id") || "";
+}
 
 export default function Documents() {
+  const associationId = getAssociationId();
+
   const [documents, setDocuments] = useState([]);
   const [operationalRecords, setOperationalRecords] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -29,7 +34,7 @@ export default function Documents() {
       setSystemMessage("");
 
       const params = new URLSearchParams({
-        associationId: DEFAULT_ASSOCIATION_ID,
+        associationId,
         limit: "100",
       });
 
@@ -55,7 +60,7 @@ export default function Documents() {
       setLoadingRecords(true);
 
       const response = await fetch(
-        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/admin/operational-records?association_id=${associationId}`
       );
 
       const payload = await response.json();
