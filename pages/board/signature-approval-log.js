@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { supabase } from "../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID =
-  "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 export default function BoardSignatureApprovalLog() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [approvals, setApprovals] = useState([]);
   const [filter, setFilter] = useState("all");
   const [boardNotes, setBoardNotes] = useState({});
@@ -15,9 +16,52 @@ export default function BoardSignatureApprovalLog() {
   const [systemMessage, setSystemMessage] =
     useState("");
 
-    useEffect(() => {
+      useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.associationId ||
+      router.query.association_id ||
+      "";
+
+    const queryAssociationName =
+      router.query.associationName ||
+      router.query.association_name ||
+      "";
+
+    const storedAssociationId =
+      localStorage.getItem("spm_selected_association_id") || "";
+
+    const storedAssociationName =
+      localStorage.getItem("spm_selected_association_name") ||
+      "Selected Association";
+
+    setAssociationId(queryAssociationId || storedAssociationId);
+
+    setAssociationName(
+      queryAssociationName ||
+        storedAssociationName ||
+        "Selected Association"
+    );
+  }, [
+    router.isReady,
+    router.query.associationId,
+    router.query.association_id,
+    router.query.associationName,
+    router.query.association_name,
+  ]);
+
+  useEffect(() => {
+    if (!associationId) {
+      setSystemMessage("No association selected.");
+      setLoadingApprovals(false);
+      return;
+    }
+
+    setSystemMessage("");
+    setLoadingApprovals(true);
     loadApprovals();
-  }, []);
+  }, [associationId]);
 
   async function loadApprovals() {
     try {
@@ -26,7 +70,7 @@ export default function BoardSignatureApprovalLog() {
 
             const response = await fetch(
         `/api/signature-approvals/list?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
+          associationId
         )}`
       );
 
