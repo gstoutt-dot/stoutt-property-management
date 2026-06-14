@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-const SUNSET_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const DEFAULT_ASSOCIATION_ID =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
 
 const categories = [
   "Association Announcements",
@@ -18,7 +21,7 @@ const categories = [
 const priorities = ["Normal", "High", "Emergency"];
 
 export default function AdminHomeownerNotifications() {
-  const [associationId, setAssociationId] = useState(SUNSET_ASSOCIATION_ID);
+  const [associationId] = useState(DEFAULT_ASSOCIATION_ID);  
   const [sendTo, setSendTo] = useState("Entire Association");
   const [category, setCategory] = useState("Association Announcements");
   const [priority, setPriority] = useState("Normal");
@@ -169,17 +172,7 @@ export default function AdminHomeownerNotifications() {
             className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl"
           >
             <div className="grid gap-5">
-              <label className="grid gap-2">
-                <span className="text-sm font-medium text-slate-300">
-                  Association ID
-                </span>
-                <input
-                  value={associationId}
-                  onChange={(event) => setAssociationId(event.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-amber-300/70"
-                />
-              </label>
-
+              
               <div className="grid gap-5 md:grid-cols-3">
                 <label className="grid gap-2">
                   <span className="text-sm font-medium text-slate-300">
