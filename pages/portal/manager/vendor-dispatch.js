@@ -45,11 +45,7 @@ const { data, error } = await supabase
     }
 
     const safe = data || [];
-    const associationId =
-  typeof window !== "undefined"
-    ? localStorage.getItem("spm_selected_association_id") || ""
-    : "";
-
+    
 if (!associationId) {
   setVendors([]);
 } else {
