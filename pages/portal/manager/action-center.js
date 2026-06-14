@@ -24,15 +24,29 @@ export default function ManagerActionCenter() {
 
     setStatusMessage("");
 
-    const { data: bosData, error: bosError } = await supabase
-      .from("bos_actions")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const associationId =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
+
+if (!associationId) {
+  setStatusMessage("No association selected. Please log in again.");
+  setItems([]);
+  if (showLoading) setLoading(false);
+  return;
+}
+
+const { data: bosData, error: bosError } = await supabase
+  .from("bos_actions")
+  .select("*")
+  .eq("association_id", associationId)
+  .order("created_at", { ascending: false });
 
     const { data: adminData, error: adminError } = await supabase
-      .from("admin_operational_records")
-      .select("*")
-      .order("created_at", { ascending: false });
+  .from("admin_operational_records")
+  .select("*")
+  .eq("association_id", associationId)
+  .order("created_at", { ascending: false });
 
     if (bosError) {
       console.error("Live BOS action load failed:", bosError);
