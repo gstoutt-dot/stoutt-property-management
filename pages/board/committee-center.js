@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const committeeTypes = [
   "board",
@@ -28,6 +29,8 @@ const documentCategories = [
 ];
 
 export default function CommitteeMembersCenter() {
+  const router = useRouter();
+
   const [associationId, setAssociationId] = useState("");
   const [associationName, setAssociationName] = useState("Selected Association");
   const [committees, setCommittees] = useState([]);
@@ -55,7 +58,19 @@ export default function CommitteeMembersCenter() {
   const [recommendationForms, setRecommendationForms] = useState({});
   const [creatingRecommendationId, setCreatingRecommendationId] = useState("");
 
-    useEffect(() => {
+      useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.associationId ||
+      router.query.association_id ||
+      "";
+
+    const queryAssociationName =
+      router.query.associationName ||
+      router.query.association_name ||
+      "";
+
     const storedAssociationId =
       localStorage.getItem("spm_selected_association_id") || "";
 
@@ -63,9 +78,20 @@ export default function CommitteeMembersCenter() {
       localStorage.getItem("spm_selected_association_name") ||
       "Selected Association";
 
-    setAssociationId(storedAssociationId);
-    setAssociationName(storedAssociationName);
-  }, []);
+    setAssociationId(queryAssociationId || storedAssociationId);
+
+    setAssociationName(
+      queryAssociationName ||
+        storedAssociationName ||
+        "Selected Association"
+    );
+  }, [
+    router.isReady,
+    router.query.associationId,
+    router.query.association_id,
+    router.query.associationName,
+    router.query.association_name,
+  ]);
 
   useEffect(() => {
     if (!associationId) {
