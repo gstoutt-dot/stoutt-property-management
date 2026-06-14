@@ -1,19 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
 export default function AvaKnowledgeCenter() {
     const router = useRouter();
 
-  const associationId =
-    router.query.associationId ||
-    router.query.association_id ||
-    "";
+   const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
 
-  const associationName =
-    router.query.associationName ||
-    router.query.association_name ||
-    "Selected Association";
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.associationId ||
+      router.query.association_id ||
+      "";
+
+    const queryAssociationName =
+      router.query.associationName ||
+      router.query.association_name ||
+      "";
+
+    const storedAssociationId =
+      localStorage.getItem("spm_selected_association_id") || "";
+
+    const storedAssociationName =
+      localStorage.getItem("spm_selected_association_name") || "";
+
+    setAssociationId(queryAssociationId || storedAssociationId);
+
+    setAssociationName(
+      queryAssociationName ||
+        storedAssociationName ||
+        "Selected Association"
+    );
+  }, [
+    router.isReady,
+    router.query.associationId,
+    router.query.association_id,
+    router.query.associationName,
+    router.query.association_name,
+  ]);
   const [documentTitle, setDocumentTitle] = useState("");
   const [documentCategory, setDocumentCategory] = useState("Rules & Regulations");
   const [chunkText, setChunkText] = useState("");
