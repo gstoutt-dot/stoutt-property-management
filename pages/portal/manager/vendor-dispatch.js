@@ -19,11 +19,23 @@ export default function ManagerVendorDispatch() {
   async function loadDispatchQueue() {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("bos_actions")
-      .select("*")
-      .in("status", ["approved", "Ready for Vendor Dispatch"])
-      .order("created_at", { ascending: false });
+    const associationId =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
+
+if (!associationId) {
+  setItems([]);
+  setLoading(false);
+  return;
+}
+
+const { data, error } = await supabase
+  .from("bos_actions")
+  .select("*")
+  .eq("association_id", associationId)
+  .in("status", ["approved", "Ready for Vendor Dispatch"])
+  .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Vendor dispatch queue load failed:", error);
@@ -33,17 +45,23 @@ export default function ManagerVendorDispatch() {
     }
 
     const safe = data || [];
-    const { data: vendorData } = await supabase
-  .from("association_vendors")
-  .select("*")
-  .eq(
-    "association_id",
-    "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2"
-  )
-  .eq("active", true)
-  .order("vendor_name", { ascending: true });
+    const associationId =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
 
-setVendors(vendorData || []);
+if (!associationId) {
+  setVendors([]);
+} else {
+  const { data: vendorData } = await supabase
+    .from("association_vendors")
+    .select("*")
+    .eq("association_id", associationId)
+    .eq("active", true)
+    .order("vendor_name", { ascending: true });
+
+  setVendors(vendorData || []);
+}
     setItems(safe);
 
     setSelectedId((current) => {
