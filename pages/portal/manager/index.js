@@ -26,9 +26,10 @@ export default function ManagerDashboard() {
   }, [])
 
   async function loadWorkflowRecords(currentItems = []) {
-  const { data, error } = await supabase
+    const { data, error } = await supabase
     .from('manager_workflow_records')
     .select('*')
+    .eq('association_id', associationId)
 
   if (error) {
     console.error('Manager workflow records load failed:', error)
@@ -166,19 +167,27 @@ async function saveWorkflow(nextWorkflow) {
   await saveWorkflow(nextWorkflow)
 }
 
-  async function fetchData({ showLoading = false } = {}) {
+    async function fetchData({ showLoading = false } = {}) {
+
+    if (!associationId) {
+      setItems([])
+      setLoading(false)
+      return
+    }
     if (showLoading) {
       setLoading(true)
     }
 
-    const { data: bosData, error: bosError } = await supabase
+      const { data: bosData, error: bosError } = await supabase
       .from('bos_actions')
       .select('*')
+      .eq('association_id', associationId)
       .order('created_at', { ascending: false })
 
-    const { data: adminData, error: adminError } = await supabase
+       const { data: adminData, error: adminError } = await supabase
       .from('admin_operational_records')
       .select('*')
+      .eq('association_id', associationId)
       .order('created_at', { ascending: false })
 
     const { data: vendorData, error: vendorError } = await supabase
@@ -601,14 +610,14 @@ setLoading(false)
 
             <div className="flex flex-wrap gap-3">
               <Link
-  href="/portal/manager/action-center"
+  href={`/portal/manager/action-center?associationId=${associationId}`}
   className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
 >
   Action Center
 </Link>
 
 <Link
-  href="/portal/manager/vendor-dispatch"
+  href={`/portal/manager/vendor-dispatch?associationId=${associationId}`}
   className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
 >
   Vendor Dispatch
