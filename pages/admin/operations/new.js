@@ -3,7 +3,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { supabase } from "../../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+const DEFAULT_ASSOCIATION_ID =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spm_selected_association_id") || ""
+    : "";
 
 const requestTypes = [
   "Budget Planning",
@@ -80,6 +83,11 @@ export default function NewAdminOperation() {
     try {
       setSaving(true);
       setSystemMessage("");
+
+      if (!DEFAULT_ASSOCIATION_ID) {
+  setSystemMessage("No association selected. Please log in again.");
+  return;
+}
 
       const payload = {
         association_id: DEFAULT_ASSOCIATION_ID,
