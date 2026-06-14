@@ -28,19 +28,25 @@ export default function BOSActionCenter() {
   }, []);
 
   async function loadActions() {
-    const { data, error } = await supabase
-      .from("bos_actions")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const associationId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("spm_selected_association_id") || ""
+      : "";
 
-    if (error) {
-      console.error("Unable to load BOS actions:", error);
-      setSystemMessage("Unable to load BOS actions.");
-      return;
-    }
+  const { data, error } = await supabase
+    .from("bos_actions")
+    .select("*")
+    .eq("association_id", associationId)
+    .order("created_at", { ascending: false });
 
-    setActions(data || []);
+  if (error) {
+    console.error("Unable to load BOS actions:", error);
+    setSystemMessage("Unable to load BOS actions.");
+    return;
   }
+
+  setActions(data || []);
+}
 
   async function deleteAction(actionId) {
     const confirmed = window.confirm("Delete this BOS action permanently?");
@@ -478,7 +484,7 @@ function ActionRow({ item, onOpen, onUpdate, onDelete, updatingId }) {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
-        <Meta label="Association" value={item.association_name || "Demo Association"} />
+        <Meta label="Association" value={item.association_name || "Association"} />
         <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
         <Meta label="Property / Unit" value={item.property_address || "Pending"} />
         <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
@@ -699,7 +705,7 @@ function DetailDrawer({ item, onClose, onUpdate, onDelete, updatingId }) {
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Meta label="Association" value={item.association_name || "Demo Association"} />
+          <Meta label="Association" value={item.association_name || "Association"} />
           <Meta label="Owner" value={item.owner_name || "Ava Caller"} />
           <Meta label="Unit" value={item.property_address || "Pending"} />
           <Meta label="Category" value={formatCategory(item.category || item.request_type)} />
