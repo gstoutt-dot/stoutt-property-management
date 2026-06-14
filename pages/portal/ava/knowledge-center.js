@@ -28,11 +28,17 @@ export default function AvaKnowledgeCenter() {
   const [uploading, setUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   async function saveKnowledge() {
-    setSaving(true);
-    setMessage("");
-    setError("");
+  setSaving(true);
+  setMessage("");
+  setError("");
 
-    try {
+  if (!associationId) {
+    setSaving(false);
+    setError("No association context found. Please return to the Admin Dashboard and reopen Ava Knowledge Center.");
+    return;
+  }
+
+  try {
       const response = await fetch("/api/ava/create-knowledge-chunk", {
         method: "POST",
         headers: {
@@ -71,6 +77,12 @@ export default function AvaKnowledgeCenter() {
   setTestAnswer("");
   setTestSources([]);
   setError("");
+
+  if (!associationId) {
+    setTesting(false);
+    setError("No association context found. Please return to the Admin Dashboard and reopen Ava Knowledge Center.");
+    return;
+  }
 
   try {
     const response = await fetch("/api/ava/knowledge-search", {
