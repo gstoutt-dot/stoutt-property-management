@@ -713,12 +713,20 @@ export default function AdminDashboard() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {section.items.map((item) => (
-                  <Link
-                    key={`${section.title}-${item.href}`}
-                    href={item.href}
-                    className="group rounded-3xl border border-white/10 bg-[#020617]/70 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.06]"
-                  >
+                                {section.items.map((item) => {
+                  const itemHref =
+                    item.title === "Ava Knowledge Center"
+                      ? `/portal/ava/knowledge-center?associationId=${associationId}&associationName=${encodeURIComponent(
+                          associationName || "Selected Association"
+                        )}`
+                      : item.href;
+
+                  return (
+                    <Link
+                      key={`${section.title}-${item.href}`}
+                      href={itemHref}
+                      className="group rounded-3xl border border-white/10 bg-[#020617]/70 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.06]"
+                    >
                     <div className="mb-4 inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
                       Live / Ready
                     </div>
@@ -733,7 +741,8 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </section>
           ))}
