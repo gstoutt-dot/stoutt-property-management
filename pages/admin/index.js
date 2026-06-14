@@ -715,11 +715,15 @@ export default function AdminDashboard() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                                 {section.items.map((item) => {
                   const itemHref =
-                    item.title === "Ava Knowledge Center"
-                      ? `/portal/ava/knowledge-center?associationId=${associationId}&associationName=${encodeURIComponent(
-                          associationName || "Selected Association"
-                        )}`
-                      : item.href;
+  item.title === "Ava Knowledge Center"
+    ? `/portal/ava/knowledge-center?associationId=${associationId}&associationName=${encodeURIComponent(
+        associationName || "Selected Association"
+      )}`
+    : item.title === "Committee Members Center"
+    ? `/board/committee-center?associationId=${associationId}&associationName=${encodeURIComponent(
+        associationName || "Selected Association"
+      )}`
+    : item.href;
 
                   return (
                     <Link
