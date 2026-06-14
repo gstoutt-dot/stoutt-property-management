@@ -2,7 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+function getSelectedAssociationContext() {
+  if (typeof window === "undefined") {
+    return {
+      associationId: "",
+      associationName: "",
+    };
+  }
+
+  return {
+    associationId: localStorage.getItem("spm_selected_association_id") || "",
+    associationName: localStorage.getItem("spm_selected_association_name") || "",
+  };
+}
 
 const operationalHealth = [
   {
@@ -44,10 +56,7 @@ const sections = [
     description:
       "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
     items: [
-      {
-        title: "Manager Command Center",
-        href: "/portal/manager#live-queue",
-      },
+      { title: "Manager Command Center", href: "/portal/manager#live-queue" },
       { title: "Association Work Orders", href: "/admin/association-work-orders" },
       { title: "BOS Action Center", href: "/bos/action-center?returnTo=/admin" },
       { title: "New Operational Record", href: "/admin/operations/new" },
@@ -84,18 +93,13 @@ const sections = [
     description:
       "Planning tools for budget preparation, financial review, capital projects, and vendor performance oversight.",
     items: [
-  { title: "Financial Review", href: "/board/financial-review" },
-
-{
-  title: "Management Accounting Reports",
-  href: "/board/management-accounting-reports",
-},
-
-  { title: "Budget Planning", href: "/board/budget-planning" },
-  { title: "Capital Projects", href: "/board/capital-projects" },
-  { title: "Vendor Performance", href: "/board/vendor-performance" },
-  { title: "Association Approved Vendors", href: "/board/vendors" },
-],
+      { title: "Financial Review", href: "/board/financial-review" },
+      { title: "Management Accounting Reports", href: "/board/management-accounting-reports" },
+      { title: "Budget Planning", href: "/board/budget-planning" },
+      { title: "Capital Projects", href: "/board/capital-projects" },
+      { title: "Vendor Performance", href: "/board/vendor-performance" },
+      { title: "Association Approved Vendors", href: "/board/vendors" },
+    ],
   },
   {
     title: "Legal, Risk & Compliance",
@@ -202,12 +206,15 @@ export default function AdminDashboard() {
   const [systemMessage, setSystemMessage] = useState("");
   const [portalUserName, setPortalUserName] = useState("Admin");
   const [portalRole, setPortalRole] = useState("admin");
+  const [associationName, setAssociationName] = useState("");
+  const [associationId, setAssociationId] = useState("");
   const [showAllRecords, setShowAllRecords] = useState(false);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
     const role = localStorage.getItem("spmPortalRole");
     const name = localStorage.getItem("spmPortalUserName");
+    const context = getSelectedAssociationContext();
 
     if (loggedIn !== "true" || role !== "admin") {
       router.push("/admin-login");
@@ -216,6 +223,8 @@ export default function AdminDashboard() {
 
     setPortalUserName(name || "Admin");
     setPortalRole(role || "admin");
+    setAssociationName(context.associationName || "Selected Association");
+    setAssociationId(context.associationId || "");
   }, [router]);
 
   useEffect(() => {
@@ -233,6 +242,8 @@ export default function AdminDashboard() {
     localStorage.removeItem("spmPortalUser");
     localStorage.removeItem("spmPortalUserName");
     localStorage.removeItem("spmPortalRole");
+    localStorage.removeItem("spm_selected_association_id");
+    localStorage.removeItem("spm_selected_association_name");
 
     router.push("/admin-login");
   }
@@ -245,8 +256,21 @@ export default function AdminDashboard() {
 
       setSystemMessage("");
 
+      const context = getSelectedAssociationContext();
+
+      if (!context.associationId) {
+        setRecords([]);
+        setSystemMessage("No association selected. Please log in again.");
+        return;
+      }
+
+      setAssociationName(context.associationName || "Selected Association");
+      setAssociationId(context.associationId);
+
       const response = await fetch(
-        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/admin/operational-records?association_id=${encodeURIComponent(
+          context.associationId
+        )}`
       );
 
       const payload = await response.json();
@@ -346,7 +370,7 @@ export default function AdminDashboard() {
   );
 
   const intelligenceMetrics = [
-    { label: "Associations", value: "1", status: "Active", tone: "stable" },
+    { label: "Association", value: associationName || "Selected", status: "Active", tone: "stable" },
     {
       label: "Open Admin Items",
       value: openRecords.length,
@@ -406,6 +430,16 @@ export default function AdminDashboard() {
                 financial coordination, compliance, annual planning, and platform
                 administration.
               </p>
+
+              <p className="mt-4 text-sm font-semibold text-amber-300">
+                Active Association: {associationName || "Not selected"}
+              </p>
+
+              {associationId && (
+                <p className="mt-1 text-xs text-slate-500">
+                  BOSai Association UUID: {associationId}
+                </p>
+              )}
             </div>
 
             <div className="w-full rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/30 lg:w-80">
@@ -427,7 +461,7 @@ export default function AdminDashboard() {
                 </Link>
 
                 <Link href="/board" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
-                  Admin Dashboard
+                  Board Dashboard
                 </Link>
 
                 <Link href="/portal/owner" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
@@ -454,7 +488,7 @@ export default function AdminDashboard() {
                   {metric.label}
                 </p>
 
-                <div className="mt-3 text-3xl font-black text-amber-300">
+                <div className="mt-3 break-words text-2xl font-black text-amber-300">
                   {metric.value}
                 </div>
 
@@ -562,9 +596,9 @@ export default function AdminDashboard() {
                         </h3>
 
                         <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-7 text-slate-400">
-  {cleanAdminRecordDescription(record.description) ||
-    "Administrative operational record submitted for review."}
-</p>
+                          {cleanAdminRecordDescription(record.description) ||
+                            "Administrative operational record submitted for review."}
+                        </p>
 
                         <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.06] p-4">
                           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-300">
@@ -725,4 +759,3 @@ export default function AdminDashboard() {
     </main>
   );
 }
-
