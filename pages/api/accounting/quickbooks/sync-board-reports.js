@@ -2,7 +2,9 @@
 
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+function clean(value) {
+  return String(value || "").trim();
+}
 
 const REPORTS = [
   {
@@ -53,10 +55,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const associationId =
-      req.query.association_id ||
-      req.body?.association_id ||
-      DEFAULT_ASSOCIATION_ID;
+        const associationId =
+      clean(req.query.association_id) ||
+      clean(req.query.associationId) ||
+      clean(req.body?.association_id) ||
+      clean(req.body?.associationId);
+
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required association_id.",
+      });
+    }
 
     const baseUrl = getBaseUrl(req);
     const results = [];
