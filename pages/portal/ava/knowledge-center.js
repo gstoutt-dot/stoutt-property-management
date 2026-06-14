@@ -212,13 +212,11 @@ async function uploadKnowledgeDocument() {
           </div>
 
                     <Link
-            href={`/portal?associationId=${associationId}&associationName=${encodeURIComponent(
-              associationName
-            )}`}
-            className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-yellow-400/60 hover:text-yellow-300"
-          >
-            Back to Admin Dashboard
-          </Link>
+  href="/admin"
+  className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-yellow-400/60 hover:text-yellow-300"
+>
+  Back to Admin Dashboard
+</Link>
         </div>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.9fr]">
