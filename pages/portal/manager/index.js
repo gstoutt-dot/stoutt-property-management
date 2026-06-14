@@ -100,12 +100,11 @@ async function saveWorkflow(nextWorkflow) {
 
   if (records.length === 0) return
 
-  const { error } = await supabase
+    const { error } = await supabase
     .from('manager_workflow_records')
     .upsert(records, {
-      onConflict: 'source_record_id,source_table',
+      onConflict: 'association_id,source_record_id,source_table',
     })
-
   if (error) {
     console.error('Manager workflow save failed:', error)
   }
