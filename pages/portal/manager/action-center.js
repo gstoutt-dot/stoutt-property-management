@@ -243,7 +243,11 @@ const { data: bosData, error: bosError } = await supabase
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/portal/manager"
+  href={`/portal/manager?associationId=${
+    typeof window !== "undefined"
+      ? localStorage.getItem("spm_selected_association_id") || ""
+      : ""
+  }`}
                 className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 hover:border-yellow-400/50 hover:text-yellow-300"
               >
                 Manager Command Center
