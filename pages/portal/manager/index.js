@@ -10,6 +10,11 @@ export default function ManagerDashboard() {
   const [dispatchFeedback, setDispatchFeedback] = useState({})
   const [vendors, setVendors] = useState([])
 
+  const associationId =
+  typeof window !== 'undefined'
+    ? localStorage.getItem('spm_selected_association_id') || ''
+    : ''
+
   useEffect(() => {
     fetchData({ showLoading: true })
     
@@ -77,7 +82,7 @@ async function saveWorkflow(nextWorkflow) {
           ? String(item.original_id)
           : String(itemId),
       source_table: item?.manager_source_table || 'bos_actions',
-      association_id: '622aaf96-ae1c-4f98-b0b2-00cc9178c2a2',
+      association_id: associationId,
       vendor_name: wf.vendor_name || '',
       vendor_phone: wf.vendor_phone || '',
       vendor_email: wf.vendor_email || '',
@@ -179,7 +184,7 @@ async function saveWorkflow(nextWorkflow) {
     const { data: vendorData, error: vendorError } = await supabase
   .from('association_vendors')
   .select('*')
-  .eq('association_id', '622aaf96-ae1c-4f98-b0b2-00cc9178c2a2')
+  .eq('association_id', associationId)
   .eq('active', true)
   .order('vendor_name', { ascending: true })
 
