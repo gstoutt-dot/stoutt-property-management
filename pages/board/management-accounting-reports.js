@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+import { useRouter } from "next/router";
 
 const REPORT_TABS = [
   { key: "balance-sheet", label: "Balance Sheet" },
@@ -13,15 +12,63 @@ const REPORT_TABS = [
 ];
 
 export default function ManagementAccountingReports() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
+  const [refreshingReports, setRefreshingReports] = useState(false);
   const [activeTab, setActiveTab] = useState("balance-sheet");
   const [reportRows, setReportRows] = useState([]);
   const [reportMeta, setReportMeta] = useState(null);
   const [reportLoading, setReportLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
+    useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.associationId ||
+      router.query.association_id ||
+      "";
+
+    const queryAssociationName =
+      router.query.associationName ||
+      router.query.association_name ||
+      "";
+
+    const storedAssociationId =
+      localStorage.getItem("spm_selected_association_id") || "";
+
+    const storedAssociationName =
+      localStorage.getItem("spm_selected_association_name") ||
+      "Selected Association";
+
+    setAssociationId(queryAssociationId || storedAssociationId);
+
+    setAssociationName(
+      queryAssociationName ||
+        storedAssociationName ||
+        "Selected Association"
+    );
+  }, [
+    router.isReady,
+    router.query.associationId,
+    router.query.association_id,
+    router.query.associationName,
+    router.query.association_name,
+  ]);
+
   useEffect(() => {
+    if (!associationId) {
+      setSystemMessage("No association selected. Please return to the Admin Dashboard and reopen this page.");
+      setReportRows([]);
+      setReportMeta(null);
+      setReportLoading(false);
+      return;
+    }
+
     loadReport(activeTab);
-  }, [activeTab]);
+  }, [associationId, activeTab]);
 
   async function loadReport(tabKey) {
     setReportLoading(true);
@@ -37,8 +84,8 @@ export default function ManagementAccountingReports() {
     }
 
     try {
-      const response = await fetch(
-        `/api/accounting/quickbooks/board-report-snapshot?association_id=${DEFAULT_ASSOCIATION_ID}&report_key=${tab.key}`
+            const response = await fetch(
+        `/api/accounting/quickbooks/board-report-snapshot?association_id=${associationId}&report_key=${tab.key}`
       );
 
       const json = await response.json();
@@ -123,7 +170,48 @@ export default function ManagementAccountingReports() {
       setSystemMessage("Unable to load this saved QuickBooks report snapshot.");
     }
 
-    setReportLoading(false);
+        setReportLoading(false);
+  }
+
+  async function refreshReportsFromQuickBooks() {
+    if (!associationId) {
+      setSystemMessage("No association selected. Please return to the Admin Dashboard and reopen this page.");
+      return;
+    }
+
+    try {
+      setRefreshingReports(true);
+      setSystemMessage("Refreshing board accounting reports from QuickBooks...");
+
+      const response = await fetch(
+        `/api/accounting/quickbooks/sync-board-reports?association_id=${associationId}`,
+        {
+          method: "POST",
+        }
+      );
+
+      const json = await response.json();
+
+      if (!response.ok || !json.success) {
+        throw new Error(
+          json.error ||
+            json.message ||
+            "Unable to refresh board accounting reports from QuickBooks."
+        );
+      }
+
+      await loadReport(activeTab);
+
+      setSystemMessage("Board accounting reports refreshed from QuickBooks.");
+    } catch (error) {
+      console.error("Unable to refresh board accounting reports:", error);
+      setSystemMessage(
+        error.message ||
+          "Unable to refresh board accounting reports from QuickBooks."
+      );
+    } finally {
+      setRefreshingReports(false);
+    }
   }
 
   return (
@@ -138,6 +226,10 @@ export default function ManagementAccountingReports() {
             <h1 className="mt-2 text-2xl font-semibold">
               Management Accounting Reports
             </h1>
+
+            <p className="mt-1 text-sm text-slate-400">
+              {associationName}
+            </p>
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
@@ -169,7 +261,27 @@ export default function ManagementAccountingReports() {
           </div>
         )}
 
-        <div className="mt-8 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-4 md:p-6">
+                <div className="mt-8 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-4 md:p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-emerald-100">
+                Board Accounting Report Snapshots
+              </p>
+              <p className="mt-1 text-xs text-emerald-100/70">
+                Refresh pulls updated report snapshots from QuickBooks for the selected association.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={refreshReportsFromQuickBooks}
+              disabled={refreshingReports || reportLoading || !associationId}
+              className="rounded-2xl bg-emerald-300 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-200 disabled:opacity-50"
+            >
+              {refreshingReports ? "Refreshing..." : "Refresh From QuickBooks"}
+            </button>
+          </div>
+
           <div className="flex flex-wrap gap-3">
             {REPORT_TABS.map((tab) => {
               const active = tab.key === activeTab;
