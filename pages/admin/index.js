@@ -723,6 +723,10 @@ export default function AdminDashboard() {
     ? `/board/committee-center?associationId=${associationId}&associationName=${encodeURIComponent(
         associationName || "Selected Association"
       )}`
+    : item.title === "Board Signature Approval Log"
+    ? `/board/signature-approval-log?associationId=${associationId}&associationName=${encodeURIComponent(
+        associationName || "Selected Association"
+      )}`
     : item.href;
 
                   return (
