@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { supabase } from "../../lib/bosClient";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const NOTIFICATION_SOURCE = "board_notification_center";
 
 const alertTypes = [
@@ -63,13 +63,70 @@ function priorityFromText(value) {
 }
 
 export default function BoardNotificationCenter() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
+
   const [events, setEvents] = useState([]);
   const [actions, setActions] = useState([]);
   const [readNotifications, setReadNotifications] = useState({});
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
+    useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
+
+    const queryAssociationName =
+      router.query.association_name || router.query.associationName || "";
+
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("spm_selected_association_id") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
+        : "";
+
+    const storedAssociationName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationName") ||
+          localStorage.getItem("association_name") ||
+          localStorage.getItem("associationName") ||
+          "Selected Association"
+        : "Selected Association";
+
+    const finalAssociationId = String(
+      queryAssociationId || storedAssociationId || ""
+    ).trim();
+
+    const finalAssociationName = String(
+      queryAssociationName || storedAssociationName || "Selected Association"
+    ).trim();
+
+    if (!finalAssociationId) {
+      setSystemMessage(
+        "No association context found. Please return to the board dashboard and reopen this page."
+      );
+      setLoading(false);
+      return;
+    }
+
+    setAssociationId(finalAssociationId);
+    setAssociationName(finalAssociationName);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("spm_selected_association_id", finalAssociationId);
+    localStorage.setItem("selectedAssociationName", finalAssociationName);
+  }, [router.isReady, router.query]);
+
   useEffect(() => {
+    if (!associationId) return;
+
     loadNotifications({ showLoading: true });
 
     const interval = setInterval(() => {
@@ -77,7 +134,7 @@ export default function BoardNotificationCenter() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [associationId]);
 
   async function loadNotifications({ showLoading = false } = {}) {
     try {
@@ -93,18 +150,20 @@ export default function BoardNotificationCenter() {
         { data: readRows, error: readsError },
       ] = await Promise.all([
         supabase
-          .from("bos_events")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(50),
+  .from("bos_events")
+  .select("*")
+  .eq("association_id", associationId)
+  .order("created_at", { ascending: false })
+  .limit(50)
         supabase
-          .from("bos_actions")
-          .select("*")
-          .order("created_at", { ascending: false }),
+  .from("bos_actions")
+  .select("*")
+  .eq("association_id", associationId)
+  .order("created_at", { ascending: false })
         supabase
           .from("bos_notification_reads")
           .select("notification_id")
-          .eq("association_id", DEFAULT_ASSOCIATION_ID)
+          .eq("association_id", associationId)
           .eq("notification_source", NOTIFICATION_SOURCE)
           .eq("read_by_role", "board"),
       ]);
@@ -142,7 +201,7 @@ export default function BoardNotificationCenter() {
         {
           notification_id: String(notificationId),
           notification_source: NOTIFICATION_SOURCE,
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           read_by_role: "board",
           read_at: new Date().toISOString(),
         },
@@ -167,7 +226,7 @@ export default function BoardNotificationCenter() {
       setSystemMessage("");
 
       const response = await fetch(
-        `/api/board/delete-notification?id=${notificationId}`,
+  `/api/board/delete-notification?id=${notificationId}&association_id=${associationId}`,
         {
           method: "DELETE",
         }
@@ -296,7 +355,13 @@ export default function BoardNotificationCenter() {
           </div>
 
           <Link
-            href="/board"
+  href={{
+    pathname: "/board",
+    query: {
+      association_id: associationId,
+      association_name: associationName,
+    },
+  }}
             className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
           >
             Return to Board Dashboard
