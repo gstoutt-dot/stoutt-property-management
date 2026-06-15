@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import bosTheme from "../../styles/bos-theme";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const closedStatuses = ["completed", "archived", "closed"];
 
 function formatCurrency(value) {
@@ -39,12 +39,61 @@ function priorityBadge(priority) {
 }
 
 export default function BoardDashboard() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [records, setRecords] = useState([]);
   const [financialSummary, setFinancialSummary] = useState(null);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
+
+    const queryAssociationName =
+      router.query.association_name || router.query.associationName || "";
+
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
+        : "";
+
+    const storedAssociationName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationName") ||
+          localStorage.getItem("association_name") ||
+          localStorage.getItem("associationName") ||
+          ""
+        : "";
+
+    const finalAssociationId = String(queryAssociationId || storedAssociationId || "").trim();
+    const finalAssociationName = String(
+      queryAssociationName || storedAssociationName || "Selected Association"
+    ).trim();
+
+    if (!finalAssociationId) {
+      setSystemMessage("No association context found. Please return to the board dashboard and reopen this page.");
+      setLoadingRecords(false);
+      return;
+    }
+
+    setAssociationId(finalAssociationId);
+    setAssociationName(finalAssociationName);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("selectedAssociationName", finalAssociationName);
+  }, [router.isReady, router.query]);
+
+  useEffect(() => {
+    if (!associationId) return;
+
     loadBoardDashboardData();
 
     const interval = setInterval(() => {
@@ -52,19 +101,23 @@ export default function BoardDashboard() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [associationId]);
 
   async function loadBoardDashboardData() {
     await Promise.all([loadBoardRecords(), loadFinancialSummary()]);
   }
 
-  async function loadBoardRecords() {
+    async function loadBoardRecords() {
     try {
       setLoadingRecords(true);
       setSystemMessage("");
 
+      if (!associationId) {
+        throw new Error("Association ID is required to load board records.");
+      }
+
       const response = await fetch(
-        `/api/admin/operational-records?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/admin/operational-records?association_id=${encodeURIComponent(associationId)}`
       );
 
       const payload = await response.json();
@@ -83,16 +136,24 @@ export default function BoardDashboard() {
     }
   }
 
-  async function loadFinancialSummary() {
+    async function loadFinancialSummary() {
     try {
+      if (!associationId) {
+        throw new Error("Association ID is required to load financial summary.");
+      }
+
       const response = await fetch(
-        `/api/accounting/quickbooks/financial-summary?association_id=${DEFAULT_ASSOCIATION_ID}`
+        `/api/accounting/quickbooks/financial-summary?association_id=${encodeURIComponent(associationId)}`
       );
 
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(payload.message || "Unable to load financial summary.");
+        throw new Error(
+          payload.message ||
+            payload.error ||
+            "Unable to load financial summary."
+        );
       }
 
       setFinancialSummary(payload || null);
@@ -197,12 +258,27 @@ export default function BoardDashboard() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-  <Link href="/board" className={bosTheme.secondaryButton}>
+  <Link
+    href={{
+      pathname: "/board",
+      query: {
+        association_id: associationId,
+        association_name: associationName,
+      },
+    }}
+    className={bosTheme.secondaryButton}
+  >
     Dashboard
   </Link>
 
   <Link
-    href="/board/board-approval-queue"
+    href={{
+      pathname: "/board/board-approval-queue",
+      query: {
+        association_id: associationId,
+        association_name: associationName,
+      },
+    }}
     className={bosTheme.primaryButton}
   >
     Approval Queue
@@ -249,11 +325,17 @@ export default function BoardDashboard() {
               </div>
 
               <Link
-                href="/board/board-approval-queue"
-                className="rounded-2xl bg-yellow-400 px-4 py-2 text-sm font-semibold text-black hover:bg-yellow-300"
-              >
-                View All
-              </Link>
+  href={{
+    pathname: "/board/board-approval-queue",
+    query: {
+      association_id: associationId,
+      association_name: associationName,
+    },
+  }}
+  className="rounded-2xl bg-yellow-400 px-4 py-2 text-sm font-semibold text-black hover:bg-yellow-300"
+>
+  View All
+</Link>
             </div>
 
             <div className="mt-5 space-y-4">
@@ -312,11 +394,17 @@ export default function BoardDashboard() {
                       </div>
 
                       <Link
-                        href="/board/board-approval-queue"
-                        className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-center text-sm font-medium text-slate-200 hover:bg-white/[0.1]"
-                      >
-                        Review
-                      </Link>
+  href={{
+    pathname: "/board/board-approval-queue",
+    query: {
+      association_id: associationId,
+      association_name: associationName,
+    },
+  }}
+  className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-center text-sm font-medium text-slate-200 hover:bg-white/[0.1]"
+>
+  Review
+</Link>
                     </div>
                   </article>
                 ))
@@ -363,21 +451,39 @@ export default function BoardDashboard() {
 
             <div className="mt-6 flex flex-col gap-3">
   <Link
-    href="/board/financial-review"
+    href={{
+      pathname: "/board/financial-review",
+      query: {
+        association_id: associationId,
+        association_name: associationName,
+      },
+    }}
     className={`${bosTheme.goldButton} w-full text-center`}
   >
     View Financials
   </Link>
 
   <Link
-    href="/board/board-approval-queue"
+    href={{
+      pathname: "/board/board-approval-queue",
+      query: {
+        association_id: associationId,
+        association_name: associationName,
+      },
+    }}
     className={`${bosTheme.whiteButton} w-full text-center`}
   >
     Approval Queue
   </Link>
 
   <Link
-    href="/board/notification-center"
+    href={{
+      pathname: "/board/notification-center",
+      query: {
+        association_id: associationId,
+        association_name: associationName,
+      },
+    }}
     className={`${bosTheme.outlineButton} w-full text-center`}
   >
     Notifications
