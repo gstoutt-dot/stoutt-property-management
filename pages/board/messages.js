@@ -122,11 +122,15 @@ export default function BoardMessages() {
           "Content-Type": "application/json",
         },
                 body: JSON.stringify({
-          id: activeMessage.id,
-          association_id: DEFAULT_ASSOCIATION_ID,
-          reply_body: replyBody.trim(),
-          replied_by: "Admin / Management",
-        }),
+  association_id: DEFAULT_ASSOCIATION_ID,
+  subject: form.subject.trim(),
+  message_body: form.message_body.trim(),
+  message_type: form.message_type,
+  sent_by_name: form.sent_by_name || "Admin",
+  sent_by_role: form.sent_by_role || "admin",
+  sent_to_role: "board",
+  priority: "normal",
+}),
       });
 
       const payload = await response.json();
