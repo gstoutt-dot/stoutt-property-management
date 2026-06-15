@@ -106,7 +106,7 @@ export default function HomePage() {
       />
     </a>
 
-    <nav className="hidden items-center gap-2 lg:flex">
+    <nav className="hidden items-center gap-2 xl:flex">
       {navLinks.map((link) => (
         <a
           key={link.label}
@@ -171,8 +171,7 @@ export default function HomePage() {
       type="button"
       aria-label="Toggle menu"
       onClick={() => setMobileOpen(!mobileOpen)}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 lg:hidden"
-    >
+className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-300 hover:border-yellow-400/30 hover:bg-white/10 xl:hidden"    >
       <svg
         className="h-5 w-5"
         viewBox="0 0 24 24"
@@ -196,7 +195,7 @@ export default function HomePage() {
   </div>
 
   {mobileOpen && (
-    <div className="border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
+    <div className="max-h-[calc(100vh-96px)] overflow-y-auto border-t border-white/10 bg-slate-950/98 backdrop-blur-xl xl:hidden">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4 sm:px-6">
         {navLinks.map((link) => (
           <a
