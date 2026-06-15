@@ -252,13 +252,13 @@ export default function AdminHomeownerNotifications() {
                   >
                     <option value="">Select an owner</option>
                     {owners.map((owner) => (
-                      <option
-                        key={`${owner.unit_number}-${owner.owner_name}`}
-                        value={owner.owner_user_id || owner.unit_number}
-                      >
-                        Unit {owner.unit_number} · {owner.owner_name}
-                      </option>
-                    ))}
+  <option
+    key={`${owner.unit_number}-${owner.owner_name}`}
+    value={owner.owner_user_id || ""}
+  >
+    Unit {owner.unit_number} · {owner.owner_name}
+  </option>
+))}
                   </select>
                 </label>
               )}
