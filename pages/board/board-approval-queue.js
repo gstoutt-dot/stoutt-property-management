@@ -128,6 +128,7 @@ export default function BoardApprovalQueue() {
           board_message: message,
           board_note: note,
         }),
+      });
 
       const result = await response.json();
 
