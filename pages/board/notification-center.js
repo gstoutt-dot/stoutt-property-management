@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { supabase } from "../../lib/bosClient";
+import { supabase } from "../../lib/bosClient"; 
 
 const NOTIFICATION_SOURCE = "board_notification_center";
 
