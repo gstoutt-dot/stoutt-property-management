@@ -1,8 +1,5 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const DEFAULT_ASSOCIATION_NAME = "Sunset Condominium Association";
-
 const closedStatuses = ["completed", "archived", "closed"];
 
 function cleanText(value) {
@@ -104,7 +101,8 @@ async function mirrorIntoBos(payload, insertedRecord) {
     priority: normalizeBosPriority(payload.priority),
     status: normalizeBosStatus(payload.status),
 
-    association_name: DEFAULT_ASSOCIATION_NAME,
+    association_id: payload.association_id,
+    association_name: payload.association_name || "Selected Association",
     owner_name: payload.created_by || "SPM Admin",
     owner_phone: "",
     owner_email: "",
@@ -170,7 +168,8 @@ export default async function handler(req, res) {
       const body = req.body || {};
 
       const payload = {
-        association_id: body.association_id || DEFAULT_ASSOCIATION_ID,
+        association_id: cleanText(body.association_id || body.associationId),
+        association_name: cleanText(body.association_name || body.associationName) || "Selected Association",
         created_by: body.created_by || "SPM Admin",
         created_by_role: body.created_by_role || "Admin",
         request_type: body.request_type || "Special Project",
@@ -187,6 +186,13 @@ export default async function handler(req, res) {
         routing_target: body.routing_target || "Admin Dashboard",
         recommended_action: body.recommended_action || null,
       };
+
+            if (!payload.association_id) {
+        return res.status(400).json({
+          success: false,
+          message: "Association ID is required.",
+        });
+      }
 
       if (!payload.title) {
         return res.status(400).json({
@@ -235,12 +241,20 @@ export default async function handler(req, res) {
   if (req.method === "PATCH") {
     try {
       const body = req.body || {};
-      const recordId = body.id;
+            const recordId = cleanText(body.id);
+      const associationId = cleanText(body.association_id || body.associationId);
 
       if (!recordId) {
         return res.status(400).json({
           success: false,
           message: "Record ID is required.",
+        });
+      }
+
+      if (!associationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Association ID is required.",
         });
       }
 
@@ -253,6 +267,7 @@ export default async function handler(req, res) {
           updated_at: new Date().toISOString(),
         })
         .eq("id", recordId)
+        .eq("association_id", associationId)
         .select()
         .single();
 
@@ -277,7 +292,8 @@ export default async function handler(req, res) {
 
   if (req.method === "DELETE") {
     try {
-      const recordId = req.query.id;
+            const recordId = cleanText(req.query.id);
+      const associationId = cleanText(req.query.association_id || req.query.associationId);
 
       if (!recordId) {
         return res.status(400).json({
@@ -286,12 +302,20 @@ export default async function handler(req, res) {
         });
       }
 
+      if (!associationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Association ID is required.",
+        });
+      }
+
       await deleteBosMirror(recordId);
 
       const { error } = await supabaseAdmin
         .from("admin_operational_records")
         .delete()
-        .eq("id", recordId);
+        .eq("id", recordId)
+        .eq("association_id", associationId);
 
       if (error) throw error;
 
@@ -317,7 +341,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const associationId = req.query.association_id || DEFAULT_ASSOCIATION_ID;
+        const associationId = cleanText(req.query.association_id || req.query.associationId);
+
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Association ID is required.",
+      });
+    }
 
     const { data, error } = await supabaseAdmin
       .from("admin_operational_records")
