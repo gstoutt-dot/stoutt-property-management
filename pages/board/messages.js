@@ -79,9 +79,14 @@ export default function BoardMessages() {
   return;
 }
 
-    const response = await fetch(`/api/board/messages/delete?id=${messageId}`, {
-      method: "DELETE",
-    });
+        const response = await fetch(
+      `/api/board/messages/delete?id=${messageId}&association_id=${encodeURIComponent(
+        DEFAULT_ASSOCIATION_ID
+      )}`,
+      {
+        method: "DELETE",
+      }
+    );
 
     const payload = await response.json();
 
@@ -116,10 +121,11 @@ export default function BoardMessages() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+                body: JSON.stringify({
+          id: activeMessage.id,
           association_id: DEFAULT_ASSOCIATION_ID,
-          ...form,
-          sent_to_role: "board",
+          reply_body: replyBody.trim(),
+          replied_by: "Admin / Management",
         }),
       });
 
