@@ -237,7 +237,11 @@ export default function AssociationCalendar() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ event, attachment }),
+        body: JSON.stringify({
+  association_id: DEFAULT_ASSOCIATION_ID,
+  event,
+  attachment,
+}),
       });
 
       const payload = await response.json();
@@ -274,9 +278,14 @@ export default function AssociationCalendar() {
   try {
     setSystemMessage("");
 
-    const response = await fetch(`/api/calendar/delete-event?id=${eventId}`, {
-      method: "DELETE",
-    });
+    const response = await fetch(
+  `/api/calendar/delete-event?id=${eventId}&association_id=${encodeURIComponent(
+    DEFAULT_ASSOCIATION_ID
+  )}`,
+  {
+    method: "DELETE",
+  }
+);
 
     const payload = await response.json();
 
@@ -307,12 +316,13 @@ export default function AssociationCalendar() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: eventId,
-          updates: {
-            status,
-            completed_at: status === "completed" ? new Date().toISOString() : null,
-          },
-        }),
+  association_id: DEFAULT_ASSOCIATION_ID,
+  id: eventId,
+  updates: {
+    status,
+    completed_at: status === "completed" ? new Date().toISOString() : null,
+  },
+}),
       });
 
       const payload = await response.json();
