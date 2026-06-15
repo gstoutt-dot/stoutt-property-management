@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { supabase } from "../../lib/bosClient";
 
 export default function BoardApprovalQueue() {
   const router = useRouter();
@@ -74,39 +75,39 @@ export default function BoardApprovalQueue() {
     return () => clearInterval(refreshInterval);
   }, [associationId]);
 
-  async function loadApprovals({ showLoading = false } = {}) {
+    async function loadApprovals({ showLoading = false } = {}) {
     try {
       if (showLoading) setLoading(true);
 
       setSystemMessage("");
 
-      const response = await fetch(
-        `/api/admin/operational-records?association_id=${encodeURIComponent(
-          associationId
-        )}`
-      );
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to load board approval queue.");
+      if (!associationId) {
+        setActions([]);
+        setSystemMessage("No association context found.");
+        return;
       }
 
-            const filteredItems = (result.records || []).filter((record) => {
-        const combined = `${record.routing_target || ""} ${
-          record.assigned_to || ""
-        } ${record.status || ""} ${record.request_type || ""} ${
-          record.title || ""
-        } ${record.description || ""}`.toLowerCase();
+      const { data, error } = await supabase
+        .from("bos_actions")
+        .select("*")
+        .eq("association_id", associationId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const filteredItems = (data || []).filter((record) => {
+        const combined = `${record.status || ""} ${record.request_type || ""} ${
+          record.category || ""
+        } ${record.title || ""} ${record.description || ""} ${
+          record.board_response || ""
+        }`.toLowerCase();
 
         return (
-          record.board_review_required === true ||
-          combined.includes("board approval") ||
-          combined.includes("board_approval") ||
-          combined.includes("board review") ||
           combined.includes("board_review") ||
-          combined.includes("assigned to board") ||
-          combined.includes("board treasurer") ||
-          combined.includes("board")
+          combined.includes("board review") ||
+          combined.includes("board_approval") ||
+          combined.includes("board approval") ||
+          String(record.status || "").toLowerCase() === "board_review"
         );
       });
 
@@ -114,39 +115,51 @@ export default function BoardApprovalQueue() {
     } catch (error) {
       console.error("Unable to load board approval queue:", error);
       setSystemMessage("Unable to load board approval queue.");
+      setActions([]);
     } finally {
       setLoading(false);
     }
   }
 
-    async function updateApproval(action, newStatus, eventType, message) {
+      async function updateApproval(action, newStatus, eventType, message) {
     try {
       setSystemMessage("");
 
-      const note = String(boardNotes[action.id] || "").trim();
-
-      const response = await fetch("/api/admin/update-operational-record", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-                body: JSON.stringify({
-          id: action.id,
-          association_id: associationId,
-          status: newStatus,
-          board_event_type: eventType,
-          board_message: message,
-          board_note: note,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to update board approval item.");
+      if (!associationId) {
+        setSystemMessage("Association ID is required to update approval items.");
+        return;
       }
 
-            const vendorInvoiceId = extractVendorInvoiceId(action.description);
+      const note = String(boardNotes[action.id] || "").trim();
+
+      const updatePayload = {
+        status: newStatus,
+        board_response: eventType,
+        board_comment: note || message,
+        board_last_interaction_at: new Date().toISOString(),
+      };
+
+      if (eventType === "board_approved") {
+        updatePayload.board_reviewed = true;
+      }
+
+      if (eventType === "more_info_requested") {
+        updatePayload.status = "needs_clarification";
+      }
+
+      if (eventType === "board_acknowledged") {
+        updatePayload.status = "board_review";
+      }
+
+      const { error } = await supabase
+        .from("bos_actions")
+        .update(updatePayload)
+        .eq("id", action.id)
+        .eq("association_id", associationId);
+
+      if (error) throw error;
+
+      const vendorInvoiceId = extractVendorInvoiceId(action.description);
 
       if (vendorInvoiceId) {
         if (eventType === "board_approved") {
@@ -188,7 +201,7 @@ export default function BoardApprovalQueue() {
           });
         }
 
-                if (eventType === "board_acknowledged") {
+        if (eventType === "board_acknowledged") {
           await fetch("/api/vendors/update-invoice-status", {
             method: "POST",
             headers: {
