@@ -9,14 +9,32 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { id, status, board_event_type, board_message, board_note } = req.body || {};
+    const {
+  id,
+  association_id,
+  associationId,
+  status,
+  board_event_type,
+  board_message,
+  board_note,
+} = req.body || {};
+
+const finalAssociationId =
+  association_id || associationId || "";
 
     if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Record ID is required.",
-      });
-    }
+  return res.status(400).json({
+    success: false,
+    message: "Record ID is required.",
+  });
+}
+
+if (!finalAssociationId) {
+  return res.status(400).json({
+    success: false,
+    message: "Association ID is required.",
+  });
+}
 
     const cleanNote = String(board_note || "").trim();
 
@@ -31,12 +49,13 @@ export default async function handler(req, res) {
       board_updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabaseAdmin
-      .from("admin_operational_records")
-      .update(updatePayload)
-      .eq("id", id)
-      .select()
-      .single();
+  const { data, error } = await supabaseAdmin
+  .from("admin_operational_records")
+  .update(updatePayload)
+  .eq("id", id)
+  .eq("association_id", finalAssociationId)
+  .select()
+  .single();
 
     if (error) throw error;
 
