@@ -154,14 +154,11 @@ function buildLedgerSummary(entries = []) {
 }
 
 function buildAvaAccountingMessage(balance, ledgerSummary) {
-  const currentBalance = formatMoney(balance.current_balance);
-  const monthlyAssessment = formatMoney(balance.monthly_assessment);
+    const currentBalance = formatMoney(balance.current_balance);
 
   const parts = [];
 
-  parts.push(
-    `Your current balance is ${currentBalance}. Your monthly assessment is ${monthlyAssessment}.`
-  );
+  parts.push(`Your current balance is ${currentBalance}.`);
 
   const detailLines = [];
 
