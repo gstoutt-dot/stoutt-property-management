@@ -499,41 +499,97 @@ const [loadError, setLoadError] = useState("");
 
   <div className="space-y-6">
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-      <p className="text-sm font-medium text-yellow-400">
-        Notices & Messages
-      </p>
+  <div className="flex items-center justify-between gap-3">
+    <p className="text-sm font-medium text-yellow-400">
+      Notices & Messages
+    </p>
 
-      <div className="mt-5 space-y-3">
-        {(notifications.length
-          ? notifications.map(
-              (item) =>
-                item.title ||
-                item.message ||
-                item.body ||
-                "New homeowner notification"
-            )
-          : [
-              "Your account information is available.",
-              "Statements and documents can be accessed below.",
-              "Submit an account review request if something looks incorrect.",
-            ]
-        ).map((notice) => (
-          <div
-            key={notice}
-            className="rounded-2xl bg-slate-900/70 p-4 text-sm text-slate-300"
+    {notifications.length > 0 && (
+      <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-slate-950">
+        {notifications.length} New
+      </span>
+    )}
+  </div>
+
+  <div className="mt-5 space-y-3">
+    {notifications.length > 0 ? (
+      notifications.map((item) => {
+        const noticeTitle =
+          item.title || item.subject || "Homeowner Notice";
+
+        const noticeMessage =
+          item.message ||
+          item.body ||
+          item.description ||
+          "A new homeowner notification is available.";
+
+        const noticePriority = String(item.priority || "").toLowerCase();
+        const isUrgent =
+          noticePriority.includes("emergency") ||
+          noticePriority.includes("urgent") ||
+          noticePriority.includes("high");
+
+        return (
+          <Link
+            key={item.id || `${noticeTitle}-${noticeMessage}`}
+            href="/homeowner/messages"
+            className={`block rounded-2xl border p-4 text-sm transition ${
+              isUrgent
+                ? "border-red-400/40 bg-red-500/10 text-red-100 hover:bg-red-500/15"
+                : "border-yellow-400/25 bg-yellow-400/10 text-slate-200 hover:bg-yellow-400/15"
+            }`}
           >
-            {notice}
-          </div>
-        ))}
-      </div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p
+                  className={`text-xs font-bold uppercase tracking-[0.18em] ${
+                    isUrgent ? "text-red-300" : "text-yellow-300"
+                  }`}
+                >
+                  {isUrgent ? "Urgent Notice" : item.category || "Notice"}
+                </p>
 
-      <Link
-        href="/homeowner/messages"
-        className="mt-5 inline-block text-sm font-semibold text-yellow-300"
-      >
-        View Messages →
-      </Link>
-    </div>
+                <h3 className="mt-2 font-semibold text-white">
+                  {noticeTitle}
+                </h3>
+              </div>
+
+              {!item.read_status && (
+                <span className="rounded-full bg-yellow-400 px-2 py-1 text-[10px] font-bold text-slate-950">
+                  NEW
+                </span>
+              )}
+            </div>
+
+            <p className="mt-3 line-clamp-3 text-sm leading-6">
+              {noticeMessage}
+            </p>
+          </Link>
+        );
+      })
+    ) : (
+      [
+        "Your account information is available.",
+        "Statements and documents can be accessed below.",
+        "Submit an account review request if something looks incorrect.",
+      ].map((notice) => (
+        <div
+          key={notice}
+          className="rounded-2xl bg-slate-900/70 p-4 text-sm text-slate-300"
+        >
+          {notice}
+        </div>
+      ))
+    )}
+  </div>
+
+  <Link
+    href="/homeowner/messages"
+    className="mt-5 inline-block text-sm font-semibold text-yellow-300"
+  >
+    View Messages →
+  </Link>
+</div>
 
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
       <p className="text-sm font-medium text-yellow-400">
