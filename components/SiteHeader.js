@@ -75,7 +75,7 @@ export default function SiteHeader() {
           />
         </a>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-6 xl:flex">
           {navLinks.map((link) => (
             <a
               key={link.label}
@@ -115,7 +115,7 @@ export default function SiteHeader() {
           </div>
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-3 xl:flex">
           <a href="/portal/owner/login" className={secondaryBtn}>
             Homeowner Access
           </a>
@@ -130,14 +130,14 @@ export default function SiteHeader() {
           aria-label="Open menu"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white lg:hidden"
-        >
+className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white xl:hidden"
+  >
           {mobileOpen ? "×" : "☰"}
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-white/10 bg-slate-950 lg:hidden">
+        <div className="max-h-[calc(100vh-96px)] overflow-y-auto border-t border-white/10 bg-slate-950 xl:hidden">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
             <nav className="flex flex-col gap-2">
               {navLinks.map((link) => (
