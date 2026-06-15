@@ -1,21 +1,78 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function BoardApprovalQueue() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
   const [boardNotes, setBoardNotes] = useState({});
 
   useEffect(() => {
-  loadApprovals({ showLoading: true });
+    if (!router.isReady) return;
 
-  const refreshInterval = setInterval(() => {
-    loadApprovals({ showLoading: false });
-  }, 10000);
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
 
-  return () => clearInterval(refreshInterval);
-}, []);
+    const queryAssociationName =
+      router.query.association_name || router.query.associationName || "";
+
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("spm_selected_association_id") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
+        : "";
+
+    const storedAssociationName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationName") ||
+          localStorage.getItem("association_name") ||
+          localStorage.getItem("associationName") ||
+          "Selected Association"
+        : "Selected Association";
+
+    const finalAssociationId = String(
+      queryAssociationId || storedAssociationId || ""
+    ).trim();
+
+    const finalAssociationName = String(
+      queryAssociationName || storedAssociationName || "Selected Association"
+    ).trim();
+
+    if (!finalAssociationId) {
+      setSystemMessage(
+        "No association context found. Please return to the board dashboard and reopen this page."
+      );
+      setLoading(false);
+      return;
+    }
+
+    setAssociationId(finalAssociationId);
+    setAssociationName(finalAssociationName);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("spm_selected_association_id", finalAssociationId);
+    localStorage.setItem("selectedAssociationName", finalAssociationName);
+  }, [router.isReady, router.query]);
+
+  useEffect(() => {
+    if (!associationId) return;
+
+    loadApprovals({ showLoading: true });
+
+    const refreshInterval = setInterval(() => {
+      loadApprovals({ showLoading: false });
+    }, 10000);
+
+    return () => clearInterval(refreshInterval);
+  }, [associationId]);
 
   async function loadApprovals({ showLoading = false } = {}) {
     try {
@@ -23,7 +80,11 @@ export default function BoardApprovalQueue() {
 
       setSystemMessage("");
 
-      const response = await fetch("/api/admin/operational-records");
+      const response = await fetch(
+        `/api/admin/operational-records?association_id=${encodeURIComponent(
+          associationId
+        )}`
+      );
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -59,14 +120,14 @@ export default function BoardApprovalQueue() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+                body: JSON.stringify({
           id: action.id,
+          association_id: associationId,
           status: newStatus,
           board_event_type: eventType,
           board_message: message,
           board_note: note,
         }),
-      });
 
       const result = await response.json();
 
@@ -85,6 +146,7 @@ export default function BoardApprovalQueue() {
             },
             body: JSON.stringify({
               id: vendorInvoiceId,
+              association_id: associationId,
               status: "Board Approved",
               board_note: note || message,
               payment_readiness: "Board Approved",
@@ -103,6 +165,7 @@ export default function BoardApprovalQueue() {
             },
             body: JSON.stringify({
               id: vendorInvoiceId,
+              association_id: associationId,
               status: "Needs Documentation",
               board_note: note || message,
               payment_readiness: "Locked",
@@ -122,6 +185,7 @@ export default function BoardApprovalQueue() {
             },
             body: JSON.stringify({
               id: vendorInvoiceId,
+              association_id: associationId,
               status: "Board Review In Progress",
               board_note: note || message,
               payment_readiness: "Board Review In Progress",
@@ -167,7 +231,13 @@ export default function BoardApprovalQueue() {
           </div>
 
           <Link
-            href="/board"
+            href={{
+              pathname: "/board",
+              query: {
+                association_id: associationId,
+                association_name: associationName,
+              },
+            }}
             className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
           >
             Return to Board Dashboard
