@@ -150,11 +150,10 @@ export default function BoardNotificationCenter() {
         { data: readRows, error: readsError },
       ] = await Promise.all([
         supabase
-          .from("bos_events")
-          .select("*")
-          .eq("association_id", associationId)
-          .order("created_at", { ascending: false })
-          .limit(50),
+  .from("bos_events")
+  .select("*")
+  .order("created_at", { ascending: false })
+  .limit(50),
 
         supabase
           .from("bos_actions")
