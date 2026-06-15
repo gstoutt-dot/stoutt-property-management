@@ -1,5 +1,9 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
+function cleanText(value) {
+  return String(value || "").trim();
+}
+
 export default async function handler(req, res) {
   if (req.method !== "DELETE") {
     return res.status(405).json({
@@ -9,7 +13,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const notificationId = req.query.id;
+    const notificationId = cleanText(req.query.id);
+    const associationId = cleanText(
+      req.query.association_id || req.query.associationId
+    );
 
     if (!notificationId) {
       return res.status(400).json({
@@ -18,20 +25,29 @@ export default async function handler(req, res) {
       });
     }
 
-    if (String(notificationId).startsWith("action-")) {
-      const actionId = String(notificationId).replace("action-", "");
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Association ID is required.",
+      });
+    }
+
+    if (notificationId.startsWith("action-")) {
+      const actionId = notificationId.replace("action-", "");
 
       const { error } = await supabaseAdmin
         .from("bos_actions")
         .delete()
-        .eq("id", actionId);
+        .eq("id", actionId)
+        .eq("association_id", associationId);
 
       if (error) throw error;
     } else {
       const { error } = await supabaseAdmin
         .from("bos_events")
         .delete()
-        .eq("id", notificationId);
+        .eq("id", notificationId)
+        .eq("association_id", associationId);
 
       if (error) throw error;
     }
