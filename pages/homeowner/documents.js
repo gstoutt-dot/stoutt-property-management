@@ -18,11 +18,7 @@ useEffect(() => {
       } = await supabase.auth.getSession();
 
       if (!session?.user?.email) {
-  setOwnerProfile({
-    association_id: "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-    ownerName: "Homeowner",
-  });
-
+  router.replace("/portal/owner/login");
   return;
 }
 
@@ -38,18 +34,11 @@ useEffect(() => {
 
       const profileResult = await profileResponse.json();
 
-      if (!profileResponse.ok || !profileResult?.success) {
-  console.error(
-    "Owner profile lookup failed:",
-    profileResult
-  );
-
-  setOwnerProfile({
-    association_id:
-      "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-    ownerName: "Homeowner",
-  });
-
+  if (!profileResponse.ok || !profileResult?.success || !profileResult?.ownerProfile) {
+  console.error("Owner profile lookup failed:", profileResult);
+  setOwnerProfile(null);
+  setDocuments([]);
+  setLoadingDocuments(false);
   return;
 }
 
@@ -58,11 +47,9 @@ useEffect(() => {
       console.error("Unable to load homeowner profile for documents:", error);
       console.error(error);
 
-setOwnerProfile({
-  association_id:
-    "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2",
-  ownerName: "Homeowner",
-});
+setOwnerProfile(null);
+setDocuments([]);
+setLoadingDocuments(false);
     }
   }
 
