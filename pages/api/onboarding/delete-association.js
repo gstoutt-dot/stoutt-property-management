@@ -72,6 +72,16 @@ export default async function handler(req, res) {
     await safeDelete("association_ava_knowledge_chunks", "association_id", associationId);
     await safeDelete("association_ava_knowledge_files", "association_id", associationId);
 
+    await safeDelete("association_vendors", "association_id", associationId);
+    await safeDelete("manager_workflow_records", "association_id", associationId);
+    await safeDelete("bos_actions", "association_id", associationId);
+    await safeDelete("admin_operational_records", "association_id", associationId);
+    await safeDelete("association_committees", "association_id", associationId);
+    await safeDelete("association_committee_members", "association_id", associationId);
+    await safeDelete("association_committee_documents", "association_id", associationId);
+    await safeDelete("association_signature_approvals", "association_id", associationId);
+    await safeDelete("board_accounting_report_snapshots", "association_id", associationId);
+
     await safeDelete("association_onboarding_profiles", "association_id", associationId);
     await safeDelete("association_onboarding_profiles", "id", incomingId);
 
