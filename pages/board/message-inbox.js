@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import bosTheme from "../../styles/bos-theme";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 export default function BoardMessageInbox() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [messages, setMessages] = useState([]);
   const [activeMessage, setActiveMessage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,15 +23,67 @@ export default function BoardMessageInbox() {
     sent_by_name: "Board Member",
   });
 
-    useEffect(() => {
+      useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
+
+    const queryAssociationName =
+      router.query.association_name || router.query.associationName || "";
+
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("spm_selected_association_id") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
+        : "";
+
+    const storedAssociationName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationName") ||
+          localStorage.getItem("association_name") ||
+          localStorage.getItem("associationName") ||
+          "Selected Association"
+        : "Selected Association";
+
+    const finalAssociationId = String(
+      queryAssociationId || storedAssociationId || ""
+    ).trim();
+
+    const finalAssociationName = String(
+      queryAssociationName || storedAssociationName || "Selected Association"
+    ).trim();
+
+    if (!finalAssociationId) {
+      setSystemMessage(
+        "No association context found. Please return to the board dashboard and reopen this page."
+      );
+      setLoading(false);
+      return;
+    }
+
+    setAssociationId(finalAssociationId);
+    setAssociationName(finalAssociationName);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("spm_selected_association_id", finalAssociationId);
+    localStorage.setItem("selectedAssociationName", finalAssociationName);
+  }, [router.isReady, router.query]);
+
+  useEffect(() => {
+    if (!associationId) return;
+
     loadMessages();
 
-        const interval = setInterval(() => {
+    const interval = setInterval(() => {
       loadMessages({ silent: true });
     }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [associationId]);
 
     async function loadMessages({ silent = false } = {}) {
     try {
@@ -37,7 +92,7 @@ export default function BoardMessageInbox() {
 
       const response = await fetch(
         `/api/board/messages/list?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
+          associationId
         )}`
       );
 
@@ -85,7 +140,7 @@ export default function BoardMessageInbox() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
+          association_id: associationId,
           subject: newMessage.subject.trim(),
           message_body: newMessage.message_body.trim(),
           sent_by_name: newMessage.sent_by_name || "Board Member",
@@ -138,8 +193,9 @@ export default function BoardMessageInbox() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+          body: JSON.stringify({
           id: activeMessage.id,
+          association_id: associationId,
           reply_body: replyBody.trim(),
           replied_by: "Board Member",
         }),
@@ -195,7 +251,16 @@ export default function BoardMessageInbox() {
               </p>
             </div>
 
-            <Link href="/board" className={bosTheme.primaryButton}>
+                        <Link
+              href={{
+                pathname: "/board",
+                query: {
+                  association_id: associationId,
+                  association_name: associationName,
+                },
+              }}
+              className={bosTheme.primaryButton}
+            >
               Board Dashboard
             </Link>
           </div>
