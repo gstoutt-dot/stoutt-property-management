@@ -65,14 +65,14 @@ const sections = [
       { title: "Association Calendar", href: "/board/calendar" },
       { title: "Board & Members Meetings", href: "/portal/board/meetings" },
       { title: "Association Reporting Center", href: "/board/reports" },
-      { title: "Association Search Center", href: "/board/search-center" },
     ],
   },
+
   {
     title: "Governance & Board Operations",
     eyebrow: "Board Administration",
     description:
-      "Governance tools for voting, motions, committees, signatures, elections, documents, notifications, and board decision records.",
+      "Governance tools required for daily association operations.",
     items: [
       { title: "QuickBooks Live", href: "/accounting/quickbooks-live" },
       { title: "Admin Notifications", href: "/admin/notifications" },
@@ -81,50 +81,18 @@ const sections = [
       { title: "Board & Member Meetings", href: "/portal/board/meetings" },
       { title: "Committee Members Center", href: "/board/committee-center" },
       { title: "Board Signature Approval Log", href: "/board/signature-approval-log" },
-      { title: "Member Voting", href: "/portal/board/member-voting" },
-      { title: "Association Voting Center", href: "/board/voting-center" },
-      { title: "Association Motion Center", href: "/board/motion-center" },
-      { title: "Association Elections", href: "/board/elections" },
     ],
   },
+
   {
     title: "Financial Planning & Oversight",
-    eyebrow: "Annual & Strategic Financial Work",
+    eyebrow: "Financial Operations",
     description:
-      "Planning tools for budget preparation, financial review, capital projects, and vendor performance oversight.",
+      "Financial visibility and accounting oversight for association operations.",
     items: [
       { title: "Financial Review", href: "/board/financial-review" },
       { title: "Management Accounting Reports", href: "/board/management-accounting-reports" },
-      { title: "Budget Planning", href: "/board/budget-planning" },
-      { title: "Capital Projects", href: "/board/capital-projects" },
-      { title: "Vendor Performance", href: "/board/vendor-performance" },
       { title: "Association Approved Vendors", href: "/board/vendors" },
-    ],
-  },
-  {
-    title: "Legal, Risk & Compliance",
-    eyebrow: "Protection Layer",
-    description:
-      "Controlled areas for violations, legal review, insurance, risk tracking, and policy reference.",
-    items: [
-      { title: "Compliance Dashboard", href: "/board/compliance-dashboard" },
-      { title: "Compliance Calendar", href: "/board/compliance-calendar" },
-      { title: "Violation Review", href: "/board/violation-review" },
-      { title: "Legal Review", href: "/board/legal-review" },
-      { title: "Insurance & Risk", href: "/board/insurance-risk" },
-      { title: "Policy Library", href: "/board/policy-library" },
-      { title: "Maintenance Review", href: "/board/maintenance-review" },
-    ],
-  },
-  {
-    title: "Infrastructure & Expansion",
-    eyebrow: "System Growth",
-    description:
-      "Support tools for technology integrations, training, platform expansion, and operating continuity.",
-    items: [
-      { title: "Technology Integrations", href: "/board/technology-integrations" },
-      { title: "Help & Training", href: "/board/help-training" },
-      { title: "Architectural Approvals", href: "/board/architectural-approvals" },
     ],
   },
 ];
