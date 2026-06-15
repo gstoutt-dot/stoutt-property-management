@@ -91,12 +91,22 @@ export default function BoardApprovalQueue() {
         throw new Error(result.message || "Unable to load board approval queue.");
       }
 
-      const filteredItems = (result.records || []).filter((record) => {
+            const filteredItems = (result.records || []).filter((record) => {
+        const combined = `${record.routing_target || ""} ${
+          record.assigned_to || ""
+        } ${record.status || ""} ${record.request_type || ""} ${
+          record.title || ""
+        } ${record.description || ""}`.toLowerCase();
+
         return (
-          record.routing_target === "Board Approval Queue" ||
-          record.routing_target === "board_approval_queue" ||
-          record.assigned_to === "board" ||
-          record.board_review_required === true
+          record.board_review_required === true ||
+          combined.includes("board approval") ||
+          combined.includes("board_approval") ||
+          combined.includes("board review") ||
+          combined.includes("board_review") ||
+          combined.includes("assigned to board") ||
+          combined.includes("board treasurer") ||
+          combined.includes("board")
         );
       });
 
