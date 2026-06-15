@@ -9,7 +9,8 @@ export default async function handler(req, res) {
       });
     }
 
-    const { id, reply_body, replied_by } = req.body || {};
+        const { id, association_id, associationId, reply_body, replied_by } = req.body || {};
+    const finalAssociationId = association_id || associationId || "";
 
     if (!id || !reply_body) {
       return res.status(400).json({
@@ -18,12 +19,20 @@ export default async function handler(req, res) {
       });
     }
 
+    if (!finalAssociationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Association ID is required.",
+      });
+    }
+
     const now = new Date().toISOString();
 
-    const { data: existingMessage, error: loadError } = await supabaseAdmin
+        const { data: existingMessage, error: loadError } = await supabaseAdmin
       .from("board_messages")
       .select("*")
       .eq("id", id)
+      .eq("association_id", finalAssociationId)
       .single();
 
     if (loadError) throw loadError;
@@ -44,7 +53,7 @@ const newReplyEntry = [
       ? `${existingReplies}\n\n---\n\n${newReplyEntry}`
       : newReplyEntry;
 
-    const { data, error } = await supabaseAdmin
+        const { data, error } = await supabaseAdmin
       .from("board_messages")
       .update({
         reply_body: updatedReplyBody,
@@ -54,6 +63,7 @@ const newReplyEntry = [
         updated_at: now,
       })
       .eq("id", id)
+      .eq("association_id", finalAssociationId)
       .select("*")
       .single();
 
