@@ -161,7 +161,12 @@ export default function BoardNotificationCenter() {
           .eq("association_id", associationId)
           .order("created_at", { ascending: false }),
 
-                Promise.resolve({ data: [], error: null }),
+                supabase
+  .from("bos_notification_reads")
+  .select("notification_id")
+  .eq("association_id", associationId)
+  .eq("notification_source", NOTIFICATION_SOURCE)
+  .eq("read_by_role", "board"),
       ]);
         
       if (eventsError) throw eventsError;
