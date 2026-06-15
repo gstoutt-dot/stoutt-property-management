@@ -142,26 +142,10 @@ export default function AdminLoginPage() {
   }
 
   async function createManagerPendingRequest(userEmail) {
-    const { error: requestError } = await supabase
-      .from("portal_access_approvals")
-      .upsert(
-        {
-          association_id: selectedAssociation.id,
-          association_name: selectedAssociation.name,
-          quickbooks_id: "",
-          email: userEmail,
-          role: "manager",
-          status: "pending",
-        },
-        {
-          onConflict: "association_id,email,role",
-        }
-      );
-
-    if (requestError) {
-      throw requestError;
-    }
-  }
+  setError(
+    "Manager access must be approved by an administrator before sign-in."
+  );
+}
 
   async function handleSubmit(event) {
     event.preventDefault();
