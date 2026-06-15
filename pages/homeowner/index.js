@@ -4,9 +4,7 @@ import { useRouter } from "next/router";
 import { supabase } from "../../lib/supabaseClient";
 import OwnerAccountLedger from "../../components/OwnerAccountLedger";
 
-const FALLBACK_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-const FALLBACK_OWNER_USER_ID = "2576c2a8-e49e-4009-9d07-10aba3c63090";
-const FALLBACK_UNIT_NUMBER = "101";
+const DEFAULT_ASSOCIATION_NAME = "Sunset Condominium Association";
 
 function money(value) {
   const amount = Number(value || 0);
@@ -65,15 +63,17 @@ const [loadError, setLoadError] = useState("");
           }
         }
 
-        const resolvedAssociationId =
-          resolvedOwnerProfile?.association_id || FALLBACK_ASSOCIATION_ID;
+        if (!resolvedOwnerProfile?.association_id || !resolvedOwnerProfile?.unitNumber) {
+          throw new Error(
+            "No homeowner profile is linked to this login. Please contact management."
+          );
+        }
 
+        const resolvedAssociationId = resolvedOwnerProfile.association_id;
         const resolvedOwnerUserId =
-          resolvedOwnerProfile?.id || FALLBACK_OWNER_USER_ID;
+          resolvedOwnerProfile.owner_user_id || resolvedOwnerProfile.id || "";
 
-        const resolvedUnitNumber =
-          resolvedOwnerProfile?.unitNumber || FALLBACK_UNIT_NUMBER;
-
+        const resolvedUnitNumber = resolvedOwnerProfile.unitNumber;
         const balanceResponse = await fetch(
           `/api/accounting/owner-balance?associationId=${resolvedAssociationId}&ownerUserId=${resolvedOwnerUserId}&unitNumber=${resolvedUnitNumber}`
         );
@@ -128,7 +128,7 @@ const [loadError, setLoadError] = useState("");
   }, [router]);
 
   const ownerName = balance?.owner_name || "Homeowner";
-  const unitNumber = balance?.unit_number || ownerProfile?.unitNumber || FALLBACK_UNIT_NUMBER;
+  const unitNumber = balance?.unit_number || ownerProfile?.unitNumber || "";
   const currentBalance = money(balance?.current_balance);
   const monthlyAssessment = money(balance?.monthly_assessment);
   const paymentStatus =
@@ -181,7 +181,7 @@ const [loadError, setLoadError] = useState("");
               </h1>
 
               <p className="mt-4 max-w-3xl text-slate-300">
-                Unit {unitNumber} · Sunset Condominium Association
+                Unit {unitNumber} · {ownerProfile?.associationName || DEFAULT_ASSOCIATION_NAME}
               </p>
             </div>
 
@@ -364,10 +364,10 @@ const [loadError, setLoadError] = useState("");
       </div>
 
       <div className="mt-6">
-        <OwnerAccountLedger
-          associationId={ownerProfile?.association_id || FALLBACK_ASSOCIATION_ID}
-          ownerUserId={ownerProfile?.id || FALLBACK_OWNER_USER_ID}
-          unitNumber={ownerProfile?.unitNumber || FALLBACK_UNIT_NUMBER}
+          <OwnerAccountLedger
+          associationId={ownerProfile?.association_id}
+          ownerUserId={ownerProfile?.owner_user_id || ownerProfile?.id}
+          unitNumber={ownerProfile?.unitNumber}
           currentBalanceAmount={balance?.current_balance}
         />
       </div>
