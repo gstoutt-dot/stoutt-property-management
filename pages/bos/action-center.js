@@ -18,14 +18,35 @@ export default function BOSActionCenter() {
   const [updatingId, setUpdatingId] = useState(null);
   const [systemMessage, setSystemMessage] = useState("");
 
-    useEffect(() => {
+      useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
+
     const storedAssociationId =
       typeof window !== "undefined"
-        ? localStorage.getItem("spm_selected_association_id") || ""
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("spm_selected_association_id") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
         : "";
 
-    setAssociationId(storedAssociationId);
-  }, []);
+    const finalAssociationId = String(
+      queryAssociationId || storedAssociationId || ""
+    ).trim();
+
+    if (!finalAssociationId) {
+      setSystemMessage("No association selected.");
+      return;
+    }
+
+    setAssociationId(finalAssociationId);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("spm_selected_association_id", finalAssociationId);
+  }, [router.isReady, router.query]);
 
   useEffect(() => {
     if (!associationId) return;
