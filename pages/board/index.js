@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -64,6 +64,65 @@ function statusStyle(status) {
 
 export default function BoardModuleHub() {
   const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
+
+    const queryAssociationName =
+      router.query.association_name || router.query.associationName || "";
+
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
+        : "";
+
+    const storedAssociationName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationName") ||
+          localStorage.getItem("association_name") ||
+          localStorage.getItem("associationName") ||
+          ""
+        : "";
+
+    const finalAssociationId = String(
+      queryAssociationId || storedAssociationId || ""
+    ).trim();
+
+    const finalAssociationName = String(
+      queryAssociationName || storedAssociationName || "Selected Association"
+    ).trim();
+
+    if (!finalAssociationId) return;
+
+    setAssociationId(finalAssociationId);
+    setAssociationName(finalAssociationName);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("selectedAssociationName", finalAssociationName);
+  }, [router.isReady, router.query]);
+
+  function buildAssociationHref(href) {
+    if (!associationId) {
+      return href;
+    }
+
+    const [pathname, existingQueryString] = href.split("?");
+    const params = new URLSearchParams(existingQueryString || "");
+
+    params.set("association_id", associationId);
+    params.set("association_name", associationName);
+
+    return `${pathname}?${params.toString()}`;
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("spmPortalLoggedIn");
@@ -149,11 +208,11 @@ export default function BoardModuleHub() {
                 </div>
 
                 <Link
-                  href={page.href}
-                  className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-400/20"
-                >
-                  Open
-                </Link>
+  href={buildAssociationHref(page.href)}
+  className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-400/20"
+>
+  Open
+</Link>
               </div>
 
               <p className="text-sm leading-6 text-slate-400">
