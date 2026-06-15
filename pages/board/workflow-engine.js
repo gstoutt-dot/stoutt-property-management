@@ -1,20 +1,83 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { supabase } from "../../lib/bosClient";
 
 export default function WorkflowEngine() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [systemMessage, setSystemMessage] = useState("");
 
-  async function fetchActions() {
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const queryAssociationId =
+      router.query.association_id || router.query.associationId || "";
+
+    const queryAssociationName =
+      router.query.association_name || router.query.associationName || "";
+
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationId") ||
+          localStorage.getItem("spm_selected_association_id") ||
+          localStorage.getItem("association_id") ||
+          localStorage.getItem("associationId") ||
+          ""
+        : "";
+
+    const storedAssociationName =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedAssociationName") ||
+          localStorage.getItem("association_name") ||
+          localStorage.getItem("associationName") ||
+          "Selected Association"
+        : "Selected Association";
+
+    const finalAssociationId = String(
+      queryAssociationId || storedAssociationId || ""
+    ).trim();
+
+    const finalAssociationName = String(
+      queryAssociationName || storedAssociationName || "Selected Association"
+    ).trim();
+
+    if (!finalAssociationId) {
+      setSystemMessage(
+        "No association context found. Please return to the board dashboard and reopen this page."
+      );
+      setLoading(false);
+      return;
+    }
+
+    setAssociationId(finalAssociationId);
+    setAssociationName(finalAssociationName);
+
+    localStorage.setItem("selectedAssociationId", finalAssociationId);
+    localStorage.setItem("spm_selected_association_id", finalAssociationId);
+    localStorage.setItem("selectedAssociationName", finalAssociationName);
+  }, [router.isReady, router.query]);
+
+    async function fetchActions() {
     try {
       setLoading(true);
       setSystemMessage("");
 
+      if (!associationId) {
+        setActions([]);
+        setSystemMessage("No association context found.");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("bos_actions")
         .select("*")
+        .eq("association_id", associationId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -29,7 +92,9 @@ export default function WorkflowEngine() {
     }
   }
 
-  useEffect(() => {
+    useEffect(() => {
+    if (!associationId) return;
+
     fetchActions();
 
     const interval = setInterval(() => {
@@ -37,17 +102,29 @@ export default function WorkflowEngine() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [associationId]);
 
-  async function moveAction(id, newStatus, title) {
+    async function moveAction(id, newStatus, title) {
+    if (!associationId) {
+      setSystemMessage("Association ID is required to update workflow actions.");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("bos_actions")
       .update({ status: newStatus })
       .eq("id", id)
+      .eq("association_id", associationId)
       .select()
       .single();
 
-    if (!error && data) {
+    if (error) {
+      console.error("Unable to update workflow action:", error);
+      setSystemMessage("Unable to update workflow action.");
+      return;
+    }
+
+    if (data) {
       let eventType = "status_change";
       let message = `Status changed to ${newStatus}`;
 
@@ -61,14 +138,19 @@ export default function WorkflowEngine() {
         message = `Action completed: ${title}`;
       }
 
-      await supabase.from("bos_events").insert([
+      const { error: eventError } = await supabase.from("bos_events").insert([
         {
           action_id: id,
+          association_id: associationId,
           event_type: eventType,
           message,
           module: "Board Workflow Engine",
         },
       ]);
+
+      if (eventError) {
+        console.warn("Workflow action updated, but event insert failed:", eventError);
+      }
     }
 
     await fetchActions();
@@ -160,8 +242,14 @@ export default function WorkflowEngine() {
             </h1>
           </div>
 
-          <Link
-            href="/board"
+                    <Link
+            href={{
+              pathname: "/board",
+              query: {
+                association_id: associationId,
+                association_name: associationName,
+              },
+            }}
             className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
           >
             Return to Board Dashboard
