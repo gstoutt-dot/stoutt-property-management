@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+import { useRouter } from "next/router";
 
 const REPORT_TABS = [
   { key: "balance-sheet", label: "Balance Sheet" },
@@ -11,6 +10,11 @@ const REPORT_TABS = [
 ];
 
 export default function ManagementAccountingReports() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
+
   const [activeTab, setActiveTab] = useState("balance-sheet");
   const [reportRows, setReportRows] = useState([]);
   const [reportMeta, setReportMeta] = useState(null);
@@ -18,8 +22,59 @@ export default function ManagementAccountingReports() {
   const [systemMessage, setSystemMessage] = useState("");
 
   useEffect(() => {
-    loadReport(activeTab);
-  }, [activeTab]);
+  if (!router.isReady) return;
+
+  const queryAssociationId =
+    router.query.association_id || router.query.associationId || "";
+
+  const queryAssociationName =
+    router.query.association_name || router.query.associationName || "";
+
+  const storedAssociationId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("selectedAssociationId") ||
+        localStorage.getItem("spm_selected_association_id") ||
+        localStorage.getItem("association_id") ||
+        localStorage.getItem("associationId") ||
+        ""
+      : "";
+
+  const storedAssociationName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("selectedAssociationName") ||
+        localStorage.getItem("association_name") ||
+        localStorage.getItem("associationName") ||
+        "Selected Association"
+      : "Selected Association";
+
+  const finalAssociationId = String(
+    queryAssociationId || storedAssociationId || ""
+  ).trim();
+
+  const finalAssociationName = String(
+    queryAssociationName || storedAssociationName || "Selected Association"
+  ).trim();
+
+  if (!finalAssociationId) {
+    setSystemMessage(
+      "No association context found. Please return to the dashboard and reopen this page."
+    );
+    return;
+  }
+
+  setAssociationId(finalAssociationId);
+  setAssociationName(finalAssociationName);
+
+  localStorage.setItem("selectedAssociationId", finalAssociationId);
+  localStorage.setItem("spm_selected_association_id", finalAssociationId);
+  localStorage.setItem("selectedAssociationName", finalAssociationName);
+}, [router.isReady, router.query]);
+
+  useEffect(() => {
+  if (!associationId) return;
+
+  loadReport(activeTab);
+}, [activeTab, associationId]);
 
   async function loadReport(tabKey) {
     setReportLoading(true);
@@ -36,8 +91,8 @@ export default function ManagementAccountingReports() {
 
     try {
       const response = await fetch(
-        `/api/accounting/quickbooks/board-report-snapshot?association_id=${DEFAULT_ASSOCIATION_ID}&report_key=${tab.key}`
-      );
+  `/api/accounting/quickbooks/board-report-snapshot?association_id=${associationId}&report_key=${tab.key}`
+);
 
       const json = await response.json();
 
@@ -139,7 +194,17 @@ export default function ManagementAccountingReports() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Dashboard</Link>
+            <Link
+  href={{
+    pathname: "/board",
+    query: {
+      association_id: associationId,
+      association_name: associationName,
+    },
+  }}
+>
+  Board Dashboard
+</Link>
             <Link href="/board/financial-review">Financial Review</Link>
           </nav>
         </div>
