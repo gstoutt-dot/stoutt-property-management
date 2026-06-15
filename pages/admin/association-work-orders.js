@@ -241,7 +241,7 @@ export default function AssociationWorkOrders() {
               updated_at: new Date().toISOString(),
             },
             {
-              onConflict: "source_record_id,source_table",
+              onConflict: "association_id,source_record_id,source_table",
             }
           );
 
