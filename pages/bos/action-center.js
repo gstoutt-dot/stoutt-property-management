@@ -10,6 +10,7 @@ export default function BOSActionCenter() {
     router.isReady && router.query.returnTo === "/board"
       ? "/board"
       : "/admin";
+  const [associationId, setAssociationId] = useState("");
   const [actions, setActions] = useState([]);
   const [filter, setFilter] = useState("all");
   const [selectedAction, setSelectedAction] = useState(null);
@@ -17,7 +18,18 @@ export default function BOSActionCenter() {
   const [updatingId, setUpdatingId] = useState(null);
   const [systemMessage, setSystemMessage] = useState("");
 
+    useEffect(() => {
+    const storedAssociationId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("spm_selected_association_id") || ""
+        : "";
+
+    setAssociationId(storedAssociationId);
+  }, []);
+
   useEffect(() => {
+    if (!associationId) return;
+
     loadActions();
 
     const interval = setInterval(() => {
@@ -25,13 +37,14 @@ export default function BOSActionCenter() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [associationId]);
 
-  async function loadActions() {
-  const associationId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("spm_selected_association_id") || ""
-      : "";
+    async function loadActions() {
+  if (!associationId) {
+    setActions([]);
+    setSystemMessage("No association selected.");
+    return;
+  }
 
   const { data, error } = await supabase
     .from("bos_actions")
@@ -147,17 +160,19 @@ export default function BOSActionCenter() {
     const { error } = await supabase
       .from("bos_actions")
       .update(fullPayload)
-      .eq("id", item.id);
+      .eq("id", item.id)
+      .eq("association_id", associationId);
 
     if (error) {
       console.warn("Full workflow update failed. Retrying with core fields.", error);
 
       const fallbackPayload = buildFallbackPayload(workflowAction);
 
-      const { error: fallbackError } = await supabase
+        const { error: fallbackError } = await supabase
         .from("bos_actions")
         .update(fallbackPayload)
-        .eq("id", item.id);
+        .eq("id", item.id)
+        .eq("association_id", associationId);
 
       if (fallbackError) {
         console.error("Fallback workflow update failed:", fallbackError);
