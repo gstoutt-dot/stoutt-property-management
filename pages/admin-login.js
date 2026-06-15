@@ -95,11 +95,11 @@ export default function AdminLoginPage() {
   }, []);
 
   function getRouteByRole(role) {
-    if (role === "manager") return "/portal/manager";
-    if (role === "board") return "/board";
-    if (role === "admin") return "/admin";
-    return "/admin-login";
-  }
+  if (role === "manager") return "/manager/dashboard";
+  if (role === "board") return "/board";
+  if (role === "admin") return "/admin";
+  return "/admin-login";
+}
 
   function storePortalContext(role, userEmail) {
     localStorage.setItem("spmPortalLoggedIn", "true");
