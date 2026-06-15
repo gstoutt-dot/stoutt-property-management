@@ -1,12 +1,20 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
+function clean(value) {
+  return String(value || "").trim();
+}
 export default async function handler(req, res) {
   try {
-    if (req.method === "GET") {
-      const associationId = req.query.association_id || DEFAULT_ASSOCIATION_ID;
+        if (req.method === "GET") {
+      const associationId =
+        clean(req.query.association_id) || clean(req.query.associationId);
 
+      if (!associationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Association ID is required.",
+        });
+      }
       const { data, error } = await supabaseAdmin
         .from("association_calendar_events")
         .select("*")
@@ -22,8 +30,9 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const {
+            const {
         association_id,
+        associationId,
         title,
         description,
         event_type,
@@ -33,6 +42,15 @@ export default async function handler(req, res) {
         priority,
         status,
       } = req.body || {};
+
+      const finalAssociationId = clean(association_id) || clean(associationId);
+
+            if (!finalAssociationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Association ID is required.",
+        });
+      }
 
       if (!title || !start_time) {
         return res.status(400).json({
@@ -46,7 +64,7 @@ export default async function handler(req, res) {
       const { data, error } = await supabaseAdmin
         .from("association_calendar_events")
         .insert({
-          association_id: association_id || DEFAULT_ASSOCIATION_ID,
+          association_id: finalAssociationId,
           title: String(title).trim(),
           description: description || "",
           event_type: event_type || "general",
@@ -69,8 +87,9 @@ export default async function handler(req, res) {
       });
     }
 
-    if (req.method === "PATCH") {
-      const { id, updates } = req.body || {};
+        if (req.method === "PATCH") {
+      const { id, association_id, associationId, updates } = req.body || {};
+      const finalAssociationId = clean(association_id) || clean(associationId);
 
       if (!id) {
         return res.status(400).json({
@@ -79,15 +98,23 @@ export default async function handler(req, res) {
         });
       }
 
+      if (!finalAssociationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Association ID is required.",
+        });
+      }
+
       const allowedUpdates = {
         ...updates,
         updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabaseAdmin
+            const { data, error } = await supabaseAdmin
         .from("association_calendar_events")
         .update(allowedUpdates)
         .eq("id", id)
+        .eq("association_id", finalAssociationId)
         .select("*")
         .single();
 
