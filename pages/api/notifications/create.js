@@ -82,7 +82,10 @@ export default async function handler(req, res) {
     const payload = resolveNotificationPayload(req.body || {});
 
     if (!payload.associationId) {
-  payload.associationId = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
+  return res.status(400).json({
+    success: false,
+    error: "Association ID is required.",
+  });
 }
 
     const result = await createNotification(payload);
