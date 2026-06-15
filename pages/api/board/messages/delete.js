@@ -6,16 +6,22 @@ export default async function handler(req, res) {
       return res.status(405).json({ success: false, message: "Method not allowed." });
     }
 
-    const { id } = req.query || {};
+        const { id, association_id, associationId } = req.query || {};
+    const finalAssociationId = association_id || associationId || "";
 
     if (!id) {
       return res.status(400).json({ success: false, message: "Message ID is required." });
     }
 
+    if (!finalAssociationId) {
+      return res.status(400).json({ success: false, message: "Association ID is required." });
+    }
+
     const { error } = await supabaseAdmin
       .from("board_messages")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .eq("association_id", finalAssociationId);
 
     if (error) throw error;
 
