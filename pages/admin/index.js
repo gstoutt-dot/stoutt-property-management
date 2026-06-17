@@ -330,9 +330,14 @@ export default function AdminDashboard() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/admin/operational-records?id=${recordId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+  `/api/admin/operational-records?id=${recordId}&association_id=${encodeURIComponent(
+    associationId
+  )}`,
+  {
+    method: "DELETE",
+  }
+);
 
       const result = await response.json();
 
