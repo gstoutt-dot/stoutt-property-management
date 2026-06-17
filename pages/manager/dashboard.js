@@ -16,6 +16,26 @@ function getSelectedAssociationContext() {
   };
 }
 
+function getAllowedAssociations() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const stored = localStorage.getItem(
+      "spmPortalAllowedAssociations"
+    );
+
+    const parsed = JSON.parse(stored || "[]");
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 const operationalHealth = [
   {
     title: "QuickBooks Synchronization",
