@@ -513,6 +513,37 @@ export default function AdminDashboard() {
                 Current Role: {String(portalRole || "admin").toUpperCase()}
               </p>
 
+                {adminAssociations.length > 1 && (
+  <div className="mt-5">
+    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+      Active Association
+    </label>
+
+    <select
+      value={associationId}
+      onChange={(event) =>
+        handleAdminAssociationChange(
+          event,
+          adminAssociations,
+          setAssociationId,
+          setAssociationName
+        )
+      }
+      className="w-full rounded-xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-amber-400/50"
+    >
+      {adminAssociations.map((association) => (
+        <option
+          key={association.id}
+          value={association.id}
+          className="bg-slate-950 text-white"
+        >
+          {association.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
               <div className="mt-5 grid gap-3">
                 <Link href="/" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
                   Homepage
