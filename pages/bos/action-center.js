@@ -334,12 +334,30 @@ export default function BOSActionCenter() {
           </div>
 
           <div className="hidden gap-3 md:flex">
-  <a
-    href={dashboardReturnPath}
-    className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
-  >
-    Dashboard
-  </a>
+  <button
+  type="button"
+  onClick={() => {
+    const role =
+      typeof window !== "undefined"
+        ? localStorage.getItem("spmPortalRole")
+        : "";
+
+    if (role === "manager") {
+      router.push("/manager/dashboard");
+      return;
+    }
+
+    if (role === "board") {
+      router.push("/board");
+      return;
+    }
+
+    router.push("/admin");
+  }}
+  className="rounded-2xl border border-yellow-400/30 px-5 py-3 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/10"
+>
+  Dashboard
+</button>
 </div>
         </div>
       </section>
