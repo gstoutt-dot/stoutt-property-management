@@ -7,9 +7,12 @@ export default function BOSActionCenter() {
   const router = useRouter();
 
   const dashboardReturnPath =
-    router.isReady && router.query.returnTo === "/board"
-      ? "/board"
-      : "/admin";
+  router.isReady && router.query.returnTo
+    ? String(router.query.returnTo)
+    : typeof window !== "undefined" &&
+      localStorage.getItem("spmPortalRole") === "manager"
+    ? "/manager/dashboard"
+    : "/admin";
   const [associationId, setAssociationId] = useState("");
   const [actions, setActions] = useState([]);
   const [filter, setFilter] = useState("all");
