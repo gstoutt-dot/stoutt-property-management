@@ -403,11 +403,16 @@ export default function AssociationWorkOrders() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/admin"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Admin Dashboard
-            </Link>
+  href={
+    typeof window !== "undefined" &&
+    localStorage.getItem("spmPortalRole") === "manager"
+      ? "/manager/dashboard"
+      : "/admin"
+  }
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Dashboard
+</Link>
 
             <Link
               href="/portal/manager#live-queue"
