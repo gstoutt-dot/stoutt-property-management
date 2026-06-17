@@ -257,7 +257,8 @@ export default function AdminDashboard() {
     setAssociationId(context.associationId || "");
   }, [router]);
 
-  useEffect(() => {
+    useEffect(() => {
+    loadAdminAssociations();
     loadOperationalRecords({ showLoading: true });
 
     const interval = setInterval(() => {
@@ -266,6 +267,28 @@ export default function AdminDashboard() {
 
     return () => clearInterval(interval);
   }, []);
+
+    async function loadAdminAssociations() {
+    try {
+      const response = await fetch("/api/onboarding/list-associations");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Unable to load associations.");
+      }
+
+      const activeAssociations = (data.associations || [])
+        .map((association) => ({
+          id: association.association_id || association.id,
+          name: association.association_name || association.name || "Association",
+        }))
+        .filter((association) => association.id);
+
+      setAdminAssociations(activeAssociations);
+    } catch (error) {
+      console.error("Unable to load admin associations:", error);
+    }
+  }
 
   function handleLogout() {
     localStorage.removeItem("spmPortalLoggedIn");
