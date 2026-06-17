@@ -9,6 +9,8 @@ const initialForm = {
   totalUnits: "",
   boardPresident: "",
   boardEmail: "",
+  spmManagerEmail: "",
+  camEmail: "",
   managementContact: "",
   quickbooksStatus: "Ready",
   onboardingStage: "Association Intake",
@@ -141,6 +143,8 @@ export default function AssociationOnboarding() {
               <Input label="Total Units" value={form.totalUnits} onChange={(v) => updateField("totalUnits", v)} />
               <Input label="Board President" value={form.boardPresident} onChange={(v) => updateField("boardPresident", v)} />
               <Input label="Board Email" value={form.boardEmail} onChange={(v) => updateField("boardEmail", v)} />
+              <Input label="SPM Manager Email" value={form.spmManagerEmail} onChange={(v) => updateField("spmManagerEmail", v)} />
+              <Input label="CAM Email" value={form.camEmail} onChange={(v) => updateField("camEmail", v)} />
               <Input label="Management Contact" value={form.managementContact} onChange={(v) => updateField("managementContact", v)} />
               <Input label="QuickBooks Status" value={form.quickbooksStatus} onChange={(v) => updateField("quickbooksStatus", v)} />
             </div>
