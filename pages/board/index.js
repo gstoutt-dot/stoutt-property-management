@@ -282,13 +282,18 @@ export default function BoardModuleHub() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("spmPortalLoggedIn");
-    localStorage.removeItem("spmPortalUser");
-    localStorage.removeItem("spmPortalUserName");
-    localStorage.removeItem("spmPortalRole");
+  localStorage.removeItem("spmPortalLoggedIn");
+  localStorage.removeItem("spmPortalUser");
+  localStorage.removeItem("spmPortalUserName");
+  localStorage.removeItem("spmPortalRole");
 
-    router.push("/admin-login");
-  };
+  localStorage.removeItem("spm_selected_association_id");
+  localStorage.removeItem("spm_selected_association_name");
+  localStorage.removeItem("selectedAssociationId");
+  localStorage.removeItem("selectedAssociationName");
+
+  router.push("/admin-login");
+};
 
   const approvalCount = useMemo(
     () =>
