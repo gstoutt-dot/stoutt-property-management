@@ -78,9 +78,8 @@ const sections = [
     items: [
       { title: "Manager Command Center", href: "/portal/manager#live-queue" },
       { title: "Association Work Orders", href: "/manager/association-work-orders" },
-      { title: "BOS Action Center", href: "/bos/action-center?returnTo=/admin" },
-      { title: "New Operational Record", href: "/admin/operations/new" },
-      { title: "Association Onboarding Records", href: "/association-onboarding-records" },
+      { title: "BOS Action Center", href: "/bos/action-center?returnTo=/manager/dashboard" },
+      { title: "New Operational Record", href: "/manager/operations/new" },
       { title: "Board Message Inbox", href: "/board/messages" },
       { title: "Association Calendar", href: "/board/calendar" },
       { title: "Board & Members Meetings", href: "/portal/board/meetings" },
