@@ -413,8 +413,8 @@ export default function AdminDashboard() {
   }, [openRecords]);
 
   const displayedRecords = showAllRecords
-    ? priorityRecords
-    : priorityRecords.slice(0, 5);
+  ? priorityRecords
+  : priorityRecords.slice(0, 3);
 
   return (
     <main className="min-h-screen bg-[#020617] text-white">
