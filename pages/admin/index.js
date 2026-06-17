@@ -191,6 +191,35 @@ function formatStatus(value) {
 }
 
 function cleanAdminRecordDescription(description = "") {
+  function handleAdminAssociationChange(
+  event,
+  associations,
+  setAssociationId,
+  setAssociationName
+) {
+  const selectedId = event.target.value;
+
+  const selectedAssociation = associations.find(
+    (association) => association.id === selectedId
+  );
+
+  if (!selectedAssociation) return;
+
+  localStorage.setItem(
+    "spm_selected_association_id",
+    selectedAssociation.id
+  );
+
+  localStorage.setItem(
+    "spm_selected_association_name",
+    selectedAssociation.name
+  );
+
+  setAssociationId(selectedAssociation.id);
+  setAssociationName(selectedAssociation.name);
+
+  window.location.reload();
+}
   return String(description || "")
     .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
     .replace(/https?:\/\/\S+/gi, "")
@@ -208,6 +237,7 @@ export default function AdminDashboard() {
   const [portalRole, setPortalRole] = useState("admin");
   const [associationName, setAssociationName] = useState("");
   const [associationId, setAssociationId] = useState("");
+  const [adminAssociations, setAdminAssociations] = useState([]);
   const [showAllRecords, setShowAllRecords] = useState(false);
 
   useEffect(() => {
