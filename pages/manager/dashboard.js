@@ -196,21 +196,24 @@ export default function ManagerDashboard() {
   const [portalRole, setPortalRole] = useState("manager");
   const [associationName, setAssociationName] = useState("");
   const [associationId, setAssociationId] = useState("");
+  const [allowedAssociations, setAllowedAssociations] = useState([]);
   const [showAllRecords, setShowAllRecords] = useState(false);
 
-  useEffect(() => {
+    useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
     const role = localStorage.getItem("spmPortalRole");
     const name = localStorage.getItem("spmPortalUserName");
     const context = getSelectedAssociationContext();
+    const assignedAssociations = getAllowedAssociations();
 
     if (loggedIn !== "true" || !["admin", "manager"].includes(role)) {
-  router.push("/admin-login");
-  return;
-}
+      router.push("/admin-login");
+      return;
+    }
 
-    setPortalUserName(name || "Admin");
-    setPortalRole(role || "admin");
+    setPortalUserName(name || "Manager");
+    setPortalRole(role || "manager");
+    setAllowedAssociations(assignedAssociations);
     setAssociationName(context.associationName || "Selected Association");
     setAssociationId(context.associationId || "");
   }, [router]);
@@ -224,6 +227,44 @@ export default function ManagerDashboard() {
 
     return () => clearInterval(interval);
   }, []);
+
+  function handleAssociationChange(event) {
+  const selectedId = event.target.value;
+
+  const selectedAssociation = allowedAssociations.find(
+    (association) =>
+      String(association.association_id) === String(selectedId)
+  );
+
+  if (!selectedAssociation) return;
+
+  localStorage.setItem(
+    "spm_selected_association_id",
+    String(selectedAssociation.association_id)
+  );
+
+  localStorage.setItem(
+    "spm_selected_association_name",
+    String(selectedAssociation.association_name || "Selected Association")
+  );
+
+  localStorage.setItem(
+    "selectedAssociationId",
+    String(selectedAssociation.association_id)
+  );
+
+  localStorage.setItem(
+    "selectedAssociationName",
+    String(selectedAssociation.association_name || "Selected Association")
+  );
+
+  setAssociationId(selectedAssociation.association_id);
+  setAssociationName(
+    selectedAssociation.association_name || "Selected Association"
+  );
+
+  loadOperationalRecords({ showLoading: true });
+}
 
   function handleLogout() {
     localStorage.removeItem("spmPortalLoggedIn");
@@ -442,6 +483,30 @@ export default function ManagerDashboard() {
               <p className="mt-1 text-sm text-slate-400">
                 Current Role: {String(portalRole || "admin").toUpperCase()}
               </p>
+
+                {allowedAssociations.length > 1 && (
+  <div className="mt-5">
+    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+      Assigned Association
+    </label>
+
+    <select
+      value={associationId}
+      onChange={handleAssociationChange}
+      className="w-full rounded-xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-amber-400/50"
+    >
+      {allowedAssociations.map((association) => (
+        <option
+          key={association.association_id}
+          value={association.association_id}
+          className="bg-slate-950 text-white"
+        >
+          {association.association_name || "Association"}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
               <div className="mt-5 grid gap-3">
                 <Link href="/" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
