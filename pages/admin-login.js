@@ -1,172 +1,84 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
 
-const FALLBACK_ASSOCIATIONS = [
-  {
-    id: "79893883-6141-4dcc-ba1a-034d70a0dc96",
-    name: "Sunset Condo Association",
-    status: "active",
-  },
-];
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
 
-const PORTAL_ROLES = [
-  { value: "board", label: "Board Member" },
-  { value: "manager", label: "Manager" },
-  { value: "admin", label: "Admin" },
-];
+function choosePrimaryRole(roles = []) {
+  const normalizedRoles = roles.map((role) => String(role || "").toLowerCase());
 
-export default function AdminLoginPage() {
-  const router = useRouter();
+  if (normalizedRoles.includes("admin")) return "admin";
+  if (normalizedRoles.includes("manager")) return "manager";
+  if (normalizedRoles.includes("cam")) return "manager";
+  if (normalizedRoles.includes("board")) return "board";
+  if (normalizedRoles.includes("homeowner")) return "homeowner";
+  if (normalizedRoles.includes("owner")) return "homeowner";
 
-  const [mode, setMode] = useState("signin");
-  const [email, setEmail] = useState("glenn@stouttmgmt.com");
-  const [password, setPassword] = useState("");
-  const [portalRole, setPortalRole] = useState("admin");
+  return "";
+}
 
-  const [associations, setAssociations] = useState(FALLBACK_ASSOCIATIONS);
-  const [selectedAssociationId, setSelectedAssociationId] = useState(
-    FALLBACK_ASSOCIATIONS[0].id
-  );
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [loadingAssociations, setLoadingAssociations] = useState(true);
-
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const selectedAssociation = useMemo(() => {
-    return (
-      associations.find(
-        (association) => String(association.id) === String(selectedAssociationId)
-      ) || FALLBACK_ASSOCIATIONS[0]
-    );
-  }, [associations, selectedAssociationId]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadAssociations() {
-      setLoadingAssociations(true);
-
-      try {
-        const { data, error: associationError } = await supabase
-          .from("associations")
-          .select("id, name, status")
-          .order("name", { ascending: true });
-
-        if (associationError) {
-          throw associationError;
-        }
-
-        if (!mounted) return;
-
-        const activeAssociations = Array.isArray(data)
-          ? data.filter((association) => association.status === "active")
-          : [];
-
-        if (activeAssociations.length > 0) {
-          setAssociations(activeAssociations);
-          setSelectedAssociationId(activeAssociations[0].id);
-        } else {
-          setAssociations(FALLBACK_ASSOCIATIONS);
-          setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
-        }
-      } catch (loadError) {
-        console.error("Association load failed:", loadError);
-
-        if (mounted) {
-          setAssociations(FALLBACK_ASSOCIATIONS);
-          setSelectedAssociationId(FALLBACK_ASSOCIATIONS[0].id);
-        }
-      }
-
-      if (mounted) {
-        setLoadingAssociations(false);
-      }
-    }
-
-    loadAssociations();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  function getRouteByRole(role) {
+function getRouteByRole(role) {
+  if (role === "admin") return "/admin";
   if (role === "manager") return "/manager/dashboard";
   if (role === "board") return "/board";
-  if (role === "admin") return "/admin";
+  if (role === "homeowner") return "/homeowner";
+
   return "/admin-login";
 }
 
-  function storePortalContext(role, userEmail) {
-    localStorage.setItem("spmPortalLoggedIn", "true");
-    localStorage.setItem("spmPortalUser", String(userEmail || "").toLowerCase());
-    localStorage.setItem("spmPortalUserName", String(userEmail || ""));
-    localStorage.setItem("spmPortalRole", role);
+function storePortalContext({ email, role, associations }) {
+  const firstAssociation = Array.isArray(associations) ? associations[0] : null;
 
+  localStorage.setItem("spmPortalLoggedIn", "true");
+  localStorage.setItem("spmPortalUser", email);
+  localStorage.setItem("spmPortalUserName", email);
+  localStorage.setItem("spmPortalRole", role);
+  localStorage.setItem(
+    "spmPortalAllowedAssociations",
+    JSON.stringify(associations || [])
+  );
+
+  if (firstAssociation?.association_id) {
     localStorage.setItem(
       "spm_selected_association_id",
-      String(selectedAssociation.id)
+      String(firstAssociation.association_id)
     );
 
     localStorage.setItem(
       "spm_selected_association_name",
-      String(selectedAssociation.name || "")
+      String(firstAssociation.association_name || "Selected Association")
+    );
+
+    localStorage.setItem(
+      "selectedAssociationId",
+      String(firstAssociation.association_id)
+    );
+
+    localStorage.setItem(
+      "selectedAssociationName",
+      String(firstAssociation.association_name || "Selected Association")
     );
   }
-
-  async function checkApprovedAccess(userEmail, role) {
-    const response = await fetch("/api/portal/check-access", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        association_id: selectedAssociation.id,
-        email: userEmail,
-        role,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error("Portal access API failed:", result);
-      return false;
-    }
-
-    return Boolean(result.approved);
-  }
-
-  async function createManagerPendingRequest(userEmail) {
-  setError(
-    "Manager access must be approved by an administrator before sign-in."
-  );
 }
+
+export default function AdminLoginPage() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("glenn@stouttmgmt.com");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     setLoading(true);
     setError("");
-    setMessage("");
 
-    const normalizedEmail = String(email || "").toLowerCase().trim();
-
-    if (!selectedAssociation?.id) {
-      setError("Please select an association.");
-      setLoading(false);
-      return;
-    }
-
-    if (!portalRole) {
-      setError("Please select a portal type.");
-      setLoading(false);
-      return;
-    }
+    const normalizedEmail = normalizeEmail(email);
 
     if (!normalizedEmail || !password) {
       setError("Please enter your email and password.");
@@ -175,69 +87,6 @@ export default function AdminLoginPage() {
     }
 
     try {
-      if (mode === "signup") {
-        if (portalRole === "admin") {
-          setError(
-            "Admin access cannot be created from this page. Admin access must be approved internally."
-          );
-          setLoading(false);
-          return;
-        }
-
-        if (portalRole === "manager") {
-          await createManagerPendingRequest(normalizedEmail);
-
-          setMessage(
-            "Manager access request submitted. Access will remain locked until Glenn approves it."
-          );
-          setPassword("");
-          setLoading(false);
-          return;
-        }
-
-        const approved = await checkApprovedAccess(normalizedEmail, portalRole);
-
-        if (!approved) {
-          setError(
-            "Access denied. This email is not approved for the selected association and portal type."
-          );
-          setLoading(false);
-          return;
-        }
-
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            data: {
-              portal_role: portalRole,
-              association_id: selectedAssociation.id,
-              association_name: selectedAssociation.name,
-            },
-          },
-        });
-
-        if (signUpError) {
-          throw signUpError;
-        }
-
-        setMessage("Access created. You may now sign in.");
-        setMode("signin");
-        setPassword("");
-        setLoading(false);
-        return;
-      }
-
-      const approved = await checkApprovedAccess(normalizedEmail, portalRole);
-
-      if (!approved) {
-        setError(
-          "Access denied. This email is not approved for the selected association and portal type."
-        );
-        setLoading(false);
-        return;
-      }
-
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password,
@@ -247,8 +96,51 @@ export default function AdminLoginPage() {
         throw signInError;
       }
 
-      storePortalContext(portalRole, normalizedEmail);
-      router.push(getRouteByRole(portalRole));
+      const accessResponse = await fetch("/api/portal/my-access", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+        }),
+      });
+
+      const accessResult = await accessResponse.json();
+
+      if (!accessResponse.ok || !accessResult.success) {
+        throw new Error(
+          accessResult.error || "Unable to verify portal access."
+        );
+      }
+
+      const associations = Array.isArray(accessResult.associations)
+        ? accessResult.associations
+        : [];
+
+      const roles = Array.isArray(accessResult.roles)
+        ? accessResult.roles
+        : [];
+
+      if (associations.length === 0 || roles.length === 0) {
+        throw new Error(
+          "Access denied. This email has not been approved for any portal."
+        );
+      }
+
+      const role = choosePrimaryRole(roles);
+
+      if (!role) {
+        throw new Error("Access denied. No valid portal role was found.");
+      }
+
+      storePortalContext({
+        email: normalizedEmail,
+        role,
+        associations,
+      });
+
+      router.push(getRouteByRole(role));
     } catch (submitError) {
       setError(submitError.message || "Unable to continue.");
     }
@@ -277,59 +169,12 @@ export default function AdminLoginPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              Association-controlled access for board, manager, and admin
-              portals.
+              Enter your approved email and password. Your portal, role, and
+              association access will be assigned automatically.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-200">
-                Association
-              </label>
-
-              <select
-                value={selectedAssociationId}
-                onChange={(event) =>
-                  setSelectedAssociationId(event.target.value)
-                }
-                disabled={loadingAssociations}
-                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-60"
-              >
-                {associations.map((association) => (
-                  <option
-                    key={association.id}
-                    value={association.id}
-                    className="bg-slate-950 text-white"
-                  >
-                    {association.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-200">
-                Portal Type
-              </label>
-
-              <select
-                value={portalRole}
-                onChange={(event) => setPortalRole(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-white outline-none transition focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20"
-              >
-                {PORTAL_ROLES.map((role) => (
-                  <option
-                    key={role.value}
-                    value={role.value}
-                    className="bg-slate-950 text-white"
-                  >
-                    {role.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-200">
                 Email
@@ -350,14 +195,12 @@ export default function AdminLoginPage() {
                 Password
               </label>
 
-              <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 transition focus-within:border-amber-400/60 focus-within:ring-2 focus-within:ring-amber-400/20">
+              <div className="flex overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 transition focus-within:border-amber-400/60 focus-within:ring-2 focus:ring-amber-400/20">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  autoComplete={
-                    mode === "signin" ? "current-password" : "new-password"
-                  }
+                  autoComplete="current-password"
                   className="w-full bg-transparent px-4 py-3 text-white outline-none placeholder:text-slate-500"
                   placeholder="Enter password"
                 />
@@ -378,50 +221,18 @@ export default function AdminLoginPage() {
               </div>
             )}
 
-            {message && (
-              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                {message}
-              </div>
-            )}
-
             <button
               type="submit"
-              disabled={
-                loading || loadingAssociations || associations.length === 0
-              }
+              disabled={loading}
               className="w-full rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading
-                ? "Please wait..."
-                : mode === "signin"
-                ? "Enter Portal"
-                : portalRole === "manager"
-                ? "Request Manager Access"
-                : "Create Access"}
+              {loading ? "Verifying Access..." : "Enter Portal"}
             </button>
           </form>
 
-          <div className="mt-6 border-t border-white/10 pt-5 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
-                setError("");
-                setMessage("");
-                setPassword("");
-              }}
-              className="text-sm font-medium text-amber-300 hover:text-amber-200"
-            >
-              {mode === "signin"
-                ? "Need to create board or manager access?"
-                : "Already have access? Sign in"}
-            </button>
-          </div>
-
           <p className="mt-6 text-center text-xs leading-5 text-slate-500">
-            Portal access is association-scoped. Unknown users are blocked unless
-            their email has been approved for the selected association and portal
-            type.
+            Portal access is assigned during onboarding. Users can only enter
+            approved associations and approved dashboard areas.
           </p>
         </div>
       </section>
