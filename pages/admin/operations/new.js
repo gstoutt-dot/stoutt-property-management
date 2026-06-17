@@ -25,14 +25,14 @@ export default function NewAdminOperation() {
   const router = useRouter();
 
   const returnPath =
-    typeof router.query.return_path === "string"
-      ? router.query.return_path
-      : "/admin";
+  typeof router.query.return_path === "string"
+    ? router.query.return_path
+    : "/manager/dashboard";
 
   const returnLabel =
-    typeof router.query.return_label === "string"
-      ? router.query.return_label
-      : "Admin Dashboard";
+  typeof router.query.return_label === "string"
+    ? router.query.return_label
+    : "Dashboard";
 
   const defaultRequestType =
     typeof router.query.request_type === "string"
@@ -91,8 +91,8 @@ export default function NewAdminOperation() {
 
       const payload = {
         association_id: DEFAULT_ASSOCIATION_ID,
-        created_by: "SPM Admin",
-        created_by_role: "Admin",
+        created_by: "SPM Manager",
+        created_by_role: "Manager",
         request_type: form.request_type,
         title: form.title.trim(),
         description: form.description.trim(),
@@ -147,11 +147,11 @@ if (!response.ok || !result.success) {
             </Link>
 
             <Link
-              href="/admin"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Admin Dashboard
-            </Link>
+  href="/manager/dashboard"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Dashboard
+</Link>
           </div>
 
           <div className="mt-6 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
@@ -281,7 +281,7 @@ if (!response.ok || !result.success) {
               }
               className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-amber-400/50"
             >
-              <option>Admin Dashboard</option>
+              <option>Manager Dashboard</option>
               <option>BOS Action Center</option>
               <option>Board Approval Queue</option>
               <option>Financial Review</option>
