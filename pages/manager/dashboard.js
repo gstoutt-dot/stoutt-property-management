@@ -213,9 +213,11 @@ export default function ManagerDashboard() {
 
     setPortalUserName(name || "Manager");
     setPortalRole(role || "manager");
-    setAllowedAssociations(assignedAssociations);
-    setAssociationName(context.associationName || "Selected Association");
-    setAssociationId(context.associationId || "");
+    setAllowedAssociations(
+    assignedAssociations.length > 0 ? assignedAssociations : getAllowedAssociations()
+);
+setAssociationName(context.associationName || "Selected Association");
+setAssociationId(context.associationId || "");
   }, [router]);
 
   useEffect(() => {
