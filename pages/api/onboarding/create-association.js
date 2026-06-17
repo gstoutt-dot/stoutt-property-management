@@ -26,6 +26,8 @@ export default async function handler(req, res) {
       totalUnits,
       boardPresident,
       boardEmail,
+      spmManagerEmail,
+      camEmail,
       managementContact,
       quickbooksStatus,
       onboardingStage,
@@ -78,8 +80,58 @@ export default async function handler(req, res) {
         .select("*")
         .single();
 
-    if (onboardingError) {
+        if (onboardingError) {
       throw onboardingError;
+    }
+
+    const accessRows = [];
+
+    if (cleanEmail(boardEmail)) {
+      accessRows.push({
+        association_id: associationRecord.id,
+        association_name: cleanAssociationName,
+        email: cleanEmail(boardEmail),
+        role: "board",
+        status: "approved",
+        approved_by: "Association Onboarding",
+        approved_at: new Date().toISOString(),
+      });
+    }
+
+    if (cleanEmail(spmManagerEmail)) {
+      accessRows.push({
+        association_id: associationRecord.id,
+        association_name: cleanAssociationName,
+        email: cleanEmail(spmManagerEmail),
+        role: "manager",
+        status: "approved",
+        approved_by: "Association Onboarding",
+        approved_at: new Date().toISOString(),
+      });
+    }
+
+    if (cleanEmail(camEmail)) {
+      accessRows.push({
+        association_id: associationRecord.id,
+        association_name: cleanAssociationName,
+        email: cleanEmail(camEmail),
+        role: "manager",
+        status: "approved",
+        approved_by: "Association Onboarding",
+        approved_at: new Date().toISOString(),
+      });
+    }
+
+    if (accessRows.length > 0) {
+      const { error: accessError } = await supabaseAdmin
+        .from("portal_access_approvals")
+        .upsert(accessRows, {
+          onConflict: "association_id,email,role",
+        });
+
+      if (accessError) {
+        throw accessError;
+      }
     }
 
     return res.status(201).json({
