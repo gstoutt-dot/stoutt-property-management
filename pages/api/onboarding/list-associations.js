@@ -10,17 +10,29 @@ export default async function handler(req, res) {
 
   try {
     const { data, error } = await supabaseAdmin
-      .from("association_onboarding_profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .from("associations")
+      .select("id, name, status, city, county, type, created_at")
+      .order("name", { ascending: true });
 
     if (error) {
       throw error;
     }
 
+    const associations = (data || []).map((association) => ({
+      id: association.id,
+      association_id: association.id,
+      name: association.name,
+      association_name: association.name,
+      status: association.status,
+      city: association.city,
+      county: association.county,
+      property_type: association.type,
+      created_at: association.created_at,
+    }));
+
     return res.status(200).json({
       success: true,
-      associations: data || [],
+      associations,
     });
   } catch (error) {
     return res.status(500).json({
