@@ -161,7 +161,16 @@ const [loadError, setLoadError] = useState("");
       console.error("Homeowner sign out failed:", error);
     }
 
-        router.replace("/portal/owner/login");
+localStorage.removeItem("spmPortalLoggedIn");
+localStorage.removeItem("spmPortalUser");
+localStorage.removeItem("spmPortalUserName");
+localStorage.removeItem("spmPortalRole");
+localStorage.removeItem("spm_selected_association_id");
+localStorage.removeItem("spm_selected_association_name");
+localStorage.removeItem("selectedAssociationId");
+localStorage.removeItem("selectedAssociationName");
+
+router.replace("/admin-login");
   }
 
   return (
