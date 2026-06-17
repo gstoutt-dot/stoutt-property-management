@@ -513,7 +513,7 @@ export default function AdminDashboard() {
                 Current Role: {String(portalRole || "admin").toUpperCase()}
               </p>
 
-                {adminAssociations.length > 1 && (
+                {adminAssociations.length > 0 && (
   <div className="mt-5">
     <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
       Active Association
