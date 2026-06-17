@@ -46,8 +46,7 @@ export default async function handler(req, res) {
       const { error } = await supabaseAdmin
         .from("bos_events")
         .delete()
-        .eq("id", notificationId)
-        .eq("association_id", associationId);
+        .eq("id", notificationId);
 
       if (error) throw error;
     }
