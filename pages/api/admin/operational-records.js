@@ -171,7 +171,6 @@ export default async function handler(req, res) {
       const body = req.body || {};
 
       const payload = {
-              const payload = {
         association_id: cleanText(body.association_id || body.associationId),
         created_by: body.created_by || "SPM Admin",
         created_by_role: body.created_by_role || "Admin",
