@@ -99,10 +99,13 @@ async function mirrorIntoBos(payload, insertedRecord) {
     request_type: bosCategory,
     category: bosCategory,
     priority: normalizeBosPriority(payload.priority),
-    status: normalizeBosStatus(payload.status),
+    status: payload.board_review_required
+      ? "board_review"
+      : normalizeBosStatus(payload.status),
 
     association_id: payload.association_id,
-    association_name: payload.association_name || "Selected Association",
+    association_name:
+    payload.association_name_for_bos || "Selected Association",
     owner_name: payload.created_by || "SPM Admin",
     owner_phone: "",
     owner_email: "",
@@ -168,8 +171,8 @@ export default async function handler(req, res) {
       const body = req.body || {};
 
       const payload = {
+              const payload = {
         association_id: cleanText(body.association_id || body.associationId),
-        association_name: cleanText(body.association_name || body.associationName) || "Selected Association",
         created_by: body.created_by || "SPM Admin",
         created_by_role: body.created_by_role || "Admin",
         request_type: body.request_type || "Special Project",
@@ -178,7 +181,10 @@ export default async function handler(req, res) {
         priority: body.priority || "Normal",
         status: body.status || "Submitted",
         assigned_to: body.assigned_to || null,
-        board_review_required: Boolean(body.board_review_required),
+        board_review_required:
+          Boolean(body.board_review_required) ||
+          String(body.routing_target || "").toLowerCase() ===
+            "board approval queue",
         owner_visible: Boolean(body.owner_visible),
         vendor_visible: Boolean(body.vendor_visible),
         due_date: body.due_date || null,
@@ -186,6 +192,10 @@ export default async function handler(req, res) {
         routing_target: body.routing_target || "Admin Dashboard",
         recommended_action: body.recommended_action || null,
       };
+
+      const associationNameForBos =
+        cleanText(body.association_name || body.associationName) ||
+        "Selected Association";
 
             if (!payload.association_id) {
         return res.status(400).json({
@@ -209,7 +219,13 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      const bosResult = await mirrorIntoBos(payload, insertedRecord);
+            const bosResult = await mirrorIntoBos(
+        {
+          ...payload,
+          association_name_for_bos: associationNameForBos,
+        },
+        insertedRecord
+      );
 
       if (!bosResult.success) {
         console.error("BOS mirror insert failed:", bosResult.error);
