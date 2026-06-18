@@ -93,13 +93,28 @@ function PortalGate({ children }) {
     setCheckingAccess(true);
 
     const loggedIn = window.localStorage.getItem("spmPortalLoggedIn");
-    const role = window.localStorage.getItem("spmPortalRole");
+const role = window.localStorage.getItem("spmPortalRole");
 
-    if (loggedIn !== "true") {
-      setCheckingAccess(false);
-      router.replace("/admin-login");
-      return;
-    }
+if (loggedIn === "true") {
+  window.localStorage.setItem(
+    "spmPortalSessionExtendedUntil",
+    String(Date.now() + 8 * 60 * 60 * 1000)
+  );
+}
+
+const extendedUntil = Number(
+  window.localStorage.getItem("spmPortalSessionExtendedUntil") || 0
+);
+
+if (loggedIn !== "true" && Date.now() > extendedUntil) {
+  setCheckingAccess(false);
+  router.replace("/admin-login");
+  return;
+}
+
+if (loggedIn !== "true" && Date.now() <= extendedUntil) {
+  window.localStorage.setItem("spmPortalLoggedIn", "true");
+}
 
     if (!role || !matchingRoute.roles.includes(role)) {
       setDenied(true);
