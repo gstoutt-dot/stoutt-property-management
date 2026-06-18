@@ -179,18 +179,11 @@ export default function Documents() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/admin"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Admin Dashboard
-            </Link>
-
-            <Link
-              href="/board"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Main Page
-            </Link>
+  href="/manager/dashboard"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Dashboard
+</Link>
           </div>
         </div>
       </section>
@@ -211,16 +204,16 @@ export default function Documents() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={`/admin/operations/new?request_type=${encodeURIComponent(
-                "Policy Review"
-              )}&return_path=${encodeURIComponent(
-                "/board/documents"
-              )}&return_label=${encodeURIComponent("Board Documents")}`}
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Create Document Record
-            </Link>
+           <Link
+  href={`/manager/operations/new?request_type=${encodeURIComponent(
+    "Policy Review"
+  )}&return_path=${encodeURIComponent(
+    "/manager/documents"
+  )}&return_label=${encodeURIComponent("Documents")}`}
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Create Document Record
+</Link>
 
             <Link
               href="/board/policy-library"
