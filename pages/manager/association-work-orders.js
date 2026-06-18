@@ -402,13 +402,8 @@ export default function AssociationWorkOrders() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Link
-  href={
-    typeof window !== "undefined" &&
-    localStorage.getItem("spmPortalRole") === "manager"
-      ? "/manager/dashboard"
-      : "/admin"
-  }
+           <Link
+  href="/manager/dashboard"
   className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
 >
   Dashboard
