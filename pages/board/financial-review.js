@@ -156,8 +156,8 @@ export default function FinancialReview() {
           </div>
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
-            <Link href="/board">Board Dashboard</Link>
-          </nav>
+  <Link href="/manager/dashboard">Dashboard</Link>
+</nav>
         </div>
       </section>
 
