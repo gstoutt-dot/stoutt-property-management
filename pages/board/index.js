@@ -49,13 +49,6 @@ const boardPages = [
       "Read internal messages from management and administration, including meeting follow-ups, operational updates, financial notes, and board coordination items.",
   },
   {
-  title: "Board Financial Review",
-  status: "Live / Ready",
-  href: "/board/financial-review",
-  description:
-    "Monthly financial packets, reserve reporting, executive summaries, board financial review, and association financial visibility.",
-},
-  {
   title: "Monthly Accounting Reports",
   status: "Live / Ready",
   href: "/board/management-accounting-reports",
