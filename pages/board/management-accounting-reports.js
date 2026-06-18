@@ -234,7 +234,7 @@ export default function ManagementAccountingReports() {
 
           <nav className="hidden gap-4 text-sm text-slate-300 md:flex">
   <Link
-    href="/pages/board/"
+    href="/board/"
     className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
   >
     Dashboard
