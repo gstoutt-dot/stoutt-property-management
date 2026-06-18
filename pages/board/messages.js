@@ -233,9 +233,9 @@ export default function BoardMessages() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/admin" className={bosTheme.secondaryButton}>
-                Admin Dashboard
-              </Link>
+              <Link href="/manager/dashboard" className={bosTheme.secondaryButton}>
+  Dashboard
+</Link>
 
               <Link href="/board" className={bosTheme.primaryButton}>
                 Board Dashboard
