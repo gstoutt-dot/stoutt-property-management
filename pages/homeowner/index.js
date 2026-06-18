@@ -39,29 +39,36 @@ const [loadError, setLoadError] = useState("");
 
       try {
         const {
-          data: { session },
-        } = await supabase.auth.getSession();
+  data: { session },
+} = await supabase.auth.getSession();
 
-        let resolvedOwnerProfile = null;
+let resolvedOwnerProfile = null;
 
-        if (session?.user?.email) {
-          const normalizedEmail = String(session.user.email)
-            .toLowerCase()
-            .trim();
+const fallbackEmail =
+  typeof window !== "undefined"
+    ? localStorage.getItem("spmPortalUser") || ""
+    : "";
 
-          const profileResponse = await fetch(
-            `/api/owner/profile?ownerEmail=${encodeURIComponent(
-              normalizedEmail
-            )}&authUserId=${encodeURIComponent(session.user.id || "")}`
-          );
+const normalizedEmail = String(session?.user?.email || fallbackEmail || "")
+  .toLowerCase()
+  .trim();
 
-          const profileResult = await profileResponse.json();
+const resolvedAuthUserId = String(session?.user?.id || "").trim();
 
-          if (profileResponse.ok && profileResult?.success) {
-            resolvedOwnerProfile = profileResult.ownerProfile;
-            setOwnerProfile(profileResult.ownerProfile);
-          }
-        }
+if (normalizedEmail) {
+  const profileResponse = await fetch(
+    `/api/owner/profile?ownerEmail=${encodeURIComponent(
+      normalizedEmail
+    )}&authUserId=${encodeURIComponent(resolvedAuthUserId)}`
+  );
+
+  const profileResult = await profileResponse.json();
+
+  if (profileResponse.ok && profileResult?.success) {
+    resolvedOwnerProfile = profileResult.ownerProfile;
+    setOwnerProfile(profileResult.ownerProfile);
+  }
+}
 
         if (!resolvedOwnerProfile?.association_id || !resolvedOwnerProfile?.unitNumber) {
           throw new Error(
