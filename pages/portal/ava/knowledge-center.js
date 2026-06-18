@@ -212,10 +212,10 @@ async function uploadKnowledgeDocument() {
           </div>
 
                     <Link
-  href="/admin"
+  href="/manager/dashboard"
   className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-slate-200 hover:border-yellow-400/60 hover:text-yellow-300"
 >
-  Back to Admin Dashboard
+  Dashboard
 </Link>
         </div>
 
