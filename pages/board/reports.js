@@ -208,19 +208,14 @@ export default function AssociationReportingCenter() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/admin"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Admin Dashboard
-            </Link>
-
-            <Link
-              href="/board/board-approval-queue"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Board Approval Queue
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+  <Link
+    href="/manager/dashboard"
+    className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+  >
+    Dashboard
+  </Link>
+</div>
           </div>
         </div>
       </section>
