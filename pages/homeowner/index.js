@@ -39,36 +39,29 @@ const [loadError, setLoadError] = useState("");
 
       try {
         const {
-  data: { session },
-} = await supabase.auth.getSession();
+          data: { session },
+        } = await supabase.auth.getSession();
 
-let resolvedOwnerProfile = null;
+        let resolvedOwnerProfile = null;
 
-const fallbackEmail =
-  typeof window !== "undefined"
-    ? localStorage.getItem("spmPortalUser") || ""
-    : "";
+        if (session?.user?.email) {
+          const normalizedEmail = String(session.user.email)
+            .toLowerCase()
+            .trim();
 
-const normalizedEmail = String(session?.user?.email || fallbackEmail || "")
-  .toLowerCase()
-  .trim();
+          const profileResponse = await fetch(
+            `/api/owner/profile?ownerEmail=${encodeURIComponent(
+              normalizedEmail
+            )}&authUserId=${encodeURIComponent(session.user.id || "")}`
+          );
 
-const resolvedAuthUserId = String(session?.user?.id || "").trim();
+          const profileResult = await profileResponse.json();
 
-if (normalizedEmail) {
-  const profileResponse = await fetch(
-    `/api/owner/profile?ownerEmail=${encodeURIComponent(
-      normalizedEmail
-    )}&authUserId=${encodeURIComponent(resolvedAuthUserId)}`
-  );
-
-  const profileResult = await profileResponse.json();
-
-  if (profileResponse.ok && profileResult?.success) {
-    resolvedOwnerProfile = profileResult.ownerProfile;
-    setOwnerProfile(profileResult.ownerProfile);
-  }
-}
+          if (profileResponse.ok && profileResult?.success) {
+            resolvedOwnerProfile = profileResult.ownerProfile;
+            setOwnerProfile(profileResult.ownerProfile);
+          }
+        }
 
         if (!resolvedOwnerProfile?.association_id || !resolvedOwnerProfile?.unitNumber) {
           throw new Error(
@@ -168,16 +161,7 @@ if (normalizedEmail) {
       console.error("Homeowner sign out failed:", error);
     }
 
-localStorage.removeItem("spmPortalLoggedIn");
-localStorage.removeItem("spmPortalUser");
-localStorage.removeItem("spmPortalUserName");
-localStorage.removeItem("spmPortalRole");
-localStorage.removeItem("spm_selected_association_id");
-localStorage.removeItem("spm_selected_association_name");
-localStorage.removeItem("selectedAssociationId");
-localStorage.removeItem("selectedAssociationName");
-
-router.replace("/admin-login");
+        router.replace("/portal/owner/login");
   }
 
   return (
