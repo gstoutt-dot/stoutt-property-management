@@ -353,25 +353,11 @@ export default function Vendors() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/admin"
-              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-            >
-              Admin Dashboard
-            </Link>
-
-            <Link
-              href="/portal/manager/vendor-dispatch"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Vendor Dispatch
-            </Link>
-
-            <Link
-              href="/board/signature-approval-log"
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-            >
-              Signature Log
-            </Link>
+  href="/manager/dashboard"
+  className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+>
+  Dashboard
+</Link>
           </div>
         </div>
       </section>
