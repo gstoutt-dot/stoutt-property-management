@@ -55,6 +55,13 @@ const boardPages = [
   description:
     "Monthly financial packets, reserve reporting, executive summaries, board financial review, and association financial visibility.",
 },
+  {
+  title: "Monthly Accounting Reports",
+  status: "Live / Ready",
+  href: "/board/management-accounting-reports",
+  description:
+    "Monthly financial packets, reserve reporting, executive summaries, board financial review, and association financial visibility.",
+},
 ];
 
 function statusStyle(status) {
