@@ -6,6 +6,9 @@ const routeAccess = [
   { path: "/admin", roles: ["admin"] },
   { path: "/admin/operations/new", roles: ["admin"] },
 
+  // Shared operational tools
+  { path: "/admin/notifications", roles: ["manager", "admin"] },
+
   { path: "/portal/manager-hub", roles: ["manager", "admin"] },
   { path: "/portal/manager", roles: ["manager", "admin"] },
   { path: "/portal/workflow-engine-live", roles: ["manager", "admin"] },
@@ -21,7 +24,6 @@ const routeAccess = [
 
   { path: "/software-dashboard", roles: ["owner", "manager", "board", "admin"] },
 ];
-
 function getDashboardForRole(role) {
   if (role === "admin") return "/admin";
   if (role === "manager") return "/portal/manager-hub";
