@@ -190,12 +190,12 @@ function formatStatus(value) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function cleanAdminRecordDescription(description = "") {
-  function handleAdminAssociationChange(
+function handleAdminAssociationChange(
   event,
   associations,
   setAssociationId,
-  setAssociationName
+  setAssociationName,
+  loadOperationalRecords
 ) {
   const selectedId = event.target.value;
 
@@ -205,21 +205,20 @@ function cleanAdminRecordDescription(description = "") {
 
   if (!selectedAssociation) return;
 
-  localStorage.setItem(
-    "spm_selected_association_id",
-    selectedAssociation.id
-  );
-
-  localStorage.setItem(
-    "spm_selected_association_name",
-    selectedAssociation.name
-  );
+  localStorage.setItem("spm_selected_association_id", selectedAssociation.id);
+  localStorage.setItem("spm_selected_association_name", selectedAssociation.name);
 
   setAssociationId(selectedAssociation.id);
   setAssociationName(selectedAssociation.name);
 
-  window.location.reload();
+  loadOperationalRecords({
+    showLoading: true,
+    overrideAssociationId: selectedAssociation.id,
+    overrideAssociationName: selectedAssociation.name,
+  });
 }
+
+function cleanAdminRecordDescription(description = "") {
   return String(description || "")
     .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
     .replace(/https?:\/\/\S+/gi, "")
@@ -301,7 +300,60 @@ export default function AdminDashboard() {
     router.push("/admin-login");
   }
 
-  async function loadOperationalRecords({ showLoading = false } = {}) {
+  async function loadOperationalRecords({
+  showLoading = false,
+  overrideAssociationId = "",
+  overrideAssociationName = "",
+} = {}) {
+  try {
+    if (showLoading) {
+      setLoadingRecords(true);
+    }
+
+    setSystemMessage("");
+
+    const context = getSelectedAssociationContext();
+
+    const activeAssociationId =
+      overrideAssociationId || context.associationId || associationId;
+
+    const activeAssociationName =
+      overrideAssociationName || context.associationName || associationName;
+
+    if (!activeAssociationId) {
+      setRecords([]);
+      setSystemMessage("No association selected. Please log in again.");
+      return;
+    }
+
+    setAssociationName(activeAssociationName || "Selected Association");
+    setAssociationId(activeAssociationId);
+
+    const response = await fetch(
+      `/api/admin/operational-records?association_id=${encodeURIComponent(
+        activeAssociationId
+      )}`
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      throw new Error(
+        payload.message || "Unable to load admin operational records."
+      );
+    }
+
+    setRecords(payload.openRecords || []);
+  } catch (error) {
+    console.error("Unable to load admin operational records:", error);
+
+    setSystemMessage(
+      error.message || "Unable to load admin operational records."
+    );
+  } finally {
+    setLoadingRecords(false);
+  }
+}
     try {
       if (showLoading) {
         setLoadingRecords(true);
@@ -523,11 +575,12 @@ export default function AdminDashboard() {
       value={associationId}
       onChange={(event) =>
         handleAdminAssociationChange(
-          event,
-          adminAssociations,
-          setAssociationId,
-          setAssociationName
-        )
+  event,
+  adminAssociations,
+  setAssociationId,
+  setAssociationName,
+  loadOperationalRecords
+)
       }
       className="w-full rounded-xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-amber-400/50"
     >
