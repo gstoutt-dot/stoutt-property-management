@@ -158,10 +158,10 @@ export default function AdminHomeownerNotifications() {
             </div>
 
             <Link
-              href="/admin"
+              href="/manager/dashboard"
               className="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-center text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
             >
-              Admin Dashboard
+              Dashboard
             </Link>
           </div>
         </div>
