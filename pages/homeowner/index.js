@@ -156,12 +156,20 @@ const [loadError, setLoadError] = useState("");
 
   async function signOutHomeowner() {
     try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error("Homeowner sign out failed:", error);
-    }
+  await supabase.auth.signOut();
+} catch (error) {
+  console.error("Homeowner sign out failed:", error);
+}
 
-        router.replace("/portal/owner/login");
+if (typeof window !== "undefined") {
+  localStorage.removeItem("spmPortalLoggedIn");
+  localStorage.removeItem("spmPortalRole");
+  localStorage.removeItem("spmPortalAssociationId");
+  localStorage.removeItem("spm_selected_association_id");
+  localStorage.removeItem("spmPortalSessionExtendedUntil");
+}
+
+router.replace("/admin-login");
   }
 
   return (
