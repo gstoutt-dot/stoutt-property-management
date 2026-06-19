@@ -146,7 +146,7 @@ export default function HomePage() {
 </div>
 
             <a
-        href="/portal/owner/login"
+        href="/admin-login"
         className="ml-2 whitespace-nowrap rounded-full border border-amber-400/40 bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:scale-[1.02]"
       >
         Homeowner Access
@@ -222,7 +222,7 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
         ))}
 
         <a
-  href="/portal/owner/login"
+  href="/admin-login"
   className="rounded-2xl border border-amber-400/40 bg-amber-400 px-4 py-3 text-center text-sm font-semibold text-slate-950"
   onClick={() => setMobileOpen(false)}
 >
@@ -684,7 +684,7 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
               Request a Proposal
             </a>
 
-            <a href="/portal/owner/login" className={subtleButton}>
+            <a href="/admin-login" className={subtleButton}>
               Homeowner Access
             </a>
           </div>
@@ -717,7 +717,7 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
                   Request a Proposal
                 </a>
 
-                <a href="/portal/owner/login" className={subtleButton}>
+                <a href="/admin-login" className={subtleButton}>
                   Homeowner Access
                 </a>
               </div>
