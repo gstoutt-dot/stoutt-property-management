@@ -116,7 +116,7 @@ export default function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 xl:flex">
-          <a href="/portal/owner/login" className={secondaryBtn}>
+          <a href="/admin-login" className={secondaryBtn}>
             Homeowner Access
           </a>
 
@@ -167,7 +167,7 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-xl border b
 
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <a
-                href="/portal/owner/login"
+                href="/admin-login"
                 onClick={() => setMobileOpen(false)}
                 className={secondaryBtn}
               >
