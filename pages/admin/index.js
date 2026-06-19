@@ -190,8 +190,7 @@ function formatStatus(value) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function cleanAdminRecordDescription(description = "") {
-  function handleAdminAssociationChange(
+function handleAdminAssociationChange(
   event,
   associations,
   setAssociationId,
@@ -205,21 +204,16 @@ function cleanAdminRecordDescription(description = "") {
 
   if (!selectedAssociation) return;
 
-  localStorage.setItem(
-    "spm_selected_association_id",
-    selectedAssociation.id
-  );
-
-  localStorage.setItem(
-    "spm_selected_association_name",
-    selectedAssociation.name
-  );
+  localStorage.setItem("spm_selected_association_id", selectedAssociation.id);
+  localStorage.setItem("spm_selected_association_name", selectedAssociation.name);
 
   setAssociationId(selectedAssociation.id);
   setAssociationName(selectedAssociation.name);
 
   window.location.reload();
 }
+
+function cleanAdminRecordDescription(description = "") {
   return String(description || "")
     .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
     .replace(/https?:\/\/\S+/gi, "")
