@@ -102,6 +102,32 @@ export default function BoardTraining() {
           </div>
         </section>
 
+                <section className="bg-slate-950 px-6 py-16">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-slate-700 bg-slate-900 p-8">
+            <h2 className="text-3xl font-bold text-white">
+              Congratulations
+            </h2>
+
+            <p className="mt-4 text-slate-300">
+              You have completed the BOSai℠ Board Member Training Center and
+              now have a foundational understanding of the Board Dashboard,
+              communications, approvals, notifications, financial visibility,
+              education resources, and association operations.
+            </p>
+
+            <div className="mt-8 space-y-3 text-slate-300">
+              <p>✓ Founder Introduction</p>
+              <p>✓ Board Member Training</p>
+              <p>✓ BOSai℠ Platform Overview</p>
+              <p>✓ Board Leadership Resources</p>
+            </div>
+
+            <p className="mt-8 text-slate-400">
+              Welcome to the BOSai℠ operating ecosystem.
+            </p>
+          </div>
+        </section>
+
         <section className="bg-white px-6 py-16 text-slate-900">
           <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-slate-50 p-8">
             <h2 className="text-3xl font-bold">Board Resources</h2>
