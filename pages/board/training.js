@@ -18,9 +18,9 @@ export default function BoardTraining() {
 
           <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-300">
             This page introduces board members to the BOSai℠ Board Dashboard,
-            association communications, approvals, financial visibility,
-            education resources, and the operating workflow they will use as
-            part of Stoutt Property Management.
+association communications, approvals, financial visibility,
+education resources, and the operational workflows that support
+effective community leadership within the BOSai℠ platform.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
