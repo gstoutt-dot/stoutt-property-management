@@ -112,6 +112,7 @@ const sections = [
       { title: "Financial Review", href: "/board/financial-review" },
       { title: "Management Accounting Reports", href: "/board/management-accounting-reports" },
       { title: "Association Approved Vendors", href: "/board/vendors" },
+      { title: "Manager Training Center", href: "/manager/training" },
     ],
   },
 ];
