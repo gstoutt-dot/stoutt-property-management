@@ -503,6 +503,16 @@ export default function BoardModuleHub() {
         </div>
 
         <section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-8">
+
+          <div className="mb-8 flex justify-center">
+            <Link
+              href="/board/training"
+              className="rounded-xl bg-amber-400 px-8 py-4 text-lg font-semibold text-slate-950 hover:bg-amber-300"
+            >
+              Board Member Training Center
+            </Link>
+          </div>
+
           <div className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
             Board Operations
           </div>
