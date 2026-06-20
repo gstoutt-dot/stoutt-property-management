@@ -672,11 +672,18 @@ router.replace("/admin-login");
         ))}
       </div>
 
-      <Link
+            <Link
         href="/homeowner/ava"
         className="mt-5 inline-block text-sm font-semibold text-yellow-300"
       >
         Ask Ava →
+      </Link>
+
+      <Link
+        href="/homeowner/training"
+        className="mt-4 block rounded-full border border-yellow-400/30 bg-yellow-400/10 px-5 py-3 text-center text-sm font-semibold text-yellow-300 transition hover:bg-yellow-400/20"
+      >
+        Homeowner Training Center
       </Link>
     </div>
   </div>
