@@ -10,7 +10,7 @@ export default function BoardTraining() {
         <section className="relative px-6 py-16 text-center">
           <div className="mx-auto flex max-w-6xl justify-end">
             <Link
-              href="/board/dashboard"
+              href="/board"
               className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 hover:bg-amber-300"
             >
               Return to Board Dashboard
