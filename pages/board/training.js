@@ -45,8 +45,9 @@ effective community leadership within the BOSai℠ platform.
             <h2 className="text-3xl font-bold">Meet Glenn Stoutt</h2>
             <p className="mt-4 max-w-3xl text-slate-700">
               Before beginning dashboard training, board members are encouraged
-              to watch the Founder introduction and understand the leadership,
-              stewardship, and service philosophy behind BOSai℠.
+to watch the Founder introduction and understand the leadership,
+stewardship, service, and operational principles that form the
+foundation of the BOSai℠ ecosystem.
             </p>
 
             <VideoPlaceholder
@@ -62,8 +63,9 @@ effective community leadership within the BOSai℠ platform.
             <h2 className="text-3xl font-bold">Board Dashboard Tutorial</h2>
             <p className="mt-4 max-w-3xl text-slate-300">
               This tutorial walks board members through the dashboard tools
-              designed to support oversight, decision-making, communications,
-              approvals, financial awareness, documents, and education.
+designed to support governance, decision-making, communications,
+approvals, financial visibility, documents, education, and
+community leadership within the BOSai℠ platform.
             </p>
 
             <VideoPlaceholder
@@ -133,7 +135,9 @@ effective community leadership within the BOSai℠ platform.
             <h2 className="text-3xl font-bold">Board Resources</h2>
             <p className="mt-4 max-w-3xl text-slate-700">
               BOSai℠ supports board members with education, compliance
-              resources, communication tools, and operational visibility.
+resources, communication tools, operational visibility, and
+the tools necessary to fulfill their fiduciary responsibilities
+within their community.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
