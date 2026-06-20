@@ -50,10 +50,10 @@ stewardship, service, and operational principles that form the
 foundation of the BOSai℠ ecosystem.
             </p>
 
-            <VideoPlaceholder
-              title="Stoutt Property Management - Meet the Founder Glenn Stoutt"
+                        <VideoPlayer
+              title="Meet the Founder: Glenn Stoutt"
               duration="5:49"
-              note="Founder video uploaded to BOSai Media Platform. Playback connection will be added after CloudFront/S3 delivery is configured."
+              src="https://bosai-media.s3.us-east-1.amazonaws.com/founder/glenn-stoutt-founder-introduction.mp4"
             />
           </div>
         </section>
@@ -68,10 +68,10 @@ approvals, financial visibility, documents, education, and
 community leadership within the BOSai℠ platform.
             </p>
 
-            <VideoPlaceholder
+                        <VideoPlayer
               title="Board Dashboard Tutorial"
               duration="9:19"
-              note="board-dashboard-tutorial.mp4 is stored in the BOSai Media Platform training folder."
+              src="https://bosai-media.s3.us-east-1.amazonaws.com/training/board-dashboard-tutorial.mp4"
               dark
             />
           </div>
@@ -169,22 +169,30 @@ within their community.
   );
 }
 
-function VideoPlaceholder({ title, duration, note, dark = false }) {
+function VideoPlayer({ title, duration, src, dark = false }) {
   return (
     <div
-      className={`mt-8 rounded-2xl border p-8 text-center ${
+      className={`mt-8 rounded-2xl border p-6 ${
         dark
           ? "border-slate-700 bg-slate-900 text-white"
           : "border-slate-200 bg-slate-100 text-slate-900"
       }`}
     >
-      <p className="text-xl font-bold">{title}</p>
-      <p className={dark ? "mt-2 text-slate-300" : "mt-2 text-slate-600"}>
-        Duration: {duration}
-      </p>
-      <p className={dark ? "mt-4 text-sm text-slate-400" : "mt-4 text-sm text-slate-500"}>
-        {note}
-      </p>
+      <div className="mb-4 text-center">
+        <p className="text-xl font-bold">{title}</p>
+        <p className={dark ? "mt-2 text-slate-300" : "mt-2 text-slate-600"}>
+          Duration: {duration}
+        </p>
+      </div>
+
+      <video
+        className="w-full rounded-xl border border-slate-300 bg-black"
+        controls
+        preload="metadata"
+      >
+        <source src={src} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 }
