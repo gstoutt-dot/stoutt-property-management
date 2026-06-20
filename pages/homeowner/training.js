@@ -1,10 +1,8 @@
 import Link from "next/link";
-import SiteHeader from "../../components/SiteHeader";
 
 export default function HomeownerTraining() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <SiteHeader />
 
       <main>
         <section className="relative px-6 py-16 text-center">
