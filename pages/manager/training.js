@@ -7,75 +7,71 @@ export default function ManagerTraining() {
       <SiteHeader />
 
       <main>
-        <section className="px-6 py-16 text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-amber-400">
+        <section className="relative px-6 py-16 text-center">
+          <div className="mx-auto flex max-w-6xl justify-end">
+            <Link
+              href="/manager/dashboard"
+              className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 hover:bg-amber-300"
+            >
+              Return to Manager Dashboard
+            </Link>
+          </div>
+
+          <p className="mt-10 mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-amber-400">
             BOSai℠ Manager Training
           </p>
 
           <h1 className="mx-auto max-w-5xl text-4xl font-bold tracking-tight md:text-6xl">
-            Manager Dashboard Training Center
+            Manager Training Center
           </h1>
 
           <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-300">
             This page introduces managers to the BOSai℠ Manager Dashboard,
             daily operations, work orders, notifications, communications,
-            vendors, documents, financial visibility, and association workflows.
+            vendors, documents, financial visibility, and the operational
+            workflows that support effective community management within the
+            BOSai℠ platform.
           </p>
-
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <a
-              href="#manager-video"
-              className="rounded-xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 hover:bg-amber-300"
-            >
-              Start Manager Training
-            </a>
-
-            <Link
-              href="/getting-started"
-              className="rounded-xl border border-slate-600 px-6 py-3 font-semibold text-white hover:bg-slate-900"
-            >
-              BOSai℠ Welcome Center
-            </Link>
-          </div>
         </section>
 
-        <section className="bg-white px-6 py-16 text-slate-900">
-          <div className="mx-auto max-w-6xl">
+        <section className="bg-slate-950 px-6 py-16 text-white">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-slate-700 bg-slate-900 p-8">
             <h2 className="text-3xl font-bold">Meet Glenn Stoutt</h2>
-            <p className="mt-4 max-w-3xl text-slate-700">
+            <p className="mt-4 max-w-3xl text-slate-300">
               Before beginning dashboard training, managers are encouraged to
               watch the Founder introduction and understand the leadership,
-              stewardship, service, and operational philosophy behind BOSai℠.
+              stewardship, service, and operational principles that form the
+              foundation of the BOSai℠ ecosystem.
             </p>
 
-            <VideoPlaceholder
-              title="Stoutt Property Management - Meet the Founder Glenn Stoutt"
+            <VideoPlayer
+              title="Meet the Founder: Glenn Stoutt"
               duration="5:49"
-              note="Founder video uploaded to BOSai Media Platform. Playback connection will be added after CloudFront/S3 delivery is configured."
+              src="https://bosai-media.s3.us-east-1.amazonaws.com/founder/glenn-stoutt-founder-introduction.mp4"
             />
           </div>
         </section>
 
-        <section id="manager-video" className="px-6 py-16">
-          <div className="mx-auto max-w-6xl">
+        <section id="manager-video" className="bg-slate-950 px-6 py-16">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-slate-700 bg-slate-900 p-8">
             <h2 className="text-3xl font-bold">Manager Dashboard Tutorial</h2>
             <p className="mt-4 max-w-3xl text-slate-300">
-              This tutorial walks managers through the operational dashboard
-              tools designed to support association management, daily workflow,
-              homeowner communication, vendor coordination, notifications,
-              documents, and financial awareness.
+              This tutorial walks managers through the dashboard tools designed
+              to support daily operations, homeowner communication, board
+              coordination, vendor management, documents, work orders,
+              notifications, and association-specific workflows within the
+              BOSai℠ platform.
             </p>
 
-            <VideoPlaceholder
+            <VideoPlayer
               title="Manager Dashboard Tutorial"
               duration="32:32"
-              note="manager-dashboard-tutorial.mp4 is stored in the BOSai Media Platform training folder."
-              dark
+              src="https://bosai-media.s3.us-east-1.amazonaws.com/training/manager-dashboard-tutorial.mp4"
             />
           </div>
         </section>
 
-        <section className="bg-slate-900 px-6 py-16">
+        <section className="bg-slate-950 px-6 py-16">
           <div className="mx-auto max-w-6xl">
             <h2 className="text-3xl font-bold">Manager Training Topics</h2>
 
@@ -96,46 +92,36 @@ export default function ManagerTraining() {
               ].map((topic) => (
                 <div
                   key={topic}
-                  className="rounded-2xl border border-slate-700 bg-slate-950 p-6"
+                  className="rounded-2xl border border-slate-700 bg-slate-900 p-6"
                 >
-                  <p className="font-semibold">{topic}</p>
+                  <p className="font-semibold text-amber-300">{topic}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-white px-6 py-16 text-slate-900">
-          <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-slate-50 p-8">
-            <h2 className="text-3xl font-bold">Manager Resources</h2>
-            <p className="mt-4 max-w-3xl text-slate-700">
-              BOSai℠ supports managers with operational visibility, role-based
-              dashboard tools, homeowner communication systems, vendor
-              coordination, document access, and association-specific workflows.
+        <section className="bg-slate-950 px-6 py-16">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-slate-700 bg-slate-900 p-8">
+            <h2 className="text-3xl font-bold text-white">Congratulations</h2>
+
+            <p className="mt-4 text-slate-300">
+              You have completed the BOSai℠ Manager Training Center and now
+              have a foundational understanding of the Manager Dashboard,
+              operational workflows, communications, notifications, documents,
+              work orders, vendors, and association coordination.
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="/getting-started"
-                className="rounded-xl bg-slate-950 px-6 py-3 text-center font-semibold text-white hover:bg-slate-800"
-              >
-                BOSai℠ Welcome Center
-              </Link>
-
-              <Link
-                href="/bosai-library"
-                className="rounded-xl border border-slate-300 px-6 py-3 text-center font-semibold text-slate-950 hover:bg-white"
-              >
-                BOSai℠ Legacy Library
-              </Link>
-
-              <Link
-                href="/manager/dashboard"
-                className="rounded-xl border border-slate-300 px-6 py-3 text-center font-semibold text-slate-950 hover:bg-white"
-              >
-                Return to Manager Dashboard
-              </Link>
+            <div className="mt-8 space-y-3 text-slate-300">
+              <p>✓ Founder Introduction</p>
+              <p>✓ Manager Training</p>
+              <p>✓ BOSai℠ Platform Overview</p>
+              <p>✓ Operational Workflow Resources</p>
             </div>
+
+            <p className="mt-8 text-slate-400">
+              Welcome to the BOSai℠ operating ecosystem.
+            </p>
           </div>
         </section>
       </main>
@@ -143,26 +129,22 @@ export default function ManagerTraining() {
   );
 }
 
-function VideoPlaceholder({ title, duration, note, dark = false }) {
+function VideoPlayer({ title, duration, src }) {
   return (
-    <div
-      className={`mt-8 rounded-2xl border p-8 text-center ${
-        dark
-          ? "border-slate-700 bg-slate-900 text-white"
-          : "border-slate-200 bg-slate-100 text-slate-900"
-      }`}
-    >
-      <p className="text-xl font-bold">{title}</p>
-      <p className={dark ? "mt-2 text-slate-300" : "mt-2 text-slate-600"}>
-        Duration: {duration}
-      </p>
-      <p
-        className={
-          dark ? "mt-4 text-sm text-slate-400" : "mt-4 text-sm text-slate-500"
-        }
+    <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-950 p-6 text-white">
+      <div className="mb-4 text-center">
+        <p className="text-xl font-bold">{title}</p>
+        <p className="mt-2 text-amber-300">Duration: {duration}</p>
+      </div>
+
+      <video
+        className="w-full rounded-xl border border-slate-800 bg-black"
+        controls
+        preload="metadata"
       >
-        {note}
-      </p>
+        <source src={src} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 }
