@@ -1,10 +1,22 @@
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({
+      success: false,
+      message: "Method not allowed",
+    });
+  }
+
   try {
-    const associationId = req.query.association_id || DEFAULT_ASSOCIATION_ID;
+    const associationId = String(req.query.association_id || "").trim();
+
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Association ID is required.",
+      });
+    }
 
     const { data, error } = await supabaseAdmin
       .from("board_messages")
@@ -20,10 +32,10 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("List board messages error:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message || "Unable to load board messages.",
     });
   }
 }
-
