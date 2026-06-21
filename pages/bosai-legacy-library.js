@@ -51,7 +51,7 @@ export default function BosaiLegacyLibraryPage() {
           <div className="relative mx-auto max-w-7xl text-center">
             <img
               src="/bosai-seal.png"
-              alt="The BOSai Legacy Library Seal"
+              alt="The BOSai℠ Legacy Library Seal"
               className="mx-auto h-44 w-44 object-contain sm:h-56 sm:w-56"
             />
 
@@ -161,7 +161,7 @@ export default function BosaiLegacyLibraryPage() {
             <div>
               <img
   src="/vol-v.png"
-  alt="The BOSai Leadership Legacy Volume V Founder's Edition"
+  alt="The BOSai℠ Leadership Legacy Volume V Founder's Edition"
   className="max-w-full h-auto rounded-[1.5rem] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
 />
             </div>
