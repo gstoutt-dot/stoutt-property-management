@@ -1,7 +1,5 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 function formatCategory(value = "") {
   return String(value || "other")
     .replaceAll("_", " ")
@@ -23,6 +21,15 @@ export default async function handler(req, res) {
       return res.status(400).json({
         success: false,
         message: "Report is required.",
+      });
+    }
+
+    const associationId = String(report.association_id || "").trim();
+
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Association ID is required.",
       });
     }
 
@@ -53,7 +60,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabaseAdmin
       .from("admin_operational_records")
       .insert({
-        association_id: report.association_id || DEFAULT_ASSOCIATION_ID,
+        association_id: associationId,
         created_by: "Admin",
         created_by_role: "admin",
         request_type: "association_report",
