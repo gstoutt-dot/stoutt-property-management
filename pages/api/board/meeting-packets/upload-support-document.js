@@ -8,7 +8,6 @@ export const config = {
   },
 };
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const STORAGE_BUCKET = "meeting-packets";
 
 export default async function handler(req, res) {
@@ -29,6 +28,15 @@ export default async function handler(req, res) {
       document_category,
     } = req.body || {};
 
+    const associationId = String(association_id || "").trim();
+
+    if (!associationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Association ID is required.",
+      });
+    }
+
     if (!packet_id || !file_name || !file_base64) {
       return res.status(400).json({
         success: false,
@@ -36,11 +44,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const associationId = association_id || DEFAULT_ASSOCIATION_ID;
     const cleanFileName = String(file_name).replace(/[^a-zA-Z0-9._-]/g, "-");
     const filePath = `${associationId}/${packet_id}/${Date.now()}-${cleanFileName}`;
 
-    const base64Data = file_base64.split(",").pop();
+    const base64Data = String(file_base64).split(",").pop();
     const buffer = Buffer.from(base64Data, "base64");
 
     const { error: uploadError } = await supabaseAdmin.storage
@@ -62,6 +69,7 @@ export default async function handler(req, res) {
       .from("board_meeting_packets")
       .select("*")
       .eq("id", packet_id)
+      .eq("association_id", associationId)
       .maybeSingle();
 
     if (packetError) {
@@ -71,7 +79,7 @@ export default async function handler(req, res) {
     if (!packet) {
       return res.status(404).json({
         success: false,
-        message: "Meeting record was not found.",
+        message: "Meeting record was not found for this association.",
       });
     }
 
@@ -97,6 +105,7 @@ export default async function handler(req, res) {
         updated_at: new Date().toISOString(),
       })
       .eq("id", packet_id)
+      .eq("association_id", associationId)
       .select("*")
       .maybeSingle();
 
