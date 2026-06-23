@@ -122,7 +122,6 @@ export default async function handler(req, res) {
   accounting_method,
   start_date: reportStartDate,
   end_date: reportEndDate,
-  testing_migration: "true",
 });
 
     const quickBooksUrl =
@@ -196,7 +195,6 @@ const modernizedResponse =
       rows: normalizedRows,
       raw_report: reportJson,
 quickbooks_modernized_response: modernizedResponse,
-testing_migration: true,
 generated_at: new Date().toISOString(),
     });
   } catch (error) {
