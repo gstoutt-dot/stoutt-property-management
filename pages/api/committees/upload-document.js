@@ -8,7 +8,6 @@ export const config = {
   },
 };
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
 const STORAGE_BUCKET = "meeting-packets";
 
 export default async function handler(req, res) {
@@ -29,14 +28,21 @@ export default async function handler(req, res) {
       file_base64,
     } = req.body || {};
 
-    if (!committee_id || !document_name || !file_name || !file_base64) {
-      return res.status(400).json({
+if (!association_id) {
+  return res.status(400).json({
+    success: false,
+    message: "Association ID is required.",
+  });
+}
+
+if (!committee_id || !document_name || !file_name || !file_base64) {
+  return res.status(400).json({
         success: false,
         message: "Committee, document name, file name, and file data are required.",
       });
     }
 
-    const associationId = association_id || DEFAULT_ASSOCIATION_ID;
+const associationId = String(association_id).trim();
     const cleanFileName = String(file_name).replace(/[^a-zA-Z0-9._-]/g, "-");
     const filePath = `${associationId}/committee-documents/${committee_id}/${Date.now()}-${cleanFileName}`;
 
