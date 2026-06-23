@@ -103,10 +103,11 @@ export default async function handler(req, res) {
       end_date || new Date().toISOString().slice(0, 10);
 
     const params = new URLSearchParams({
-      minorversion: QUICKBOOKS_MINOR_VERSION,
-      accounting_method,
-      end_date: reportEndDate,
-    });
+  minorversion: QUICKBOOKS_MINOR_VERSION,
+  accounting_method,
+  end_date: reportEndDate,
+  testing_migration: "true",
+});
 
     if (start_date) {
       params.set("start_date", start_date);
@@ -123,8 +124,10 @@ export default async function handler(req, res) {
       },
     });
 
-    const reportJson = await quickBooksResponse.json();
+const reportJson = await quickBooksResponse.json();
 
+const modernizedResponse =
+  quickBooksResponse.headers.get("v3modernResponse") === "true";
     if (!quickBooksResponse.ok) {
       await supabaseAdmin
         .from("quickbooks_connections")
@@ -173,7 +176,9 @@ export default async function handler(req, res) {
       currency: reportJson?.Header?.Currency || "USD",
       rows: normalizedRows,
       raw_report: reportJson,
-      generated_at: new Date().toISOString(),
+quickbooks_modernized_response: modernizedResponse,
+testing_migration: true,
+generated_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("balance-sheet report error:", error);
