@@ -72,10 +72,13 @@ export default async function handler(req, res) {
     const results = [];
 
     for (const report of REPORTS) {
-      const reportUrl = `${baseUrl}${report.endpoint}?association_id=${associationId}`;
+      const reportUrl =
+  `${baseUrl}${report.endpoint}?association_id=${associationId}&refresh=${Date.now()}`;
 
-      try {
-        const response = await fetch(reportUrl);
+try {
+  const response = await fetch(reportUrl, {
+    cache: "no-store",
+  });
         const json = await response.json();
 
         if (!json.success) {
