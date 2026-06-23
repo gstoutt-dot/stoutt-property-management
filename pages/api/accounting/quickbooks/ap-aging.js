@@ -100,7 +100,6 @@ export default async function handler(req, res) {
     const params = new URLSearchParams({
   minorversion: QUICKBOOKS_MINOR_VERSION,
   report_date: reportDate,
-  testing_migration: "true",
 });
 
     const quickBooksUrl =
@@ -167,7 +166,6 @@ const modernizedResponse =
       rows: extractRows(reportJson?.Rows?.Row || []),
       raw_report: reportJson,
 quickbooks_modernized_response: modernizedResponse,
-testing_migration: true,
 generated_at: new Date().toISOString(),
     });
   } catch (error) {
