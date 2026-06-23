@@ -127,13 +127,14 @@ export default async function handler(req, res) {
     }
 
     const params = new URLSearchParams({
-      minorversion: QUICKBOOKS_MINOR_VERSION,
-      accounting_method,
-      start_date: reportStartDate,
-      end_date: reportEndDate,
-      date_macro: "thismonth",
-      budget: budget_id,
-    });
+  minorversion: QUICKBOOKS_MINOR_VERSION,
+  accounting_method,
+  start_date: reportStartDate,
+  end_date: reportEndDate,
+  date_macro: "thismonth",
+  budget: budget_id,
+  testing_migration: "true",
+});
 
     const quickBooksUrl =
       `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/BudgetVsActuals?${params.toString()}`;
@@ -146,8 +147,10 @@ export default async function handler(req, res) {
       },
     });
 
-    const reportJson = await quickBooksResponse.json();
+const reportJson = await quickBooksResponse.json();
 
+const modernizedResponse =
+  quickBooksResponse.headers.get("v3modernResponse") === "true";
     if (!quickBooksResponse.ok) {
       await supabaseAdmin
         .from("quickbooks_connections")
@@ -211,7 +214,9 @@ export default async function handler(req, res) {
       columns,
       rows: normalizedRows,
       raw_report: reportJson,
-      generated_at: new Date().toISOString(),
+quickbooks_modernized_response: modernizedResponse,
+testing_migration: true,
+generated_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("budget-vs-actual report error:", error);
