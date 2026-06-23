@@ -1,7 +1,5 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -11,10 +9,16 @@ export default async function handler(req, res) {
       });
     }
 
-    const associationId =
-      req.query.association_id ||
-      req.query.associationId ||
-      DEFAULT_ASSOCIATION_ID;
+    const associationId = String(
+  req.query.association_id || req.query.associationId || ""
+).trim();
+
+if (!associationId) {
+  return res.status(400).json({
+    success: false,
+    message: "Association ID is required.",
+  });
+}
 
     const { data, error } = await supabaseAdmin
       .from("association_committee_documents")
