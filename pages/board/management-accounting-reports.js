@@ -85,8 +85,11 @@ export default function ManagementAccountingReports() {
 
     try {
             const response = await fetch(
-        `/api/accounting/quickbooks/board-report-snapshot?association_id=${associationId}&report_key=${tab.key}`
-      );
+  `/api/accounting/quickbooks/board-report-snapshot?association_id=${associationId}&report_key=${tab.key}&refresh=${Date.now()}`,
+  {
+    cache: "no-store",
+  }
+);
 
       const json = await response.json();
 
@@ -184,11 +187,12 @@ export default function ManagementAccountingReports() {
       setSystemMessage("Refreshing board accounting reports from QuickBooks...");
 
       const response = await fetch(
-        `/api/accounting/quickbooks/sync-board-reports?association_id=${associationId}`,
-        {
-          method: "POST",
-        }
-      );
+  `/api/accounting/quickbooks/sync-board-reports?association_id=${associationId}&refresh=${Date.now()}`,
+  {
+    method: "POST",
+    cache: "no-store",
+  }
+);
 
       const json = await response.json();
 
