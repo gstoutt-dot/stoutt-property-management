@@ -11,8 +11,15 @@ export default async function handler(req, res) {
   try {
     const payload = req.body || {};
 
-    if (!payload.title) {
-      return res.status(400).json({
+if (!payload.association_id) {
+  return res.status(400).json({
+    success: false,
+    message: "Association ID is required.",
+  });
+}
+
+if (!payload.title) {
+  return res.status(400).json({
         success: false,
         message: "Approval title is required.",
       });
@@ -21,7 +28,7 @@ export default async function handler(req, res) {
         const { data, error } = await supabaseAdmin
       .from("association_signature_approvals")
       .insert({
-        association_id: payload.association_id,
+        association_id: String(payload.association_id).trim(),
         title: payload.title,
         approval_category: payload.approval_category,
         required_signer: payload.required_signer,
