@@ -98,9 +98,10 @@ export default async function handler(req, res) {
     }
 
     const params = new URLSearchParams({
-      minorversion: QUICKBOOKS_MINOR_VERSION,
-      report_date: reportDate,
-    });
+  minorversion: QUICKBOOKS_MINOR_VERSION,
+  report_date: reportDate,
+  testing_migration: "true",
+});
 
     const quickBooksUrl =
       `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/AgedReceivables?${params.toString()}`;
@@ -113,8 +114,10 @@ export default async function handler(req, res) {
       },
     });
 
-    const reportJson = await quickBooksResponse.json();
+const reportJson = await quickBooksResponse.json();
 
+const modernizedResponse =
+  quickBooksResponse.headers.get("v3modernResponse") === "true";
     if (!quickBooksResponse.ok) {
       await supabaseAdmin
         .from("quickbooks_connections")
@@ -165,7 +168,9 @@ export default async function handler(req, res) {
       columns,
       rows: normalizedRows,
       raw_report: reportJson,
-      generated_at: new Date().toISOString(),
+quickbooks_modernized_response: modernizedResponse,
+testing_migration: true,
+generated_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("ar-aging report error:", error);
