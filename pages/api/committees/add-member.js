@@ -1,7 +1,5 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
-const DEFAULT_ASSOCIATION_ID = "622aaf96-ae1c-4f98-b0b2-00cc9178c2a2";
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -18,7 +16,14 @@ export default async function handler(req, res) {
       status,
     } = req.body || {};
 
-    if (!committee_id || !member_name) {
+    if (!association_id) {
+  return res.status(400).json({
+    success: false,
+    message: "Association ID is required.",
+  });
+}
+
+if (!committee_id || !member_name) {
       return res.status(400).json({
         success: false,
         message: "Committee and member name are required.",
@@ -30,7 +35,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabaseAdmin
       .from("association_committee_members")
       .insert({
-        association_id: association_id || DEFAULT_ASSOCIATION_ID,
+association_id: String(association_id).trim(),
         committee_id,
         member_name: String(member_name).trim(),
         member_role: member_role || "member",
