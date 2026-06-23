@@ -91,7 +91,10 @@ export default function ManagementAccountingReports() {
 
     try {
       const response = await fetch(
-  `/api/accounting/quickbooks/board-report-snapshot?association_id=${associationId}&report_key=${tab.key}`
+  `/api/accounting/quickbooks/board-report-snapshot?association_id=${associationId}&report_key=${tab.key}&refresh=${Date.now()}`,
+  {
+    cache: "no-store",
+  }
 );
 
       const json = await response.json();
