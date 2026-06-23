@@ -106,8 +106,7 @@ export default async function handler(req, res) {
   minorversion: QUICKBOOKS_MINOR_VERSION,
   accounting_method,
   end_date: reportEndDate,
-  testing_migration: "true",
-});
+  });
 
     if (start_date) {
       params.set("start_date", start_date);
@@ -177,7 +176,6 @@ const modernizedResponse =
       rows: normalizedRows,
       raw_report: reportJson,
 quickbooks_modernized_response: modernizedResponse,
-testing_migration: true,
 generated_at: new Date().toISOString(),
     });
   } catch (error) {
