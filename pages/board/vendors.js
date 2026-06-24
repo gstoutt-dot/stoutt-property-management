@@ -56,8 +56,10 @@ export default function Vendors() {
     localStorage.getItem("spm_selected_association_name") ||
     "Selected Association";
 
-  const resolvedAssociationId = queryAssociationId || storedAssociationId;
+console.log("queryAssociationId =", queryAssociationId);
+console.log("storedAssociationId =", storedAssociationId);
 
+const resolvedAssociationId = queryAssociationId || storedAssociationId;
   setAssociationId(resolvedAssociationId);
 
   setAssociationName(
