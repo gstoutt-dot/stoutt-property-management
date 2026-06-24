@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-const DEFAULT_ASSOCIATION_ID =
+import { useRouter } from "next/router";
   "79893883-6141-4dcc-ba1a-034d70a0dc96";
 
 const requiredDocumentTypes = [
@@ -21,6 +20,11 @@ const optionalDocumentTypes = [
 const documentTypes = [...requiredDocumentTypes, ...optionalDocumentTypes];
 
 export default function Vendors() {
+  const router = useRouter();
+
+  const [associationId, setAssociationId] = useState("");
+  const [associationName, setAssociationName] = useState("Selected Association");
+
   const [vendors, setVendors] = useState([]);
   const [vendorDocuments, setVendorDocuments] = useState([]);
   const [boardResponses, setBoardResponses] = useState([]);
@@ -33,25 +37,69 @@ export default function Vendors() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    loadAll();
-  }, []);
+  if (!router.isReady) return;
 
-  async function loadAll() {
-    await Promise.all([
-      loadVendors(),
-      loadVendorDocuments(),
-      loadBoardResponses(),
-    ]);
+  const queryAssociationId =
+    router.query.associationId ||
+    router.query.association_id ||
+    "";
+
+  const queryAssociationName =
+    router.query.associationName ||
+    router.query.association_name ||
+    "";
+
+  const storedAssociationId =
+    localStorage.getItem("spm_selected_association_id") || "";
+
+  const storedAssociationName =
+    localStorage.getItem("spm_selected_association_name") ||
+    "Selected Association";
+
+console.log("queryAssociationId =", queryAssociationId);
+console.log("storedAssociationId =", storedAssociationId);
+
+const resolvedAssociationId = queryAssociationId || storedAssociationId;
+  setAssociationId(resolvedAssociationId);
+
+  setAssociationName(
+    queryAssociationName ||
+      storedAssociationName ||
+      "Selected Association"
+  );
+
+  if (!resolvedAssociationId) {
+    setSystemMessage("No association selected.");
+    setLoadingVendors(false);
+    setLoadingDocuments(false);
+    return;
   }
 
-  async function loadVendors() {
-    try {
-      setLoadingVendors(true);
-      setSystemMessage("");
+  loadAll(resolvedAssociationId);
+}, [
+  router.isReady,
+  router.query.associationId,
+  router.query.association_id,
+  router.query.associationName,
+  router.query.association_name,
+]);
 
-      const response = await fetch(
-        `/api/accounting/quickbooks/vendors?association_id=${DEFAULT_ASSOCIATION_ID}`
-      );
+async function loadAll(currentAssociationId = associationId) {
+  await Promise.all([
+    loadVendors(currentAssociationId),
+    loadVendorDocuments(currentAssociationId),
+    loadBoardResponses(currentAssociationId),
+  ]);
+}
+
+  async function loadVendors(currentAssociationId) {
+  try {
+    setLoadingVendors(true);
+    setSystemMessage("");
+
+    const response = await fetch(
+      `/api/accounting/quickbooks/vendors?association_id=${currentAssociationId}`
+    );
 
       const data = await response.json();
 
@@ -69,15 +117,15 @@ export default function Vendors() {
     }
   }
 
-  async function loadVendorDocuments() {
-    try {
-      setLoadingDocuments(true);
+  async function loadVendorDocuments(currentAssociationId) {
+  try {
+    setLoadingDocuments(true);
 
-      const response = await fetch(
-        `/api/vendors/list-documents?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
-        )}`
-      );
+    const response = await fetch(
+      `/api/vendors/list-documents?association_id=${encodeURIComponent(
+        currentAssociationId
+      )}`
+    );
 
       const payload = await response.json();
 
@@ -95,13 +143,13 @@ export default function Vendors() {
     }
   }
 
-  async function loadBoardResponses() {
-    try {
-      const response = await fetch(
-        `/api/admin/operational-records?association_id=${encodeURIComponent(
-          DEFAULT_ASSOCIATION_ID
-        )}`
-      );
+  async function loadBoardResponses(currentAssociationId) {
+  try {
+    const response = await fetch(
+      `/api/admin/operational-records?association_id=${encodeURIComponent(
+        currentAssociationId
+      )}`
+    );
 
       const payload = await response.json();
 
@@ -164,9 +212,9 @@ export default function Vendors() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
-          vendor_id: vendorId,
-          document_name: form.document_category,
+  association_id: associationId,
+  vendor_id: vendorId,
+  document_name: form.document_category,
           document_category: form.document_category,
           description: form.description || "",
           uploaded_by: "Admin",
@@ -191,8 +239,8 @@ export default function Vendors() {
         },
       }));
 
-      await loadVendorDocuments();
-      setSystemMessage("Vendor document uploaded.");
+      await loadVendorDocuments(associationId);
+setSystemMessage("Vendor document uploaded.");
     } catch (error) {
       console.error("Unable to upload vendor document:", error);
       setSystemMessage(error.message || "Unable to upload vendor document.");
@@ -226,8 +274,8 @@ export default function Vendors() {
         throw new Error(payload.message || "Unable to delete vendor document.");
       }
 
-      await loadVendorDocuments();
-      setSystemMessage("Vendor document deleted.");
+      await loadVendorDocuments(associationId);
+setSystemMessage("Vendor document deleted.");
     } catch (error) {
       console.error("Unable to delete vendor document:", error);
       setSystemMessage(error.message || "Unable to delete vendor document.");
@@ -268,9 +316,9 @@ export default function Vendors() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          association_id: DEFAULT_ASSOCIATION_ID,
-          vendor,
-          documents: vendorDocs,
+  association_id: associationId,
+  vendor,
+  documents: vendorDocs,
         }),
       });
 
@@ -280,8 +328,8 @@ export default function Vendors() {
         throw new Error(payload.message || "Unable to send vendor to board.");
       }
 
-      await loadBoardResponses();
-      setSystemMessage("Vendor authorization sent to Board Approval Queue.");
+      await loadBoardResponses(associationId);
+setSystemMessage("Vendor authorization sent to Board Approval Queue.");
     } catch (error) {
       console.error("Unable to send vendor to board:", error);
       setSystemMessage(error.message || "Unable to send vendor to board.");
