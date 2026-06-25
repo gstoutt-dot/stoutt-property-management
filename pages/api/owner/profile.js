@@ -1,7 +1,5 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
-const SUNSET_ASSOCIATION_ID = "79893883-6141-4dcc-ba1a-034d70a0dc96";
-
 function clean(value) {
   return String(value || "").trim();
 }
@@ -12,7 +10,7 @@ function normalizeEmail(value) {
 
 function extractUnitFromEmail(email) {
   const normalized = normalizeEmail(email);
-  const match = normalized.match(/^unit(\d+)@sunsetcondo\.com$/i);
+  const match = normalized.match(/^unit(\d+)@/i);
   return match?.[1] || "";
 }
 
@@ -20,12 +18,16 @@ function cleanOwnerName(value) {
   return clean(value).replace(/^Unit\s+\d+\s*-\s*/i, "");
 }
 
-function normalizeOwnerProfile(record, fallbackEmail = "") {
+function normalizeOwnerProfile(record, fallbackEmail = "", fallbackAssociationId = "") {
   const unitNumber = clean(record?.unit_number || record?.unitNumber);
-  const associationId = clean(record?.association_id) || SUNSET_ASSOCIATION_ID;
+  const associationId =
+    clean(record?.association_id) || clean(fallbackAssociationId);
 
   return {
-    associationName: clean(record?.association_name) || "Sunset Condominium Association",
+    associationName:
+      clean(record?.association_name) ||
+      clean(record?.associationName) ||
+      "Community Association",
 
     ownerName:
       cleanOwnerName(record?.owner_name) ||
@@ -58,17 +60,23 @@ function normalizeOwnerProfile(record, fallbackEmail = "") {
   };
 }
 
-async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
+async function findOwnerAccessRecord({ ownerEmail, authUserId, associationId }) {
   const normalizedEmail = normalizeEmail(ownerEmail);
   const normalizedAuthUserId = clean(authUserId);
+  const normalizedAssociationId = clean(associationId);
   const unitFromEmail = extractUnitFromEmail(normalizedEmail);
 
   if (normalizedAuthUserId) {
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("owner_access_provisioning_records")
       .select("*")
-      .eq("auth_user_id", normalizedAuthUserId)
-      .maybeSingle();
+      .eq("auth_user_id", normalizedAuthUserId);
+
+    if (normalizedAssociationId) {
+      query = query.eq("association_id", normalizedAssociationId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("Owner profile auth_user_id lookup failed:", error);
@@ -78,11 +86,16 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
   }
 
   if (normalizedEmail) {
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("owner_access_provisioning_records")
       .select("*")
-      .eq("owner_email", normalizedEmail)
-      .maybeSingle();
+      .eq("owner_email", normalizedEmail);
+
+    if (normalizedAssociationId) {
+      query = query.eq("association_id", normalizedAssociationId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("Owner profile owner_email lookup failed:", error);
@@ -91,11 +104,11 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
     if (data) return data;
   }
 
-  if (unitFromEmail) {
+  if (normalizedAssociationId && unitFromEmail) {
     const { data, error } = await supabaseAdmin
       .from("owner_access_provisioning_records")
       .select("*")
-      .eq("association_id", SUNSET_ASSOCIATION_ID)
+      .eq("association_id", normalizedAssociationId)
       .eq("unit_number", unitFromEmail)
       .maybeSingle();
 
@@ -107,11 +120,16 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
   }
 
   if (normalizedEmail) {
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("owner_identity_mapping_records")
       .select("*")
-      .eq("owner_email", normalizedEmail)
-      .maybeSingle();
+      .eq("owner_email", normalizedEmail);
+
+    if (normalizedAssociationId) {
+      query = query.eq("association_id", normalizedAssociationId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("Owner identity email lookup failed:", error);
@@ -120,11 +138,11 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
     if (data) return data;
   }
 
-  if (unitFromEmail) {
+  if (normalizedAssociationId && unitFromEmail) {
     const { data, error } = await supabaseAdmin
       .from("owner_identity_mapping_records")
       .select("*")
-      .eq("association_id", SUNSET_ASSOCIATION_ID)
+      .eq("association_id", normalizedAssociationId)
       .eq("unit_number", unitFromEmail)
       .maybeSingle();
 
@@ -136,11 +154,16 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
   }
 
   if (normalizedEmail) {
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("owner_profiles")
       .select("*")
-      .eq("user_email", normalizedEmail)
-      .maybeSingle();
+      .eq("user_email", normalizedEmail);
+
+    if (normalizedAssociationId) {
+      query = query.eq("association_id", normalizedAssociationId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("Legacy owner_profiles lookup failed:", error);
@@ -149,11 +172,11 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
     if (data) return data;
   }
 
-  if (unitFromEmail) {
+  if (normalizedAssociationId && unitFromEmail) {
     const { data, error } = await supabaseAdmin
       .from("owner_account_balances")
       .select("*")
-      .eq("association_id", SUNSET_ASSOCIATION_ID)
+      .eq("association_id", normalizedAssociationId)
       .eq("unit_number", unitFromEmail)
       .maybeSingle();
 
@@ -165,7 +188,6 @@ async function findOwnerAccessRecord({ ownerEmail, authUserId }) {
       return {
         ...data,
         owner_email: normalizedEmail,
-        association_name: "Sunset Condominium Association",
       };
     }
   }
@@ -184,6 +206,7 @@ export default async function handler(req, res) {
   try {
     const ownerEmail = normalizeEmail(req.query.ownerEmail);
     const authUserId = clean(req.query.authUserId);
+    const associationId = clean(req.query.associationId);
 
     if (!ownerEmail && !authUserId) {
       return res.status(400).json({
@@ -195,6 +218,7 @@ export default async function handler(req, res) {
     const accessRecord = await findOwnerAccessRecord({
       ownerEmail,
       authUserId,
+      associationId,
     });
 
     if (!accessRecord) {
@@ -206,7 +230,20 @@ export default async function handler(req, res) {
       });
     }
 
-    const ownerProfile = normalizeOwnerProfile(accessRecord, ownerEmail);
+    const ownerProfile = normalizeOwnerProfile(
+      accessRecord,
+      ownerEmail,
+      associationId
+    );
+
+    if (!ownerProfile.association_id) {
+      return res.status(404).json({
+        success: false,
+        error:
+          "Homeowner profile was found, but no association was linked to this login.",
+        ownerProfile: null,
+      });
+    }
 
     if (!ownerProfile.unitNumber) {
       return res.status(404).json({
