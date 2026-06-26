@@ -92,7 +92,7 @@ export default function OwnerAccountLedger({
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 px-6 py-5">
         <div>
           <div className="mb-2 inline-flex rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-300">
-            QuickBooks Ledger
+            Accounting Ledger
           </div>
 
           <h2 className="text-xl font-semibold text-white">
@@ -175,7 +175,7 @@ export default function OwnerAccountLedger({
             <p className="mt-2 text-sm leading-6 text-slate-400">
               Your account balance is connected. Detailed invoices, payments,
               late fees, violation fees, credits, and adjustments will appear
-              here once the QuickBooks ledger sync is activated.
+              here once the Accounting ledger sync is activated.
             </p>
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function OwnerAccountLedger({
       )}
 
       <div className="border-t border-white/10 px-6 py-4 text-xs leading-5 text-slate-500">
-        Ledger entries are displayed from SPM’s QuickBooks-connected accounting
+        Ledger entries are displayed from SPM’s - connected accounting
         mirror and are scoped to your association, unit, and owner profile.
       </div>
     </div>
