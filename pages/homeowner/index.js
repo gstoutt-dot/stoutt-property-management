@@ -151,8 +151,8 @@ const [loadError, setLoadError] = useState("");
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
     const syncTimestamp = balance?.synced_at
-    ? `Synced from QuickBooks on ${prettyDate(balance.synced_at)}`
-    : "QuickBooks sync timestamp not available";
+    ? `Synced from Accounting on ${prettyDate(balance.synced_at)}`
+    : "Accounting sync timestamp not available";
 
   async function signOutHomeowner() {
     try {
@@ -314,7 +314,7 @@ router.replace("/admin-login");
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-yellow-400">
-              QuickBooks Live Balance Summary
+              Accounting Live Balance Summary
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -323,7 +323,7 @@ router.replace("/admin-login");
 
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
               This summary reflects the homeowner balance information currently
-              mirrored from QuickBooks for Unit {unitNumber}.
+              mirrored from Accounting for Unit {unitNumber}.
             </p>
           </div>
 
