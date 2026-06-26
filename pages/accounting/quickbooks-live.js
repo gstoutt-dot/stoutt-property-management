@@ -51,7 +51,7 @@ export default function QuickBooksLiveAccounting() {
       setFinancialData(data);
     } catch (err) {
       if (!silent) {
-        setError(err.message || "Unable to load QuickBooks data.");
+        setError(err.message || "Unable to load Accounting data.");
       }
     } finally {
       if (!silent) setLoading(false);
@@ -78,7 +78,7 @@ export default function QuickBooksLiveAccounting() {
         throw new Error(
           balanceData?.error ||
             balanceData?.message ||
-            "Unable to sync QuickBooks balances."
+            "Unable to sync Accounting balances."
         );
       }
 
@@ -92,13 +92,13 @@ export default function QuickBooksLiveAccounting() {
         throw new Error(
           invoiceData?.error ||
             invoiceData?.message ||
-            "Unable to sync QuickBooks invoices."
+            "Unable to sync Accounting invoices."
         );
       }
 
       await loadFinancialSummary({ silent: true });
     } catch (err) {
-      setError(err.message || "Unable to run QuickBooks sync.");
+      setError(err.message || "Unable to run Accounting sync.");
     } finally {
       setLoading(false);
     }
@@ -186,11 +186,11 @@ export default function QuickBooksLiveAccounting() {
               </p>
 
               <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-                QuickBooks Financial Command Center
+                Accounting Financial Command Center
               </h1>
 
               <p className="mt-4 max-w-3xl text-slate-300">
-                Live accounting operations connected through QuickBooks synchronization.
+                Live accounting operations connected through Accounting synchronization.
                 This command center provides HOA-safe owner balance visibility,
                 collections exposure, delinquency tracking, and board financial oversight.
               </p>
@@ -207,7 +207,7 @@ export default function QuickBooksLiveAccounting() {
 
               <div className="mt-4 space-y-2 text-sm text-slate-300">
                 <p>Association ID: {associationId || "Missing"}</p>
-                <p>Platform: QuickBooks</p>
+                <p>Platform: Accounting</p>
                 <p>
                   Status:{" "}
                   <span className="font-semibold text-emerald-300">
@@ -224,7 +224,7 @@ export default function QuickBooksLiveAccounting() {
               disabled={loading || !associationId}
               className="rounded-2xl bg-amber-400 px-6 py-3 font-semibold text-slate-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 disabled:opacity-50"
             >
-              {loading ? "Synchronizing..." : "Run Live QuickBooks Sync"}
+              {loading ? "Synchronizing..." : "Run Live Accounting Sync"}
             </button>
 
             <button
@@ -290,7 +290,7 @@ export default function QuickBooksLiveAccounting() {
           <OperationalCard
             title="Owner Financial Visibility"
             value={financialSnapshot.totalOwners}
-            label="Owner accounts loaded from QuickBooks"
+            label="Owner accounts loaded from Accounting"
           />
 
           <OperationalCard
@@ -393,7 +393,7 @@ export default function QuickBooksLiveAccounting() {
                 disabled={loading || !associationId}
                 className="w-full rounded-2xl bg-amber-400 px-5 py-3 text-left font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
               >
-                Sync QuickBooks Now
+                Sync Accounting Now
               </button>
 
               <button
@@ -412,7 +412,7 @@ export default function QuickBooksLiveAccounting() {
 
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 SPM connects each association through its own association ID,
-                QuickBooks connection, owner records, and accounting mirror.
+                Accounting connection, owner records, and accounting mirror.
               </p>
             </div>
           </aside>
