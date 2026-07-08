@@ -1,7 +1,13 @@
+import { useState } from "react";
+import { useRouter } from "next/router";
 import SiteHeader from "../components/SiteHeader";
 import StickyMobileCTA from "../components/StickyMobileCTA";
 
 export default function ProposalPage() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const benefits = [
     "Experienced HOA and condominium association leadership",
     "Proactive systems built for stronger communication and follow-through",
@@ -32,6 +38,66 @@ export default function ProposalPage() {
       text: "This page supports trust, clarity, and momentum so interested boards actually take the next step.",
     },
   ];
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setSubmitting(true);
+    setErrorMessage("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const servicesRequested = formData.getAll("servicesNeeded").join(", ");
+
+    const messageDetails = `
+Title / Role: ${formData.get("role") || ""}
+Property Type: ${formData.get("propertyType") || ""}
+Best Time to Contact: ${formData.get("bestTime") || ""}
+
+Current Challenges / Request:
+${formData.get("message") || ""}
+`;
+
+    const payload = {
+      name: formData.get("fullName") || "",
+      email: formData.get("email") || "",
+      phone: formData.get("phone") || "",
+      association_name: formData.get("associationName") || "",
+      property_address: "",
+      city: formData.get("location") || "",
+      state: "",
+      zip_code: "",
+      number_of_units: formData.get("units") || "",
+      current_management_status: formData.get("propertyType") || "",
+      services_requested: servicesRequested,
+      biggest_challenge: formData.get("message") || "",
+      message: messageDetails,
+    };
+
+    try {
+      const response = await fetch("/api/spm/request-proposal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Unable to submit proposal request.");
+      }
+
+      router.push("/thank-you");
+    } catch (error) {
+      console.error("SPM proposal submit error:", error);
+      setErrorMessage(
+        "Something went wrong while submitting your proposal request. Please try again."
+      );
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 pb-24 text-white lg:pb-0">
@@ -129,11 +195,7 @@ export default function ProposalPage() {
                     </p>
                   </div>
 
-                  <form
-                    action="https://formspree.io/f/mwvwywgp"
-                    method="POST"
-                    className="space-y-5"
-                  >
+                  <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid gap-5 md:grid-cols-2">
                       <div>
                         <label className="mb-2 block text-sm font-medium text-white/80">
@@ -306,22 +368,18 @@ export default function ProposalPage() {
                       />
                     </div>
 
-                    <input
-                      type="hidden"
-                      name="_subject"
-                      value="New Proposal Request - Stoutt Property Management"
-                    />
-                    <input
-                      type="hidden"
-                      name="_next"
-                      value="https://stouttmgmt.com/thank-you"
-                    />
+                    {errorMessage && (
+                      <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm leading-6 text-red-200">
+                        {errorMessage}
+                      </p>
+                    )}
 
                     <button
                       type="submit"
-                      className="w-full rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-4 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)] active:scale-[0.99]"
+                      disabled={submitting}
+                      className="w-full rounded-full border border-yellow-400/30 bg-gradient-to-r from-yellow-300 to-amber-400 px-7 py-4 text-center text-sm font-semibold text-slate-950 shadow-[0_0_35px_rgba(234,179,8,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_0_45px_rgba(234,179,8,0.3)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                      Submit Proposal Request
+                      {submitting ? "Submitting..." : "Submit Proposal Request"}
                     </button>
 
                     <p className="text-center text-xs leading-6 text-white/45">
