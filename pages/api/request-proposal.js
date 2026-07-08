@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js"; 
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 const supabaseAdmin = createClient(
