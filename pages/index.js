@@ -868,6 +868,104 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
   </div>
 </section>
 
+            <section className="mx-auto max-w-7xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+  <div className="mx-auto max-w-4xl text-center">
+    <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+      The Industry Changed
+    </div>
+
+    <h2 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+      Property management is no longer just property management.
+    </h2>
+
+    <p className="mt-6 text-lg leading-8 text-white/70">
+      Florida boards now face a new level of responsibility. SIRS, milestone
+      inspections, reserve funding, engineering coordination, insurance recovery,
+      owner communication, and long-term asset protection require a more
+      informed, proactive, systems-driven management model.
+    </p>
+  </div>
+
+  <div className="mt-14 grid gap-6 lg:grid-cols-2">
+    <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
+      <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white/45">
+        Yesterday
+      </div>
+
+      <h3 className="mt-4 text-3xl font-semibold text-white">
+        Traditional Property Management
+      </h3>
+
+      <div className="mt-8 space-y-4">
+        {[
+          "Reactive response after issues appear",
+          "Disconnected communication between boards, managers, vendors, and owners",
+          "Limited visibility into long-term risk",
+          "Software used mainly for records, billing, and basic communication",
+          "Major projects handled outside the normal management workflow",
+        ].map((item) => (
+          <div
+            key={item}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-white/65"
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="rounded-[2rem] border border-yellow-400/25 bg-yellow-400/10 p-8 shadow-[0_0_40px_rgba(234,179,8,0.12)]">
+      <div className="text-sm font-semibold uppercase tracking-[0.22em] text-yellow-300">
+        Today
+      </div>
+
+      <h3 className="mt-4 text-3xl font-semibold text-yellow-100">
+        Modern Community Stewardship
+      </h3>
+
+      <div className="mt-8 space-y-4">
+        {[
+          "Proactive issue identification before small problems become major ones",
+          "Integrated communication between boards, managers, homeowners, vendors, and advisors",
+          "Awareness of SIRS, milestone inspections, reserve planning, and structural obligations",
+          "Intelligent systems that support governance, financial transparency, and accountability",
+          "Major projects tracked as part of the community's operating environment",
+        ].map((item) => (
+          <div
+            key={item}
+            className="rounded-2xl border border-yellow-400/20 bg-slate-950/40 p-5 text-sm leading-7 text-yellow-100/90"
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div className="mx-auto mt-14 max-w-5xl rounded-[2rem] border border-yellow-400/20 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-8 text-center sm:p-10">
+    <h3 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
+      This is why Stoutt Property Management operates differently.
+    </h3>
+
+    <p className="mx-auto mt-6 max-w-3xl text-lg leading-9 text-white/70">
+      The industry has changed, and communities deserve a management company
+      built for that new reality — experienced leadership supported by
+      intelligent systems, disciplined follow-through, and a deeper understanding
+      of what boards are now responsible to protect.
+    </p>
+
+    <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+      <a href="/proposal" className={premiumButton}>
+        Request a Proposal
+      </a>
+
+      <a href="/alignment" className={subtleButton}>
+        Explore Board Alignment
+      </a>
+    </div>
+  </div>
+</section>
+
                 <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
           <div className="flex items-end justify-between gap-6">
             <div className="max-w-3xl">
