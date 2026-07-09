@@ -13,7 +13,6 @@ function getQuickBooksBaseUrl() {
 
 function getCurrentMonthRange() {
   const now = new Date();
-
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
@@ -23,20 +22,45 @@ function getCurrentMonthRange() {
   };
 }
 
+function normalizeMoneyValue(value) {
+  if (value === null || value === undefined || value === "") return "0";
+  return String(value);
+}
+
+function normalizeTextValue(value) {
+  if (value === null || value === undefined) return "";
+  return String(value);
+}
+
 function extractRows(rows = []) {
   const extracted = [];
 
-  function walk(rowList, depth = 0) {
-    rowList.forEach((row) => {
-      const header = row.Header?.ColData?.[0]?.value;
-      const summary = row.Summary?.ColData?.[0]?.value;
-      const colData = row.ColData || [];
+  function walk(rowList, depth = 0, parentPath = []) {
+    rowList.forEach((row, index) => {
+      const rowType = row?.type || "";
+      const group = row?.group || "";
+
+      const header = normalizeTextValue(row?.Header?.ColData?.[0]?.value);
+      const summary = normalizeTextValue(row?.Summary?.ColData?.[0]?.value);
+      const colData = row?.ColData || [];
+
+      const currentName =
+        header ||
+        normalizeTextValue(colData?.[0]?.value) ||
+        summary ||
+        group ||
+        `Row ${index + 1}`;
+
+      const currentPath = [...parentPath, currentName].filter(Boolean);
 
       if (header) {
         extracted.push({
           type: "header",
+          quickbooks_row_type: rowType,
+          group,
           depth,
           name: header,
+          path: currentPath.join(" > "),
           columns: [],
         });
       }
@@ -44,27 +68,31 @@ function extractRows(rows = []) {
       if (colData.length > 0) {
         extracted.push({
           type: "row",
+          quickbooks_row_type: rowType,
+          group,
           depth,
-          name: colData[0]?.value || "",
-          columns: colData
-            .slice(1)
-            .map((col) => col?.value || ""),
+          name: normalizeTextValue(colData[0]?.value),
+          path: currentPath.join(" > "),
+          columns: colData.slice(1).map((col) => normalizeMoneyValue(col?.value)),
         });
       }
 
-      if (row.Rows?.Row?.length) {
-        walk(row.Rows.Row, depth + 1);
+      if (row?.Rows?.Row?.length) {
+        walk(row.Rows.Row, depth + 1, currentPath);
       }
 
       if (summary) {
         extracted.push({
           type: "summary",
+          quickbooks_row_type: rowType,
+          group,
           depth,
           name: summary,
+          path: currentPath.join(" > "),
           columns:
-            row.Summary?.ColData
-              ?.slice(1)
-              .map((col) => col?.value || "") || [],
+            row?.Summary?.ColData?.slice(1).map((col) =>
+              normalizeMoneyValue(col?.value)
+            ) || [],
         });
       }
     });
@@ -89,6 +117,7 @@ export default async function handler(req, res) {
       end_date,
       accounting_method = "Accrual",
       budget_id = "1000000001",
+      testing_migration,
     } = req.query;
 
     if (!association_id || typeof association_id !== "string") {
@@ -103,15 +132,12 @@ export default async function handler(req, res) {
     const reportStartDate = start_date || startDate;
     const reportEndDate = end_date || endDate;
 
-    const connection = await getValidQuickBooksConnection(
-      association_id
-    );
+    const connection = await getValidQuickBooksConnection(association_id);
 
     if (!connection) {
       return res.status(404).json({
         success: false,
-        error:
-          "No active QuickBooks connection found for this association.",
+        error: "No active QuickBooks connection found for this association.",
       });
     }
 
@@ -121,22 +147,24 @@ export default async function handler(req, res) {
     if (!realmId || !accessToken) {
       return res.status(400).json({
         success: false,
-        error:
-          "QuickBooks connection is missing realm_id or access token.",
+        error: "QuickBooks connection is missing realm_id or access token.",
       });
     }
 
     const params = new URLSearchParams({
-  minorversion: QUICKBOOKS_MINOR_VERSION,
-  accounting_method,
-  start_date: reportStartDate,
-  end_date: reportEndDate,
-  date_macro: "thismonth",
-  budget: budget_id,
-});
+      minorversion: QUICKBOOKS_MINOR_VERSION,
+      accounting_method,
+      start_date: reportStartDate,
+      end_date: reportEndDate,
+      date_macro: "thismonth",
+      budget: budget_id,
+    });
 
-    const quickBooksUrl =
-      `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/BudgetVsActuals?${params.toString()}`;
+    if (testing_migration === "true" || testing_migration === "1") {
+      params.append("testing_migration", "");
+    }
+
+    const quickBooksUrl = `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/BudgetVsActuals?${params.toString()}`;
 
     const quickBooksResponse = await fetch(quickBooksUrl, {
       method: "GET",
@@ -146,10 +174,11 @@ export default async function handler(req, res) {
       },
     });
 
-const reportJson = await quickBooksResponse.json();
+    const reportJson = await quickBooksResponse.json();
 
-const modernizedResponse =
-  quickBooksResponse.headers.get("v3modernResponse") === "true";
+    const modernizedResponse =
+      quickBooksResponse.headers.get("v3modernResponse") === "true";
+
     if (!quickBooksResponse.ok) {
       await supabaseAdmin
         .from("quickbooks_connections")
@@ -167,14 +196,12 @@ const modernizedResponse =
       });
     }
 
-    const normalizedRows = extractRows(
-      reportJson?.Rows?.Row || []
-    );
+    const normalizedRows = extractRows(reportJson?.Rows?.Row || []);
 
     const columns =
       reportJson?.Columns?.Column?.map((column) => ({
-        title: column?.ColTitle || "",
-        type: column?.ColType || "",
+        title: normalizeTextValue(column?.ColTitle),
+        type: normalizeTextValue(column?.ColType),
       })) || [];
 
     await supabaseAdmin
@@ -189,40 +216,29 @@ const modernizedResponse =
       success: true,
       association_id,
       token_status: "valid",
-      access_token_expires_at:
-        connection.access_token_expires_at || null,
+      access_token_expires_at: connection.access_token_expires_at || null,
       last_token_refresh_at:
-        connection.last_token_refresh_at ||
-        connection.last_refresh_at ||
-        null,
+        connection.last_token_refresh_at || connection.last_refresh_at || null,
       report_name: "Budget vs Actual - Monthly",
-      report_period:
-        reportJson?.Header?.ReportName ||
-        "Budget vs Actual",
-      report_basis:
-        reportJson?.Header?.ReportBasis ||
-        accounting_method,
-      start_period:
-        reportJson?.Header?.StartPeriod ||
-        reportStartDate,
-      end_period:
-        reportJson?.Header?.EndPeriod ||
-        reportEndDate,
-      currency:
-        reportJson?.Header?.Currency || "USD",
+      report_period: reportJson?.Header?.ReportName || "Budget vs Actual",
+      report_basis: reportJson?.Header?.ReportBasis || accounting_method,
+      start_period: reportJson?.Header?.StartPeriod || reportStartDate,
+      end_period: reportJson?.Header?.EndPeriod || reportEndDate,
+      currency: reportJson?.Header?.Currency || "USD",
       columns,
       rows: normalizedRows,
       raw_report: reportJson,
-quickbooks_modernized_response: modernizedResponse,
-generated_at: new Date().toISOString(),
+      quickbooks_modernized_response: modernizedResponse,
+      quickbooks_testing_migration:
+        testing_migration === "true" || testing_migration === "1",
+      generated_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("budget-vs-actual report error:", error);
 
     return res.status(500).json({
       success: false,
-      error:
-        "Unable to generate QuickBooks Budget vs Actual report.",
+      error: "Unable to generate QuickBooks Budget vs Actual report.",
       details: error.message,
     });
   }
