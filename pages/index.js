@@ -279,7 +279,7 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
 
 <p className="mt-6 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
   After more than <span className="text-yellow-300 font-semibold">36 years</span> 
-  serving community associations, we came to one unavoidable conclusion:
+   serving community associations, we came to one unavoidable conclusion:
   the industry's software wasn't keeping pace with the responsibilities
   boards and managers now face. Rather than adapting our standards to fit
   existing technology, we built <span className="text-yellow-300 font-semibold">
@@ -700,61 +700,173 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-[320px] w-[320px] rounded-full bg-yellow-400/10 blur-3xl" />
-              </div>
+        <section className="border-y border-yellow-400/10 bg-black/30 py-24 sm:py-28 lg:py-32">
+  <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
 
-              <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
-                <img
-                  src="/condocanal.jpg"
-                  alt="Condominium community aerial view"
-                  className="h-[420px] w-full object-cover object-[60%_center] transition duration-700 hover:scale-105"
-                />
-              </div>
-            </div>
+    <div className="mx-auto max-w-5xl text-center">
 
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
-                Real experience
-              </div>
+      <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+        Why I Built BOSai Software℠
+      </div>
 
-              <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
-                Real properties. Real oversight.
-              </h2>
+      <h2 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+        Experience taught me that protecting communities requires
+        better tools.
+      </h2>
 
-              <p className="mt-5 text-base leading-8 text-white/70">
-                Stoutt Property Management is built on real-world experience across
-                condominium and HOA communities — from landscape architectural design
-                and installation to hands-on property management and long-term
-                operational oversight.
-              </p>
+      <p className="mt-8 text-xl leading-9 text-white/70">
+        Following the tragic Surfside condominium collapse,
+        community association management entered an entirely new era.
+        Boards and property managers are now expected to navigate
+        structural integrity reserve studies (SIRS), milestone inspections,
+        engineering reports, reserve funding, insurance recovery,
+        major restoration projects, and an ever-growing body of legislation
+        designed to better protect Florida's communities.
+      </p>
 
-              <p className="mt-4 text-base leading-8 text-white/70">
-                This is not theoretical management. It is built from years of direct
-                involvement in how communities are designed, maintained, and operated.
-              </p>
+    </div>
 
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <a
-                  href="/proposal"
-                  className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
-                >
-                  Request a Proposal
-                </a>
+    <div className="mt-20 grid gap-8 lg:grid-cols-3">
 
-                <a
-                  href="/services"
-                  className={subtleButton}
-                >
-                  View Services
-                </a>
-              </div>
-            </div>
+      <div className={premiumCard + " p-8"}>
+
+        <div className="text-5xl font-semibold text-yellow-300">
+          $25M+
+        </div>
+
+        <h3 className="mt-5 text-2xl font-semibold text-white">
+          Restoration Leadership
+        </h3>
+
+        <p className="mt-5 text-base leading-8 text-yellow-100/90">
+          Following Hurricane Andrew, Glenn Stoutt assembled architects,
+          engineers, contractors, consultants, attorneys,
+          insurance specialists and restoration professionals to oversee
+          more than $25 million in community restoration and remediation
+          projects.
+        </p>
+
+      </div>
+
+      <div className={premiumCard + " p-8"}>
+
+        <div className="text-5xl font-semibold text-yellow-300">
+          36+
+        </div>
+
+        <h3 className="mt-5 text-2xl font-semibold text-white">
+          Years Serving Communities
+        </h3>
+
+        <p className="mt-5 text-base leading-8 text-yellow-100/90">
+          Long before today's legislation,
+          Glenn had already spent decades working with construction,
+          architecture, engineering, landscape design,
+          restoration, insurance recovery,
+          budgeting and operational leadership throughout South Florida.
+        </p>
+
+      </div>
+
+      <div className={premiumCard + " p-8"}>
+
+        <div className="text-5xl font-semibold text-yellow-300">
+          BOSai℠
+        </div>
+
+        <h3 className="mt-5 text-2xl font-semibold text-white">
+          Built From Experience
+        </h3>
+
+        <p className="mt-5 text-base leading-8 text-yellow-100/90">
+          Several months ago Glenn met with many of the largest property
+          management software companies in America.
+          After countless demonstrations he reached one conclusion:
+          the software expected great managers to adapt to technology
+          instead of technology adapting to great management.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div className="mx-auto mt-20 max-w-6xl rounded-[2rem] border border-yellow-400/20 bg-gradient-to-b from-yellow-400/10 to-transparent p-10 text-center shadow-[0_0_50px_rgba(234,179,8,0.15)]">
+
+      <h3 className="text-3xl font-semibold leading-tight text-yellow-200 sm:text-4xl">
+        Great communities deserve software that performs
+        as well as the professionals entrusted to protect them.
+      </h3>
+
+      <p className="mx-auto mt-8 max-w-4xl text-lg leading-9 text-white/70">
+
+        BOSai Software℠ was never intended to become another property
+        management platform.
+
+        It was created as an intelligent operating system built around
+        the real work of protecting communities —
+        bringing governance, communication,
+        financial transparency, engineering awareness,
+        operational excellence and artificial intelligence together
+        into one integrated environment.
+
+      </p>
+
+      <p className="mx-auto mt-8 max-w-4xl text-lg leading-9 text-white/70">
+
+        Today, Stoutt Property Management uses BOSai Software℠ every day
+        because it reflects the same philosophy that has guided our company
+        for more than three decades:
+
+      </p>
+
+      <div className="mt-10 flex flex-wrap justify-center gap-4">
+
+        {[
+          "Integrity",
+          "Preparation",
+          "Transparency",
+          "Communication",
+          "Accountability",
+          "Leadership",
+        ].map((item) => (
+
+          <div
+            key={item}
+            className="rounded-full border border-yellow-400/25 bg-yellow-400/10 px-6 py-3 text-sm font-semibold tracking-wide text-yellow-100"
+          >
+            {item}
           </div>
-        </section>
+
+        ))}
+
+      </div>
+
+      <div className="mt-14 flex flex-col justify-center gap-5 sm:flex-row">
+
+        <a
+          href="https://bosaisoftware.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={premiumButton}
+        >
+          Discover BOSai Software℠
+        </a>
+
+        <a
+          href="https://www.glennstoutt.com/story.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={subtleButton}
+        >
+          Read Glenn's Story
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
                 <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
           <div className="flex items-end justify-between gap-6">
