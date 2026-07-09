@@ -28,22 +28,31 @@ const REPORTS = [
     endpoint: "/api/accounting/quickbooks/ar-aging",
   },
   {
-  key: "ap-aging",
-  name: "A/P Aging",
-  endpoint: "/api/accounting/quickbooks/ap-aging",
-},
-{
-  key: "transaction-report",
-  name: "Transaction Report",
-  endpoint: "/api/accounting/quickbooks/transaction-report",
-},
+    key: "ap-aging",
+    name: "A/P Aging",
+    endpoint: "/api/accounting/quickbooks/ap-aging",
+  },
+  {
+    key: "transaction-report",
+    name: "Transaction Report",
+    endpoint: "/api/accounting/quickbooks/transaction-report",
+  },
 ];
 
 function getBaseUrl(req) {
   const host = req.headers.host;
   const protocol = host?.includes("localhost") ? "http" : "https";
-
   return `${protocol}://${host}`;
+}
+
+function isTestingMigrationEnabled(req) {
+  const value =
+    clean(req.query.testing_migration) ||
+    clean(req.query.testingMigration) ||
+    clean(req.body?.testing_migration) ||
+    clean(req.body?.testingMigration);
+
+  return value === "true" || value === "1";
 }
 
 export default async function handler(req, res) {
@@ -55,7 +64,7 @@ export default async function handler(req, res) {
   }
 
   try {
-        const associationId =
+    const associationId =
       clean(req.query.association_id) ||
       clean(req.query.associationId) ||
       clean(req.body?.association_id) ||
@@ -70,15 +79,25 @@ export default async function handler(req, res) {
 
     const baseUrl = getBaseUrl(req);
     const results = [];
+    const testingMigration = isTestingMigrationEnabled(req);
 
     for (const report of REPORTS) {
-      const reportUrl =
-  `${baseUrl}${report.endpoint}?association_id=${associationId}&refresh=${Date.now()}`;
+      const params = new URLSearchParams({
+        association_id: associationId,
+        refresh: String(Date.now()),
+      });
 
-try {
-  const response = await fetch(reportUrl, {
-    cache: "no-store",
-  });
+      if (testingMigration) {
+        params.set("testing_migration", "true");
+      }
+
+      const reportUrl = `${baseUrl}${report.endpoint}?${params.toString()}`;
+
+      try {
+        const response = await fetch(reportUrl, {
+          cache: "no-store",
+        });
+
         const json = await response.json();
 
         if (!json.success) {
@@ -132,6 +151,8 @@ try {
           report_key: report.key,
           report_name: report.name,
           success: true,
+          modernized_response: Boolean(json.quickbooks_modernized_response),
+          testing_migration: Boolean(json.quickbooks_testing_migration),
           synced_at: data.synced_at,
         });
       } catch (reportError) {
@@ -148,6 +169,7 @@ try {
       success: true,
       association_id: associationId,
       message: "Board accounting reports sync completed.",
+      testing_migration: testingMigration,
       results,
       synced_at: new Date().toISOString(),
     });
