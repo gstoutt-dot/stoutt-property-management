@@ -270,17 +270,24 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
                 />
               </div>
 
-              <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl">
-                Florida premier property management built for boards that expect
-                more.
-              </h1>
+              <h1 className="max-w-5xl text-3xl font-semibold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl">
+  We didn't build software to start a technology company.
+  <span className="mt-4 block text-yellow-300">
+    We built it to become a better management company.
+  </span>
+</h1>
 
-              <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
-                Stoutt Property Management delivers a higher standard of HOA and
-                condominium association management through deep experience,
-                faster execution, stronger follow-through, and intelligent
-                systems that keep communities running smoothly.
-              </p>
+<p className="mt-6 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
+  After more than <span className="text-yellow-300 font-semibold">36 years</span>
+  serving community associations, we came to one unavoidable conclusion:
+  the industry's software wasn't keeping pace with the responsibilities
+  boards and managers now face. Rather than adapting our standards to fit
+  existing technology, we built <span className="text-yellow-300 font-semibold">
+  BOSai Software℠</span>—an intelligent operating system designed around the
+  real work of protecting communities. Today, Stoutt Property Management
+  combines experienced leadership with intelligent systems built from decades
+  of real-world community management.
+</p>
 
               <div className="mt-10 grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
