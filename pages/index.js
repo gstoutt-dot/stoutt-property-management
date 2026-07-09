@@ -278,8 +278,7 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
 </h1>
 
 <p className="mt-6 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-  After more than <span className="text-yellow-300 font-semibold">36 years</span> 
-   serving community associations, we came to one unavoidable conclusion:
+  After more than 36 years serving community associations, we came to one unavoidable conclusion:
   the industry's software wasn't keeping pace with the responsibilities
   boards and managers now face. Rather than adapting our standards to fit
   existing technology, we built <span className="text-yellow-300 font-semibold">
