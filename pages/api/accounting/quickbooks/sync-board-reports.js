@@ -45,16 +45,6 @@ function getBaseUrl(req) {
   return `${protocol}://${host}`;
 }
 
-function isTestingMigrationEnabled(req) {
-  const value =
-    clean(req.query.testing_migration) ||
-    clean(req.query.testingMigration) ||
-    clean(req.body?.testing_migration) ||
-    clean(req.body?.testingMigration);
-
-  return value === "true" || value === "1";
-}
-
 export default async function handler(req, res) {
   if (!["GET", "POST"].includes(req.method)) {
     return res.status(405).json({
@@ -79,17 +69,12 @@ export default async function handler(req, res) {
 
     const baseUrl = getBaseUrl(req);
     const results = [];
-    const testingMigration = isTestingMigrationEnabled(req);
 
     for (const report of REPORTS) {
       const params = new URLSearchParams({
         association_id: associationId,
         refresh: String(Date.now()),
       });
-
-      if (testingMigration) {
-        params.set("testing_migration", "true");
-      }
 
       const reportUrl = `${baseUrl}${report.endpoint}?${params.toString()}`;
 
@@ -152,7 +137,6 @@ export default async function handler(req, res) {
           report_name: report.name,
           success: true,
           modernized_response: Boolean(json.quickbooks_modernized_response),
-          testing_migration: Boolean(json.quickbooks_testing_migration),
           synced_at: data.synced_at,
         });
       } catch (reportError) {
@@ -169,7 +153,6 @@ export default async function handler(req, res) {
       success: true,
       association_id: associationId,
       message: "Board accounting reports sync completed.",
-      testing_migration: testingMigration,
       results,
       synced_at: new Date().toISOString(),
     });
