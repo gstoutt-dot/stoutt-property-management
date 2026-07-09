@@ -11,20 +11,45 @@ function getQuickBooksBaseUrl() {
     : "https://sandbox-quickbooks.api.intuit.com";
 }
 
+function normalizeMoneyValue(value) {
+  if (value === null || value === undefined || value === "") return "0";
+  return String(value);
+}
+
+function normalizeTextValue(value) {
+  if (value === null || value === undefined) return "";
+  return String(value);
+}
+
 function extractRows(rows = []) {
   const extracted = [];
 
-  function walk(rowList, depth = 0) {
-    rowList.forEach((row) => {
-      const header = row.Header?.ColData?.[0]?.value;
-      const summary = row.Summary?.ColData?.[0]?.value;
-      const colData = row.ColData || [];
+  function walk(rowList, depth = 0, parentPath = []) {
+    rowList.forEach((row, index) => {
+      const rowType = row?.type || "";
+      const group = row?.group || "";
+
+      const header = normalizeTextValue(row?.Header?.ColData?.[0]?.value);
+      const summary = normalizeTextValue(row?.Summary?.ColData?.[0]?.value);
+      const colData = row?.ColData || [];
+
+      const currentName =
+        header ||
+        normalizeTextValue(colData?.[0]?.value) ||
+        summary ||
+        group ||
+        `Row ${index + 1}`;
+
+      const currentPath = [...parentPath, currentName].filter(Boolean);
 
       if (header) {
         extracted.push({
           type: "header",
+          quickbooks_row_type: rowType,
+          group,
           depth,
           name: header,
+          path: currentPath.join(" > "),
           amount: null,
         });
       }
@@ -32,22 +57,28 @@ function extractRows(rows = []) {
       if (colData.length > 0) {
         extracted.push({
           type: "row",
+          quickbooks_row_type: rowType,
+          group,
           depth,
-          name: colData[0]?.value || "",
-          amount: colData[1]?.value || "",
+          name: normalizeTextValue(colData[0]?.value),
+          path: currentPath.join(" > "),
+          amount: normalizeMoneyValue(colData[1]?.value),
         });
       }
 
-      if (row.Rows?.Row?.length) {
-        walk(row.Rows.Row, depth + 1);
+      if (row?.Rows?.Row?.length) {
+        walk(row.Rows.Row, depth + 1, currentPath);
       }
 
       if (summary) {
         extracted.push({
           type: "summary",
+          quickbooks_row_type: rowType,
+          group,
           depth,
           name: summary,
-          amount: row.Summary?.ColData?.[1]?.value || "",
+          path: currentPath.join(" > "),
+          amount: normalizeMoneyValue(row?.Summary?.ColData?.[1]?.value),
         });
       }
     });
@@ -71,6 +102,7 @@ export default async function handler(req, res) {
       start_date,
       end_date,
       accounting_method = "Accrual",
+      testing_migration,
     } = req.query;
 
     if (!association_id || typeof association_id !== "string") {
@@ -99,21 +131,23 @@ export default async function handler(req, res) {
       });
     }
 
-    const reportEndDate =
-      end_date || new Date().toISOString().slice(0, 10);
+    const reportEndDate = end_date || new Date().toISOString().slice(0, 10);
 
     const params = new URLSearchParams({
-  minorversion: QUICKBOOKS_MINOR_VERSION,
-  accounting_method,
-  end_date: reportEndDate,
-  });
+      minorversion: QUICKBOOKS_MINOR_VERSION,
+      accounting_method,
+      end_date: reportEndDate,
+    });
 
     if (start_date) {
       params.set("start_date", start_date);
     }
 
-    const quickBooksUrl =
-      `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/BalanceSheet?${params.toString()}`;
+    if (testing_migration === "true" || testing_migration === "1") {
+      params.append("testing_migration", "");
+    }
+
+    const quickBooksUrl = `${getQuickBooksBaseUrl()}/v3/company/${realmId}/reports/BalanceSheet?${params.toString()}`;
 
     const quickBooksResponse = await fetch(quickBooksUrl, {
       method: "GET",
@@ -123,10 +157,11 @@ export default async function handler(req, res) {
       },
     });
 
-const reportJson = await quickBooksResponse.json();
+    const reportJson = await quickBooksResponse.json();
 
-const modernizedResponse =
-  quickBooksResponse.headers.get("v3modernResponse") === "true";
+    const modernizedResponse =
+      quickBooksResponse.headers.get("v3modernResponse") === "true";
+
     if (!quickBooksResponse.ok) {
       await supabaseAdmin
         .from("quickbooks_connections")
@@ -157,26 +192,21 @@ const modernizedResponse =
       success: true,
       association_id,
       token_status: "valid",
-      access_token_expires_at:
-        connection.access_token_expires_at || null,
+      access_token_expires_at: connection.access_token_expires_at || null,
       last_token_refresh_at:
-        connection.last_token_refresh_at ||
-        connection.last_refresh_at ||
-        null,
+        connection.last_token_refresh_at || connection.last_refresh_at || null,
       report_name: "Balance Sheet",
-      report_period:
-        reportJson?.Header?.ReportName || "Balance Sheet",
-      report_basis:
-        reportJson?.Header?.ReportBasis || accounting_method,
-      start_period:
-        reportJson?.Header?.StartPeriod || start_date || null,
-      end_period:
-        reportJson?.Header?.EndPeriod || reportEndDate,
+      report_period: reportJson?.Header?.ReportName || "Balance Sheet",
+      report_basis: reportJson?.Header?.ReportBasis || accounting_method,
+      start_period: reportJson?.Header?.StartPeriod || start_date || null,
+      end_period: reportJson?.Header?.EndPeriod || reportEndDate,
       currency: reportJson?.Header?.Currency || "USD",
       rows: normalizedRows,
       raw_report: reportJson,
-quickbooks_modernized_response: modernizedResponse,
-generated_at: new Date().toISOString(),
+      quickbooks_modernized_response: modernizedResponse,
+      quickbooks_testing_migration:
+        testing_migration === "true" || testing_migration === "1",
+      generated_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("balance-sheet report error:", error);
