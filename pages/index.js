@@ -483,6 +483,121 @@ className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border 
   </div>
 </section>
 
+                      <section className="border-y border-yellow-400/10 bg-black/30 py-20 sm:py-24 lg:py-28">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-yellow-300">
+                Why BOSai Software℠ Exists
+              </div>
+
+              <h2 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                Experience taught me that protecting communities requires more
+                than good intentions.
+              </h2>
+
+              <p className="mt-6 text-lg leading-8 text-white/70">
+                Following the tragic Surfside condominium collapse, community
+                association management changed forever. Today&apos;s boards and
+                managers are expected to navigate structural integrity reserve
+                studies, milestone inspections, engineering reports, reserve
+                funding, major restoration projects, insurance recovery, and an
+                ever-growing body of legislation designed to better protect
+                Florida&apos;s communities.
+              </p>
+
+              <p className="mt-5 text-lg leading-8 text-white/70">
+                Long before these issues became statewide priorities, Glenn
+                Stoutt had already spent years leading complex building
+                restoration, insurance recovery, engineering coordination, and
+                capital improvement projects for the communities under his care.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              <div className={premiumCard + " p-7"}>
+                <div className="text-4xl font-semibold text-yellow-300">
+                  $25M+
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-white">
+                  Restoration Oversight
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-yellow-100/90">
+                  Following Hurricane Andrew, Glenn assembled multidisciplinary
+                  teams of architects, engineers, contractors, consultants,
+                  attorneys, insurance specialists, and restoration
+                  professionals to oversee more than $25 million in building
+                  restoration and remediation projects.
+                </p>
+              </div>
+
+              <div className={premiumCard + " p-7"}>
+                <div className="text-4xl font-semibold text-yellow-300">
+                  36+
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-white">
+                  Years of Experience
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-yellow-100/90">
+                  BOSai Software℠ was not created from theory. It was shaped by
+                  decades of hands-on property management, architectural
+                  understanding, construction awareness, and real community
+                  leadership.
+                </p>
+              </div>
+
+              <div className={premiumCard + " p-7"}>
+                <div className="text-4xl font-semibold text-yellow-300">
+                  BOSai℠
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-white">
+                  Built From the Work
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-yellow-100/90">
+                  After meeting with many of the largest property management
+                  software companies several months ago, Glenn reached one
+                  conclusion: great managers should not have to adapt to
+                  software. Software should support the way exceptional
+                  management is actually performed.
+                </p>
+              </div>
+            </div>
+
+            <div className="mx-auto mt-12 max-w-5xl rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-8 text-center shadow-[0_0_40px_rgba(234,179,8,0.12)] sm:p-10">
+              <p className="text-2xl font-semibold leading-10 text-yellow-100 sm:text-3xl">
+                Great communities deserve software that performs as well as the
+                professionals entrusted to protect them.
+              </p>
+
+              <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/70">
+                BOSai Software℠ was created to support the real work of
+                protecting communities — bringing governance, communication,
+                financial transparency, engineering awareness, operational
+                workflows, and intelligent systems together in one environment.
+              </p>
+
+              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+                <a
+                  href="https://bosaisoftware.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={premiumButton}
+                >
+                  Discover Why BOSai Software Exists
+                </a>
+
+                <a
+                  href="https://www.glennstoutt.com/story.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={subtleButton}
+                >
+                  Read Glenn&apos;s Story
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <div className="grid gap-6 lg:grid-cols-3">
             {[
