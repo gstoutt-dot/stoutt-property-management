@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getSubscriptionPermissions } from "../../lib/subscriptionPermissions";
 
 function getSelectedAssociationContext() {
   if (typeof window === "undefined") {
@@ -12,7 +13,8 @@ function getSelectedAssociationContext() {
 
   return {
     associationId: localStorage.getItem("spm_selected_association_id") || "",
-    associationName: localStorage.getItem("spm_selected_association_name") || "",
+    associationName:
+      localStorage.getItem("spm_selected_association_name") || "",
   };
 }
 
@@ -22,15 +24,10 @@ function getAllowedAssociations() {
   }
 
   try {
-    const stored = localStorage.getItem(
-      "spmPortalAllowedAssociations"
-    );
-
+    const stored = localStorage.getItem("spmPortalAllowedAssociations");
     const parsed = JSON.parse(stored || "[]");
 
-    return Array.isArray(parsed)
-      ? parsed
-      : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -38,7 +35,7 @@ function getAllowedAssociations() {
 
 const operationalHealth = [
   {
-    title: "QuickBooks Synchronization",
+    title: "BOSai Accounting℠ Synchronization",
     status: "Connected",
     detail: "Production accounting sync is available.",
     tone: "stable",
@@ -71,14 +68,21 @@ const operationalHealth = [
 
 const sections = [
   {
-    title: "Daily Operations Center",
+    title: "BOSai℠ Daily Operations Center",
     eyebrow: "Day-to-Day Command",
     description:
       "Primary operating tools for approvals, activity, messages, meetings, reporting, and association workflow movement.",
+    subscriptionAccess: ["full_management", "management"],
     items: [
       { title: "Manager Command Center", href: "/portal/manager#live-queue" },
-      { title: "Association Work Orders", href: "/manager/association-work-orders" },
-      { title: "BOS Action Center", href: "/bos/action-center?returnTo=/manager/dashboard" },
+      {
+        title: "Association Work Orders",
+        href: "/manager/association-work-orders",
+      },
+      {
+        title: "BOSai℠ Action Center",
+        href: "/bos/action-center?returnTo=/manager/dashboard",
+      },
       { title: "New Operational Record", href: "/manager/operations/new" },
       { title: "Board Message Inbox", href: "/board/messages" },
       { title: "Association Calendar", href: "/board/calendar" },
@@ -86,78 +90,88 @@ const sections = [
       { title: "Association Reporting Center", href: "/board/reports" },
     ],
   },
-
   {
-    title: "Governance & Board Operations",
+    title: "BOSai℠ Governance & Board Operations",
     eyebrow: "Board Administration",
-    description:
-      "Governance tools required for daily association operations.",
+    description: "Governance tools required for daily association operations.",
+    subscriptionAccess: ["full_management", "management"],
     items: [
-      { title: "QuickBooks Live", href: "/accounting/quickbooks-live" },
       { title: "Admin Notifications", href: "/admin/notifications" },
       { title: "Association Documents", href: "/board/documents" },
-      { title: "Ava Knowledge Center", href: "/portal/ava/knowledge-center" },
+      {
+        title: "BOSai℠ Knowledge Center",
+        href: "/portal/ava/knowledge-center",
+      },
       { title: "Board & Member Meetings", href: "/portal/board/meetings" },
       { title: "Committee Members Center", href: "/board/committee-center" },
-      { title: "Board Signature Approval Log", href: "/board/signature-approval-log" },
+      {
+        title: "Board Signature Approval Log",
+        href: "/board/signature-approval-log",
+      },
+      { title: "Association Approved Vendors", href: "/board/vendors" },
+      { title: "Manager Training Center", href: "/manager/training" },
     ],
   },
-
   {
-    title: "Financial Planning & Oversight",
+    title: "BOSai℠ Financial Planning & Oversight",
     eyebrow: "Financial Operations",
     description:
       "Financial visibility and accounting oversight for association operations.",
+    subscriptionAccess: ["full_management"],
     items: [
-      { title: "Financial Review", href: "/board/financial-review" },
-      { title: "Management Accounting Reports", href: "/board/management-accounting-reports" },
-      { title: "Association Approved Vendors", href: "/board/vendors" },
-      { title: "Manager Training Center", href: "/manager/training" },
+      {
+        title: "BOSai℠ Live Accounting",
+        href: "/accounting/quickbooks-live",
+      },
+      {
+        title: "BOSai℠ Financial Review",
+        href: "/board/financial-review",
+      },
+      {
+        title: "BOSai℠ Management Accounting Reports",
+        href: "/board/management-accounting-reports",
+      },
     ],
   },
 ];
 
 const closedStatuses = ["completed", "archived", "closed"];
 
-function routeForRecord(record) {
-  const target = String(record.routing_target || "").toLowerCase();
-  const type = String(record.request_type || "").toLowerCase();
+function formatSubscriptionLabel(subscription) {
+  if (subscription === "full_management") return "Full Management℠";
+  if (subscription === "management") return "Management℠";
+  if (subscription === "accounting") return "Accounting℠";
 
-  if (type.includes("insurance")) return "/board/insurance-risk";
-  if (type.includes("legal")) return "/board/legal-review";
-  if (type.includes("budget")) return "/board/budget-planning";
-  if (type.includes("financial")) return "/board/financial-review";
-  if (type.includes("election")) return "/board/elections";
-  if (type.includes("capital")) return "/board/capital-projects";
-  if (type.includes("vendor")) return "/board/vendor-performance";
-  if (type.includes("policy")) return "/board/policy-library";
-  if (type.includes("meeting")) return "/portal/board/meetings";
-  if (type.includes("violation")) return "/board/violation-review";
-  if (type.includes("maintenance")) return "/board/maintenance-review";
-  if (type.includes("compliance")) return "/board/compliance-dashboard";
-  if (type.includes("architectural")) return "/board/architectural-approvals";
-
-  if (target.includes("bos")) return "/bos/action-center";
-  if (target.includes("approval")) return "/board/board-approval-queue";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("legal") || target.includes("risk")) return "/board/legal-review";
-  if (target.includes("vendor")) return "/board/vendors";
-  if (target.includes("owner")) return "/portal/owner";
-
-  return "/admin/operations/new";
+  return subscription;
 }
 
 function toneStyle(tone) {
-  if (tone === "attention") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
-  if (tone === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
+  if (tone === "attention") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (tone === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
   return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
 }
 
 function priorityStyle(priority) {
   const value = String(priority || "").toLowerCase();
-  if (value === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
-  if (value === "high") return "border-amber-400/30 bg-amber-400/10 text-amber-300";
-  if (value === "normal") return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+
+  if (value === "critical") {
+    return "border-red-400/30 bg-red-400/10 text-red-200";
+  }
+
+  if (value === "high") {
+    return "border-amber-400/30 bg-amber-400/10 text-amber-300";
+  }
+
+  if (value === "normal") {
+    return "border-sky-400/30 bg-sky-400/10 text-sky-300";
+  }
+
   return "border-slate-400/30 bg-slate-400/10 text-slate-300";
 }
 
@@ -180,14 +194,56 @@ function formatStatus(value) {
 
 function cleanAdminRecordDescription(description = "") {
   return String(description || "")
-    .replace(/CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g, "")
+    .replace(
+      /CALENDAR_ATTACHMENT_METADATA_START[\s\S]*?CALENDAR_ATTACHMENT_METADATA_END/g,
+      ""
+    )
     .replace(/https?:\/\/\S+/gi, "")
     .replace(/Attachments?:[\s\S]*$/gi, "")
     .trim();
 }
 
+function routeForRecord(record) {
+  const target = String(record.routing_target || "").toLowerCase();
+  const type = String(record.request_type || "").toLowerCase();
+
+  if (record.operational_record_source === "homeowner_bos_action") {
+    return "/admin/association-work-orders";
+  }
+
+  if (type.includes("insurance")) return "/board/insurance-risk";
+  if (type.includes("legal")) return "/board/legal-review";
+  if (type.includes("budget")) return "/board/budget-planning";
+  if (type.includes("financial")) return "/board/financial-review";
+  if (type.includes("election")) return "/board/elections";
+  if (type.includes("capital")) return "/board/capital-projects";
+  if (type.includes("vendor")) return "/board/vendor-performance";
+  if (type.includes("policy")) return "/board/policy-library";
+  if (type.includes("meeting")) return "/portal/board/meetings";
+  if (type.includes("violation")) return "/board/violation-review";
+  if (type.includes("maintenance")) return "/board/maintenance-review";
+  if (type.includes("compliance")) return "/board/compliance-dashboard";
+  if (type.includes("architectural")) return "/board/architectural-approvals";
+
+  if (target.includes("bos")) return "/bos/action-center";
+  if (target.includes("approval")) return "/board/board-approval-queue";
+  if (target.includes("financial")) return "/board/financial-review";
+  if (target.includes("legal") || target.includes("risk")) {
+    return "/board/legal-review";
+  }
+  if (target.includes("vendor")) return "/board/vendors";
+  if (target.includes("owner")) return "/homeowner";
+
+  return "/admin/operations/new";
+}
+
 export default function ManagerDashboard() {
   const router = useRouter();
+
+  // Temporary until subscriptions are loaded during onboarding/login.
+  const currentSubscription = "full_management";
+
+  const permissions = getSubscriptionPermissions(currentSubscription);
 
   const [records, setRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
@@ -199,7 +255,7 @@ export default function ManagerDashboard() {
   const [allowedAssociations, setAllowedAssociations] = useState([]);
   const [showAllRecords, setShowAllRecords] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     const loggedIn = localStorage.getItem("spmPortalLoggedIn");
     const role = localStorage.getItem("spmPortalRole");
     const name = localStorage.getItem("spmPortalUserName");
@@ -214,10 +270,12 @@ export default function ManagerDashboard() {
     setPortalUserName(name || "Manager");
     setPortalRole(role || "manager");
     setAllowedAssociations(
-    assignedAssociations.length > 0 ? assignedAssociations : getAllowedAssociations()
-);
-setAssociationName(context.associationName || "Selected Association");
-setAssociationId(context.associationId || "");
+      assignedAssociations.length > 0
+        ? assignedAssociations
+        : getAllowedAssociations()
+    );
+    setAssociationName(context.associationName || "Selected Association");
+    setAssociationId(context.associationId || "");
   }, [router]);
 
   useEffect(() => {
@@ -231,42 +289,41 @@ setAssociationId(context.associationId || "");
   }, []);
 
   function handleAssociationChange(event) {
-  const selectedId = event.target.value;
+    const selectedId = event.target.value;
 
-  const selectedAssociation = allowedAssociations.find(
-    (association) =>
-      String(association.association_id) === String(selectedId)
-  );
+    const selectedAssociation = allowedAssociations.find(
+      (association) => String(association.association_id) === String(selectedId)
+    );
 
-  if (!selectedAssociation) return;
+    if (!selectedAssociation) return;
 
-  localStorage.setItem(
-    "spm_selected_association_id",
-    String(selectedAssociation.association_id)
-  );
+    localStorage.setItem(
+      "spm_selected_association_id",
+      String(selectedAssociation.association_id)
+    );
 
-  localStorage.setItem(
-    "spm_selected_association_name",
-    String(selectedAssociation.association_name || "Selected Association")
-  );
+    localStorage.setItem(
+      "spm_selected_association_name",
+      String(selectedAssociation.association_name || "Selected Association")
+    );
 
-  localStorage.setItem(
-    "selectedAssociationId",
-    String(selectedAssociation.association_id)
-  );
+    localStorage.setItem(
+      "selectedAssociationId",
+      String(selectedAssociation.association_id)
+    );
 
-  localStorage.setItem(
-    "selectedAssociationName",
-    String(selectedAssociation.association_name || "Selected Association")
-  );
+    localStorage.setItem(
+      "selectedAssociationName",
+      String(selectedAssociation.association_name || "Selected Association")
+    );
 
-  setAssociationId(selectedAssociation.association_id);
-  setAssociationName(
-    selectedAssociation.association_name || "Selected Association"
-  );
+    setAssociationId(selectedAssociation.association_id);
+    setAssociationName(
+      selectedAssociation.association_name || "Selected Association"
+    );
 
-  loadOperationalRecords({ showLoading: true });
-}
+    loadOperationalRecords({ showLoading: true });
+  }
 
   function handleLogout() {
     localStorage.removeItem("spmPortalLoggedIn");
@@ -357,13 +414,19 @@ setAssociationId(context.associationId || "");
     event.preventDefault();
     event.stopPropagation();
 
-    const confirmed = window.confirm("Delete this operational record permanently?");
+    const confirmed = window.confirm(
+      "Delete this operational record permanently?"
+    );
+
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/admin/operational-records?id=${recordId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/admin/operational-records?id=${recordId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       const result = await response.json();
 
@@ -401,7 +464,12 @@ setAssociationId(context.associationId || "");
   );
 
   const intelligenceMetrics = [
-    { label: "Association", value: associationName || "Selected", status: "Active", tone: "stable" },
+    {
+      label: "Association",
+      value: associationName || "Selected",
+      status: "Active",
+      tone: "stable",
+    },
     {
       label: "Open Admin Items",
       value: openRecords.length,
@@ -442,6 +510,14 @@ setAssociationId(context.associationId || "");
     ? priorityRecords
     : priorityRecords.slice(0, 5);
 
+  const visibleSections = sections.filter((section) => {
+    const allowedSubscriptions = section.subscriptionAccess || [
+      "full_management",
+    ];
+
+    return allowedSubscriptions.includes(currentSubscription);
+  });
+
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="border-b border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-stone-900">
@@ -449,7 +525,7 @@ setAssociationId(context.associationId || "");
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-5xl">
               <div className="inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300">
-                SPM Association Management Center
+                BOSai℠ Association Management Center
               </div>
 
               <h1 className="mt-6 text-4xl font-bold tracking-tight md:text-6xl">
@@ -457,9 +533,9 @@ setAssociationId(context.associationId || "");
               </h1>
 
               <p className="mt-6 max-w-4xl text-xl leading-8 text-slate-300">
-                Central operational control for association oversight, board activity,
-                financial coordination, compliance, annual planning, and platform
-                administration.
+                Central operational control for association oversight, board
+                activity, financial coordination, compliance, annual planning,
+                and platform administration.
               </p>
 
               <p className="mt-4 text-sm font-semibold text-amber-300">
@@ -486,40 +562,54 @@ setAssociationId(context.associationId || "");
                 Current Role: {String(portalRole || "admin").toUpperCase()}
               </p>
 
-                {allowedAssociations.length > 1 && (
-  <div className="mt-5">
-    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-      Assigned Association
-    </label>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+                Subscription:{" "}
+                {currentSubscription.replace("_", " ").toUpperCase()}
+              </p>
 
-    <select
-      value={associationId}
-      onChange={handleAssociationChange}
-      className="w-full rounded-xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-amber-400/50"
-    >
-      {allowedAssociations.map((association) => (
-        <option
-          key={association.association_id}
-          value={association.association_id}
-          className="bg-slate-950 text-white"
-        >
-          {association.association_name || "Association"}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
+              {allowedAssociations.length > 1 && (
+                <div className="mt-5">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                    Assigned Association
+                  </label>
+
+                  <select
+                    value={associationId}
+                    onChange={handleAssociationChange}
+                    className="w-full rounded-xl border border-white/10 bg-[#020617] px-4 py-3 text-sm font-semibold text-white outline-none focus:border-amber-400/50"
+                  >
+                    {allowedAssociations.map((association) => (
+                      <option
+                        key={association.association_id}
+                        value={association.association_id}
+                        className="bg-slate-950 text-white"
+                      >
+                        {association.association_name || "Association"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="mt-5 grid gap-3">
-                <Link href="/" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
+                <Link
+                  href="/"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
                   Homepage
                 </Link>
 
-                <Link href="/board" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
+                <Link
+                  href="/board"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
                   Board Dashboard
                 </Link>
 
-                <Link href="/portal/owner" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10">
+                <Link
+                  href="/homeowner"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-semibold text-slate-200 hover:bg-white/10"
+                >
                   Homeowner Dashboard
                 </Link>
 
@@ -580,8 +670,8 @@ setAssociationId(context.associationId || "");
                 </h2>
 
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-                  Showing the highest-priority operational records first. Use See More
-                  when deeper review is needed.
+                  Showing the highest-priority operational records first. Use
+                  See More when deeper review is needed.
                 </p>
               </div>
 
@@ -609,8 +699,8 @@ setAssociationId(context.associationId || "");
                   </h3>
 
                   <p className="mt-3 text-sm leading-7 text-slate-300">
-                    Submitted operational records will appear here when they require
-                    administrative review.
+                    Submitted operational records will appear here when they
+                    require administrative review.
                   </p>
                 </div>
               ) : (
@@ -623,7 +713,11 @@ setAssociationId(context.associationId || "");
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div>
                         <div className="flex flex-wrap gap-2">
-                          <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(record.priority)}`}>
+                          <div
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${priorityStyle(
+                              record.priority
+                            )}`}
+                          >
                             {record.priority || "Normal"}
                           </div>
 
@@ -710,13 +804,11 @@ setAssociationId(context.associationId || "");
                 Operational Health
               </p>
 
-              <h2 className="mt-3 text-3xl font-bold">
-                System Status
-              </h2>
+              <h2 className="mt-3 text-3xl font-bold">System Status</h2>
 
               <p className="mt-3 text-sm leading-7 text-slate-400">
-                Stability indicators for the systems that support daily association
-                operations and administrative control.
+                Stability indicators for the systems that support daily
+                association operations and administrative control.
               </p>
             </div>
 
@@ -737,7 +829,11 @@ setAssociationId(context.associationId || "");
                       </p>
                     </div>
 
-                    <div className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(item.tone)}`}>
+                    <div
+                      className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${toneStyle(
+                        item.tone
+                      )}`}
+                    >
                       {item.status}
                     </div>
                   </div>
@@ -748,7 +844,7 @@ setAssociationId(context.associationId || "");
         </div>
 
         <div className="mt-10 space-y-10">
-          {sections.map((section) => (
+          {visibleSections.map((section) => (
             <section
               key={section.title}
               className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 shadow-2xl shadow-black/20"
@@ -758,9 +854,16 @@ setAssociationId(context.associationId || "");
                   {section.eyebrow}
                 </p>
 
-                <h2 className="mt-3 text-3xl font-bold">
-                  {section.title}
-                </h2>
+                <h2 className="mt-3 text-3xl font-bold">{section.title}</h2>
+
+                <p className="mt-3 inline-flex rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                  Included with:{" "}
+                  {section.subscriptionAccess
+                    .map((subscription) =>
+                      formatSubscriptionLabel(subscription)
+                    )
+                    .join(" • ")}
+                </p>
 
                 <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-400">
                   {section.description}
@@ -768,21 +871,21 @@ setAssociationId(context.associationId || "");
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                {section.items.map((item) => {
+                {section.items.map((item) => {
                   const itemHref =
-  item.title === "Ava Knowledge Center"
-    ? `/portal/ava/knowledge-center?associationId=${associationId}&associationName=${encodeURIComponent(
-        associationName || "Selected Association"
-      )}`
-    : item.title === "Committee Members Center"
-    ? `/board/committee-center?associationId=${associationId}&associationName=${encodeURIComponent(
-        associationName || "Selected Association"
-      )}`
-    : item.title === "Board Signature Approval Log"
-    ? `/board/signature-approval-log?associationId=${associationId}&associationName=${encodeURIComponent(
-        associationName || "Selected Association"
-      )}`
-    : item.href;
+                    item.title === "BOSai℠ Knowledge Center"
+                      ? `/portal/ava/knowledge-center?associationId=${associationId}&associationName=${encodeURIComponent(
+                          associationName || "Selected Association"
+                        )}`
+                      : item.title === "Committee Members Center"
+                      ? `/board/committee-center?associationId=${associationId}&associationName=${encodeURIComponent(
+                          associationName || "Selected Association"
+                        )}`
+                      : item.title === "Board Signature Approval Log"
+                      ? `/board/signature-approval-log?associationId=${associationId}&associationName=${encodeURIComponent(
+                          associationName || "Selected Association"
+                        )}`
+                      : item.href;
 
                   return (
                     <Link
@@ -790,20 +893,20 @@ setAssociationId(context.associationId || "");
                       href={itemHref}
                       className="group rounded-3xl border border-white/10 bg-[#020617]/70 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.06]"
                     >
-                    <div className="mb-4 inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                      Live / Ready
-                    </div>
+                      <div className="mb-4 inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                        Live / Ready
+                      </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-xl font-bold text-white">
-                        {item.title}
-                      </h3>
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className="text-xl font-bold text-white">
+                          {item.title}
+                        </h3>
 
-                      <span className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-semibold text-amber-300 transition group-hover:bg-amber-400/20">
-                        Open
-                      </span>
-                    </div>
-                  </Link>
+                        <span className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-semibold text-amber-300 transition group-hover:bg-amber-400/20">
+                          Open
+                        </span>
+                      </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -813,7 +916,7 @@ setAssociationId(context.associationId || "");
 
         <section className="mt-10 rounded-3xl border border-amber-400/20 bg-amber-400/[0.06] p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">
-            Administrative Operating Philosophy
+            BOSai℠ Administrative Operating Philosophy
           </p>
 
           <h2 className="mt-3 text-3xl font-bold">
@@ -821,10 +924,10 @@ setAssociationId(context.associationId || "");
           </h2>
 
           <p className="mt-4 max-w-5xl text-sm leading-7 text-slate-300">
-            This dashboard is structured around operational awareness, governance
-            coordination, financial planning, compliance protection, escalation
-            management, and long-term association oversight so SPM can operate as
-            a true administrative command infrastructure.
+            This dashboard is structured around operational awareness,
+            governance coordination, financial planning, compliance protection,
+            escalation management, and long-term association oversight so BOSai℠
+            can operate as a true administrative command infrastructure.
           </p>
         </section>
       </section>
