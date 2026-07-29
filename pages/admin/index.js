@@ -135,6 +135,10 @@ function routeForRecord(record) {
   const target = String(record.routing_target || "").toLowerCase();
   const type = String(record.request_type || "").toLowerCase();
 
+  if (record.operational_record_source === "homeowner_bos_action") {
+    return "/admin/association-work-orders";
+  }
+
   if (type.includes("insurance")) return "/board/insurance-risk";
   if (type.includes("legal")) return "/board/legal-review";
   if (type.includes("budget")) return "/board/budget-planning";
