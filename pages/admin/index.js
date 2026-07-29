@@ -352,6 +352,7 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({
           id: recordId,
+          association_id: associationId,
           status: "archived",
         }),
       });
@@ -859,4 +860,3 @@ export default function AdminDashboard() {
     </main>
   );
 }
-
