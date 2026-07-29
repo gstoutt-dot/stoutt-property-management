@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin"; 
 
 const closedStatuses = ["completed", "archived", "closed"];
 
@@ -163,6 +163,35 @@ async function deleteBosMirror(recordId) {
   if (error) {
     console.warn("BOS mirror delete warning:", error);
   }
+}
+
+function mapHomeownerBosAction(action) {
+  const normalizedStatus = normalizeBosStatus(action.status);
+
+  return {
+    id: action.id,
+    association_id: action.association_id,
+    title: cleanText(action.title) || "Homeowner Service Request",
+    description:
+      cleanText(action.description) ||
+      "A homeowner submitted a service request for management review.",
+    priority: cleanText(action.priority) || "normal",
+    status: normalizedStatus,
+    request_type: cleanText(action.request_type) || "owner_request",
+    created_by: cleanText(action.owner_name) || "Homeowner",
+    created_by_role: "Homeowner",
+    source_module: cleanText(action.source) || "Homeowner Dashboard",
+    routing_target: "Association Work Orders",
+    recommended_action: null,
+    board_review_required: normalizedStatus === "board_review",
+    owner_visible: false,
+    vendor_visible: false,
+    due_date: null,
+    created_at: action.created_at,
+    updated_at: action.updated_at,
+    operational_record_source: "homeowner_bos_action",
+    bos_action_id: action.id,
+  };
 }
 
 export default async function handler(req, res) {
@@ -365,16 +394,34 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from("admin_operational_records")
-      .select("*")
-      .eq("association_id", associationId)
-      .order("created_at", { ascending: false })
-      .limit(25);
+    const [adminResult, homeownerBosResult] = await Promise.all([
+      supabaseAdmin
+        .from("admin_operational_records")
+        .select("*")
+        .eq("association_id", associationId)
+        .order("created_at", { ascending: false })
+        .limit(25),
+      supabaseAdmin
+        .from("bos_actions")
+        .select("*")
+        .eq("association_id", associationId)
+        .like("source", "Homeowner Dashboard | homeowner_request:%")
+        .order("created_at", { ascending: false })
+        .limit(25),
+    ]);
 
-    if (error) throw error;
+    if (adminResult.error) throw adminResult.error;
+    if (homeownerBosResult.error) throw homeownerBosResult.error;
 
-    const records = data || [];
+    const records = [
+      ...(adminResult.data || []),
+      ...(homeownerBosResult.data || []).map(mapHomeownerBosAction),
+    ].sort((left, right) => {
+      const leftTime = new Date(left.created_at || 0).getTime();
+      const rightTime = new Date(right.created_at || 0).getTime();
+
+      return rightTime - leftTime;
+    });
 
     const openRecords = records.filter(
       (record) =>
