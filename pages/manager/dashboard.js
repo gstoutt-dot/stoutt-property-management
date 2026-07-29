@@ -202,40 +202,6 @@ function cleanAdminRecordDescription(description = "") {
     .trim();
 }
 
-function routeForRecord(record) {
-  const target = String(record.routing_target || "").toLowerCase();
-  const type = String(record.request_type || "").toLowerCase();
-
-  if (record.operational_record_source === "homeowner_bos_action") {
-    return "/admin/association-work-orders";
-  }
-
-  if (type.includes("insurance")) return "/board/insurance-risk";
-  if (type.includes("legal")) return "/board/legal-review";
-  if (type.includes("budget")) return "/board/budget-planning";
-  if (type.includes("financial")) return "/board/financial-review";
-  if (type.includes("election")) return "/board/elections";
-  if (type.includes("capital")) return "/board/capital-projects";
-  if (type.includes("vendor")) return "/board/vendor-performance";
-  if (type.includes("policy")) return "/board/policy-library";
-  if (type.includes("meeting")) return "/portal/board/meetings";
-  if (type.includes("violation")) return "/board/violation-review";
-  if (type.includes("maintenance")) return "/admin/association-work-orders";
-  if (type.includes("compliance")) return "/board/compliance-dashboard";
-  if (type.includes("architectural")) return "/board/architectural-approvals";
-
-  if (target.includes("bos")) return "/bos/action-center";
-  if (target.includes("approval")) return "/board/board-approval-queue";
-  if (target.includes("financial")) return "/board/financial-review";
-  if (target.includes("legal") || target.includes("risk")) {
-    return "/board/legal-review";
-  }
-  if (target.includes("vendor")) return "/board/vendors";
-  if (target.includes("owner")) return "/homeowner";
-
-  return "/admin/operations/new";
-}
-
 export default function ManagerDashboard() {
   const router = useRouter();
 
@@ -704,7 +670,7 @@ export default function ManagerDashboard() {
                 displayedRecords.map((record) => (
                   <div
                     key={record.id}
-                    className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
+                    className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div>
@@ -758,12 +724,6 @@ export default function ManagerDashboard() {
                       </div>
 
                       <div className="flex shrink-0 flex-col gap-2">
-                        <Link
-                          href={routeForRecord(record)}
-                          className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-center text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
-                        >
-                          Review
-                        </Link>
 
                         <button
                           onClick={(event) => archiveRecord(record.id, event)}
