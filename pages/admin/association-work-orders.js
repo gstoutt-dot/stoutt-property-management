@@ -2,10 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 
-const DEFAULT_ASSOCIATION_ID =
-  typeof window !== "undefined"
-    ? localStorage.getItem("spm_selected_association_id") || ""
-    : "";
 const closedStatuses = ["completed", "closed", "archived"];
 
 const requestTypes = [
@@ -102,8 +98,26 @@ export default function AssociationWorkOrders() {
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [associationId, setAssociationId] = useState("");
 
   useEffect(() => {
+    const selectedAssociationId =
+      localStorage.getItem("spm_selected_association_id") ||
+      localStorage.getItem("spmPortalAssociationId") ||
+      localStorage.getItem("selectedAssociationId") ||
+      "";
+
+    setAssociationId(selectedAssociationId);
+  }, []);
+
+  useEffect(() => {
+    if (!associationId) {
+      setRequests([]);
+      setLoading(false);
+      setSystemMessage("No association selected.");
+      return;
+    }
+
     loadWorkOrders({ showLoading: true });
     loadVendors();
 
@@ -112,7 +126,7 @@ export default function AssociationWorkOrders() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [associationId]);
 
   async function loadWorkOrders({ showLoading = false } = {}) {
     try {
@@ -122,13 +136,13 @@ export default function AssociationWorkOrders() {
 
       setSystemMessage("");
 
-      if (!DEFAULT_ASSOCIATION_ID) {
+      if (!associationId) {
   setSystemMessage("No association selected.");
   return;
 }
 
       const params = new URLSearchParams({
-        associationId: DEFAULT_ASSOCIATION_ID,
+        associationId: associationId,
       });
 
       const response = await fetch(
@@ -154,11 +168,11 @@ export default function AssociationWorkOrders() {
   }
 
   async function loadVendors() {
-    if (!DEFAULT_ASSOCIATION_ID) return;
+    if (!associationId) return;
     const { data, error } = await supabase
       .from("association_vendors")
       .select("*")
-      .eq("association_id", DEFAULT_ASSOCIATION_ID)
+      .eq("association_id", associationId)
       .eq("active", true)
       .order("vendor_name", { ascending: true });
 
@@ -175,7 +189,7 @@ export default function AssociationWorkOrders() {
       setSubmitting(true);
       setSubmitError("");
       setSubmitMessage("");
-      if (!DEFAULT_ASSOCIATION_ID) {
+      if (!associationId) {
   setSubmitError("No association selected.");
   return;
 }
@@ -190,7 +204,7 @@ export default function AssociationWorkOrders() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          associationId: DEFAULT_ASSOCIATION_ID,
+          associationId: associationId,
           ownerUserId: "",
           ownerName: "Association Management",
           ownerEmail: "",
@@ -216,7 +230,7 @@ export default function AssociationWorkOrders() {
             {
               source_record_id: String(data.bosAction.id),
               source_table: "bos_actions",
-              association_id: DEFAULT_ASSOCIATION_ID,
+              association_id: associationId,
               selected_vendor_id: String(selectedVendor.id),
               vendor_name:
                 selectedVendor.vendor_name ||
@@ -241,7 +255,7 @@ export default function AssociationWorkOrders() {
               updated_at: new Date().toISOString(),
             },
             {
-              onConflict: "association_id,source_record_id,source_table",
+              onConflict: "source_record_id,source_table",
             }
           );
 
