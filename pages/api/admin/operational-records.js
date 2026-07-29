@@ -194,6 +194,96 @@ function mapHomeownerBosAction(action) {
   };
 }
 
+function getHomeownerRequestId(source) {
+  const match = String(source || "").match(/homeowner_request:([a-f0-9-]+)/i);
+
+  return match?.[1] || "";
+}
+
+async function updateHomeownerBosAction(recordId, associationId, status) {
+  const { data: action, error: actionError } = await supabaseAdmin
+    .from("bos_actions")
+    .select("id, source")
+    .eq("id", recordId)
+    .eq("association_id", associationId)
+    .like("source", "Homeowner Dashboard | homeowner_request:%")
+    .maybeSingle();
+
+  if (actionError) throw actionError;
+  if (!action) return null;
+
+  const { data: updatedAction, error: updateError } = await supabaseAdmin
+    .from("bos_actions")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", recordId)
+    .eq("association_id", associationId)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+
+  const homeownerRequestId = getHomeownerRequestId(action.source);
+
+  if (homeownerRequestId) {
+    const { error: homeownerError } = await supabaseAdmin
+      .from("homeowner_service_requests")
+      .update({
+        status: status === "archived" ? "Archived" : status,
+        workflow_stage: status === "archived" ? "Archived" : "Manager Updated",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", homeownerRequestId)
+      .eq("association_id", associationId);
+
+    if (homeownerError) throw homeownerError;
+  }
+
+  return updatedAction;
+}
+
+async function deleteHomeownerBosAction(recordId, associationId) {
+  const { data: action, error: actionError } = await supabaseAdmin
+    .from("bos_actions")
+    .select("id, source")
+    .eq("id", recordId)
+    .eq("association_id", associationId)
+    .like("source", "Homeowner Dashboard | homeowner_request:%")
+    .maybeSingle();
+
+  if (actionError) throw actionError;
+  if (!action) return false;
+
+  const homeownerRequestId = getHomeownerRequestId(action.source);
+
+  const { error: workflowError } = await supabaseAdmin
+    .from("manager_workflow_records")
+    .delete()
+    .eq("source_record_id", String(recordId))
+    .eq("source_table", "bos_actions");
+
+  if (workflowError) throw workflowError;
+
+  if (homeownerRequestId) {
+    const { error: homeownerError } = await supabaseAdmin
+      .from("homeowner_service_requests")
+      .delete()
+      .eq("id", homeownerRequestId)
+      .eq("association_id", associationId);
+
+    if (homeownerError) throw homeownerError;
+  }
+
+  const { error: deleteError } = await supabaseAdmin
+    .from("bos_actions")
+    .delete()
+    .eq("id", recordId)
+    .eq("association_id", associationId);
+
+  if (deleteError) throw deleteError;
+
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
@@ -304,7 +394,7 @@ export default async function handler(req, res) {
 
       const status = body.status || "archived";
 
-      const { data, error } = await supabaseAdmin
+      const { data: adminRecord, error: adminError } = await supabaseAdmin
         .from("admin_operational_records")
         .update({
           status,
@@ -313,16 +403,37 @@ export default async function handler(req, res) {
         .eq("id", recordId)
         .eq("association_id", associationId)
         .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (adminError) throw adminError;
 
-      await syncBosStatusFromAdmin(recordId, status);
+      if (adminRecord) {
+        await syncBosStatusFromAdmin(recordId, status);
+
+        return res.status(200).json({
+          success: true,
+          record: adminRecord,
+          message: "Operational record updated successfully.",
+        });
+      }
+
+      const homeownerRecord = await updateHomeownerBosAction(
+        recordId,
+        associationId,
+        status
+      );
+
+      if (!homeownerRecord) {
+        return res.status(404).json({
+          success: false,
+          message: "Operational record was not found.",
+        });
+      }
 
       return res.status(200).json({
         success: true,
-        record: data,
-        message: "Operational record updated successfully.",
+        record: homeownerRecord,
+        message: "Homeowner work order updated successfully.",
       });
     } catch (error) {
       console.error("Admin operational records PATCH error:", error);
@@ -353,19 +464,47 @@ export default async function handler(req, res) {
         });
       }
 
-      await deleteBosMirror(recordId);
-
-      const { error } = await supabaseAdmin
+      const { data: adminRecord, error: adminLookupError } = await supabaseAdmin
         .from("admin_operational_records")
-        .delete()
+        .select("id")
         .eq("id", recordId)
-        .eq("association_id", associationId);
+        .eq("association_id", associationId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (adminLookupError) throw adminLookupError;
+
+      if (adminRecord) {
+        await deleteBosMirror(recordId);
+
+        const { error: adminDeleteError } = await supabaseAdmin
+          .from("admin_operational_records")
+          .delete()
+          .eq("id", recordId)
+          .eq("association_id", associationId);
+
+        if (adminDeleteError) throw adminDeleteError;
+
+        return res.status(200).json({
+          success: true,
+          message: "Operational record deleted successfully.",
+        });
+      }
+
+      const deletedHomeownerRecord = await deleteHomeownerBosAction(
+        recordId,
+        associationId
+      );
+
+      if (!deletedHomeownerRecord) {
+        return res.status(404).json({
+          success: false,
+          message: "Operational record was not found.",
+        });
+      }
 
       return res.status(200).json({
         success: true,
-        message: "Operational record deleted successfully.",
+        message: "Homeowner work order deleted successfully.",
       });
     } catch (error) {
       console.error("Admin operational records DELETE error:", error);
