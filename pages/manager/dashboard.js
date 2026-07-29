@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { getSubscriptionPermissions } from "../../lib/subscriptionPermissions";
 
 function getSelectedAssociationContext() {
   if (typeof window === "undefined") {
@@ -242,8 +241,6 @@ export default function ManagerDashboard() {
 
   // Temporary until subscriptions are loaded during onboarding/login.
   const currentSubscription = "full_management";
-
-  const permissions = getSubscriptionPermissions(currentSubscription);
 
   const [records, setRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
