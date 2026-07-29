@@ -220,7 +220,7 @@ function routeForRecord(record) {
   if (type.includes("policy")) return "/board/policy-library";
   if (type.includes("meeting")) return "/portal/board/meetings";
   if (type.includes("violation")) return "/board/violation-review";
-  if (type.includes("maintenance")) return "/board/maintenance-review";
+  if (type.includes("maintenance")) return "/admin/association-work-orders";
   if (type.includes("compliance")) return "/board/compliance-dashboard";
   if (type.includes("architectural")) return "/board/architectural-approvals";
 
@@ -702,10 +702,9 @@ export default function ManagerDashboard() {
                 </div>
               ) : (
                 displayedRecords.map((record) => (
-                  <Link
+                  <div
                     key={record.id}
-                    href={routeForRecord(record)}
-                    className="block rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
+                    className="rounded-3xl border border-white/10 bg-[#020617]/80 p-5 transition hover:border-amber-400/30 hover:bg-white/[0.05]"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div>
@@ -759,9 +758,12 @@ export default function ManagerDashboard() {
                       </div>
 
                       <div className="flex shrink-0 flex-col gap-2">
-                        <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-center text-sm font-semibold text-amber-300">
+                        <Link
+                          href={routeForRecord(record)}
+                          className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-center text-sm font-semibold text-amber-300 hover:bg-amber-400/20"
+                        >
                           Review
-                        </div>
+                        </Link>
 
                         <button
                           onClick={(event) => archiveRecord(record.id, event)}
@@ -778,7 +780,7 @@ export default function ManagerDashboard() {
                         </button>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))
               )}
             </div>
