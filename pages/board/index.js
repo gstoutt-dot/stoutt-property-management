@@ -65,6 +65,29 @@ function statusStyle(status) {
   return "border-slate-400/30 bg-slate-400/10 text-slate-300";
 }
 
+function PageLinkIcon({ title }) {
+  const normalizedTitle = String(title || "").toLowerCase();
+  const iconClassName = "h-5 w-5";
+
+  if (normalizedTitle.includes("workflow") || normalizedTitle.includes("action")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>;
+  }
+
+  if (normalizedTitle.includes("message") || normalizedTitle.includes("notification")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" /><path d="M8 10h8" /><path d="M8 14h5" /></svg>;
+  }
+
+  if (normalizedTitle.includes("accounting") || normalizedTitle.includes("financial")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M4 19V5" /><path d="M4 19h16" /><path d="m8 16 3-4 3 2 5-7" /></svg>;
+  }
+
+  if (normalizedTitle.includes("approval") || normalizedTitle.includes("board")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+  }
+
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
+}
+
 function priorityStyle(priority) {
   const value = String(priority || "").toLowerCase();
 
@@ -472,10 +495,10 @@ export default function BoardModuleHub() {
           {boardPages.map((page) => (
             <div
               key={page.href}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 transition hover:border-amber-400/20"
+              className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 transition hover:border-amber-400/20"
             >
               <div className="mb-4 flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <div
                     className={`mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusStyle(
                       page.status
@@ -484,7 +507,13 @@ export default function BoardModuleHub() {
                     {page.status}
                   </div>
 
-                  <h2 className="text-2xl font-bold">{page.title}</h2>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300 transition group-hover:-translate-y-0.5 group-hover:bg-amber-400/20">
+                      <PageLinkIcon title={page.title} />
+                    </div>
+
+                    <h2 className="text-2xl font-bold">{page.title}</h2>
+                  </div>
                 </div>
 
                 <Link
