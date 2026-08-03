@@ -175,6 +175,41 @@ function toneStyle(tone) {
   return "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
 }
 
+function PageLinkIcon({ title }) {
+  const normalizedTitle = String(title || "").toLowerCase();
+  const iconClassName = "h-5 w-5";
+
+  if (normalizedTitle.includes("work order") || normalizedTitle.includes("vendor") || normalizedTitle.includes("maintenance")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="m14.7 6.3-5.4 5.4" /><path d="m16.5 3.5 4 4" /><path d="m5.3 10.3 8.4 8.4" /><path d="m3 21 3.3-3.3" /><path d="m13.7 18.7 3.3 3.3 4-4-3.3-3.3" /></svg>;
+  }
+
+  if (normalizedTitle.includes("message") || normalizedTitle.includes("notification")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" /><path d="M8 10h8" /><path d="M8 14h5" /></svg>;
+  }
+
+  if (normalizedTitle.includes("calendar") || normalizedTitle.includes("meeting")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M3 10h18" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /></svg>;
+  }
+
+  if (normalizedTitle.includes("document") || normalizedTitle.includes("knowledge") || normalizedTitle.includes("training") || normalizedTitle.includes("policy")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /></svg>;
+  }
+
+  if (normalizedTitle.includes("report") || normalizedTitle.includes("financial") || normalizedTitle.includes("budget")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M4 19V5" /><path d="M4 19h16" /><path d="m8 16 3-4 3 2 5-7" /></svg>;
+  }
+
+  if (normalizedTitle.includes("committee") || normalizedTitle.includes("signature") || normalizedTitle.includes("board")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+  }
+
+  if (normalizedTitle.includes("command") || normalizedTitle.includes("action") || normalizedTitle.includes("operational") || normalizedTitle.includes("onboarding")) {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><path d="M9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>;
+  }
+
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClassName} aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
+}
+
 function priorityStyle(priority) {
   const value = String(priority || "").toLowerCase();
   if (value === "critical") return "border-red-400/30 bg-red-400/10 text-red-200";
@@ -838,11 +873,17 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-xl font-bold text-white">
-                        {item.title}
-                      </h3>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300 transition group-hover:-translate-y-0.5 group-hover:bg-amber-400/20">
+                          <PageLinkIcon title={item.title} />
+                        </div>
 
-                      <span className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-semibold text-amber-300 transition group-hover:bg-amber-400/20">
+                        <h3 className="text-xl font-bold text-white">
+                          {item.title}
+                        </h3>
+                      </div>
+
+                      <span className="shrink-0 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-semibold text-amber-300 transition group-hover:bg-amber-400/20">
                         Open
                       </span>
                     </div>
