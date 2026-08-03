@@ -103,19 +103,16 @@ export default function ManagerVendorDispatch() {
     setFeedback({});
 
     try {
-      const [actionsResponse, vendorsResponse] = await Promise.all([
+      const [actionsResponse, workflowResponse, vendorsResponse] = await Promise.all([
         supabase
           .from("bos_actions")
           .select("*")
           .eq("association_id", associationId)
-          .in("vendor_status", [
-            "approved",
-            "pending",
-            "accepted",
-            "in_progress",
-            "completed",
-          ])
           .order("created_at", { ascending: false }),
+        supabase
+          .from("manager_workflow_records")
+          .select("source_record_id, source_table, timeline")
+          .eq("association_id", associationId),
         supabase
           .from("association_vendors")
           .select("*")
@@ -125,9 +122,28 @@ export default function ManagerVendorDispatch() {
       ]);
 
       if (actionsResponse.error) throw actionsResponse.error;
+      if (workflowResponse.error) throw workflowResponse.error;
       if (vendorsResponse.error) throw vendorsResponse.error;
 
-      const safeItems = actionsResponse.data || [];
+      const vendorAuthorizedIds = new Set(
+        (workflowResponse.data || [])
+          .filter(
+            (record) =>
+              String(record.source_table || "") === "bos_actions" &&
+              Array.isArray(record.timeline) &&
+              record.timeline.some(
+                (entry) =>
+                  String(entry?.text || "") ===
+                    "Vendor approved — ready for vendor dispatch" ||
+                  String(entry?.text || "").startsWith("Vendor dispatch sent to")
+              )
+          )
+          .map((record) => String(record.source_record_id))
+      );
+
+      const safeItems = (actionsResponse.data || []).filter((item) =>
+        vendorAuthorizedIds.has(String(item.id))
+      );
 
       setItems(safeItems);
       setVendors(vendorsResponse.data || []);
@@ -151,7 +167,7 @@ export default function ManagerVendorDispatch() {
 
   const stats = useMemo(
     () => ({
-      ready: items.filter((item) => item.vendor_status === "approved").length,
+      ready: items.filter((item) => item.status === "approved").length,
       dispatched: items.filter((item) => Boolean(item.dispatched_at)).length,
       high: items.filter(
         (item) => String(item.priority || "").toLowerCase() === "high"
@@ -306,9 +322,7 @@ export default function ManagerVendorDispatch() {
         .from("bos_actions")
         .update({
           status: "dispatched",
-          dispatched: true,
           dispatched_at: new Date().toISOString(),
-          vendor_status: "pending",
           vendor_name: vendorName,
           vendor_phone: vendorPhone,
           vendor_email: vendorEmail,
@@ -427,7 +441,7 @@ export default function ManagerVendorDispatch() {
                     }`}
                   >
                     <div className="flex flex-wrap gap-2">
-                      <Badge>{item.vendor_status === "approved" ? "Vendor Approved" : item.vendor_status || "Dispatched"}</Badge>
+                      <Badge>{item.status === "approved" ? "Vendor Approved" : "Dispatched"}</Badge>
                       <Badge>{item.priority || "medium"} priority</Badge>
                       {item.dispatched_at && <Badge>Dispatched</Badge>}
                     </div>
