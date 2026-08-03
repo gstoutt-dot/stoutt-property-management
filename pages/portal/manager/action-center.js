@@ -1,61 +1,49 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
-
+import GuidedServiceRequestDetails from "../../../components/GuidedServiceRequestDetails";
 export default function ManagerActionCenter() {
   const [items, setItems] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [statusMessage, setStatusMessage] = useState("");
-
   useEffect(() => {
     loadLiveItems();
-
     const interval = setInterval(() => {
       loadLiveItems(false);
     }, 60000);
-
     return () => clearInterval(interval);
   }, []);
-
   async function loadLiveItems(showLoading = true) {
     if (showLoading) setLoading(true);
-
     setStatusMessage("");
-
     const associationId =
   typeof window !== "undefined"
     ? localStorage.getItem("spm_selected_association_id") || ""
     : "";
-
 if (!associationId) {
   setStatusMessage("No association selected. Please log in again.");
   setItems([]);
   if (showLoading) setLoading(false);
   return;
 }
-
 const { data: bosData, error: bosError } = await supabase
   .from("bos_actions")
   .select("*")
   .eq("association_id", associationId)
   .order("created_at", { ascending: false });
-
     const { data: adminData, error: adminError } = await supabase
   .from("admin_operational_records")
   .select("*")
   .eq("association_id", associationId)
   .order("created_at", { ascending: false });
-
     if (bosError) {
       console.error("Live BOS action load failed:", bosError);
     }
-
     if (adminError) {
       console.error("Admin operational record load failed:", adminError);
     }
-
     const normalizedBos = (bosData || []).map((item) => ({
       ...item,
       manager_source_table: "bos_actions",
@@ -72,12 +60,10 @@ const { data: bosData, error: bosError } = await supabase
       property_address: item.property_address || item.unit_number || "—",
       source: item.source || "Ava / BOS Intake",
     }));
-
     const normalizedAdmin = (adminData || []).map((item) => {
       const normalizedStatus = String(item.status || "submitted")
         .toLowerCase()
         .replaceAll(" ", "_");
-
       return {
         id: `admin-${item.id}`,
         original_id: item.id,
@@ -104,28 +90,22 @@ const { data: bosData, error: bosError } = await supabase
         recommended_action: item.recommended_action || "",
       };
     });
-
     const combined = [...normalizedBos, ...normalizedAdmin].sort((a, b) => {
       return (
         new Date(b.created_at || 0).getTime() -
         new Date(a.created_at || 0).getTime()
       );
     });
-
     setItems(combined);
-
     setSelectedId((currentSelectedId) => {
   if (currentSelectedId) {
     const stillExists = combined.some((item) => item.id === currentSelectedId);
     return stillExists ? currentSelectedId : combined[0]?.id || "";
   }
-
   return combined[0]?.id || "";
 });
-
     if (showLoading) setLoading(false);
   }
-
   function managerStatusLabel(status) {
     if (status === "open") return "Request Received";
     if (status === "in_progress") return "Management Review";
@@ -135,7 +115,6 @@ const { data: bosData, error: bosError } = await supabase
     if (status === "rejected") return "Rejected";
     return "Request Received";
   }
-
   function adminStatusLabel(status) {
     if (status === "open") return "Submitted";
     if (status === "in_progress") return "In Progress";
@@ -145,12 +124,9 @@ const { data: bosData, error: bosError } = await supabase
     if (status === "rejected") return "Rejected";
     return "Submitted";
   }
-
   async function updateStatus(item, nextStatus) {
     if (!item) return;
-
     setStatusMessage("");
-
     if (item.manager_source_table === "admin_operational_records") {
       const { error } = await supabase
         .from("admin_operational_records")
@@ -159,18 +135,15 @@ const { data: bosData, error: bosError } = await supabase
           updated_at: new Date().toISOString(),
         })
         .eq("id", item.original_id);
-
       if (error) {
         console.error("Admin record status update failed:", error);
         setStatusMessage("Unable to update this admin operational record.");
         return;
       }
-
       setStatusMessage("Admin operational record updated.");
       await loadLiveItems(false);
       return;
     }
-
     const { error } = await supabase
       .from("bos_actions")
       .update({
@@ -178,25 +151,30 @@ const { data: bosData, error: bosError } = await supabase
         updated_at: new Date().toISOString(),
       })
       .eq("id", item.original_id || item.id);
-
     if (error) {
       console.error("BOS action status update failed:", error);
       setStatusMessage("Unable to update this BOS action.");
       return;
     }
-
     setStatusMessage("BOS action updated.");
     await loadLiveItems(false);
   }
-
   const filteredItems = useMemo(() => {
     if (filter === "all") return items;
     return items.filter((item) => item.status === filter);
   }, [items, filter]);
-
   const selected =
     items.find((item) => item.id === selectedId) || filteredItems[0] || null;
-
+  const selectedAssociationId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("spm_selected_association_id") || ""
+      : "";
+  const selectedSourceMatch = String(selected?.source || "").match(
+    /homeowner_request\s*:\s*([^|\s]+)/i
+  );
+  const selectedServiceRequestId = selectedSourceMatch
+    ? selectedSourceMatch[1]
+    : "";
   const stats = {
     total: items.length,
     managerReview: items.filter(
@@ -205,7 +183,6 @@ const { data: bosData, error: bosError } = await supabase
     boardReview: items.filter((item) => item.status === "board_review").length,
     approved: items.filter((item) => item.status === "approved").length,
   };
-
   const statusStyles = {
     open: "border-amber-400/30 bg-amber-400/10 text-amber-300",
     in_progress: "border-yellow-400/30 bg-yellow-400/10 text-yellow-300",
@@ -214,13 +191,11 @@ const { data: bosData, error: bosError } = await supabase
     completed: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
     rejected: "border-red-400/30 bg-red-400/10 text-red-300",
   };
-
   const priorityStyles = {
     high: "border-red-400/30 bg-red-400/10 text-red-300",
     medium: "border-orange-400/30 bg-orange-400/10 text-orange-300",
     low: "border-slate-400/30 bg-slate-400/10 text-slate-300",
   };
-
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -230,17 +205,14 @@ const { data: bosData, error: bosError } = await supabase
               <p className="mb-2 text-sm font-semibold uppercase tracking-[0.3em] text-yellow-400">
                 BOS Manager Portal
               </p>
-
               <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
                 Live Action Center
               </h1>
-
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
                 Process live BOS actions and admin operational records from the
                 same production queue used by the Manager Command Center.
               </p>
             </div>
-
             <div className="flex flex-wrap gap-3">
               <Link
   href={`/portal/manager?associationId=${
@@ -252,7 +224,6 @@ const { data: bosData, error: bosError } = await supabase
               >
                 Manager Command Center
               </Link>
-
               <button
                 type="button"
                 onClick={() => loadLiveItems(false)}
@@ -263,14 +234,12 @@ const { data: bosData, error: bosError } = await supabase
             </div>
           </div>
         </header>
-
         <section className="mb-8 grid gap-4 md:grid-cols-4">
           <Stat label="Live Actions" value={stats.total} />
           <Stat label="Manager Review" value={stats.managerReview} />
           <Stat label="Board Review" value={stats.boardReview} />
           <Stat label="Approved" value={stats.approved} />
         </section>
-
         <section className="mb-8 grid gap-3 md:grid-cols-6">
           {[
             ["all", "All"],
@@ -294,13 +263,11 @@ const { data: bosData, error: bosError } = await supabase
             </button>
           ))}
         </section>
-
         {statusMessage && (
           <div className="mb-6 rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-200">
             {statusMessage}
           </div>
         )}
-
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 shadow-2xl shadow-black/30">
             <div className="mb-5 flex items-center justify-between">
@@ -310,12 +277,10 @@ const { data: bosData, error: bosError } = await supabase
                   Review, approve, escalate, complete, or reject live records.
                 </p>
               </div>
-
               <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
                 Live Connected
               </span>
             </div>
-
             {loading ? (
               <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-6 text-sm text-slate-400">
                 Loading live action center...
@@ -335,7 +300,6 @@ const { data: bosData, error: bosError } = await supabase
                   >
                     <div className="mb-3 flex flex-wrap gap-2">
                       <Badge>{item.manager_source_type === "admin" ? "Admin Record" : "BOS Action"}</Badge>
-
                       <span
                         className={`rounded-full border px-3 py-1 text-xs font-semibold ${
                           statusStyles[item.status] ||
@@ -344,7 +308,6 @@ const { data: bosData, error: bosError } = await supabase
                       >
                         {managerStatusLabel(item.status)}
                       </span>
-
                       <span
                         className={`rounded-full border px-3 py-1 text-xs font-semibold ${
                           priorityStyles[item.priority] ||
@@ -354,15 +317,12 @@ const { data: bosData, error: bosError } = await supabase
                         {item.priority || "medium"} priority
                       </span>
                     </div>
-
                     <h3 className="text-lg font-bold text-white">
                       {item.title || "Untitled Action"}
                     </h3>
-
                     <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">
                       {item.description || "No description provided."}
                     </p>
-
                     <div className="mt-4 flex flex-wrap justify-between gap-3 text-xs text-slate-500">
                       <span>{item.association_name || "Association"}</span>
                       <span>
@@ -380,22 +340,18 @@ const { data: bosData, error: bosError } = await supabase
               </div>
             )}
           </div>
-
           <aside className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/30">
             {selected ? (
               <>
                 <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-yellow-400">
                   Review Detail
                 </p>
-
                 <h2 className="text-2xl font-bold">
                   {selected.title || "Untitled Action"}
                 </h2>
-
                 <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm leading-6 text-slate-300">
                   {selected.description || "No description provided."}
                 </div>
-
                 <div className="mt-5 space-y-3 text-sm">
                   <Detail label="Record ID" value={selected.original_id || selected.id} />
                   <Detail label="Source" value={selected.source || selected.manager_source_type} />
@@ -404,7 +360,19 @@ const { data: bosData, error: bosError } = await supabase
                   <Detail label="Location" value={selected.property_address || "—"} />
                   <Detail label="Current Status" value={managerStatusLabel(selected.status)} />
                 </div>
-
+                {selectedServiceRequestId && (
+                  <GuidedServiceRequestDetails
+                    serviceRequest={{
+                      ...selected,
+                      id: selectedServiceRequestId,
+                      request_type: selected.request_type || "General Question",
+                    }}
+                    associationId={selectedAssociationId}
+                    bosActionId={selected.original_id || selected.id}
+                    audience="manager"
+                    managerName="Management"
+                  />
+                )}
                 {selected.recommended_action && (
                   <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.06] p-4">
                     <p className="text-sm font-semibold text-yellow-300">
@@ -415,7 +383,6 @@ const { data: bosData, error: bosError } = await supabase
                     </p>
                   </div>
                 )}
-
                 <div className="mt-6 grid gap-3">
                   <button
                     onClick={() => updateStatus(selected, "in_progress")}
@@ -423,28 +390,24 @@ const { data: bosData, error: bosError } = await supabase
                   >
                     Move to Management Review
                   </button>
-
                   <button
                     onClick={() => updateStatus(selected, "board_review")}
                     className="rounded-xl border border-purple-400/40 bg-purple-400/10 px-4 py-3 text-sm font-bold text-purple-300 hover:bg-purple-400/15"
                   >
                     Send to Board Review
                   </button>
-
                   <button
                     onClick={() => updateStatus(selected, "approved")}
                     className="rounded-xl bg-yellow-400 px-4 py-3 text-sm font-bold text-slate-950 hover:bg-yellow-300"
                   >
                     Approve / Schedule
                   </button>
-
                   <button
                     onClick={() => updateStatus(selected, "completed")}
                     className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-400/15"
                   >
                     Mark Completed
                   </button>
-
                   <button
                     onClick={() => updateStatus(selected, "rejected")}
                     className="rounded-xl border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm font-bold text-red-300 hover:bg-red-400/15"
@@ -464,7 +427,6 @@ const { data: bosData, error: bosError } = await supabase
     </main>
   );
 }
-
 function Stat({ label, value }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl shadow-black/20">
@@ -473,7 +435,6 @@ function Stat({ label, value }) {
     </div>
   );
 }
-
 function Badge({ children }) {
   return (
     <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-semibold text-slate-300">
@@ -481,7 +442,6 @@ function Badge({ children }) {
     </span>
   );
 }
-
 function Detail({ label, value }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3">
