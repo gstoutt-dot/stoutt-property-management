@@ -29,7 +29,18 @@ function getRouteByRole(role) {
 }
 
 function storePortalContext({ email, role, associations }) {
-  const firstAssociation = Array.isArray(associations) ? associations[0] : null;
+  const approvedAssociations = Array.isArray(associations) ? associations : [];
+  const lastAssociationId = String(
+    localStorage.getItem("spm_last_association_id") || ""
+  ).trim();
+
+  const lastAssociation = approvedAssociations.find(
+    (association) =>
+      String(association?.association_id || "") === lastAssociationId
+  );
+
+  const selectedAssociation =
+    lastAssociation || approvedAssociations[0] || null;
 
   localStorage.setItem("spmPortalLoggedIn", "true");
   localStorage.setItem("spmPortalUser", email);
@@ -37,29 +48,21 @@ function storePortalContext({ email, role, associations }) {
   localStorage.setItem("spmPortalRole", role);
   localStorage.setItem(
     "spmPortalAllowedAssociations",
-    JSON.stringify(associations || [])
+    JSON.stringify(approvedAssociations)
   );
 
-  if (firstAssociation?.association_id) {
-    localStorage.setItem(
-      "spm_selected_association_id",
-      String(firstAssociation.association_id)
+  if (selectedAssociation?.association_id) {
+    const associationId = String(selectedAssociation.association_id);
+    const associationName = String(
+      selectedAssociation.association_name || "Selected Association"
     );
 
-    localStorage.setItem(
-      "spm_selected_association_name",
-      String(firstAssociation.association_name || "Selected Association")
-    );
-
-    localStorage.setItem(
-      "selectedAssociationId",
-      String(firstAssociation.association_id)
-    );
-
-    localStorage.setItem(
-      "selectedAssociationName",
-      String(firstAssociation.association_name || "Selected Association")
-    );
+    localStorage.setItem("spm_selected_association_id", associationId);
+    localStorage.setItem("spm_selected_association_name", associationName);
+    localStorage.setItem("selectedAssociationId", associationId);
+    localStorage.setItem("selectedAssociationName", associationName);
+    localStorage.setItem("spm_last_association_id", associationId);
+    localStorage.setItem("spm_last_association_name", associationName);
   }
 }
 
