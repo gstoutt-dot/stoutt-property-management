@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabaseClient'
-
+import GuidedServiceRequestDetails from '../../../components/GuidedServiceRequestDetails'
 export default function ManagerDashboard() {
   const [items, setItems] = useState([])
   const [filter, setFilter] = useState('all')
@@ -9,51 +9,40 @@ export default function ManagerDashboard() {
   const [workflow, setWorkflow] = useState({})
   const [dispatchFeedback, setDispatchFeedback] = useState({})
   const [vendors, setVendors] = useState([])
-
   const associationId =
   typeof window !== 'undefined'
     ? localStorage.getItem('spm_selected_association_id') || ''
     : ''
-
   useEffect(() => {
     fetchData({ showLoading: true })
-    
     const interval = setInterval(() => {
       fetchData({ showLoading: false })
     }, 60000)
-
     return () => clearInterval(interval)
   }, [])
-
   async function loadWorkflowRecords(currentItems = []) {
     const { data, error } = await supabase
     .from('manager_workflow_records')
     .select('*')
     .eq('association_id', associationId)
-
   if (error) {
     console.error('Manager workflow records load failed:', error)
     return
   }
-
   const workflowMap = {}
-
   ;(data || []).forEach((record) => {
     const matchingItem = currentItems.find((item) => {
       const sourceId =
         item.manager_source_table === 'admin_operational_records'
           ? item.original_id
           : item.id
-
       return (
         String(sourceId) === String(record.source_record_id) &&
         String(item.manager_source_table || 'bos_actions') ===
           String(record.source_table || 'bos_actions')
       )
     })
-
     const workflowKey = matchingItem?.id || record.source_record_id
-
     workflowMap[workflowKey] = {
       vendor_name: record.vendor_name || '',
       vendor_phone: record.vendor_phone || '',
@@ -67,16 +56,12 @@ export default function ManagerDashboard() {
       timeline: Array.isArray(record.timeline) ? record.timeline : [],
     }
   })
-
   setWorkflow(workflowMap)
 }
-
 async function saveWorkflow(nextWorkflow) {
   setWorkflow(nextWorkflow)
-
   const records = Object.entries(nextWorkflow).map(([itemId, wf]) => {
     const item = items.find((record) => String(record.id) === String(itemId))
-
     return {
       source_record_id:
         item?.manager_source_table === 'admin_operational_records'
@@ -97,9 +82,7 @@ async function saveWorkflow(nextWorkflow) {
       updated_at: new Date().toISOString(),
     }
   })
-
   if (records.length === 0) return
-
       const { error } = await supabase
     .from('manager_workflow_records')
     .upsert(records, {
@@ -109,7 +92,6 @@ async function saveWorkflow(nextWorkflow) {
     console.error('Manager workflow save failed:', error)
   }
 }
-
   function getStatusLabel(status) {
     if (status === 'open') return 'Request received'
     if (status === 'in_progress') return 'Management review'
@@ -119,7 +101,6 @@ async function saveWorkflow(nextWorkflow) {
     if (status === 'rejected') return 'Rejected'
     return 'Request received'
   }
-
   function normalizeAdminStatus(status) {
     if (status === 'open') return 'Submitted'
     if (status === 'in_progress') return 'In Progress'
@@ -129,13 +110,10 @@ async function saveWorkflow(nextWorkflow) {
     if (status === 'rejected') return 'Rejected'
     return 'Submitted'
   }
-
   async function syncBoardDecisions(data) {
   const nextWorkflow = { ...workflow }
-
   data.forEach((item) => {
     const currentTimeline = nextWorkflow[item.id]?.timeline || []
-
     if (
       item.status === 'approved' &&
       !currentTimeline.some((entry) => entry.text === 'Board approved request')
@@ -148,7 +126,6 @@ async function saveWorkflow(nextWorkflow) {
         ],
       }
     }
-
     if (
       item.status === 'rejected' &&
       !currentTimeline.some((entry) => entry.text === 'Board rejected request')
@@ -162,12 +139,9 @@ async function saveWorkflow(nextWorkflow) {
       }
     }
   })
-
   await saveWorkflow(nextWorkflow)
 }
-
     async function fetchData({ showLoading = false } = {}) {
-
     if (!associationId) {
       setItems([])
       setLoading(false)
@@ -176,40 +150,32 @@ async function saveWorkflow(nextWorkflow) {
     if (showLoading) {
       setLoading(true)
     }
-
       const { data: bosData, error: bosError } = await supabase
       .from('bos_actions')
       .select('*')
       .eq('association_id', associationId)
       .order('created_at', { ascending: false })
-
        const { data: adminData, error: adminError } = await supabase
       .from('admin_operational_records')
       .select('*')
       .eq('association_id', associationId)
       .order('created_at', { ascending: false })
-
     const { data: vendorData, error: vendorError } = await supabase
   .from('association_vendors')
   .select('*')
   .eq('association_id', associationId)
   .eq('active', true)
   .order('vendor_name', { ascending: true })
-
 if (vendorError) {
   console.error('Vendor mirror load failed:', vendorError)
 }
-
 setVendors(vendorData || [])
-
     if (bosError) {
       console.error('Manager BOS queue load failed:', bosError)
     }
-
     if (adminError) {
       console.error('Manager admin queue load failed:', adminError)
     }
-
     const normalizedBosItems = (bosData || []).map((item) => ({
       ...item,
       manager_source_table: 'bos_actions',
@@ -222,54 +188,45 @@ setVendors(vendorData || [])
       status: item.status || 'open',
       priority: item.priority || 'medium',
     }))
-
     const normalizedAdminItems = (adminData || []).map((item) => ({
       id: `admin-${item.id}`,
       original_id: item.id,
       manager_source_table: 'admin_operational_records',
       manager_source_type: 'admin',
-
       title: item.title || 'Administrative Intake',
       description:
         item.description ||
         'Administrative operational record submitted for review.',
       request_type: item.request_type || 'owner_request',
       category: item.request_type || 'owner_request',
-
       status:
         String(item.status || '').toLowerCase() === 'submitted'
           ? 'open'
           : String(item.status || '').toLowerCase().replaceAll(' ', '_'),
-
       priority:
         String(item.priority || '').toLowerCase() === 'high'
           ? 'high'
           : String(item.priority || '').toLowerCase() === 'low'
             ? 'low'
             : 'medium',
-
       association_name: item.association_name || 'Sunset Condominium Association',
       owner_name: item.created_by || 'Ava / Admin Intake',
       owner_phone: '',
       property_address: item.routing_target || item.source_module || 'Admin Operations',
       best_contact_time: 'Normal business hours',
-
       created_at: item.created_at,
       updated_at: item.updated_at,
       source: item.source_module || 'Admin Operational Record',
-
       board_comment: item.description || '',
       board_response: item.recommended_action || '',
       board_acknowledged: false,
       board_reviewed: false,
-
       vendor_name: '',
       vendor_phone: '',
       vendor_email: '',
       dispatch_note: '',
       dispatched_at: null,
     }))
-
     const combinedItems = [
       ...normalizedBosItems,
       ...normalizedAdminItems,
@@ -278,20 +235,16 @@ setVendors(vendorData || [])
       const right = new Date(b.created_at || 0).getTime()
       return right - left
     })
-
     setItems(combinedItems)
 await loadWorkflowRecords(combinedItems)
 setLoading(false)
   }
-
   async function updateStatus(id, status) {
     const item = items.find((record) => record.id === id)
-
     if (!item) {
       console.error('Unable to update status. Item not found:', id)
       return
     }
-
     if (item.manager_source_table === 'admin_operational_records') {
       const { error } = await supabase
         .from('admin_operational_records')
@@ -300,54 +253,42 @@ setLoading(false)
           updated_at: new Date().toISOString(),
         })
         .eq('id', item.original_id)
-
       if (error) {
         console.error('Admin operational status update failed:', error)
         alert('Unable to update this administrative record.')
         return
       }
-
       addTimeline(id, getStatusLabel(status))
       fetchData({ showLoading: false })
       return
     }
-
     const { error } = await supabase
       .from('bos_actions')
       .update({ status })
       .eq('id', id)
-
     if (error) {
       console.error('BOS status update failed:', error)
       alert('Unable to update this BOS record.')
       return
     }
-
     addTimeline(id, getStatusLabel(status))
     fetchData({ showLoading: false })
   }
-
   async function deleteItem(item) {
   const confirmed = window.confirm(
     `Delete "${item.title || 'this item'}"?`
   )
-
   if (!confirmed) return
-
   console.log('Deleting manager item:', item)
-
   try {
     const sourceTable =
       item.manager_source_table ||
       'bos_actions'
-
     const sourceId =
       item.manager_source_table === 'admin_operational_records'
         ? item.original_id
         : item.id
-
     console.log('DELETE REQUEST:', sourceTable, sourceId)
-
     const response = await fetch(
       `/api/manager/delete-queue-item?sourceTable=${encodeURIComponent(
         sourceTable
@@ -356,30 +297,22 @@ setLoading(false)
         method: 'DELETE',
       }
     )
-
     const result = await response.json()
-
     console.log('DELETE RESPONSE:', result)
-
     if (!response.ok || !result.success) {
       throw new Error(result.message || 'Unable to delete this item.')
     }
-
     const updatedWorkflow = { ...workflow }
     delete updatedWorkflow[item.id]
-
     saveWorkflow(updatedWorkflow)
-
     fetchData({ showLoading: false })
   } catch (error) {
     console.error('Delete failed:', error)
     alert(error.message || 'Unable to delete this item.')
   }
 }
-
   function updateWorkflowField(id, field, value) {
     const current = workflow[id] || {}
-
     saveWorkflow({
       ...workflow,
       [id]: {
@@ -388,10 +321,8 @@ setLoading(false)
       },
     })
   }
-
   function addTimeline(id, text) {
     const current = workflow[id] || {}
-
     saveWorkflow({
       ...workflow,
       [id]: {
@@ -403,13 +334,10 @@ setLoading(false)
       },
     })
   }
-
   function addNote(id) {
     const current = workflow[id] || {}
     const noteText = current.pendingNote
-
     if (!noteText || !noteText.trim()) return
-
     saveWorkflow({
       ...workflow,
       [id]: {
@@ -426,16 +354,13 @@ setLoading(false)
       },
     })
   }
-
   async function saveVendor(item) {
     if (item.manager_source_table === 'admin_operational_records') {
       addTimeline(item.id, 'Vendor details staged locally')
       alert('Vendor details are staged on this page. Persistent vendor dispatch for admin records will be connected next.')
       return
     }
-
     const wf = workflow[item.id] || {}
-
     await supabase
       .from('bos_actions')
       .update({
@@ -445,34 +370,27 @@ setLoading(false)
         dispatch_note: wf.dispatch_note ?? item.dispatch_note ?? '',
       })
       .eq('id', item.id)
-
     addTimeline(item.id, 'Vendor details saved')
     fetchData({ showLoading: false })
   }
-
   async function dispatchVendor(item) {
     if (item.manager_source_table === 'admin_operational_records') {
       alert('Vendor dispatch for administrative records will be connected next.')
       return
     }
-
     const wf = workflow[item.id] || {}
-
     const vendorName = wf.vendor_name ?? item.vendor_name ?? ''
     const vendorPhone = wf.vendor_phone ?? item.vendor_phone ?? ''
     const vendorEmail = wf.vendor_email ?? item.vendor_email ?? ''
     const dispatchNote = wf.dispatch_note ?? item.dispatch_note ?? ''
-
     if (!vendorName || !vendorPhone) {
       alert('Please enter at least vendor name and vendor phone before dispatching.')
       return
     }
-
     if (!vendorEmail) {
       alert('Please enter a vendor email before dispatching.')
       return
     }
-
     try {
       setDispatchFeedback({
         ...dispatchFeedback,
@@ -481,7 +399,6 @@ setLoading(false)
           message: 'Preparing simulated vendor dispatch...',
         },
       })
-
         const response = await fetch('/api/send-vendor-dispatch', {
         method: 'POST',
         headers: {
@@ -502,13 +419,10 @@ setLoading(false)
           dispatchNote,
         }),
       })
-
       const result = await response.json()
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || 'Vendor dispatch failed.')
       }
-
       await supabase
         .from('bos_actions')
         .update({
@@ -519,9 +433,7 @@ setLoading(false)
           dispatched_at: new Date().toISOString(),
         })
         .eq('id', item.id)
-
       addTimeline(item.id, 'Vendor dispatch simulated successfully')
-
       setDispatchFeedback({
         ...dispatchFeedback,
         [item.id]: {
@@ -530,11 +442,9 @@ setLoading(false)
             'Vendor dispatch simulated successfully. Vendor email will be restored when Resend is reconnected.',
         },
       })
-
       fetchData({ showLoading: false })
     } catch (error) {
       console.error('Vendor dispatch error:', error)
-
       setDispatchFeedback({
         ...dispatchFeedback,
         [item.id]: {
@@ -544,12 +454,10 @@ setLoading(false)
       })
     }
   }
-
   const filtered = useMemo(() => {
     if (filter === 'all') return items
     return items.filter((item) => item.status === filter)
   }, [items, filter])
-
   const counts = {
     all: items.length,
     open: items.filter((i) => i.status === 'open').length,
@@ -559,14 +467,11 @@ setLoading(false)
     rejected: items.filter((i) => i.status === 'rejected').length,
     completed: items.filter((i) => i.status === 'completed').length,
   }
-
   const dispatchReadyCount = items.filter(
     (i) => i.status === 'approved' && !i.dispatched_at
   ).length
-
   const dispatchedCount = items.filter((i) => i.dispatched_at).length
   const highPriorityCount = items.filter((i) => i.priority === 'high').length
-
   const statusStyles = {
     open: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
     in_progress: 'bg-yellow-400/10 text-yellow-300 border-yellow-400/30',
@@ -575,16 +480,13 @@ setLoading(false)
     rejected: 'bg-red-500/10 text-red-300 border-red-500/30',
     completed: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30',
   }
-
   const priorityStyles = {
     high: 'bg-red-400/10 text-red-300 border-red-400/30',
     medium: 'bg-orange-400/10 text-orange-300 border-orange-400/30',
     low: 'bg-slate-400/10 text-slate-300 border-slate-400/30',
   }
-
   const inputClass =
     'rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40'
-
   return (
     <div className="min-h-screen bg-[#020617] pb-24 text-white md:pb-0">
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -594,11 +496,9 @@ setLoading(false)
               <div className="mb-3 inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300">
                 BOS Manager Command Layer
               </div>
-
               <h1 className="text-4xl font-semibold tracking-tight">
                 Manager Command Center
               </h1>
-
               <p className="mt-3 max-w-3xl text-slate-400">
                 Live operational overview of manager-reviewed items, board-ready
                 approvals, vendor dispatch activity, AI intake, and priority issues.
@@ -606,7 +506,6 @@ setLoading(false)
                 current operational picture.
               </p>
             </div>
-
             <div className="flex flex-wrap gap-3">
               <Link
   href={`/portal/manager/action-center?associationId=${associationId}`}
@@ -614,21 +513,18 @@ setLoading(false)
 >
   Action Center
 </Link>
-
 <Link
   href={`/portal/manager/vendor-dispatch?associationId=${associationId}`}
   className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10"
 >
   Vendor Dispatch
 </Link>
-
               <Link
                 href="/portal/manager#live-queue"
                 className="rounded-xl bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-yellow-900/20 hover:bg-yellow-300"
               >
                 Live Queue
               </Link>
-
               <button
                 onClick={() => fetchData({ showLoading: false })}
                 className="hidden rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 md:block"
@@ -637,7 +533,6 @@ setLoading(false)
               </button>
             </div>
           </div>
-
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             <CommandMetric
               label="Needs Manager Review"
@@ -661,7 +556,6 @@ setLoading(false)
             />
           </div>
         </div>
-
         <div className="mb-8 grid gap-4 lg:grid-cols-3">
           <CommandPanel
             title="Action Center Output"
@@ -674,7 +568,6 @@ setLoading(false)
               `${counts.approved} approved or scheduled`,
             ]}
           />
-
           <CommandPanel
             title="Vendor Dispatch Readiness"
             description="Approved work orders can be assigned, dispatched, tracked, and closed from the vendor workflow."
@@ -686,7 +579,6 @@ setLoading(false)
               `${counts.completed} completed items`,
             ]}
           />
-
           <CommandPanel
             title="Board Approval Queue"
             description="Items requiring board review remain visible here while the detailed action record stays below."
@@ -699,7 +591,6 @@ setLoading(false)
             ]}
           />
         </div>
-
         <div className="mb-8 grid gap-4 md:grid-cols-7">
           {[
             ['all', 'Total'],
@@ -724,7 +615,6 @@ setLoading(false)
             </button>
           ))}
         </div>
-
         <div
           id="live-queue"
           className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl"
@@ -735,12 +625,10 @@ setLoading(false)
               Showing {filtered.length} item{filtered.length === 1 ? '' : 's'}
             </p>
           </div>
-
           <div className="divide-y divide-white/10">
             {loading && (
               <div className="px-6 py-10 text-slate-400">Loading...</div>
             )}
-
             {!loading &&
               filtered.map((item) => {
                 const wf = workflow[item.id] || {}
@@ -748,7 +636,8 @@ setLoading(false)
                 const vendorPhone = wf.vendor_phone ?? item.vendor_phone ?? ''
                 const vendorEmail = wf.vendor_email ?? item.vendor_email ?? ''
                 const dispatchNote = wf.dispatch_note ?? item.dispatch_note ?? ''
-
+                const sourceMatch = String(item.source || '').match(/homeowner_request\s*:\s*([^|\s]+)/i)
+                const serviceRequestId = sourceMatch ? sourceMatch[1] : ''
                 return (
                   <div
                     key={item.id}
@@ -765,7 +654,6 @@ setLoading(false)
                           >
                             {getStatusLabel(item.status)}
                           </span>
-
                           <span
                             className={`rounded-full border px-3 py-1 text-xs ${
                               priorityStyles[item.priority] ||
@@ -774,30 +662,25 @@ setLoading(false)
                           >
                             {item.priority || 'normal'} priority
                           </span>
-
                           {item.association_name && (
                             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
                               {item.association_name}
                             </span>
                           )}
-
                           {item.manager_source_type === 'admin' && (
                             <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-xs text-sky-300">
                               Admin / Ava Intake
                             </span>
                           )}
                         </div>
-
                         <h3 className="text-xl font-semibold">
                           {item.title || 'Untitled Request'}
                         </h3>
-
                         {item.description && (
                           <p className="mt-2 max-w-3xl whitespace-pre-line text-sm leading-6 text-slate-400">
                             {item.description}
                           </p>
                         )}
-
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
                           <InfoBox label="Association" value={item.association_name || '—'} />
                           <InfoBox label="Owner" value={item.owner_name || '—'} />
@@ -827,7 +710,15 @@ setLoading(false)
                             }
                           />
                         </div>
-
+                        {serviceRequestId && (
+                          <GuidedServiceRequestDetails
+                            serviceRequest={{ ...item, id: serviceRequestId, request_type: item.request_type || 'General Question' }}
+                            associationId={associationId}
+                            bosActionId={item.id}
+                            audience="manager"
+                            managerName="Management"
+                          />
+                        )}
                         <div className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.05] p-5">
                           <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <div>
@@ -838,26 +729,21 @@ setLoading(false)
                                 Assign the preferred vendor and dispatch the request when ready.
                               </p>
                             </div>
-
                             {item.dispatched_at && (
                               <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
                                 Dispatched
                               </span>
                             )}
                           </div>
-
                           <div className="grid gap-3">
   <select
     value={wf.selected_vendor_id || ''}
     onChange={(e) => {
   const selectedVendorId = e.target.value
-
   const selectedVendor = vendors.find(
     (vendor) => String(vendor.id) === String(selectedVendorId)
   )
-
   const current = workflow[item.id] || {}
-
   saveWorkflow({
     ...workflow,
     [item.id]: {
@@ -882,7 +768,6 @@ setLoading(false)
     className={inputClass}
   >
     <option value="">Select QuickBooks Vendor</option>
-
     {vendors.map((vendor) => (
       <option key={vendor.id} value={vendor.id}>
         {vendor.vendor_name ||
@@ -891,19 +776,16 @@ setLoading(false)
       </option>
     ))}
   </select>
-
   {(vendorName || vendorPhone || vendorEmail) && (
     <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
       <div>
         <span className="text-slate-500">Vendor:</span>{' '}
         {vendorName || '—'}
       </div>
-
       <div className="mt-1">
         <span className="text-slate-500">Phone:</span>{' '}
         {vendorPhone || '—'}
       </div>
-
       <div className="mt-1">
         <span className="text-slate-500">Email:</span>{' '}
         {vendorEmail || '—'}
@@ -911,7 +793,6 @@ setLoading(false)
     </div>
   )}
 </div>
-
                           <textarea
                             value={dispatchNote}
                             onChange={(e) =>
@@ -921,7 +802,6 @@ setLoading(false)
                             rows={3}
                             className={`${inputClass} mt-3 w-full`}
                           />
-
                           <div className="mt-4 grid gap-3 md:grid-cols-3">
                             <button
                               onClick={() => saveVendor(item)}
@@ -929,7 +809,6 @@ setLoading(false)
                             >
                               Save Vendor
                             </button>
-
                             {vendorPhone ? (
                               <a
                                 href={`tel:${vendorPhone}`}
@@ -945,7 +824,6 @@ setLoading(false)
                                 Call Vendor
                               </button>
                             )}
-
                             <button
                               onClick={() => {
                                 if (!item.dispatched_at) dispatchVendor(item)
@@ -964,7 +842,6 @@ setLoading(false)
                                   : 'Send Vendor Dispatch'}
                             </button>
                           </div>
-
                           {dispatchFeedback[item.id] && (
                             <div
                               className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${
@@ -979,7 +856,6 @@ setLoading(false)
                             </div>
                           )}
                         </div>
-
                         <div className="mt-5 grid gap-3 md:grid-cols-3">
                           <input
                             value={wf.vendor || ''}
@@ -989,7 +865,6 @@ setLoading(false)
                             placeholder="Internal assignment"
                             className={inputClass}
                           />
-
                           <input
                             type="date"
                             value={wf.dueDate || ''}
@@ -998,12 +873,10 @@ setLoading(false)
                             }
                             className={inputClass}
                           />
-
                           <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
                             Manager follow-up
                           </div>
                         </div>
-
                         <div className="mt-5">
                           <textarea
                             value={wf.pendingNote || ''}
@@ -1014,7 +887,6 @@ setLoading(false)
                             rows={3}
                             className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-yellow-400/40"
                           />
-
                           <button
                             onClick={() => addNote(item.id)}
                             className="mt-3 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
@@ -1022,7 +894,6 @@ setLoading(false)
                             Save Note
                           </button>
                         </div>
-
                         {wf.notes && wf.notes.length > 0 && (
                           <div className="mt-5 space-y-3">
                             {wf.notes.map((note, index) => (
@@ -1039,10 +910,8 @@ setLoading(false)
                           </div>
                         )}
                       </div>
-
                       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                         <h4 className="font-semibold">Workflow Controls</h4>
-
                         <div className="mt-4">
                           <button
                             type="button"
@@ -1052,7 +921,6 @@ setLoading(false)
                             Delete Record
                           </button>
                         </div>
-
                         <div className="mt-4 grid gap-2">
                           <button
                             onClick={() => updateStatus(item.id, 'open')}
@@ -1060,28 +928,24 @@ setLoading(false)
                           >
                             Request Received
                           </button>
-
                           <button
                             onClick={() => updateStatus(item.id, 'in_progress')}
                             className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-left text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
                           >
                             Management Review
                           </button>
-
                           <button
                             onClick={() => updateStatus(item.id, 'board_review')}
                             className="rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 py-3 text-left text-sm font-medium text-purple-300 hover:bg-purple-400/20"
                           >
                             Board Review If Needed
                           </button>
-
                           <button
                             onClick={() => updateStatus(item.id, 'approved')}
                             className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-left text-sm font-medium text-emerald-300 hover:bg-emerald-500/20"
                           >
                             Approved / Scheduled
                           </button>
-
                           <button
                             onClick={() => updateStatus(item.id, 'completed')}
                             className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-left text-sm font-medium text-emerald-300 hover:bg-emerald-400/20"
@@ -1089,10 +953,8 @@ setLoading(false)
                             Completed
                           </button>
                         </div>
-
                         <div className="mt-6 border-t border-white/10 pt-5">
                           <h4 className="font-semibold">Activity Timeline</h4>
-
                           <div className="mt-4 space-y-4">
                             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                               <div className="text-sm text-slate-300">
@@ -1104,7 +966,6 @@ setLoading(false)
                                   : '—'}
                               </div>
                             </div>
-
                             {(wf.timeline || []).map((entry, index) => (
                               <div
                                 key={index}
@@ -1125,14 +986,12 @@ setLoading(false)
                   </div>
                 )
               })}
-
             {!loading && filtered.length === 0 && (
               <div className="px-6 py-10 text-slate-400">No items found.</div>
             )}
           </div>
         </div>
       </div>
-
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#020617]/95 p-3 backdrop-blur md:hidden">
         <button
           onClick={() => fetchData({ showLoading: false })}
@@ -1144,7 +1003,6 @@ setLoading(false)
     </div>
   )
 }
-
 function CommandMetric({ label, value, text }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
@@ -1154,13 +1012,11 @@ function CommandMetric({ label, value, text }) {
     </div>
   )
 }
-
 function CommandPanel({ title, description, lines, href, cta }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
       <h2 className="text-xl font-semibold">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
-
       <div className="mt-5 space-y-3">
         {lines.map((line) => (
           <div
@@ -1171,7 +1027,6 @@ function CommandPanel({ title, description, lines, href, cta }) {
           </div>
         ))}
       </div>
-
       <Link
         href={href}
         className="mt-5 inline-flex rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm font-medium text-yellow-300 hover:bg-yellow-400/20"
@@ -1181,7 +1036,6 @@ function CommandPanel({ title, description, lines, href, cta }) {
     </div>
   )
 }
-
 function InfoBox({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-4">
