@@ -11,8 +11,14 @@ function getSelectedAssociationContext() {
   }
 
   return {
-    associationId: localStorage.getItem("spm_selected_association_id") || "",
-    associationName: localStorage.getItem("spm_selected_association_name") || "",
+    associationId:
+      localStorage.getItem("spm_selected_association_id") ||
+      localStorage.getItem("spm_last_association_id") ||
+      "",
+    associationName:
+      localStorage.getItem("spm_selected_association_name") ||
+      localStorage.getItem("spm_last_association_name") ||
+      "",
   };
 }
 
@@ -210,6 +216,10 @@ function handleAdminAssociationChange(
 
   localStorage.setItem("spm_selected_association_id", selectedAssociation.id);
   localStorage.setItem("spm_selected_association_name", selectedAssociation.name);
+  localStorage.setItem("selectedAssociationId", selectedAssociation.id);
+  localStorage.setItem("selectedAssociationName", selectedAssociation.name);
+  localStorage.setItem("spm_last_association_id", selectedAssociation.id);
+  localStorage.setItem("spm_last_association_name", selectedAssociation.name);
 
   setAssociationId(selectedAssociation.id);
   setAssociationName(selectedAssociation.name);
