@@ -1,3 +1,4 @@
+import Head from "next/head";
 import "../styles/globals.css";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -159,8 +160,15 @@ if (loggedIn !== "true" && Date.now() <= extendedUntil) {
 
 export default function App({ Component, pageProps }) {
   return (
-    <PortalGate>
-      <Component {...pageProps} />
-    </PortalGate>
+    <>
+      <Head>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1" />
+        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1" />
+      </Head>
+
+      <PortalGate>
+        <Component {...pageProps} />
+      </PortalGate>
+    </>
   );
 }
