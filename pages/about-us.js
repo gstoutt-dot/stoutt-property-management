@@ -8,7 +8,6 @@ export default function AboutUs() {
 
   const executive = [
     ["Glenn Stoutt", "Founder / Manager"],
-    ["Lisa Solon", "Vice President"],
     ["Michael Harrington", "Director of Community Operations"],
     ["Andrea Whitmore", "Senior Association Manager"],
     ["David Reynolds", "Director of Financial Services"],
